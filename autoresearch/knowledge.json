@@ -835,6 +835,20 @@
       "trades": 1131,
       "round": 56,
       "note": "range axis wrong for trending IWM (suits two-sided)"
+    },
+    "IWM_imbalance_triple_barrier_x_bgm_cdf_overlay_t40_R57": {
+      "real_calmar": 1.0126,
+      "real_da": 3.53,
+      "trades": 1339,
+      "round": 57,
+      "note": "KEPT - \u2466 ENSEMBLE (tb+bgm) of comparable signals beats both legs; IWM 0.93->1.01"
+    },
+    "IWM_imbalance_multi_horizon_cdf_overlay_t40_R57": {
+      "real_calmar": 0.7977,
+      "real_da": 9.5,
+      "trades": 939,
+      "round": 57,
+      "note": "multi_horizon+feats < triple_barrier on IWM"
     }
   },
   "baselines": {
@@ -914,7 +928,8 @@
     "ROUND53 BREAKTHROUGH: TLT 0.7679 -> +1.5221 (KEPT, DA 3.84) via \u2462 MEAN-REVERSION FEATURES (RSI + Bollinger %b) on the RANGE axis with triple_barrier/ls_overlay. range/triple_barrier was 0.31 WITHOUT feats (R15) -> 1.52 WITH. TLT is mean-reverting; oscillators read overbought/oversold + range bars sample at reversals = times the rate-shock turning points. On logdollar the feats HURT (0.77->0.41) - axis x feature interaction. Causal (RSI/Bollinger backward-only). The NON-\u2460\u2461 module (\u2462 features, per user guidance) broke the ceiling after \u2460\u2461\u2466\u2467 plateaued. New weakest = IWM 0.8831.",
     "ROUND54 (verify TLT 1.52): CONTROL range/always_long/ls_overlay = -0.14 (features+axis alone, NO edge) << 1.52 -> the +1.52 is genuinely the triple_barrier labeler reading the mean-rev oscillators (leak-clean, causal). Unlock is triple_barrier-SPECIFIC (range/bgm 0.065). TLT SOLVED 0.77->1.52. \u2462 mean-rev features now GLOBAL. New weakest = IWM 0.8831.",
     "ROUND55 WIN: IWM 0.8831 -> +0.9316 (KEPT) via imbalance/triple_barrier/cdf_overlay + \u2462 mean-rev features. The triple_barrier+oscillators recipe GENERALIZES (TLT range 1.52, IWM imbalance 0.93): features HELP barrier-timing (triple_barrier), slightly HURT regime-clustering (bgm 0.88->0.83). \u2462 features x triple_barrier is a GENERAL synergy. IWM still weakest (0.9316 < QQQ 1.30).",
-    "ROUND56: IWM push DISCARD (stays 0.9316). range/triple_barrier 0.38 (range suits mean-reverting TLT, not trending IWM), imbalance@0.30 0.73 (over-trades). IWM recipe LOCKED: imbalance/triple_barrier/cdf_overlay@0.40 + \u2462feats = 0.9316. Axis/thresh are character-specific (imbalance+0.40 trending IWM; range two-sided TLT)."
+    "ROUND56: IWM push DISCARD (stays 0.9316). range/triple_barrier 0.38 (range suits mean-reverting TLT, not trending IWM), imbalance@0.30 0.73 (over-trades). IWM recipe LOCKED: imbalance/triple_barrier/cdf_overlay@0.40 + \u2462feats = 0.9316. Axis/thresh are character-specific (imbalance+0.40 trending IWM; range two-sided TLT).",
+    "ROUND57 WIN: IWM 0.9316 -> +1.0126 (KEPT) via \u2466 ENSEMBLE imbalance/triple_barrier+bgm/cdf_overlay. Averaging TWO COMPARABLE decorrelated signals (tb 0.93 + bgm 0.83) cut joint DA to 3.53 and lifted Calmar PAST 1.0 - the diversification win that couldn't happen on TLT (one dominant signal). VALIDATES \u2466: ensembles help with comparable signals, dilute with strong+weak. \u2462feats + \u2466ensemble: IWM 0.88->0.93->1.01."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -953,17 +968,17 @@
       }
     },
     "IWM": {
-      "cell": "IWM_imbalance_triple_barrier_cdf_overlay_t0.40",
-      "real_calmar": 0.9316,
-      "real_da": 3.4175,
-      "trades": 908,
+      "cell": "IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.40",
+      "real_calmar": 1.0126,
+      "real_da": 3.5283,
+      "trades": 1339,
       "g2_pass": true,
-      "round": 17,
+      "round": 18,
       "source": "tournament",
       "config": {
         "ticker": "IWM",
         "axis": "imbalance",
-        "labeler": "triple_barrier",
+        "labeler": "triple_barrier+bgm",
         "thresh": 0.4,
         "sizing": "cdf_overlay"
       }
@@ -1050,7 +1065,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 17,
+  "last_round": 18,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1556,6 +1571,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R56 IWM push: range 0.38 (wrong for trending), thresh0.30 0.73 (over-trades). IWM locked imbalance/triple_barrier@0.40 = 0.93"
+      },
+      {
+        "id": "r57",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R57 WIN: IWM 0.93->1.01 via \u2466 ENSEMBLE (tb+bgm comparable signals; DA 3.53). Ensemble pays off where TLT diluted"
       }
     ],
     "edges": [
@@ -2078,8 +2099,43 @@
         "src": "r55",
         "dst": "r56",
         "label": "push variants -> worse"
+      },
+      {
+        "src": "r55",
+        "dst": "r57",
+        "label": "ensemble of comparable signals"
       }
     ],
     "running": []
+  },
+  "buyhold": {
+    "TLT": {
+      "calmar": -0.0569,
+      "da": 56.26
+    },
+    "IWM": {
+      "calmar": 0.5615,
+      "da": 40.68
+    },
+    "XLE": {
+      "calmar": 0.6057,
+      "da": 46.03
+    },
+    "QQQ": {
+      "calmar": 1.1094,
+      "da": 22.87
+    },
+    "EEM": {
+      "calmar": 1.2539,
+      "da": 26.7
+    },
+    "GLD": {
+      "calmar": 1.62,
+      "da": 23.99
+    },
+    "HYG": {
+      "calmar": 1.6471,
+      "da": 3.65
+    }
   }
 }

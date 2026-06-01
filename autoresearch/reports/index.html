@@ -5,13 +5,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-ol.rounds{list-style:none;padding:0;margin:0;counter-reset:r}
+ol.rounds{list-style:none;padding:0;margin:0}
 ol.rounds li{border:1px solid var(--line);border-radius:9px;background:var(--card);margin:.5rem 0;
   padding:.85rem 1.1rem;display:flex;align-items:center;gap:.7rem;justify-content:space-between;
   transition:border-color .18s, transform .18s}
 ol.rounds li:hover{border-color:var(--accent-line);transform:translateX(3px)}
 ol.rounds a{font:500 1.05rem/1.4 "IBM Plex Sans",sans-serif;color:var(--ink)}
 ol.rounds a:hover{color:var(--accent)}
+section.running{border-color:var(--accent-line);box-shadow:var(--glow)}
+ul.hyps{list-style:none;padding:0;margin:.4rem 0 0} ul.hyps li{margin:.3rem 0}
+.livedot{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent);animation:pulse 1.3s ease-in-out infinite}
+.idledot{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--mut)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 </style></head><body><div class="wrap">
 <div class="nav">autoresearch / reports</div>
 <div class="hero">
@@ -20,66 +26,69 @@ ol.rounds a:hover{color:var(--accent)}
   <p class="tldr">Per-round tech reports — each races two hypotheses on the weakest ETF, keeps the winner if it beats
   that ETF's best (real OOS Calmar+DA), and updates the <a href="causal_graph.html">interactive causal graph</a>.</p>
 </div>
-<section class="block"><h2>Leaderboard — best real OOS Calmar per ETF</h2>
-<table><thead><tr><th>ETF</th><th class="num">Calmar</th><th class="num">trades</th><th>cell</th></tr></thead>
-<tbody><tr><td><b>IWM</b></td><td class="num pos">+0.9316</td><td class="num">908</td><td><code>IWM_imbalance_triple_barrier_cdf_overlay_t0.40</code></td></tr><tr><td><b>QQQ</b></td><td class="num pos">+1.2953</td><td class="num">811</td><td><code>QQQ_logdollar_always_long_cdf_overlay_t0.15</code></td></tr><tr><td><b>EEM</b></td><td class="num pos">+1.4032</td><td class="num">556</td><td><code>EEM_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>TLT</b></td><td class="num pos">+1.5221</td><td class="num">333</td><td><code>TLT_range_triple_barrier_ls_overlay_t0.50</code></td></tr><tr><td><b>GLD</b></td><td class="num pos">+1.8021</td><td class="num">691</td><td><code>GLD_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>HYG</b></td><td class="num pos">+1.8880</td><td class="num">779</td><td><code>HYG_logdollar_always_long_cdf_overlay_t0.55</code></td></tr><tr><td><b>XLE</b></td><td class="num pos">+2.2619</td><td class="num">116</td><td><code>XLE_logdollar_multi_horizon_cdf_overlay_t0.45</code></td></tr></tbody></table></section>
-<section class="block"><h2>Rounds (56)</h2>
+<section class="block running"><h2><span class="livedot"></span>Now running — round 58 · IWM</h2><p class="small">started 2026-06-01 22:21 · racing 2 hypotheses on the 2 QC nodes:</p><ul class="hyps"><li><code>imbalance/triple_barrier+bgm/cdf_overlay @thresh 0.35 (exposure-tuned ensemble)</code></li><li><code>imbalance/triple_barrier+bgm+multi_horizon/cdf_overlay @0.40 (3-way ensemble)</code></li></ul></section>
+<section class="block"><h2>Leaderboard — best strategy Calmar vs buy-and-hold (real OOS)</h2>
+<table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
+<tbody><tr><td><b>IWM</b></td><td class="num pos">+1.0126</td><td class="num">1339</td><td class="num pos">+0.561</td><td class="num pos">+0.451</td><td><code>IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.40</code></td></tr><tr><td><b>QQQ</b></td><td class="num pos">+1.2953</td><td class="num">811</td><td class="num pos">+1.109</td><td class="num pos">+0.186</td><td><code>QQQ_logdollar_always_long_cdf_overlay_t0.15</code></td></tr><tr><td><b>EEM</b></td><td class="num pos">+1.4032</td><td class="num">556</td><td class="num pos">+1.254</td><td class="num pos">+0.149</td><td><code>EEM_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>TLT</b></td><td class="num pos">+1.5221</td><td class="num">333</td><td class="num neg">-0.057</td><td class="num pos">+1.579</td><td><code>TLT_range_triple_barrier_ls_overlay_t0.50</code></td></tr><tr><td><b>GLD</b></td><td class="num pos">+1.8021</td><td class="num">691</td><td class="num pos">+1.620</td><td class="num pos">+0.182</td><td><code>GLD_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>HYG</b></td><td class="num pos">+1.8880</td><td class="num">779</td><td class="num pos">+1.647</td><td class="num pos">+0.241</td><td><code>HYG_logdollar_always_long_cdf_overlay_t0.55</code></td></tr><tr><td><b>XLE</b></td><td class="num pos">+2.2619</td><td class="num">116</td><td class="num pos">+0.606</td><td class="num pos">+1.656</td><td><code>XLE_logdollar_multi_horizon_cdf_overlay_t0.45</code></td></tr></tbody></table>
+<p class="small">buy&amp;hold = pure 1-trade hold over the OOS window (2023-08 → 2026-06); edge = best − buy&amp;hold.</p></section>
+<section class="block"><h2>Rounds (57) — newest first</h2>
 <ol class="rounds">
-<li><a href="round_1.html">round_1</a> </li>
-<li><a href="round_2.html">round_2</a> </li>
-<li><a href="round_3.html">round_3</a> </li>
-<li><a href="round_4.html">round_4</a> </li>
-<li><a href="round_5.html">round_5</a> </li>
-<li><a href="round_6.html">Autoresearch Round 6 — overlay OFF (label-driven sizing), dollar, 7 ETFs</a> </li>
-<li><a href="round_7.html">Autoresearch Round 7 — TLT tournament (binary sizing)</a> </li>
-<li><a href="round_9.html">Autoresearch Round 9 — TLT long-short (shorting unlocked)</a> </li>
-<li><a href="round_10.html">Autoresearch Round 10 — IWM</a> </li>
-<li><a href="round_11.html">Round 11 — IWM</a> </li>
-<li><a href="round_12.html">Round 12 — TLT directional+short</a> </li>
-<li><a href="round_13.html">Round 13 — TLT improves (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_14.html">Round 14 — TLT</a> </li>
-<li><a href="round_15.html">Round 15 — TLT +0.31 (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_16.html">Round 16 — TLT range push</a> </li>
-<li><a href="round_17.html">Round 17 — TLT range labelers</a> </li>
-<li><a href="round_18.html">Round 18 — TLT +0.75 (KEEP, beats IWM)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_19.html">Round 19 — IWM</a> </li>
-<li><a href="round_20.html">Round 20 — IWM +1.10 (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_21.html">Round 21 — XLE (DISCARD, learns character)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_22.html">Round 22 — XLE (DISCARD, labels under-return)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_23.html">Round 23 — XLE +2.26 (HONEST, leak-audited)</a> </li>
-<li><a href="round_24.html">Round 24 — TLT (DISCARD; multi_horizon generalizes, axis×labeler crossed)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_25.html">Round 25 — TLT (DISCARD; untested axes fail, triple_barrier exhausted)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_26.html">Round 26 — TLT (DISCARD · leaderboard corrected)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_27.html">Round 27 — IWM (DISCARD · leaderboard corrected)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_28.html">Round 28 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_29.html">Round 29 — TLT (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_30.html">Round 30 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_31.html">Round 31 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_32.html">Round 32 — TLT (KEEP · noise-level)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_33.html">Round 33 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_34.html">Round 34 — TLT (DISCARD · reverted)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_35.html">Round 35 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_36.html">Round 36 — GLD (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_37.html">Round 37 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_38.html">Round 38 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_38b.html">Round 38b — XLE (KEEP · audit confirmed)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_39.html">Round 39 — QQQ (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_40.html">Round 40 — HYG (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_41.html">Round 41 — EEM (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_42.html">Round 42 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_43.html">Round 43 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_44.html">Round 44 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_45.html">Round 45 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_46.html">Round 46 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_47.html">Round 47 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_48.html">Round 48 — EEM (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_49.html">Round 49 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_50.html">Round 50 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_51.html">Round 51 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_52.html">Round 52 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_53.html">Round 53 — TLT (KEEP)</a> <span class="pill keep">KEEP</span></li>
-<li><a href="round_54.html">Round 54 — TLT (DISCARD · verified)</a> <span class="pill discard">DISCARD</span></li>
-<li><a href="round_55.html">Round 55 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_57.html">Round 57 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></li>
 <li><a href="round_56.html">Round 56 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_55.html">Round 55 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_54.html">Round 54 — TLT (DISCARD · verified)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_53.html">Round 53 — TLT (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_52.html">Round 52 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_51.html">Round 51 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_50.html">Round 50 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_49.html">Round 49 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_48.html">Round 48 — EEM (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_47.html">Round 47 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_46.html">Round 46 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_45.html">Round 45 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_44.html">Round 44 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_43.html">Round 43 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_42.html">Round 42 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_41.html">Round 41 — EEM (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_40.html">Round 40 — HYG (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_39.html">Round 39 — QQQ (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_38b.html">Round 38b — XLE (KEEP · audit confirmed)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_38.html">Round 38 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_37.html">Round 37 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_36.html">Round 36 — GLD (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_35.html">Round 35 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_34.html">Round 34 — TLT (DISCARD · reverted)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_33.html">Round 33 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_32.html">Round 32 — TLT (KEEP · noise-level)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_31.html">Round 31 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_30.html">Round 30 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_29.html">Round 29 — TLT (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_28.html">Round 28 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_27.html">Round 27 — IWM (DISCARD · leaderboard corrected)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_26.html">Round 26 — TLT (DISCARD · leaderboard corrected)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_25.html">Round 25 — TLT (DISCARD; untested axes fail, triple_barrier exhausted)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_24.html">Round 24 — TLT (DISCARD; multi_horizon generalizes, axis×labeler crossed)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_23.html">Round 23 — XLE +2.26 (HONEST, leak-audited)</a> </li>
+<li><a href="round_22.html">Round 22 — XLE (DISCARD, labels under-return)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_21.html">Round 21 — XLE (DISCARD, learns character)</a> <span class="pill discard">DISCARD</span></li>
+<li><a href="round_20.html">Round 20 — IWM +1.10 (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_19.html">Round 19 — IWM</a> </li>
+<li><a href="round_18.html">Round 18 — TLT +0.75 (KEEP, beats IWM)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_17.html">Round 17 — TLT range labelers</a> </li>
+<li><a href="round_16.html">Round 16 — TLT range push</a> </li>
+<li><a href="round_15.html">Round 15 — TLT +0.31 (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_14.html">Round 14 — TLT</a> </li>
+<li><a href="round_13.html">Round 13 — TLT improves (KEEP)</a> <span class="pill keep">KEEP</span></li>
+<li><a href="round_12.html">Round 12 — TLT directional+short</a> </li>
+<li><a href="round_11.html">Round 11 — IWM</a> </li>
+<li><a href="round_10.html">Autoresearch Round 10 — IWM</a> </li>
+<li><a href="round_9.html">Autoresearch Round 9 — TLT long-short (shorting unlocked)</a> </li>
+<li><a href="round_7.html">Autoresearch Round 7 — TLT tournament (binary sizing)</a> </li>
+<li><a href="round_6.html">Autoresearch Round 6 — overlay OFF (label-driven sizing), dollar, 7 ETFs</a> </li>
+<li><a href="round_5.html">round_5</a> </li>
+<li><a href="round_4.html">round_4</a> </li>
+<li><a href="round_3.html">round_3</a> </li>
+<li><a href="round_2.html">round_2</a> </li>
+<li><a href="round_1.html">round_1</a> </li>
 </ol></section>
 </div></body></html>
