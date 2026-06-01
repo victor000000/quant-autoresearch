@@ -175,6 +175,22 @@ def generate_labels_carry(fwd_vol, tr_m, va_m, fv, horizons=[50, 100, 200]):
                 best_labels = y_carry
                 best_cfg = f"carry_f{fk}"
 
+    # Fallback: if no horizon passed the strict 0.2-0.8 balance gate (e.g. a very
+    # noisy asset like XLE), use the longest usable horizon's TRAIN-median split
+    # unconditionally. Returning None here would crash the run downstream.
+    if best_labels is None:
+        for fk in reversed(horizons):
+            fvd_k = ~np.isnan(fwd_vol[fk])
+            sel_tr = tr_m & fvd_k & fv
+            if sel_tr.sum() > 10:
+                med_v = float(np.median(fwd_vol[fk][sel_tr]))
+                if med_v > 0:
+                    y_carry = np.full(N, -1, dtype=int)
+                    y_carry[fvd_k & fv & (fwd_vol[fk] <= med_v)] = 1
+                    y_carry[fvd_k & fv & (fwd_vol[fk] > med_v)] = 0
+                    best_labels, best_cfg = y_carry, f"carry_f{fk}_fallback"
+                    break
+
     return best_labels, best_cfg, None
 
 
