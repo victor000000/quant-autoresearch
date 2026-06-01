@@ -40,9 +40,10 @@ A hypothesis is one render-time CONFIG (no code edits between two hypotheses):
 - **Real OOS Calmar+DA only** crown a winner. Train/val metrics only *select within a run* — tune freely.
 - **Trade actively:** deployable = **>80** OOS trades. Buy-and-hold (1 trade) is a reference ceiling, not a result.
 - **No lookahead (every round):** features past-only; model/scaler/dim-reduce/calibrator fit on TRAIN
-  (calibrator on labeled VAL). The future label may filter only the bars used to **fit** — never which
-  VAL/TEST bars get a position. Check the footer's `n_pred ≈ n_test_bars` sentinel; if a KEEP looks too good
-  (Calmar ≫ buy-hold / DA ≪ buy-hold / trades ~80), it must beat an `always_long` control before it counts.
+  (calibrator on labeled VAL, **embargoed**: drop the last ~200 val bars whose forward labels reach into test).
+  The future label may filter only the bars used to **fit** — never which VAL/TEST bars get a position. Check
+  the footer's `n_pred ≈ n_test_bars` sentinel; if a KEEP looks too good (Calmar ≫ buy-hold / DA ≪ buy-hold /
+  trades ~80), it must beat an `always_long` control before it counts.
 - **Simpler is better.** Confirm nothing on one run (replicate on ≥2 tickers or seeds {42,7}).
 - Log everything, including failures. HMM / always-long are baselines to beat (Wang doesn't use HMM).
 

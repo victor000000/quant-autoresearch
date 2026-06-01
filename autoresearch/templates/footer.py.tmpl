@@ -168,8 +168,17 @@ class AutoresearchPipeline(QCAlgorithm):
         # with hindsight. So: fit on labeled bars; but emit VAL-synth + TEST
         # predictions for EVERY causal bar (fv & mask), no future-label filter.
         ly = y >= 0
+        # EMBARGO (purge): labels use up to ~200 forward bars, so val bars within
+        # H of the val/test boundary carry EARLY-TEST returns. They must not enter
+        # the calibrator/model fit (would bleed test info). Drop them from the FIT
+        # sets only; the model is train-fit and TRAIN labels can't reach test (val
+        # is years wide >> H), so only the val->test boundary needs the embargo.
+        _EMBARGO = 200
+        _allidx = np.arange(len(y))
+        _tepos = np.where(te_m)[0]
+        emb = (_allidx < (_tepos[0] - _EMBARGO)) if len(_tepos) else np.ones(len(y), dtype=bool)
         tx = fv & ly & tr_m                 # train: labeled bars only (model fit)
-        vx_lab = fv & ly & va_m             # val labeled: calibrator fit + val_auc
+        vx_lab = fv & ly & va_m & emb       # val labeled, EMBARGOED: calibrator fit + val_auc
         vx = fv & va_m                      # val ALL causal bars: synth metric
         ex = fv & te_m                      # test ALL causal bars: OOS preds (no label filter)
         if tx.sum() < 200 or vx_lab.sum() < 30 or ex.sum() < 30:
@@ -185,7 +194,7 @@ class AutoresearchPipeline(QCAlgorithm):
 
         vi = np.where(vx)[0]
         ei = np.where(ex)[0]
-        vlab = ly[vi]                       # labeled subset within the ALL-val bars
+        vlab = ly[vi] & emb[vi]             # labeled, EMBARGOED subset within the ALL-val bars (aligns with vx_lab)
         n_pos = int(y[tx].sum())
         n_neg = int((1 - y[tx]).sum())
 
