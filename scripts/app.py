@@ -9,12 +9,13 @@
 
 Run directly (python3 scripts/app.py); the systemd unit autoresearch-reports binds :80.
 """
-import os, sys
+import os, sys, html as _html
 from flask import Flask, Response, send_from_directory
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 REPORTS = os.path.abspath(os.path.join(HERE, "..", "autoresearch", "reports"))
+PROGRAM = os.path.abspath(os.path.join(HERE, "..", "autoresearch", "program.md"))
 from render_index import build_html   # live dashboard renderer
 
 app = Flask(__name__, static_folder=None)
@@ -30,6 +31,28 @@ def _nocache(resp):
 @app.route("/index.html")
 def index():
     return Response(build_html(), mimetype="text/html")
+
+
+@app.route("/program.md")
+def program():
+    try:
+        txt = open(PROGRAM).read()
+    except Exception:
+        txt = "(program.md not found)"
+    page = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            '<title>program.md</title>'
+            '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
+            '<link rel="stylesheet" href="style.css">'
+            '<style>.mdwrap{max-width:920px;margin:0 auto;padding:1.6rem 1.4rem 5rem}'
+            'pre.md{background:var(--card);border:1px solid var(--line);border-radius:12px;'
+            'padding:1.7rem 1.9rem;font:500 18px/1.78 "JetBrains Mono",monospace;color:var(--ink);'
+            'white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere;box-shadow:var(--shadow)}'
+            '</style></head><body><div class="mdwrap">'
+            '<div class="nav"><a href="/">← dashboard</a><span class="sep">·</span>'
+            '<a href="/#overview">overview</a></div>'
+            '<pre class="md">' + _html.escape(txt) + '</pre></div></body></html>')
+    return Response(page, mimetype="text/html")
 
 
 @app.route("/<path:fname>")

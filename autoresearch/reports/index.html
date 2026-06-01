@@ -6,107 +6,142 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.dash{max-width:1560px;margin:0 auto;padding:1.4rem 2.2rem 4rem}
-.dgrid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1.25fr);gap:1.5rem;align-items:start;margin-top:1.2rem}
-@media(max-width:1080px){.dgrid{grid-template-columns:1fr}}
-.dgrid .block{margin:0 0 1.4rem}
+.dash{max-width:1560px;margin:0 auto;padding:1.2rem 2.2rem 4rem}
+.hero{margin-bottom:1rem}
+/* KPI strip */
+.kpis{display:flex;flex-wrap:wrap;gap:.8rem;margin:1rem 0 0}
+.kpi{flex:1 1 150px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.85rem 1.1rem}
+.kpi .k{font:600 1rem/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.kpi .v{font:600 1.9rem/1.1 "JetBrains Mono",monospace;color:var(--ink);margin-top:.35rem;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:1.1rem;color:var(--accent)}
+/* TAB BAR — openclue style: sticky, monospace, accent underline on active */
+.tabbar{display:flex;gap:.35rem;flex-wrap:wrap;border-bottom:1px solid var(--line);
+  margin:1.3rem 0 1.5rem;position:sticky;top:0;z-index:30;
+  background:rgba(10,14,20,.93);backdrop-filter:blur(9px);padding-top:.4rem}
+.tab{font:600 1rem/1 "JetBrains Mono",monospace;letter-spacing:.02em;color:var(--mut);
+  padding:.9em 1.15em;border:1px solid transparent;border-bottom:2px solid transparent;
+  border-radius:9px 9px 0 0;text-decoration:none;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--ink);background:var(--bg-2);text-decoration:none}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);
+  background:linear-gradient(180deg,rgba(56,224,200,.07),transparent)}
+.tabpanel{display:none;animation:rise .4s ease both}
+.tabpanel.active{display:block}
+iframe.report{width:100%;height:80vh;border:1px solid var(--line);border-radius:12px;background:var(--card);display:block}
+/* latest-improvement banner */
 .latest-banner{display:block;border:1px solid var(--accent-line);border-radius:12px;
   background:linear-gradient(120deg,rgba(56,224,200,.10),rgba(56,224,200,.02));
-  padding:1rem 1.3rem;margin:1.1rem 0 .2rem;text-decoration:none;box-shadow:var(--glow);transition:transform .18s}
-.latest-banner:hover{transform:translateY(-2px)}
+  padding:1.05rem 1.35rem;margin:0 0 1.2rem;text-decoration:none;box-shadow:var(--glow);transition:transform .18s}
+.latest-banner:hover{transform:translateY(-2px);text-decoration:none}
 .latest-banner.keepglow{border-color:var(--accent)}
-.lb-tag{display:inline-block;font:700 .76rem/1 "JetBrains Mono",monospace;letter-spacing:.08em;
+.lb-tag{display:inline-block;font:700 1rem/1 "JetBrains Mono",monospace;letter-spacing:.06em;
   color:var(--accent);background:rgba(56,224,200,.12);border:1px solid var(--accent-line);
-  border-radius:999px;padding:.25em .7em;margin-right:.7rem}
-.lb-title{font:700 1.12rem/1.3 "Space Grotesk",sans-serif;color:var(--ink)}
+  border-radius:999px;padding:.3em .8em;margin-right:.7rem}
+.lb-title{font:700 1.22rem/1.35 "Space Grotesk",sans-serif;color:var(--ink)}
 .lb-title mark{background:rgba(56,224,200,.22);color:var(--ink);padding:.05em .25em;border-radius:4px}
-.lb-sum{display:block;margin-top:.5rem;color:var(--ink-2);font-size:.98rem;line-height:1.55}
+.lb-sum{display:block;margin-top:.55rem;color:var(--ink-2);font-size:1.04rem;line-height:1.6}
+/* rounds list */
 ol.rounds{list-style:none;padding:0;margin:0}
-ol.rounds li{border:1px solid var(--line);border-radius:9px;background:var(--card);margin:.5rem 0;
-  padding:.85rem 1.1rem;transition:border-color .18s, transform .18s}
+ol.rounds li{border:1px solid var(--line);border-radius:10px;background:var(--card);margin:.6rem 0;
+  padding:1rem 1.2rem;transition:border-color .18s, transform .18s}
 ol.rounds li:hover{border-color:var(--accent-line);transform:translateX(3px)}
 ol.rounds li.latest-item{border-color:var(--accent);background:linear-gradient(120deg,rgba(56,224,200,.07),var(--card));box-shadow:var(--glow)}
 .rmain{display:flex;align-items:center;gap:.6rem;justify-content:space-between;flex-wrap:wrap}
-ol.rounds a{font:600 1.04rem/1.35 "Space Grotesk",sans-serif;color:var(--ink)}
+ol.rounds a{font:600 1.12rem/1.4 "Space Grotesk",sans-serif;color:var(--ink)}
 ol.rounds a:hover{color:var(--accent)}
-.rsum{margin-top:.45rem;color:var(--ink-2);font-size:.95rem;line-height:1.55}
+.rsum{margin-top:.5rem;color:var(--ink-2);font-size:1.02rem;line-height:1.6}
 .pill.latest{background:rgba(56,224,200,.16);color:var(--accent);border:1px solid var(--accent-line)}
-.hyps-row{margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem}
-.hchip{font:500 .8rem/1.3 "JetBrains Mono",monospace;color:var(--ink-2);background:var(--bg-2,#0d1219);
-  border:1px solid var(--line);border-radius:7px;padding:.28em .6em}
+.hyps-row{margin-top:.55rem;display:flex;flex-wrap:wrap;gap:.45rem}
+.hchip{font:500 1rem/1.4 "JetBrains Mono",monospace;color:var(--ink-2);background:var(--bg-2);
+  border:1px solid var(--line);border-radius:8px;padding:.35em .65em}
+/* leaderboard highlight */
 tr.justimproved td{background:rgba(56,224,200,.10)}
-.hotdot{color:var(--accent);font-size:.8em}
+.hotdot{color:var(--accent);font-size:.85em}
+/* top insights */
 ol.insights{list-style:none;padding:0;margin:0}
-ol.insights li{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:9px;
-  background:var(--card);margin:.55rem 0;padding:.8rem 1.05rem}
-.ititle{font:600 1.02rem/1.4 "Space Grotesk",sans-serif;color:var(--ink);display:flex;align-items:baseline;gap:.55rem}
-.inum{font:700 .82rem/1 "JetBrains Mono",monospace;color:var(--accent);opacity:.85}
-.idetail{margin-top:.4rem;color:var(--ink-2);font-size:.94rem;line-height:1.55}
-.ev{font:500 .76rem/1 "JetBrains Mono",monospace;color:var(--mut);margin-left:auto;white-space:nowrap}
+ol.insights li{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;
+  background:var(--card);margin:.65rem 0;padding:1rem 1.25rem}
+.ititle{font:600 1.16rem/1.45 "Space Grotesk",sans-serif;color:var(--ink);display:flex;align-items:baseline;gap:.6rem}
+.inum{font:700 1rem/1 "JetBrains Mono",monospace;color:var(--accent)}
+.idetail{margin-top:.45rem;color:var(--ink-2);font-size:1.02rem;line-height:1.62}
+.ev{font:500 1rem/1 "JetBrains Mono",monospace;color:var(--mut);margin-left:auto;white-space:nowrap}
+/* live status */
 section.running{border-color:var(--accent-line);box-shadow:var(--glow)}
-ul.hyps{list-style:none;padding:0;margin:.4rem 0 0} ul.hyps li{margin:.3rem 0;color:var(--ink-2)}
+#nowrunning p{font-size:1.04rem}
+ul.hyps{list-style:none;padding:0;margin:.5rem 0 0} ul.hyps li{margin:.35rem 0;color:var(--ink-2);font-size:1.04rem}
 .livedot{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--accent);
   box-shadow:0 0 8px var(--accent);animation:pulse 1.3s ease-in-out infinite}
 .idledot{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--mut)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.4rem;align-items:start}
+@media(max-width:1000px){.grid2{grid-template-columns:1fr}}
 </style></head><body><div class="dash">
-<div class="nav">autoresearch / reports · <span style="color:var(--accent)">served by Flask</span></div>
+<div class="nav">autoresearch / reports · <span style="color:var(--accent)">Flask</span></div>
 <div class="hero">
   <div class="eyebrow">Autoresearch · Quant Pipeline</div>
   <h1>Experiment reports</h1>
-  <p class="tldr">Each round races two hypotheses on the weakest ETF, keeps the winner if it beats that ETF's
-  best (real OOS Calmar + DA). Full <a href="causal_graph.html">interactive causal graph</a>. Live; auto-refreshing.</p>
+  <p class="tldr">Each round races two hypotheses on the weakest ETF and keeps the winner if it beats that ETF's
+  best (real OOS Calmar + DA). Live; auto-refreshing every 30s.</p>
+  <div class="kpis"><div class="kpi"><div class="k">rounds</div><div class="v">61</div></div><div class="kpi"><div class="k">kept (wins)</div><div class="v pos">17</div></div><div class="kpi"><div class="k">ETFs live</div><div class="v">7</div></div><div class="kpi"><div class="k">top ETF</div><div class="v">XLE <span class="kpi-sub">+2.26</span></div></div></div>
 </div>
-<a class="latest-banner" href="round_60.html"><span class="lb-tag">★ LATEST</span><span class="lb-title"><mark>Round 60 — IWM (DISCARD)</mark></span><span class="lb-sum">Per the long/short directive, tested adding SHORTS to IWM's winning ensemble, plus an even-tighter long-only variant. Both lost. Shorting IWM's pullbacks dragged Calmar 1.14 → 0.90 and more than doubled drawdown-area (1.94→4.34) — the up-drift punishes the sho…</span></a>
-<section class="block" id="nowrunning"><h2><span class="idledot"></span>Status</h2><p class="small">loading live status…</p></section>
-<div class="dgrid">
-  <div class="dcol">
-    <section class="block"><h2>Leaderboard — best Calmar vs buy-and-hold (real OOS)</h2>
-    <table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
-    <tbody><tr><td><b>IWM</b></td><td class="num pos">+1.1403</td><td class="num">1056</td><td class="num pos">+0.561</td><td class="num pos">+0.579</td><td><code>IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45</code></td></tr><tr><td><b>QQQ</b></td><td class="num pos">+1.2953</td><td class="num">811</td><td class="num pos">+1.109</td><td class="num pos">+0.186</td><td><code>QQQ_logdollar_always_long_cdf_overlay_t0.15</code></td></tr><tr><td><b>EEM</b></td><td class="num pos">+1.4032</td><td class="num">556</td><td class="num pos">+1.254</td><td class="num pos">+0.149</td><td><code>EEM_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>TLT</b></td><td class="num pos">+1.5221</td><td class="num">333</td><td class="num neg">-0.057</td><td class="num pos">+1.579</td><td><code>TLT_range_triple_barrier_ls_overlay_t0.50</code></td></tr><tr><td><b>GLD</b></td><td class="num pos">+1.8021</td><td class="num">691</td><td class="num pos">+1.620</td><td class="num pos">+0.182</td><td><code>GLD_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>HYG</b></td><td class="num pos">+1.8880</td><td class="num">779</td><td class="num pos">+1.647</td><td class="num pos">+0.241</td><td><code>HYG_logdollar_always_long_cdf_overlay_t0.55</code></td></tr><tr><td><b>XLE</b></td><td class="num pos">+2.2619</td><td class="num">116</td><td class="num pos">+0.606</td><td class="num pos">+1.656</td><td><code>XLE_logdollar_multi_horizon_cdf_overlay_t0.45</code></td></tr></tbody></table>
-    <p class="small">buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round.</p></section>
-    <section class="block"><h2>Top 5 insights</h2>
-    <ol class="insights"><li><div class="ititle"><span class="inum">01</span><span>Causal mean-reversion features unlock mean-reverting ETFs</span><span class="ev">TLT ③</span></div><div class="idetail">Adding causal RSI + Bollinger-%b oscillators (③) took TLT from 0.31 → 1.52 Calmar. Control (same axis/labeler, no features) stays at −0.14, so the lift is the features, not leakage.</div></li><li><div class="ititle"><span class="inum">02</span><span>Ensembling two comparable labelers lifts; one dominant signal dilutes</span><span class="ev">IWM R59</span></div><div class="idetail">Averaging calibrated triple_barrier + BGM predictions lifted IWM 0.93 → 1.14, but dilutes TLT (one signal already dominates). Ensemble only when two legs are individually strong.</div></li><li><div class="ititle"><span class="inum">03</span><span>No-lookahead invariant: never filter trading bars by a future label</span><span class="ev">leak audit</span></div><div class="idetail">Test/val predictions must cover EVERY causal bar; a future label may filter only the FIT set, never which OOS bars trade. Enforced + audited every round.</div></li><li><div class="ititle"><span class="inum">04</span><span>Selectivity beats exposure when directional accuracy is thin</span><span class="ev">IWM R59</span></div><div class="idetail">On IWM's ensemble a tighter entry threshold (0.45) beat a looser one (0.40, no vol-throttle): +1.14 vs +0.94. Trade less, trade better.</div></li><li><div class="ititle"><span class="inum">05</span><span>triple_barrier + ③-features recipe ports across mean-reverting ETFs</span><span class="ev">TLT,IWM</span></div><div class="idetail">The same labeler+features stack that unlocked TLT also lifted IWM — a transferable recipe, not a per-ETF fluke. Try it first on any mean-reverter.</div></li></ol></section>
-  </div>
-  <div class="dcol">
-    <section class="block"><h2>Rounds (60) — newest first</h2>
-    <ol class="rounds">
-<li class="latest-item"><div class="rmain"><a href="round_60.html">Round 60 — IWM (DISCARD)</a> <span class="pill latest">★ LATEST</span><span class="pill discard">DISCARD</span></div><div class="rsum">Per the long/short directive, tested adding SHORTS to IWM's winning ensemble, plus an even-tighter long-only variant. Both lost. Shorting IWM's pullbacks dragged Calmar 1.14 → 0.90 and more than doubled drawdown-area (1.94→4.34) — the up-drift punishes the sho…</div><div class="hyps-row"><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long/short, vol-targeted, entry 0.45.</span><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50.</span></div></li>
-<li><div class="rmain"><a href="round_59.html">Round 59 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">IWM ensemble fine-tune. A MORE SELECTIVE entry threshold (0.45) on the triple_barrier+BGM ensemble, kept under the inverse-vol overlay, lifted IWM 1.0126 → 1.1403 (DA 1.94, 1056 trades). The looser variant (0.40, no vol-throttle) traded as often but earned les…</div><div class="hyps-row"><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.45.</span><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, entry 0.40.</span></div></li>
-<li><div class="rmain"><a href="round_58.html">Round 58 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Tuning the IWM ensemble doesn't beat 1.0126: the exposure tune (thresh 0.35) over-trades (0.86, 1490 tr), and the 3-way ensemble (+multi_horizon) DILUTES (0.87) — adding the weaker multi_horizon leg drags the comparable tb+bgm pair down. IWM's best stays the 2…</div></li>
-<li><div class="rmain"><a href="round_57.html">Round 57 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The ⑦ ENSEMBLE finally pays off — on IWM's TWO COMPARABLE signals: imbalance/triple_barrier+bgm/cdf_overlay = 1.0126 (DA 3.53), beating both legs alone (tb 0.93, bgm 0.83). Averaging decorrelated comparable signals cut the joint drawdown and lifted Calmar past…</div></li>
-<li><div class="rmain"><a href="round_56.html">Round 56 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Pushing IWM: range/triple_barrier = 0.38 (the range axis suits mean-reverting TLT, not trending IWM — it over-samples noise), and imbalance@thresh0.30 = 0.73 (lower entry bar over-trades, 1179 trades). IWM's best stays imbalance/triple_barrier/cdf_overlay@0.40…</div></li>
-<li><div class="rmain"><a href="round_55.html">Round 55 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The triple_barrier + ③ mean-rev features recipe that cracked TLT GENERALIZES to IWM: imbalance/triple_barrier/cdf_overlay = 0.9316 (DA 3.42), beating the bgm incumbent (0.8831). Under the new global features bgm slipped (0.88→0.83) but triple_barrier UNLOCKED…</div></li>
-<li><div class="rmain"><a href="round_54.html">Round 54 — TLT (DISCARD · verified)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Verification CONFIRMS TLT's 1.52 is a real, leak-clean edge: the label-independent control (range/always_long/ls_overlay, same axis+features+sizing) is −0.14 — so the +1.52 comes from the triple_barrier LABELER reading the mean-rev oscillators to time reversal…</div></li>
-<li><div class="rmain"><a href="round_53.html">Round 53 — TLT (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">BREAKTHROUGH: the new ③ mean-reversion features (RSI + Bollinger %b) UNLOCK the range axis for TLT — range/triple_barrier/ls_overlay jumps from 0.31 (without feats, R15) → 1.5221 (DA 3.84!), nearly DOUBLING TLT's prior best (0.7679). On logdollar the features…</div></li>
-<li><div class="rmain"><a href="round_52.html">Round 52 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The ⑦ ensemble (now key-fixed, runs cleanly) DILUTES on TLT: triple_barrier+bgm 0.23, triple_barrier+multi_horizon 0.18 — averaging the dominant triple_barrier (0.77) with a much-weaker same-axis leg (bgm 0.35, multi_horizon −0.03 on logdollar) washes out the…</div></li>
-<li><div class="rmain"><a href="round_51.html">Round 51 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">dc_reversal (mean-reversion labeler) also FAILS: −0.17 (DA 81, over-trades 1881) — turning points are too hard to predict from causal features. BOTH DC variants fail (trend −0.03, reversal −0.17) → the DC framework doesn't fit TLT; triple_barrier's barrier str…</div></li>
-<li><div class="rmain"><a href="round_50.html">Round 50 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Long/short characterization of TLT's best signal: binary longshort = 0.39 (≪ continuous ls_overlay 0.7679), and long-only cdf_overlay@0.55 is degenerate (0 trades — triple_barrier rarely predicts strong-up). So TLT needs continuous long+short, and the SHORT le…</div></li>
-<li><div class="rmain"><a href="round_49.html">Round 49 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The new Directional-Change method FAILS on TLT: dc/dc_trend = −0.03 (DA 87), logdollar/dc_trend = −0.11 (DA 47, over-trades). The dc_trend label trend-FOLLOWS, and it whipsaws — an informative result: TLT is mean-reverting around rate regimes, not trending, wh…</div></li>
-<li><div class="rmain"><a href="round_48.html">Round 48 — EEM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The bgm/imbalance synergy does NOT universally generalize: on EEM both legs are degenerate (0 trades) — bgm's vol-regime gate finds no tradeable, separable regime on EEM's imbalance bars. The synergy is asset-specific (TLT 0.59, IWM 0.88-win; EEM degenerate).…</div></li>
-<li><div class="rmain"><a href="round_47.html">Round 47 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The new axes break TLT's supervised labeler: fracdiff/triple_barrier = −0.05, volumeimb/triple_barrier = −0.21. triple_barrier wants logdollar (0.7679); memory/volume clocks mis-fire its σ-barriers. TLT's supervised ceiling stays logdollar/triple_barrier/ls_ov…</div></li>
-<li><div class="rmain"><a href="round_46.html">Round 46 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">Exposure-tuning the bgm/imbalance combo WINS IWM: imbalance/bgm/cdf_overlay@0.40 = 0.8831 (DA 3.78), beating the supervised multi_horizon best (0.7788). cdf_plain@0.45 also beat it (0.7919, DA 2.0). The low-DA bgm/imbalance regime-timer just needed more exposu…</div></li>
-<li><div class="rmain"><a href="round_45.html">Round 45 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The dollar-imbalance × bgm synergy GENERALIZES to IWM: imbalance/bgm/cdf_overlay = 0.7476 with an exceptional DA of 1.92 (vs bgm/logdollar 0.71, and the multi_horizon best's DA 5.7). Just under IWM's 0.7788. And imbalance HURTS supervised multi_horizon (0.54 v…</div></li>
-<li><div class="rmain"><a href="round_44.html">Round 44 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The workflow's two new axes don't help bgm on TLT: fracdiff/bgm = −0.01 (memory axis gives bgm no directional edge); volumeimb/bgm hit a transient QC build-cache error (train completed). Neither beats bgm/imbalance (0.59). Across every axis, bgm/dollar-imbalan…</div></li>
-<li><div class="rmain"><a href="round_43.html">Round 43 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The research workflow's two NOVEL unsupervised labelers fail on TLT: regime_gmm (GMM on CAUSAL features) is degenerate (0 trades — feature-clusters don't separate TLT's forward direction, the kmeans pattern); cusum_regime (change-point) over-trades wildly (275…</div></li>
-<li><div class="rmain"><a href="round_42.html">Round 42 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The purer sign-only tickimb axis HURTS unsupervised bgm (−0.02) vs the dollar-weighted imbalance axis (0.59): the dollar weighting carries the magnitude/conviction info bgm's regimes need — stripping to sign-only over-samples noisy small runs (413 trades, DA 3…</div></li>
-<li><div class="rmain"><a href="round_41.html">Round 41 — EEM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">EEM completes the modernization sweep: always_long/logdollar/cdf_overlay = 1.4032 (was dollar 1.3279), a modest +0.08 (emerging markets are choppier, so the axis helps less than for GLD/HYG). multi_horizon degenerate again. All four stale bests modernized via…</div></li>
-<li><div class="rmain"><a href="round_40.html">Round 40 — HYG (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">HYG modernization is the biggest axis win after GLD: always_long/logdollar/cdf_overlay = 1.8880 (was dollar 1.2625), with DA just 3.67. Credit carry + causal vol-targeting on logdollar bars cuts drawdowns beautifully. multi_horizon degenerate again (43 trades)…</div></li>
-<li><div class="rmain"><a href="round_39.html">Round 39 — QQQ (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The GLD axis-unlock generalizes: vol-targeted buy-hold on logdollar (always_long/cdf_overlay) lifts QQQ 1.0965→1.2953 vs the stale dollar_R5. multi_horizon went degenerate (0 trades at QQQ's 0.15 thresh). Smaller jump than GLD (+0.20 vs +1.0) but a clean, labe…</div></li>
-<li><div class="rmain"><a href="round_38b.html">Round 38b — XLE (KEEP · audit confirmed)</a> <span class="pill keep">KEEP</span></div><div class="rsum">Audit spot-check: under the new calibrator val→test embargo, XLE/multi_horizon is +2.2619 (was 2.2559) — a +0.006 noise-level change. The embargo was a genuine but tiny leak; fixing it didn't move results. The +2.26 headline is leak-free and the whole leaderbo…</div></li>
-<li><div class="rmain"><a href="round_38.html">Round 38 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The imbalance axis does NOT generalize: agglomerative −0.12 and multi_horizon −0.02 (both negative, DA 70-100) on the imbalance clock. So the axis uniquely suits bgm (R37: 0.59) — bgm's vol-regime gate matches the directional clock — but breaks magnitude/forwa…</div></li>
-<li><div class="rmain"><a href="round_37.html">Round 37 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The custom imbalance axis (de-Prado signed-dollar directional bars) BOOSTS the unsupervised labeler: bgm jumps to 0.5930 — its best TLT result (vs 0.35 on logdollar) — because the directional bar-clock makes bgm's regime clusters track TLT's direction. But it…</div></li>
-<li><div class="rmain"><a href="round_36.html">Round 36 — GLD (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">Modernizing GLD revealed an AXIS unlock, not a labeler one: vol-targeted buy-hold on the logdollar axis (always_long/cdf_overlay) scores 1.8021 — more than DOUBLE GLD's stale dollar_R5 (0.7792). multi_horizon HURT GLD (0.47): on steadily-trending gold the labe…</div></li>
-<li><div class="rmain"><a href="round_35.html">Round 35 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">TLT's last untested honest labelers fail: agglomerative +0.01 (DA 71!) and bgm +0.35 — both ≪ triple_barrier's 0.7679. triple_barrier is uniquely TLT's labeler. TLT is now definitively exhausted single-asset (~0.768), tied with IWM (0.779) within backtest nois…</div></li>
-<li><div class="rmain"><a href="round_34.html">Round 34 — TLT (DISCARD · reverted)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Cross-asset SPY-relative features regressed TLT: 0.7679 → 0.6770 (and the multi_horizon leg collapsed to 0.01). Simple relative-momentum/correlation features dilute the edge rather than help — TLT's real cross-asset edge needs a proper 2-symbol pairs strategy,…</div></li>
-<li><div class="rmain"><a href="round_33.html">Round 33 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Tighter triple_barrier barriers (U=L=1.5σ) hurt TLT: 0.17 vs the default's 0.77, while over-trading (828 vs 566). The default 2.0σ barrier captures genuine rate-shock moves; 1.5σ labels on noise → diluted edge. TLT is confirmed at its single-asset honest ceili…</div></li>
+
+<nav class="tabbar" role="tablist">
+  <a class="tab" href="#overview" data-tab="overview">▸ Overview</a>
+  <a class="tab" href="#rounds" data-tab="rounds">Rounds (61)</a>
+  <a class="tab" href="#graph" data-tab="graph">Causal graph</a>
+  <a class="tab" href="#program" data-tab="program">program.md</a>
+</nav>
+
+<section class="tabpanel" id="tab-overview" data-panel="overview">
+  <section class="block" id="nowrunning"><h2><span class="idledot"></span>Status</h2><p>loading live status…</p></section>
+  <a class="latest-banner" href="round_61.html"><span class="lb-tag">★ LATEST</span><span class="lb-title"><mark>Round 61 — IWM (DISCARD)</mark></span><span class="lb-sum">Tried swapping the ensemble's 2nd leg from BGM to a causal UNSUPERVISED regime (regime_gmm, then cusum_regime). Both made ZERO trades. Hard regime labelers assign near-constant classes here, so their leg predicts a flat low probability that drags the blend below the 0.45 entry —…</span></a>
+  <section class="block"><h2>Leaderboard — best Calmar vs buy-and-hold (real OOS)</h2>
+  <div class="tablewrap"><table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
+  <tbody><tr><td><b>IWM</b></td><td class="num pos">+1.1403</td><td class="num">1056</td><td class="num pos">+0.561</td><td class="num pos">+0.579</td><td><code>IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45</code></td></tr><tr><td><b>QQQ</b></td><td class="num pos">+1.2953</td><td class="num">811</td><td class="num pos">+1.109</td><td class="num pos">+0.186</td><td><code>QQQ_logdollar_always_long_cdf_overlay_t0.15</code></td></tr><tr><td><b>EEM</b></td><td class="num pos">+1.4032</td><td class="num">556</td><td class="num pos">+1.254</td><td class="num pos">+0.149</td><td><code>EEM_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>TLT</b></td><td class="num pos">+1.5221</td><td class="num">333</td><td class="num neg">-0.057</td><td class="num pos">+1.579</td><td><code>TLT_range_triple_barrier_ls_overlay_t0.50</code></td></tr><tr><td><b>GLD</b></td><td class="num pos">+1.8021</td><td class="num">691</td><td class="num pos">+1.620</td><td class="num pos">+0.182</td><td><code>GLD_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>HYG</b></td><td class="num pos">+1.8880</td><td class="num">779</td><td class="num pos">+1.647</td><td class="num pos">+0.241</td><td><code>HYG_logdollar_always_long_cdf_overlay_t0.55</code></td></tr><tr><td><b>XLE</b></td><td class="num pos">+2.2619</td><td class="num">116</td><td class="num pos">+0.606</td><td class="num pos">+1.656</td><td><code>XLE_logdollar_multi_horizon_cdf_overlay_t0.45</code></td></tr></tbody></table></div>
+  <p class="small">buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round.</p></section>
+  <section class="block"><h2>Top 5 insights</h2>
+  <ol class="insights"><li><div class="ititle"><span class="inum">01</span><span>Causal mean-reversion features unlock mean-reverting ETFs</span><span class="ev">TLT ③</span></div><div class="idetail">Adding causal RSI + Bollinger-%b oscillators (③) took TLT from 0.31 → 1.52 Calmar. Control (same axis/labeler, no features) stays at −0.14, so the lift is the features, not leakage.</div></li><li><div class="ititle"><span class="inum">02</span><span>Ensembling two comparable labelers lifts; one dominant signal dilutes</span><span class="ev">IWM R59</span></div><div class="idetail">Averaging calibrated triple_barrier + BGM predictions lifted IWM 0.93 → 1.14, but dilutes TLT (one signal already dominates). Ensemble only when two legs are individually strong.</div></li><li><div class="ititle"><span class="inum">03</span><span>No-lookahead invariant: never filter trading bars by a future label</span><span class="ev">leak audit</span></div><div class="idetail">Test/val predictions must cover EVERY causal bar; a future label may filter only the FIT set, never which OOS bars trade. Enforced + audited every round.</div></li><li><div class="ititle"><span class="inum">04</span><span>Selectivity beats exposure when directional accuracy is thin</span><span class="ev">IWM R59</span></div><div class="idetail">On IWM's ensemble a tighter entry threshold (0.45) beat a looser one (0.40, no vol-throttle): +1.14 vs +0.94. Trade less, trade better.</div></li><li><div class="ititle"><span class="inum">05</span><span>triple_barrier + ③-features recipe ports across mean-reverting ETFs</span><span class="ev">TLT,IWM</span></div><div class="idetail">The same labeler+features stack that unlocked TLT also lifted IWM — a transferable recipe, not a per-ETF fluke. Try it first on any mean-reverter.</div></li></ol></section>
+</section>
+
+<section class="tabpanel" id="tab-rounds" data-panel="rounds">
+  <section class="block"><h2>Rounds (61) — newest first</h2>
+  <ol class="rounds">
+<li class="latest-item"><div class="rmain"><a href="round_61.html">Round 61 — IWM (DISCARD)</a> <span class="pill latest">★ LATEST</span><span class="pill discard">DISCARD</span></div><div class="rsum">Tried swapping the ensemble's 2nd leg from BGM to a causal UNSUPERVISED regime (regime_gmm, then cusum_regime). Both made ZERO trades. Hard regime labelers assign near-constant classes here, so their leg predicts a flat low probability that drags the blend below the 0.45 entry —…</div><div class="hyps-row"><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + causal-feature GMM regime labels; size long-only, vol-targeted, entry 0.45.</span><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + CUSUM change-point regime labels; size long-only, vol-targeted, entry 0.45.</span></div></li>
+<li><div class="rmain"><a href="round_60.html">Round 60 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Per the long/short directive, tested adding SHORTS to IWM's winning ensemble, plus an even-tighter long-only variant. Both lost. Shorting IWM's pullbacks dragged Calmar 1.14 → 0.90 and more than doubled drawdown-area (1.94→4.34) — the up-drift punishes the short leg. Tightening t…</div><div class="hyps-row"><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long/short, vol-targeted, entry 0.45.</span><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50.</span></div></li>
+<li><div class="rmain"><a href="round_59.html">Round 59 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">IWM ensemble fine-tune. A MORE SELECTIVE entry threshold (0.45) on the triple_barrier+BGM ensemble, kept under the inverse-vol overlay, lifted IWM 1.0126 → 1.1403 (DA 1.94, 1056 trades). The looser variant (0.40, no vol-throttle) traded as often but earned less. Selectivity beats…</div><div class="hyps-row"><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.45.</span><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, entry 0.40.</span></div></li>
+<li><div class="rmain"><a href="round_58.html">Round 58 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Tuning the IWM ensemble doesn't beat 1.0126: the exposure tune (thresh 0.35) over-trades (0.86, 1490 tr), and the 3-way ensemble (+multi_horizon) DILUTES (0.87) — adding the weaker multi_horizon leg drags the comparable tb+bgm pair down. IWM's best stays the 2-way triple_barrier+…</div></li>
+<li><div class="rmain"><a href="round_57.html">Round 57 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The ⑦ ENSEMBLE finally pays off — on IWM's TWO COMPARABLE signals: imbalance/triple_barrier+bgm/cdf_overlay = 1.0126 (DA 3.53), beating both legs alone (tb 0.93, bgm 0.83). Averaging decorrelated comparable signals cut the joint drawdown and lifted Calmar past 1.0 — the diversifi…</div></li>
+<li><div class="rmain"><a href="round_56.html">Round 56 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Pushing IWM: range/triple_barrier = 0.38 (the range axis suits mean-reverting TLT, not trending IWM — it over-samples noise), and imbalance@thresh0.30 = 0.73 (lower entry bar over-trades, 1179 trades). IWM's best stays imbalance/triple_barrier/cdf_overlay@0.40 = 0.9316.</div></li>
+<li><div class="rmain"><a href="round_55.html">Round 55 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The triple_barrier + ③ mean-rev features recipe that cracked TLT GENERALIZES to IWM: imbalance/triple_barrier/cdf_overlay = 0.9316 (DA 3.42), beating the bgm incumbent (0.8831). Under the new global features bgm slipped (0.88→0.83) but triple_barrier UNLOCKED (0.93). The oscillat…</div></li>
+<li><div class="rmain"><a href="round_54.html">Round 54 — TLT (DISCARD · verified)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Verification CONFIRMS TLT's 1.52 is a real, leak-clean edge: the label-independent control (range/always_long/ls_overlay, same axis+features+sizing) is −0.14 — so the +1.52 comes from the triple_barrier LABELER reading the mean-rev oscillators to time reversals, not from the feat…</div></li>
+<li><div class="rmain"><a href="round_53.html">Round 53 — TLT (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">BREAKTHROUGH: the new ③ mean-reversion features (RSI + Bollinger %b) UNLOCK the range axis for TLT — range/triple_barrier/ls_overlay jumps from 0.31 (without feats, R15) → 1.5221 (DA 3.84!), nearly DOUBLING TLT's prior best (0.7679). On logdollar the features HURT (0.41) — an axi…</div></li>
+<li><div class="rmain"><a href="round_52.html">Round 52 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The ⑦ ensemble (now key-fixed, runs cleanly) DILUTES on TLT: triple_barrier+bgm 0.23, triple_barrier+multi_horizon 0.18 — averaging the dominant triple_barrier (0.77) with a much-weaker same-axis leg (bgm 0.35, multi_horizon −0.03 on logdollar) washes out the edge and over-trades…</div></li>
+<li><div class="rmain"><a href="round_51.html">Round 51 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">dc_reversal (mean-reversion labeler) also FAILS: −0.17 (DA 81, over-trades 1881) — turning points are too hard to predict from causal features. BOTH DC variants fail (trend −0.03, reversal −0.17) → the DC framework doesn't fit TLT; triple_barrier's barrier structure is uniquely r…</div></li>
+<li><div class="rmain"><a href="round_50.html">Round 50 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Long/short characterization of TLT's best signal: binary longshort = 0.39 (≪ continuous ls_overlay 0.7679), and long-only cdf_overlay@0.55 is degenerate (0 trades — triple_barrier rarely predicts strong-up). So TLT needs continuous long+short, and the SHORT leg is essential (long…</div></li>
+<li><div class="rmain"><a href="round_49.html">Round 49 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The new Directional-Change method FAILS on TLT: dc/dc_trend = −0.03 (DA 87), logdollar/dc_trend = −0.11 (DA 47, over-trades). The dc_trend label trend-FOLLOWS, and it whipsaws — an informative result: TLT is mean-reverting around rate regimes, not trending, which is exactly why t…</div></li>
+<li><div class="rmain"><a href="round_48.html">Round 48 — EEM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The bgm/imbalance synergy does NOT universally generalize: on EEM both legs are degenerate (0 trades) — bgm's vol-regime gate finds no tradeable, separable regime on EEM's imbalance bars. The synergy is asset-specific (TLT 0.59, IWM 0.88-win; EEM degenerate). EEM stays buy-hold 1…</div></li>
+<li><div class="rmain"><a href="round_47.html">Round 47 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The new axes break TLT's supervised labeler: fracdiff/triple_barrier = −0.05, volumeimb/triple_barrier = −0.21. triple_barrier wants logdollar (0.7679); memory/volume clocks mis-fire its σ-barriers. TLT's supervised ceiling stays logdollar/triple_barrier/ls_overlay 0.7679.</div></li>
+<li><div class="rmain"><a href="round_46.html">Round 46 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">Exposure-tuning the bgm/imbalance combo WINS IWM: imbalance/bgm/cdf_overlay@0.40 = 0.8831 (DA 3.78), beating the supervised multi_horizon best (0.7788). cdf_plain@0.45 also beat it (0.7919, DA 2.0). The low-DA bgm/imbalance regime-timer just needed more exposure — an UNSUPERVISED…</div></li>
+<li><div class="rmain"><a href="round_45.html">Round 45 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The dollar-imbalance × bgm synergy GENERALIZES to IWM: imbalance/bgm/cdf_overlay = 0.7476 with an exceptional DA of 1.92 (vs bgm/logdollar 0.71, and the multi_horizon best's DA 5.7). Just under IWM's 0.7788. And imbalance HURTS supervised multi_horizon (0.54 vs its logdollar 0.78…</div></li>
+<li><div class="rmain"><a href="round_44.html">Round 44 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The workflow's two new axes don't help bgm on TLT: fracdiff/bgm = −0.01 (memory axis gives bgm no directional edge); volumeimb/bgm hit a transient QC build-cache error (train completed). Neither beats bgm/imbalance (0.59). Across every axis, bgm/dollar-imbalance remains the unsup…</div></li>
+<li><div class="rmain"><a href="round_43.html">Round 43 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The research workflow's two NOVEL unsupervised labelers fail on TLT: regime_gmm (GMM on CAUSAL features) is degenerate (0 trades — feature-clusters don't separate TLT's forward direction, the kmeans pattern); cusum_regime (change-point) over-trades wildly (2753 trades, DA 79, −0.…</div></li>
+<li><div class="rmain"><a href="round_42.html">Round 42 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The purer sign-only tickimb axis HURTS unsupervised bgm (−0.02) vs the dollar-weighted imbalance axis (0.59): the dollar weighting carries the magnitude/conviction info bgm's regimes need — stripping to sign-only over-samples noisy small runs (413 trades, DA 37). kmeans2stage deg…</div></li>
+<li><div class="rmain"><a href="round_41.html">Round 41 — EEM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">EEM completes the modernization sweep: always_long/logdollar/cdf_overlay = 1.4032 (was dollar 1.3279), a modest +0.08 (emerging markets are choppier, so the axis helps less than for GLD/HYG). multi_horizon degenerate again. All four stale bests modernized via the label-independen…</div></li>
+<li><div class="rmain"><a href="round_40.html">Round 40 — HYG (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">HYG modernization is the biggest axis win after GLD: always_long/logdollar/cdf_overlay = 1.8880 (was dollar 1.2625), with DA just 3.67. Credit carry + causal vol-targeting on logdollar bars cuts drawdowns beautifully. multi_horizon degenerate again (43 trades).</div></li>
+<li><div class="rmain"><a href="round_39.html">Round 39 — QQQ (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The GLD axis-unlock generalizes: vol-targeted buy-hold on logdollar (always_long/cdf_overlay) lifts QQQ 1.0965→1.2953 vs the stale dollar_R5. multi_horizon went degenerate (0 trades at QQQ's 0.15 thresh). Smaller jump than GLD (+0.20 vs +1.0) but a clean, label-independent axis w…</div></li>
+<li><div class="rmain"><a href="round_38b.html">Round 38b — XLE (KEEP · audit confirmed)</a> <span class="pill keep">KEEP</span></div><div class="rsum">Audit spot-check: under the new calibrator val→test embargo, XLE/multi_horizon is +2.2619 (was 2.2559) — a +0.006 noise-level change. The embargo was a genuine but tiny leak; fixing it didn't move results. The +2.26 headline is leak-free and the whole leaderboard is trustworthy.</div></li>
+<li><div class="rmain"><a href="round_38.html">Round 38 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The imbalance axis does NOT generalize: agglomerative −0.12 and multi_horizon −0.02 (both negative, DA 70-100) on the imbalance clock. So the axis uniquely suits bgm (R37: 0.59) — bgm's vol-regime gate matches the directional clock — but breaks magnitude/forward-calibrated labele…</div></li>
+<li><div class="rmain"><a href="round_37.html">Round 37 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">The custom imbalance axis (de-Prado signed-dollar directional bars) BOOSTS the unsupervised labeler: bgm jumps to 0.5930 — its best TLT result (vs 0.35 on logdollar) — because the directional bar-clock makes bgm's regime clusters track TLT's direction. But it HURTS triple_barrier…</div></li>
+<li><div class="rmain"><a href="round_36.html">Round 36 — GLD (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">Modernizing GLD revealed an AXIS unlock, not a labeler one: vol-targeted buy-hold on the logdollar axis (always_long/cdf_overlay) scores 1.8021 — more than DOUBLE GLD's stale dollar_R5 (0.7792). multi_horizon HURT GLD (0.47): on steadily-trending gold the labeler exits at the wro…</div></li>
+<li><div class="rmain"><a href="round_35.html">Round 35 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">TLT's last untested honest labelers fail: agglomerative +0.01 (DA 71!) and bgm +0.35 — both ≪ triple_barrier's 0.7679. triple_barrier is uniquely TLT's labeler. TLT is now definitively exhausted single-asset (~0.768), tied with IWM (0.779) within backtest noise.</div></li>
+<li><div class="rmain"><a href="round_34.html">Round 34 — TLT (DISCARD · reverted)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Cross-asset SPY-relative features regressed TLT: 0.7679 → 0.6770 (and the multi_horizon leg collapsed to 0.01). Simple relative-momentum/correlation features dilute the edge rather than help — TLT's real cross-asset edge needs a proper 2-symbol pairs strategy, not SPY features in…</div></li>
+<li><div class="rmain"><a href="round_33.html">Round 33 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Tighter triple_barrier barriers (U=L=1.5σ) hurt TLT: 0.17 vs the default's 0.77, while over-trading (828 vs 566). The default 2.0σ barrier captures genuine rate-shock moves; 1.5σ labels on noise → diluted edge. TLT is confirmed at its single-asset honest ceiling ~0.768.</div></li>
 <li><div class="rmain"><a href="round_32.html">Round 32 — TLT (KEEP · noise-level)</a> <span class="pill keep">KEEP</span></div><div class="rsum">Sharper ls_overlay floor (0.6→0.45) barely moved TLT: 0.7654 → 0.7679 (+0.003, noise). The de-lever factor only binds when short-vol ≫ long-vol — rare for TLT — so the floor isn't the lever. TLT is at its honest ceiling ~0.768, still just under IWM (0.7788).</div></li>
-<li><div class="rmain"><a href="round_31.html">Round 31 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Two clean negatives on TLT: honest tertile is poor (−0.02, DA 31) — confirming its old 'wins' were the look-ahead leak — and ls_overlay does not rescue the range axis (0.33 ≪ logdollar's 0.77). TLT's recipe is locked to logdollar/triple_barrier/ls_overlay; the…</div></li>
+<li><div class="rmain"><a href="round_31.html">Round 31 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Two clean negatives on TLT: honest tertile is poor (−0.02, DA 31) — confirming its old 'wins' were the look-ahead leak — and ls_overlay does not rescue the range axis (0.33 ≪ logdollar's 0.77). TLT's recipe is locked to logdollar/triple_barrier/ls_overlay; the axis dominates the…</div></li>
 <li><div class="rmain"><a href="round_30.html">Round 30 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">multi_horizon generalizes to IWM: 0.7146 → 0.7788, beating the bgm incumbent in a clean A/B (only the labeler differs) and halving the drawdown area (12→5.7). Confirms multi_horizon is a strong causal trend-target on trending-up equities, not just XLE.</div></li>
-<li><div class="rmain"><a href="round_29.html">Round 29 — TLT (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The new ls_overlay sizing (ls_cdf × causal inverse-vol) lifts TLT 0.6263 → 0.7654 in a clean A/B — only the sizing differs from the ls_cdf control. Vol-targeting the short magnitude trims MaxDD on rate-shock spikes (DA 5.1, 565 trades). TLT now beats IWM; the…</div></li>
-<li><div class="rmain"><a href="round_28.html">Round 28 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">TLT gain-seek: bgm/ls_cdf (0.21) and triple_barrier/longshort (0.35) both fall well short of the honest incumbent 0.63. Confirms continuous ls_cdf ≫ binary longshort for a two-sided asset, and bgm (a trending-equity labeler) doesn't transfer to a two-sided bon…</div></li>
-<li><div class="rmain"><a href="round_27.html">Round 27 — IWM (DISCARD · leaderboard corrected)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">IWM/bgm re-verified under the leak-fixed code: 1.1046→0.7146. bgm's y=-1 ambiguous-regime bars were skipped by the old code (an inflating gate); trading every causal bar honestly costs ~0.39. But bgm still beats its always_long control (0.71 &gt; 0.57) → real…</div></li>
-<li><div class="rmain"><a href="round_26.html">Round 26 — TLT (DISCARD · leaderboard corrected)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Re-verifying TLT's incumbent under the leak-fixed code: triple_barrier drops 0.7537→0.6263 (the old code excluded the final ~H bars — a mild look-ahead at the series end), and multi_horizon 0.7478→0.4867. No new best, but TLT's leaderboard entry is corrected t…</div></li>
+<li><div class="rmain"><a href="round_29.html">Round 29 — TLT (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The new ls_overlay sizing (ls_cdf × causal inverse-vol) lifts TLT 0.6263 → 0.7654 in a clean A/B — only the sizing differs from the ls_cdf control. Vol-targeting the short magnitude trims MaxDD on rate-shock spikes (DA 5.1, 565 trades). TLT now beats IWM; the loop moves to IWM.</div></li>
+<li><div class="rmain"><a href="round_28.html">Round 28 — TLT (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">TLT gain-seek: bgm/ls_cdf (0.21) and triple_barrier/longshort (0.35) both fall well short of the honest incumbent 0.63. Confirms continuous ls_cdf ≫ binary longshort for a two-sided asset, and bgm (a trending-equity labeler) doesn't transfer to a two-sided bond.</div></li>
+<li><div class="rmain"><a href="round_27.html">Round 27 — IWM (DISCARD · leaderboard corrected)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">IWM/bgm re-verified under the leak-fixed code: 1.1046→0.7146. bgm's y=-1 ambiguous-regime bars were skipped by the old code (an inflating gate); trading every causal bar honestly costs ~0.39. But bgm still beats its always_long control (0.71 &gt; 0.57) → real causal edge, just sm…</div></li>
+<li><div class="rmain"><a href="round_26.html">Round 26 — TLT (DISCARD · leaderboard corrected)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Re-verifying TLT's incumbent under the leak-fixed code: triple_barrier drops 0.7537→0.6263 (the old code excluded the final ~H bars — a mild look-ahead at the series end), and multi_horizon 0.7478→0.4867. No new best, but TLT's leaderboard entry is corrected to the honest +0.6263…</div></li>
 <li><div class="rmain"><a href="round_25.html">Round 25 — TLT (DISCARD; untested axes fail, triple_barrier exhausted)</a> <span class="pill discard">DISCARD</span></div></li>
 <li><div class="rmain"><a href="round_24.html">Round 24 — TLT (DISCARD; multi_horizon generalizes, axis×labeler crossed)</a> <span class="pill discard">DISCARD</span></div></li>
 <li><div class="rmain"><a href="round_23.html">Round 23 — XLE +2.26 (HONEST, leak-audited)</a> </div></li>
@@ -131,11 +166,33 @@ ul.hyps{list-style:none;padding:0;margin:.4rem 0 0} ul.hyps li{margin:.3rem 0;co
 <li><div class="rmain"><a href="round_3.html">round_3</a> </div></li>
 <li><div class="rmain"><a href="round_2.html">round_2</a> </div></li>
 <li><div class="rmain"><a href="round_1.html">round_1</a> </div></li>
-    </ol></section>
-  </div>
-</div>
+  </ol></section>
+</section>
+
+<section class="tabpanel" id="tab-graph" data-panel="graph">
+  <section class="block"><h2>Causal graph — every experiment & finding</h2>
+  <p class="small">Open full page: <a href="causal_graph.html">causal_graph.html</a></p>
+  <iframe class="report" src="causal_graph.html" title="causal graph" loading="lazy"></iframe></section>
+</section>
+
+<section class="tabpanel" id="tab-program" data-panel="program">
+  <section class="block"><h2>program.md — the loop</h2>
+  <p class="small">Open full page: <a href="program.md">program.md</a></p>
+  <iframe class="report" src="program.md" title="program.md" loading="lazy"></iframe></section>
+</section>
 </div>
 <script>
+function showTab(name){
+  var tabs=document.querySelectorAll('.tab'), panels=document.querySelectorAll('.tabpanel');
+  var found=false;
+  panels.forEach(function(p){var on=p.dataset.panel===name;p.classList.toggle('active',on);if(on)found=true;});
+  tabs.forEach(function(t){t.classList.toggle('active',t.dataset.tab===name);});
+  if(!found){showTab('overview');}
+}
+function curTab(){return (location.hash||'#overview').replace('#','');}
+window.addEventListener('hashchange',function(){showTab(curTab());});
+showTab(curTab());
+
 async function pollStatus(){
   try{
     const r = await fetch('status.json?_=' + Date.now(), {cache:'no-store'});
@@ -148,13 +205,13 @@ async function pollStatus(){
       el.className = 'block running';
       el.innerHTML = '<h2><span class="livedot"></span>Now running'
         + (s.round ? ' — round ' + s.round : '') + (s.etf ? ' \u00b7 ' + s.etf : '') + '</h2>'
-        + '<p class="small">phase: <b>' + (s.phase || '…') + '</b>'
+        + '<p>phase: <b>' + (s.phase || '…') + '</b>'
         + (s.since ? ' \u00b7 started ' + s.since : '')
         + (s.legs ? ' \u00b7 ' + s.legs : '') + '</p>'
         + '<ul class="hyps">' + legs + '</ul>';
     } else {
       el.className = 'block';
-      el.innerHTML = '<h2><span class="idledot"></span>Idle</h2><p class="small">last completed: <b>'
+      el.innerHTML = '<h2><span class="idledot"></span>Idle</h2><p>last completed: <b>'
         + (s.note || ('round ' + (s.round || '?'))) + '</b></p>';
     }
   } catch(e){}

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Build the full-width dark TERMINAL dashboard HTML.
+"""Build the full-width dark TERMINAL dashboard HTML (tabbed, openclue.net style).
 
 `build_html()` reads knowledge.json + scans reports/round_*.html and returns the page
 string — called LIVE by the Flask app (scripts/app.py) on every request, and by
 `__main__` here to write a static reports/index.html fallback.
 
-Layout uses the WHOLE page: full-width hero, a highlighted LATEST-IMPROVEMENT banner, a
-live "now running" panel (status.json, auto-polled), then a 2-column grid — leaderboard +
-top-5 insights on the left, all rounds (newest first, plain-English hypotheses) on the right."""
+Tabs: OVERVIEW (default — overall results: live status, latest improvement, leaderboard,
+top-5 insights) · ROUNDS (all rounds newest-first, plain-English hypotheses) · CAUSAL
+GRAPH (embedded) · PROGRAM.MD (embedded). Smallest text is 18px; tables never clip."""
 import os, re, json, glob
 
 R = os.path.join(os.path.dirname(__file__), "..", "autoresearch", "reports")
@@ -37,7 +37,7 @@ def _scan_rounds():
                 s = re.sub(r"<[^>]+>", "", ms.group(1))
                 s = re.sub(r"\s+", " ", s).strip()
                 s = re.sub(r"^TL;DR\.?\s*", "", s, flags=re.I)
-                summary = (s[:260].rstrip() + "…") if len(s) > 260 else s
+                summary = (s[:280].rstrip() + "…") if len(s) > 280 else s
             mh = re.search(r"<!--HYPS_NL:(.*?)-->", txt, re.S)
             if mh:
                 hyps = [h.strip() for h in mh.group(1).split("|||") if h.strip()]
@@ -70,6 +70,10 @@ def build_html():
                 latest_etf = tk
                 break
 
+    # KPI strip
+    n_keep = sum(1 for _, _, t, _, _ in rounds if "KEEP" in t.upper())
+    best_etf = max(pe.items(), key=lambda kv: kv[1].get("real_calmar", 0)) if pe else None
+
     lb_rows = ""
     for k, v in lb:
         best = v.get("real_calmar", 0.0)
@@ -87,7 +91,7 @@ def build_html():
                     f'<td><code>{v.get("cell","")}</code></td></tr>')
 
     status_html = ('<section class="block" id="nowrunning"><h2><span class="idledot"></span>Status</h2>'
-                   '<p class="small">loading live status…</p></section>')
+                   '<p>loading live status…</p></section>')
 
     ins = (K.get("top_insights", []) or [])[:5]
     ins_html = ""
@@ -97,7 +101,7 @@ def build_html():
                      f'<span>{it.get("title","")}</span>{ev}</div>'
                      f'<div class="idetail">{it.get("detail","")}</div></li>')
     if not ins_html:
-        ins_html = '<li class="small">(no insights recorded yet)</li>'
+        ins_html = '<li>(no insights recorded yet)</li>'
 
     if latest:
         _, lbase, ltitle, lsum, _ = latest
@@ -121,6 +125,15 @@ def build_html():
 
     items = "\n".join(li(b, t, s, h, is_latest=(i == 0)) for i, (_, b, t, s, h) in enumerate(rounds))
 
+    kpis = ""
+    if pe:
+        kpis = (
+            f'<div class="kpi"><div class="k">rounds</div><div class="v">{len(rounds)}</div></div>'
+            f'<div class="kpi"><div class="k">kept (wins)</div><div class="v pos">{n_keep}</div></div>'
+            f'<div class="kpi"><div class="k">ETFs live</div><div class="v">{len(pe)}</div></div>'
+            + (f'<div class="kpi"><div class="k">top ETF</div><div class="v">{best_etf[0]} '
+               f'<span class="kpi-sub">{best_etf[1].get("real_calmar",0):+.2f}</span></div></div>' if best_etf else ""))
+
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="refresh" content="30">
@@ -129,77 +142,133 @@ def build_html():
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.dash{{max-width:1560px;margin:0 auto;padding:1.4rem 2.2rem 4rem}}
-.dgrid{{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1.25fr);gap:1.5rem;align-items:start;margin-top:1.2rem}}
-@media(max-width:1080px){{.dgrid{{grid-template-columns:1fr}}}}
-.dgrid .block{{margin:0 0 1.4rem}}
+.dash{{max-width:1560px;margin:0 auto;padding:1.2rem 2.2rem 4rem}}
+.hero{{margin-bottom:1rem}}
+/* KPI strip */
+.kpis{{display:flex;flex-wrap:wrap;gap:.8rem;margin:1rem 0 0}}
+.kpi{{flex:1 1 150px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.85rem 1.1rem}}
+.kpi .k{{font:600 1rem/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}}
+.kpi .v{{font:600 1.9rem/1.1 "JetBrains Mono",monospace;color:var(--ink);margin-top:.35rem;font-variant-numeric:tabular-nums}}
+.kpi-sub{{font-size:1.1rem;color:var(--accent)}}
+/* TAB BAR — openclue style: sticky, monospace, accent underline on active */
+.tabbar{{display:flex;gap:.35rem;flex-wrap:wrap;border-bottom:1px solid var(--line);
+  margin:1.3rem 0 1.5rem;position:sticky;top:0;z-index:30;
+  background:rgba(10,14,20,.93);backdrop-filter:blur(9px);padding-top:.4rem}}
+.tab{{font:600 1rem/1 "JetBrains Mono",monospace;letter-spacing:.02em;color:var(--mut);
+  padding:.9em 1.15em;border:1px solid transparent;border-bottom:2px solid transparent;
+  border-radius:9px 9px 0 0;text-decoration:none;transition:all .15s;white-space:nowrap}}
+.tab:hover{{color:var(--ink);background:var(--bg-2);text-decoration:none}}
+.tab.active{{color:var(--accent);border-bottom-color:var(--accent);
+  background:linear-gradient(180deg,rgba(56,224,200,.07),transparent)}}
+.tabpanel{{display:none;animation:rise .4s ease both}}
+.tabpanel.active{{display:block}}
+iframe.report{{width:100%;height:80vh;border:1px solid var(--line);border-radius:12px;background:var(--card);display:block}}
+/* latest-improvement banner */
 .latest-banner{{display:block;border:1px solid var(--accent-line);border-radius:12px;
   background:linear-gradient(120deg,rgba(56,224,200,.10),rgba(56,224,200,.02));
-  padding:1rem 1.3rem;margin:1.1rem 0 .2rem;text-decoration:none;box-shadow:var(--glow);transition:transform .18s}}
-.latest-banner:hover{{transform:translateY(-2px)}}
+  padding:1.05rem 1.35rem;margin:0 0 1.2rem;text-decoration:none;box-shadow:var(--glow);transition:transform .18s}}
+.latest-banner:hover{{transform:translateY(-2px);text-decoration:none}}
 .latest-banner.keepglow{{border-color:var(--accent)}}
-.lb-tag{{display:inline-block;font:700 .76rem/1 "JetBrains Mono",monospace;letter-spacing:.08em;
+.lb-tag{{display:inline-block;font:700 1rem/1 "JetBrains Mono",monospace;letter-spacing:.06em;
   color:var(--accent);background:rgba(56,224,200,.12);border:1px solid var(--accent-line);
-  border-radius:999px;padding:.25em .7em;margin-right:.7rem}}
-.lb-title{{font:700 1.12rem/1.3 "Space Grotesk",sans-serif;color:var(--ink)}}
+  border-radius:999px;padding:.3em .8em;margin-right:.7rem}}
+.lb-title{{font:700 1.22rem/1.35 "Space Grotesk",sans-serif;color:var(--ink)}}
 .lb-title mark{{background:rgba(56,224,200,.22);color:var(--ink);padding:.05em .25em;border-radius:4px}}
-.lb-sum{{display:block;margin-top:.5rem;color:var(--ink-2);font-size:.98rem;line-height:1.55}}
+.lb-sum{{display:block;margin-top:.55rem;color:var(--ink-2);font-size:1.04rem;line-height:1.6}}
+/* rounds list */
 ol.rounds{{list-style:none;padding:0;margin:0}}
-ol.rounds li{{border:1px solid var(--line);border-radius:9px;background:var(--card);margin:.5rem 0;
-  padding:.85rem 1.1rem;transition:border-color .18s, transform .18s}}
+ol.rounds li{{border:1px solid var(--line);border-radius:10px;background:var(--card);margin:.6rem 0;
+  padding:1rem 1.2rem;transition:border-color .18s, transform .18s}}
 ol.rounds li:hover{{border-color:var(--accent-line);transform:translateX(3px)}}
 ol.rounds li.latest-item{{border-color:var(--accent);background:linear-gradient(120deg,rgba(56,224,200,.07),var(--card));box-shadow:var(--glow)}}
 .rmain{{display:flex;align-items:center;gap:.6rem;justify-content:space-between;flex-wrap:wrap}}
-ol.rounds a{{font:600 1.04rem/1.35 "Space Grotesk",sans-serif;color:var(--ink)}}
+ol.rounds a{{font:600 1.12rem/1.4 "Space Grotesk",sans-serif;color:var(--ink)}}
 ol.rounds a:hover{{color:var(--accent)}}
-.rsum{{margin-top:.45rem;color:var(--ink-2);font-size:.95rem;line-height:1.55}}
+.rsum{{margin-top:.5rem;color:var(--ink-2);font-size:1.02rem;line-height:1.6}}
 .pill.latest{{background:rgba(56,224,200,.16);color:var(--accent);border:1px solid var(--accent-line)}}
-.hyps-row{{margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem}}
-.hchip{{font:500 .8rem/1.3 "JetBrains Mono",monospace;color:var(--ink-2);background:var(--bg-2,#0d1219);
-  border:1px solid var(--line);border-radius:7px;padding:.28em .6em}}
+.hyps-row{{margin-top:.55rem;display:flex;flex-wrap:wrap;gap:.45rem}}
+.hchip{{font:500 1rem/1.4 "JetBrains Mono",monospace;color:var(--ink-2);background:var(--bg-2);
+  border:1px solid var(--line);border-radius:8px;padding:.35em .65em}}
+/* leaderboard highlight */
 tr.justimproved td{{background:rgba(56,224,200,.10)}}
-.hotdot{{color:var(--accent);font-size:.8em}}
+.hotdot{{color:var(--accent);font-size:.85em}}
+/* top insights */
 ol.insights{{list-style:none;padding:0;margin:0}}
-ol.insights li{{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:9px;
-  background:var(--card);margin:.55rem 0;padding:.8rem 1.05rem}}
-.ititle{{font:600 1.02rem/1.4 "Space Grotesk",sans-serif;color:var(--ink);display:flex;align-items:baseline;gap:.55rem}}
-.inum{{font:700 .82rem/1 "JetBrains Mono",monospace;color:var(--accent);opacity:.85}}
-.idetail{{margin-top:.4rem;color:var(--ink-2);font-size:.94rem;line-height:1.55}}
-.ev{{font:500 .76rem/1 "JetBrains Mono",monospace;color:var(--mut);margin-left:auto;white-space:nowrap}}
+ol.insights li{{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;
+  background:var(--card);margin:.65rem 0;padding:1rem 1.25rem}}
+.ititle{{font:600 1.16rem/1.45 "Space Grotesk",sans-serif;color:var(--ink);display:flex;align-items:baseline;gap:.6rem}}
+.inum{{font:700 1rem/1 "JetBrains Mono",monospace;color:var(--accent)}}
+.idetail{{margin-top:.45rem;color:var(--ink-2);font-size:1.02rem;line-height:1.62}}
+.ev{{font:500 1rem/1 "JetBrains Mono",monospace;color:var(--mut);margin-left:auto;white-space:nowrap}}
+/* live status */
 section.running{{border-color:var(--accent-line);box-shadow:var(--glow)}}
-ul.hyps{{list-style:none;padding:0;margin:.4rem 0 0}} ul.hyps li{{margin:.3rem 0;color:var(--ink-2)}}
+#nowrunning p{{font-size:1.04rem}}
+ul.hyps{{list-style:none;padding:0;margin:.5rem 0 0}} ul.hyps li{{margin:.35rem 0;color:var(--ink-2);font-size:1.04rem}}
 .livedot{{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--accent);
   box-shadow:0 0 8px var(--accent);animation:pulse 1.3s ease-in-out infinite}}
 .idledot{{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--mut)}}
 @keyframes pulse{{0%,100%{{opacity:1}}50%{{opacity:.3}}}}
+.grid2{{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.4rem;align-items:start}}
+@media(max-width:1000px){{.grid2{{grid-template-columns:1fr}}}}
 </style></head><body><div class="dash">
-<div class="nav">autoresearch / reports · <span style="color:var(--accent)">served by Flask</span></div>
+<div class="nav">autoresearch / reports · <span style="color:var(--accent)">Flask</span></div>
 <div class="hero">
   <div class="eyebrow">Autoresearch · Quant Pipeline</div>
   <h1>Experiment reports</h1>
-  <p class="tldr">Each round races two hypotheses on the weakest ETF, keeps the winner if it beats that ETF's
-  best (real OOS Calmar + DA). Full <a href="causal_graph.html">interactive causal graph</a>. Live; auto-refreshing.</p>
+  <p class="tldr">Each round races two hypotheses on the weakest ETF and keeps the winner if it beats that ETF's
+  best (real OOS Calmar + DA). Live; auto-refreshing every 30s.</p>
+  <div class="kpis">{kpis}</div>
 </div>
-{banner}
-{status_html}
-<div class="dgrid">
-  <div class="dcol">
-    <section class="block"><h2>Leaderboard — best Calmar vs buy-and-hold (real OOS)</h2>
-    <table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
-    <tbody>{lb_rows}</tbody></table>
-    <p class="small">buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round.</p></section>
-    <section class="block"><h2>Top {len(ins)} insights</h2>
-    <ol class="insights">{ins_html}</ol></section>
-  </div>
-  <div class="dcol">
-    <section class="block"><h2>Rounds ({len(rounds)}) — newest first</h2>
-    <ol class="rounds">
+
+<nav class="tabbar" role="tablist">
+  <a class="tab" href="#overview" data-tab="overview">▸ Overview</a>
+  <a class="tab" href="#rounds" data-tab="rounds">Rounds ({len(rounds)})</a>
+  <a class="tab" href="#graph" data-tab="graph">Causal graph</a>
+  <a class="tab" href="#program" data-tab="program">program.md</a>
+</nav>
+
+<section class="tabpanel" id="tab-overview" data-panel="overview">
+  {status_html}
+  {banner}
+  <section class="block"><h2>Leaderboard — best Calmar vs buy-and-hold (real OOS)</h2>
+  <div class="tablewrap"><table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
+  <tbody>{lb_rows}</tbody></table></div>
+  <p class="small">buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round.</p></section>
+  <section class="block"><h2>Top {len(ins)} insights</h2>
+  <ol class="insights">{ins_html}</ol></section>
+</section>
+
+<section class="tabpanel" id="tab-rounds" data-panel="rounds">
+  <section class="block"><h2>Rounds ({len(rounds)}) — newest first</h2>
+  <ol class="rounds">
 {items}
-    </ol></section>
-  </div>
-</div>
+  </ol></section>
+</section>
+
+<section class="tabpanel" id="tab-graph" data-panel="graph">
+  <section class="block"><h2>Causal graph — every experiment & finding</h2>
+  <p class="small">Open full page: <a href="causal_graph.html">causal_graph.html</a></p>
+  <iframe class="report" src="causal_graph.html" title="causal graph" loading="lazy"></iframe></section>
+</section>
+
+<section class="tabpanel" id="tab-program" data-panel="program">
+  <section class="block"><h2>program.md — the loop</h2>
+  <p class="small">Open full page: <a href="program.md">program.md</a></p>
+  <iframe class="report" src="program.md" title="program.md" loading="lazy"></iframe></section>
+</section>
 </div>
 <script>
+function showTab(name){{
+  var tabs=document.querySelectorAll('.tab'), panels=document.querySelectorAll('.tabpanel');
+  var found=false;
+  panels.forEach(function(p){{var on=p.dataset.panel===name;p.classList.toggle('active',on);if(on)found=true;}});
+  tabs.forEach(function(t){{t.classList.toggle('active',t.dataset.tab===name);}});
+  if(!found){{showTab('overview');}}
+}}
+function curTab(){{return (location.hash||'#overview').replace('#','');}}
+window.addEventListener('hashchange',function(){{showTab(curTab());}});
+showTab(curTab());
+
 async function pollStatus(){{
   try{{
     const r = await fetch('status.json?_=' + Date.now(), {{cache:'no-store'}});
@@ -212,13 +281,13 @@ async function pollStatus(){{
       el.className = 'block running';
       el.innerHTML = '<h2><span class="livedot"></span>Now running'
         + (s.round ? ' — round ' + s.round : '') + (s.etf ? ' \\u00b7 ' + s.etf : '') + '</h2>'
-        + '<p class="small">phase: <b>' + (s.phase || '…') + '</b>'
+        + '<p>phase: <b>' + (s.phase || '…') + '</b>'
         + (s.since ? ' \\u00b7 started ' + s.since : '')
         + (s.legs ? ' \\u00b7 ' + s.legs : '') + '</p>'
         + '<ul class="hyps">' + legs + '</ul>';
     }} else {{
       el.className = 'block';
-      el.innerHTML = '<h2><span class="idledot"></span>Idle</h2><p class="small">last completed: <b>'
+      el.innerHTML = '<h2><span class="idledot"></span>Idle</h2><p>last completed: <b>'
         + (s.note || ('round ' + (s.round || '?'))) + '</b></p>';
     }}
   }} catch(e){{}}

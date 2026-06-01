@@ -1616,6 +1616,24 @@
         "type": "round",
         "phase": "IWM",
         "label": "R60 IWM long/short test: shorts DRAG up-drifter (0.90, DA 4.34); thresh0.50 over-restricts (0.80, 676tr). long-only@0.45 stays best (1.14)"
+      },
+      {
+        "id": "r61",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R61 IWM unsupervised-leg test: regime_gmm & cusum_regime ensemble legs = 0 trades (degenerate). Only soft BGM works. 1.14 stands"
+      },
+      {
+        "id": "f_softleg",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: ensemble legs need SOFT/graded labels (bgm). Hard regime labelers (kmeans/regime_gmm/cusum) are degenerate -> a flat leg drags the blend below threshold -> 0 trades"
+      },
+      {
+        "id": "r62",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R62 IWM axis sweep on the ensemble: imbalance 1.14 >> logdollar 0.73 >> dollar 0.35. Directional axis wins. imbalance locked"
       }
     ],
     "edges": [
@@ -2178,6 +2196,31 @@
         "src": "r60",
         "dst": "f_selectivity",
         "label": "0.45 is the peak, 0.50 over-restricts"
+      },
+      {
+        "src": "r60",
+        "dst": "r61",
+        "label": "swap 2nd leg -> unsupervised"
+      },
+      {
+        "src": "r61",
+        "dst": "f_softleg",
+        "label": "hard regimes degenerate"
+      },
+      {
+        "src": "f_kmeans",
+        "dst": "f_softleg",
+        "label": "same degeneracy, now in ensemble"
+      },
+      {
+        "src": "r61",
+        "dst": "r62",
+        "label": "axis sweep"
+      },
+      {
+        "src": "r62",
+        "dst": "f_axiscross",
+        "label": "imbalance >> dollar for directional ensemble"
       }
     ],
     "running": []
