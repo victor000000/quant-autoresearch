@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Round 11 — IWM</title>
+<style>body{font:16px/1.6 system-ui;max-width:820px;margin:2rem auto;padding:0 1.2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d0d7de;padding:.4em .6em}th{background:#f6f8fa}code{background:#f3f4f6;padding:.1em .3em}a{color:#0969da;text-decoration:none}</style></head><body>
+<p><a href="index.html">&larr; all reports</a></p>
+<h1>Round 11 — IWM (labeler variation on vol+cdf_overlay)</h1>
+<table><tr><th>H</th><th>config</th><th>Calmar</th><th>DA</th><th>trades</th><th>deployable</th></tr>
+<tr><td>A</td><td>vol/carry/0.45/cdf_overlay</td><td>0.000</td><td>0.00</td><td>0</td><td>no</td></tr>
+<tr><td>B</td><td>vol/<b>bgm</b>/0.45/cdf_overlay</td><td><b>+1.131</b></td><td>5.61</td><td>24</td><td>no (G2: 24&lt;80)</td></tr></table>
+<p><b>Verdict: discard (not deployable)</b>, but a strong lead: <code>bgm</code> on vol+vol-targeting gives Calmar 1.13 / DA 5.6 —
+far above IWM's 0.65 — yet only 24 trades. <b>The signal has edge; the binding constraint is activity (G2).</b> Revisit IWM with
+bgm at a lower threshold / more-active sizing once TLT (the weakest) is improved. Per policy, the loop stays on TLT until it overtakes IWM.</p>
+</body></html>

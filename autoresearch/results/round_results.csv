@@ -13,3 +13,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-01T16:14:38,TLT,-0.1543,TLT_dollar_R5,B,TLT,dollar,kmeans2stage,0.55,longshort,0.0,0.0,0,False,False,0.0,0.0,0.0,True,False,completed,completed
 2026-06-01T16:18:38,IWM,0.6542,IWM_vol_R4detuned,A,IWM,vol,kmeans2stage,0.45,cdf_overlay,0.0,0.0,0,False,False,0.0,0.7625,0.3895,False,False,completed,completed
 2026-06-01T16:18:38,IWM,0.6542,IWM_vol_R4detuned,B,IWM,dollar,carry,0.45,cdf_plain,0.2532,20.6227,564,True,True,-0.1358,0.8851,0.8358,True,False,completed,completed
+2026-06-01T16:21:47,IWM,0.6542,IWM_vol_R4detuned,A,IWM,vol,carry,0.45,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,False,False,completed,completed
+2026-06-01T16:21:47,IWM,0.6542,IWM_vol_R4detuned,B,IWM,vol,bgm,0.45,cdf_overlay,1.131,5.6135,24,False,False,-1.5309,0.7176,0.5524,True,False,completed,completed
