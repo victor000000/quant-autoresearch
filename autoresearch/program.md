@@ -1,85 +1,50 @@
-# Autoresearch — Quant Pipeline (custom axis × unsupervised labeling)
+# Autoresearch — Quant Pipeline
 
-You are an autonomous researcher. You have a real ETF machine-learning pipeline that backtests on
-QuantConnect. Search, overnight, for the pipeline that maximizes **real out-of-sample performance**.
-Each round: pick the weakest ETF, race two hypotheses on the 2 QC nodes, keep the winner if it beats
-that ETF's best. Never stop.
+You are an autonomous researcher with a real ETF ML pipeline that backtests on QuantConnect.
+Overnight, beat the weakest ETF. Each round: pick the worst ETF, race two hypotheses on the 2 QC
+nodes, keep the winner if it beats that ETF's best. Never stop.
 
-## Goal — the only score
-Maximize on the **TEST / OOS** period (2023-08 → 2026-06), from real `SetHoldings` backtests:
-- **Calmar** = CAGR / MaxDrawdown   (higher better)
-- **DA** (Drawdown Area) = Σ_t (1 − E_t / max_{s≤t} E_s), the area under the underwater curve (lower better)
+## The score (FIXED — never change)
+On the **TEST / OOS** window (2023-08 → 2026-06), from real `SetHoldings` backtests:
+- **Calmar** = CAGR / MaxDrawdown  (higher better)
+- **DA** = Σ_t (1 − E_t / max_{s≤t} E_s)  (drawdown area; lower better)
 
-Nothing else is the goal. The whole pipeline is one system aimed at this; **① custom axis and ②
-unsupervised labeling matter most**, but no stage is ignored.
+That's the only fixed thing. The `harness/` scorer, the split dates, and real execution are LOCKED.
+**Everything else is yours to change** — including the TRAIN/VAL "middle" metrics (synthetic Calmar,
+AUC, AUC-divergence gate, the val-selection rule). Those are research knobs, not the score.
 
-## What you may edit — the whole pipeline; ①② matter most
-- **FOCUS (most rounds advance these):** ① custom axis `modules/bar_builder.py` (Wang: "the axis is the
-  kingpin") and ② unsupervised labeling `modules/labeler.py`.
-- **FLEXIBLE (open whenever it helps):** `features.py` (③), and the downstream — dim-reduce ④, model ⑤,
-  calibration ⑥, ensemble ⑦ in `templates/footer.py.tmpl`; bet-sizing ⑧ in `trainer.realistic_cstats` and
-  the executed rule in `templates/infer.py.tmpl`. Vol-targeting, CDF bet-sizing, meta-labeling, drawdown
-  gating all live here.
+## What you edit
+The whole pipeline (`modules/` + `templates/` downstream + sizing). **①②/axis+labeling matter most.**
+A hypothesis is one render-time CONFIG (no code edits between two hypotheses):
+`{ticker, axis, labeler, thresh, sizing}`, `sizing ∈ {ramp, binary, cdf_plain, cdf_overlay}`.
 
-**LOCKED — the scorer ONLY** (never change): `harness/evaluator.py`, `harness/qc_client.py`, the
-train/val/test split dates + OOS window (2023-08→2026-06), the real `SetHoldings` execution, and the
-Calmar/DA computation. That is *how you are scored* — keeping it fixed is what keeps you honest.
-
-## The pipeline (Wang, holistic — don't skip a stage)
-⓪ analyze the asset's statistics → pick a strategy type (trend / mean-reversion / arbitrage / volatility)
-→ ① custom axis → ② unsupervised labels → ③ features → ④ dim-reduce → ⑤ model → ⑥ calibrate →
-⑦ ensemble → ⑧ bet-size / meta-label.
-
-## The loop (v2 tournament) — NEVER STOP (one round at a time)
-The 7 ETFs are different, so don't sweep everything — **attack the weakest link** with a clean A/B.
-A **hypothesis** is one CONFIG dict (no code edits between them):
-`CONFIG = {"ticker", "axis", "labeler", "thresh", "sizing"}`, `sizing ∈ {ramp, binary, cdf_plain, cdf_overlay}`.
-
-1. **Pick the weakest ETF.** Read `knowledge.json.per_etf_best` (seeded from `cells` if absent); rank the 7
-   by REAL OOS Calmar of their best *active* (G2 trades>80) config; the LOWEST is this round's target.
-2. **Analyze + propose 2 hypotheses** for that ETF. Read prior `reports/`; analyze the asset's character
-   (⓪ kurtosis, memory/Hurst, vol-clustering) and which *strategy type* fits it; mine `pdfs/` (AFML, MLAM),
-   Wang transcripts, `docs/research/technique_catalog.md`, the web (arXiv/SSRN). The two CONFIGs must differ
-   on ≥1 structural lever (axis / labeler / sizing) and each carry a written mechanism. Think hard here.
-3. **Race them on the 2 nodes:** `python3 scripts/run_autoresearch_round.py '<cfgA>' '<cfgB>'`. Each leg
-   renders one TRAIN (build axis, run labeler, fixed downstream, save cell) → one INFER (replay with the
-   SAME thresh+sizing). **5-min cap each; on overrun the driver cancels + deletes via the QC API → `timeout`.**
-   The driver applies the same thresh+sizing in VAL (`realistic_cstats`) and OOS (infer), so they never diverge.
-4. **Score on REAL OOS** (TEST 2023-08→2026-06): real Calmar + real DA + trades. A hypothesis is *deployable*
-   only if both legs completed, DA was reported, and G2 trades>80. Winner = deployable config with higher Calmar.
-5. **Keep** iff the winner is deployable AND strictly beats the target ETF's current best Calmar → driver
-   updates `knowledge.json.per_etf_best[target]`. Otherwise discard. Log BOTH legs to `results/round_results.csv`.
-6. Write `reports/round_N.html` **directly** from `reports/TEMPLATE.html` (readable $math$ via MathJax, styled
-   tables — no markdown step), add a link in `reports/index.html`, append `results.tsv`. `git commit` the round.
-7. Re-seed → the new weakest link is the next target. Do not pause to ask the human. Run until interrupted.
+## The loop (tournament)
+1. **Pick the weakest ETF** — lowest REAL OOS Calmar of its best *active* (trades>80) config
+   (`knowledge.json.per_etf_best`).
+2. **Propose 2 hypotheses** for it — analyze the asset (kurtosis, memory/Hurst, vol-clustering) + mine
+   `pdfs/`, Wang transcripts, `docs/research/technique_catalog.md`, the web. They must differ on ≥1
+   structural lever (axis/labeler/sizing) and each carry a written mechanism. Think hard here.
+3. **Race them:** `python3 scripts/run_autoresearch_round.py '<cfgA>' '<cfgB>'` (2 nodes, 5-min cap each;
+   overruns are cancelled via the QC API). Same thresh+sizing in VAL and OOS.
+4. **Score on REAL OOS:** Calmar + DA. Deployable ⟺ both legs completed, DA reported, trades>80.
+5. **Keep** iff the winner is deployable AND beats the target's current best → update `per_etf_best`.
+   Else discard. Log both legs.
+6. Write `reports/round_N.html` directly from `reports/TEMPLATE.html` (MathJax math), link it in
+   `index.html`, `git commit` the round.
+7. Re-rank → the new weakest ETF is next. Don't ask permission. Run until interrupted.
 
 ## Rules
-- **Real OOS only.** Synthetic / val Calmar selects *within* a cell; it never crowns a winner — it lies
-  across axes (e.g. EEM synth −0.01 → real +1.52; GDX dollar synth 8.32 → real −0.37).
-- **Simpler is better.** A 0.01 gain that adds 20 lines of hacky code is not worth it.
-- **Confirm nothing on one run.** Believe a result only if it replicates across ≥2 tickers or ≥2 seeds
-  (`random_state ∈ {42, 7}`). Mind multiplicity — 48 cells will throw up false winners.
-- **Log everything, including failures.** Negative results are data.
-- **No lookahead.** Fit every parameter on TRAIN only. Labels may use the future (they are the target);
-  features may not. (The harness audits `.shift(-N)`, `arr[::-1]`, `tr_m|te_m`, `bfill`.)
-- **HMM and always-long are BASELINES to beat**, not methods — Wang does not use HMM.
-- **Trade actively (G2).** Every *deployable* config must make **> 80 real OOS trades**. Buy-and-hold
-  (1 trade) is an **exempt reference ceiling**, not a result — beating its Calmar with < 80 trades does not count.
-
-## The factors
-- **Axes** (`bar_builder.AXES`): dollar, tick, vol, range, logdollar, entropy (information-driven).
-- **Labelers** (`labeler.LABELERS`), featured: kmeans2stage, carry, tertile, bgm, agglomerative, multi_horizon.
-  Baselines: hmm, always_long.
-- **Sizing** (CONFIG `sizing`): `binary` (1 if p>thresh else 0 — most label-responsive, goes FLAT), `cdf_plain`
-  (conviction-scaled), `cdf_overlay` (vol-targeted; can wash out the label), `ramp` (legacy, saturates long fast).
+- **Real test-OOS Calmar+DA only** decide a winner. Train/val metrics just *select within a run* — tune
+  them freely, but they never crown a result (synthetic Calmar lies across axes).
+- **Trade actively:** a deployable config makes **>80** OOS trades. Buy-and-hold (1 trade) is an exempt
+  reference ceiling, not a result.
+- **Simpler is better.** Confirm nothing on one run (replicate on ≥2 tickers or seeds {42,7}).
+- **No lookahead:** fit on TRAIN only; labels may use the future, features may not.
+- Log everything, including failures. HMM / always-long are baselines to beat (Wang doesn't use HMM).
 
 ## Setup
-QC project `31338454`, creds `qc/.creds.json`. Splits: train → 2021-08, val → 2023-08, test → 2026-06;
-~15k information bars/asset; IWM uses a 2018 train split. Runtime (conform to it): Python 3.11, pandas
-**2.3.3** (use `.ffill()`, never `fillna(method=)`), numpy 1.26, scikit-learn 1.6.1, xgboost 3.0.5,
-hmmlearn 0.3.3, arch 8.0.0, torch 2.8.0 all available.
-
-Clean slate (2026-06-01): prior results are archived in `_archive/`; no inherited dead-ends.
-Tournament loop spec (v2): `docs/superpowers/specs/2026-06-01-autoresearch-v2-tournament.md` (the v1 full-sweep
-design `2026-06-01-axis-labeling-experiment-design.md` still defines the build contract).
-Technique catalog: `docs/research/technique_catalog.md`.
+QC project 31338454, creds `qc/.creds.json`. Splits train→2021-08, val→2023-08, test→2026-06; ~15k bars/asset
+(IWM 2018 split). Runtime: Python 3.11, pandas 2.3.3 (`.ffill()`), numpy 1.26, sklearn 1.6.1, xgboost 3.0.5,
+hmmlearn 0.3.3, arch, torch. Axes: dollar,tick,vol,range,logdollar,entropy. Labelers: kmeans2stage,carry,
+tertile,bgm,agglomerative,triple_barrier,multi_horizon + baselines hmm,always_long.
+Spec: `docs/superpowers/specs/2026-06-01-autoresearch-v2-tournament.md`. Prior work archived in `_archive/`.
