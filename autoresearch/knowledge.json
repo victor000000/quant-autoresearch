@@ -372,6 +372,20 @@
       "trades": 739,
       "round": 20,
       "note": "also beats 0.65 (739tr)"
+    },
+    "XLE_logdollar_bgm_cdf_overlay_t45_R21": {
+      "real_calmar": 0.5978,
+      "real_da": 9.09,
+      "trades": 455,
+      "round": 21,
+      "note": "deployable but <0.72; bgm cut DA 39->9 but cdf_overlay vol-throttle gave up upside"
+    },
+    "XLE_range_triple_barrier_ls_cdf_t50_R21": {
+      "real_calmar": -0.0619,
+      "real_da": 5.65,
+      "trades": 1775,
+      "round": 21,
+      "note": "NEGATIVE - shorting hurts trending-up XLE; XLE needs long bias"
     }
   },
   "baselines": {
@@ -412,7 +426,8 @@
     "ROUND16: range/tertile/ls_cdf +0.20/51tr, range/triple_barrier/longshort +0.18/49tr -> both G2 fail. The R15 winner recipe is specific: triple_barrier+ls_cdf is the ACTIVE one on range (234tr); tertile (drops mid-33%) and binary longshort under-trade (~50). TLT best stays +0.3122. Sizing=ls_cdf (continuous) + a label that signals on most bars (triple_barrier) is what clears G2 on range.",
     "ROUND17: range/bgm/ls_cdf +0.02/212tr (deployable but low), range/agglomerative -0.03/38tr. On range, triple_barrier is UNIQUELY the high-edge labeler (+0.31 vs bgm +0.02 / agglom -0.03 / tertile +0.20@51tr). TLT deployable best PLATEAUS at +0.3122 (R15). Higher edge only on bar-capped tick (tick/tertile +0.41@59tr, un-deployable).",
     "ROUND19: IWM (new weakest). TLT recipe logdollar/triple_barrier/ls_cdf ports to +0.50/308tr (deployable, DA 4.2) but < IWM best 0.65; range/triple_barrier/ls_cdf = -0.08 (SHORT legs HURT trending-up IWM). LESSON: IWM != TLT - IWM trends UP so long-biased sizing wins; the lead is bgm (R11 1.13 edge, 24tr). Make bgm deployable on a DENSE axis.",
-    "ROUND20 WIN: IWM 0.6542 -> +1.1046 (KEPT, deployable 394tr). logdollar/bgm/cdf_overlay. The R11 bgm edge (1.13 but 24tr on sparse vol) became deployable on a DENSE logdollar axis (394tr) w/ long-biased cdf_overlay (trending small-cap). GENERALIZABLE: bgm has real edge but needs a DENSE axis for G2; cdf_overlay (long-biased) suits trending equities, ls_cdf (short) suits two-sided/declining (TLT). 2 ETFs solved (TLT 0.75, IWM 1.10). New weakest = XLE (0.72)."
+    "ROUND20 WIN: IWM 0.6542 -> +1.1046 (KEPT, deployable 394tr). logdollar/bgm/cdf_overlay. The R11 bgm edge (1.13 but 24tr on sparse vol) became deployable on a DENSE logdollar axis (394tr) w/ long-biased cdf_overlay (trending small-cap). GENERALIZABLE: bgm has real edge but needs a DENSE axis for G2; cdf_overlay (long-biased) suits trending equities, ls_cdf (short) suits two-sided/declining (TLT). 2 ETFs solved (TLT 0.75, IWM 1.10). New weakest = XLE (0.72).",
+    "ROUND21: XLE DISCARD (stays 0.7185). XLE is TRENDING-UP not two-sided: the TLT short recipe (range/triple_barrier/ls_cdf) went NEGATIVE -0.06 on XLE. bgm (logdollar/cdf_overlay) cut DA 39.27->9.09 (real drawdown-timing) but cdf_overlay's vol-throttle sacrificed too much upside (0.72->0.60). The 0.72 incumbent (dollar_R5) is vol-targeted buy-hold (labeler washed out). To beat it: labeled edge + stay-long-in-trend (cdf_plain, not cdf_overlay)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -424,7 +439,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "ROUND21: XLE (new weakest, 0.72; energy/oil-driven). Race the two proven recipes to learn XLE's character: H1 {XLE,logdollar,bgm,0.45,cdf_overlay} (IWM winner: bgm/dense/long-biased - if XLE trends); H2 {XLE,range,triple_barrier,0.5,ls_cdf} (TLT winner: directional+short - if XLE is two-sided). Beat 0.72.",
+  "next_idea": "ROUND22: XLE (weakest 0.72, trending-up). Keep labeled edge, stay long in trend (drop vol-throttle). H1 {logdollar,bgm,0.40,cdf_plain} (bgm's DA-timing + full long size + lower entry bar -> recover upside lost to overlay); H2 {dollar,triple_barrier,0.5,cdf_plain} (directional triple_barrier LONG-ONLY - signal that B had minus the shorting that killed it - on XLE's best axis dollar). Beat 0.72.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
