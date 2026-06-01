@@ -64,7 +64,7 @@ def vis_data(cg, highlight=None):
 
 def net_html(cid, nodes, edges, phases, height=620):
     nj, ej, pj = json.dumps(nodes), json.dumps(edges), json.dumps(phases)
-    return f"""<div id="{cid}" style="height:{height}px;border:1px solid #d0d7de;border-radius:6px;background:#fcfcfd"></div>
+    return f"""<div id="{cid}" style="height:{height}px;border:1px solid #222b3a;border-radius:9px;background:#070a10"></div>
 <div style="margin:.4em 0"><button onclick="{cid}_collapse()">⊟ Collapse experiments by phase</button>
 <button onclick="{cid}_expand()">⊞ Expand all</button>
 <span style="color:#666;font-size:.85em"> · double-click a phase cluster to expand · drag / scroll-zoom · hover a node for full text</span></div>
@@ -81,8 +81,8 @@ def net_html(cid, nodes, edges, phases, height=620):
   var opts={{
     nodes:{{shape:'box',margin:8,widthConstraint:{{maximum:190}},shadow:false}},
     groups:groups,
-    edges:{{arrows:{{to:{{scaleFactor:.6}}}},color:{{color:'#c3cad3',highlight:'#d62728'}},
-      font:{{size:10,color:'#667',strokeWidth:4,strokeColor:'#fff',align:'middle'}},smooth:{{type:'cubicBezier',roundness:.4}}}},
+    edges:{{arrows:{{to:{{scaleFactor:.6}}}},color:{{color:'#33415a',highlight:'#38e0c8'}},
+      font:{{size:11,color:'#9aa6b8',strokeWidth:4,strokeColor:'#070a10',align:'middle'}},smooth:{{type:'cubicBezier',roundness:.4}}}},
     physics:{{stabilization:{{iterations:300}},barnesHut:{{gravitationalConstant:-14000,springLength:150,springConstant:.02,avoidOverlap:.5}}}},
     interaction:{{hover:true,tooltipDelay:120,navigationButtons:true,keyboard:false,zoomView:true,dragView:true}},
     layout:{{improvedLayout:true}}
@@ -143,9 +143,20 @@ def standalone(d, cg):
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Autoresearch - Interactive causal graph</title>
-<style>body{{font:16px/1.6 -apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:1200px;margin:2rem auto;padding:0 1.2rem;color:#1b1f23}}
-h1{{border-bottom:2px solid #eaecef;padding-bottom:.3em}}table{{border-collapse:collapse;margin:1em 0}}th,td{{border:1px solid #d0d7de;padding:.4em .7em}}th{{background:#f6f8fa}}
-a{{color:#0969da;text-decoration:none}}code{{background:#f3f4f6;padding:.1em .35em;border-radius:4px}}button{{cursor:pointer;padding:.25em .6em;margin-right:.4em;border:1px solid #d0d7de;border-radius:5px;background:#f6f8fa}}</style></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>body{{font:18px/1.7 "IBM Plex Sans",system-ui,sans-serif;max-width:1200px;margin:0 auto;padding:2.4rem 1.2rem 5rem;color:#e6edf6;
+  background:#0a0e14;background-image:radial-gradient(120% 60% at 50% -8%,rgba(56,224,200,.07),rgba(56,224,200,0) 60%);background-attachment:fixed}}
+h1{{font:600 2rem/1.15 "Space Grotesk",sans-serif;letter-spacing:-.02em;border-bottom:1px solid #222b3a;padding-bottom:.35em;color:#e6edf6}}
+table{{border-collapse:separate;border-spacing:0;margin:1.2em 0;border:1px solid #222b3a;border-radius:9px;overflow:hidden;font-size:1rem}}
+th,td{{border-bottom:1px solid #1b2230;padding:.6em .9em;text-align:left}}
+th{{background:#161d2b;font:600 .8rem/1.3 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:#7c8aa0}}
+td{{font:500 1rem/1.4 "JetBrains Mono",monospace;color:#aab6c8;font-variant-numeric:tabular-nums}} tbody tr:last-child td{{border-bottom:0}}
+h2{{font:600 1.3rem/1.2 "Space Grotesk",sans-serif;color:#e6edf6;margin-top:1.4em}}
+a{{color:#38e0c8;text-decoration:none}} p{{color:#aab6c8}}
+code{{font:500 .9em "JetBrains Mono",monospace;background:#0d1320;border:1px solid #222b3a;padding:.1em .4em;border-radius:6px;color:#38e0c8}}
+button{{cursor:pointer;font:600 .85rem "Space Grotesk",sans-serif;padding:.5em 1em;margin-right:.4em;border:1px solid #222b3a;border-radius:9px;background:#161d2b;color:#aab6c8}}
+button:hover{{color:#38e0c8;border-color:#1d4d49}}</style></head><body>
 <p><a href="index.html">&larr; all reports</a></p>
 <h1>Interactive causal graph - every autoresearch experiment</h1>
 <p>How each experiment's outcome <i>caused</i> the next hypothesis. Built from <code>knowledge.json.causal_graph</code> and

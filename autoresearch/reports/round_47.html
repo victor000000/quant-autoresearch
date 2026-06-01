@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Round 27 — IWM (DISCARD · leaderboard corrected)</title>
+<title>Round 47 — TLT (DISCARD)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,23 +11,23 @@
 <div class="nav"><a href="index.html">← all rounds</a><span class="sep">·</span><a href="causal_graph.html">interactive causal graph</a></div>
 
 <div class="hero">
-  <div class="eyebrow">Autoresearch · Round 27</div>
-  <h1><span class="chip">IWM</span> <span class="pill discard">DISCARD · leaderboard corrected</span></h1>
-  <p class="tldr"><b>TL;DR.</b> IWM/bgm re-verified under the <b>leak-fixed</b> code: <b>1.1046→0.7146</b>. bgm's <code>y=-1</code> ambiguous-regime bars were skipped by the old code (an inflating gate); trading every causal bar honestly costs ~0.39. But bgm still beats its <code>always_long</code> control (<b>0.71 &gt; 0.57</b>) → <b>real causal edge, just smaller</b>. Leaderboard now fully re-verified.</p>
+  <div class="eyebrow">Autoresearch · Round 47</div>
+  <h1><span class="chip">TLT</span> <span class="pill discard">DISCARD</span></h1>
+  <p class="tldr"><b>TL;DR.</b> The new axes break TLT's supervised labeler: <code>fracdiff/triple_barrier</code> = −0.05, <code>volumeimb/triple_barrier</code> = −0.21. triple_barrier wants <b>logdollar</b> (0.7679); memory/volume clocks mis-fire its σ-barriers. TLT's supervised ceiling stays logdollar/triple_barrier/ls_overlay 0.7679.</p>
 </div>
 
-<div class="stats"><div class="stat"><div class="k">Winner Calmar</div><div class="v pos">+0.7146</div><div class="sub">real OOS</div></div><div class="stat"><div class="k">Drawdown area</div><div class="v ">11.97</div><div class="sub">lower = better</div></div><div class="stat"><div class="k">OOS trades</div><div class="v ">593</div><div class="sub">G2 needs >80</div></div></div>
+<div class="stats"><div class="stat"><div class="k">Winner Calmar</div><div class="v neg">-0.0498</div><div class="sub">real OOS</div></div><div class="stat"><div class="k">Drawdown area</div><div class="v ">8.64</div><div class="sub">lower = better</div></div><div class="stat"><div class="k">OOS trades</div><div class="v ">843</div><div class="sub">G2 needs >80</div></div><div class="stat"><div class="k">new axes × tb</div><div class="v ">both <0</div><div class="sub">logdollar wins</div></div></div>
 
 <section class="block"><h2>Results — real OOS</h2>
 <table><thead><tr><th>config</th><th class="num">Calmar</th><th class="num">DA</th><th class="num">trades</th><th>note</th></tr></thead>
-<tbody><tr class="win"><td><code>logdollar/bgm/cdf_overlay</code></td><td class="num pos">+0.7146</td><td class="num pos">11.97</td><td class='num'>593</td><td class='small'>incumbent re-verified honest (was 1.1046 leaked)</td></tr><tr><td><code>logdollar/always_long/cdf_overlay</code></td><td class="num pos">+0.5694</td><td class="num pos">37.20</td><td class='num'>701</td><td class='small'>control — label-independent overlay</td></tr></tbody></table></section>
+<tbody><tr class="win"><td><code>fracdiff/triple_barrier/ls_overlay</code></td><td class="num neg">-0.0498</td><td class="num pos">8.64</td><td class='num'>843</td><td class='small'>memory clock breaks the σ-barriers</td></tr><tr><td><code>volumeimb/triple_barrier/ls_overlay</code></td><td class="num neg">-0.2050</td><td class="num pos">28.58</td><td class='num'>501</td><td class='small'>volume clock worse still</td></tr></tbody></table></section>
 
-<section class="block"><h2>Why</h2><p>bgm clusters bars and labels ambiguous-regime clusters <code>y=-1</code>. The cluster of a test bar is a <i>causal</i> function of its features, so skipping <code>-1</code> bars (old behaviour) is arguably a legitimate causal gate — but it isn't reproducible by the smooth model under the strict leak-free rule, and conflating it with the leaky labelers' forward-gating made the honest floor the right call: trade <b>every causal bar</b>, gate only via the model probability. bgm clearing its <code>always_long</code> control (0.71 vs 0.57) proves the labeler adds genuine edge. A leak-free way to recover the rest: add the causal regime/cluster id as a <b>feature</b> so the model learns the gate itself.</p></section>
-<section class="block"><h2>Reasoning path (from the causal graph)</h2><p><code>f_lookahead</code> → re-verify every best under the fixed footer (IWM was the last). Paired the incumbent against its <code>always_long</code> control so the leak-check is built into the round.</p></section>
-<section class="block"><h2>Next</h2><div class="next-box">Leaderboard is now honest: <b>TLT 0.63, IWM 0.71, GLD 0.78, QQQ 1.10, HYG 1.26, EEM 1.33, XLE 2.26</b>. Resume gain-seeking on the weakest (TLT 0.63, must beat IWM 0.71).</div></section>
-<section class="causalgraph"><h2>Causal graph (as of round 27) — interactive: collapse/expand, drag, hover</h2><details class="cg-details" ontoggle="if(this.open&&window['cground27_net']){var n=window['cground27_net'];n.setSize('100%','620px');n.redraw();n.fit();}"><summary>Show the interactive causal graph &nbsp;<span class="cg-count">72 nodes</span></summary><div class="cg-body"><p style="font-size:.9em"><b>Legend:</b> <span style="background:#fff3cd;border:1px solid #e0a800;padding:.05em .4em;border-radius:3px">FINDING (mechanism hub)</span> <span style="background:#d4edda;border:1px solid #28a745;padding:.05em .4em;border-radius:3px">milestone / KEEP</span> <span style="background:#e2dcff;border:1px solid #6f42c1;padding:.05em .4em;border-radius:3px">decision / unlock</span> <span style="background:#eef1f6;border:1px solid #9aa5b1;padding:.05em .4em;border-radius:3px">• experiment (collapsed)</span> <span style="border:1px dashed #d62728;padding:.05em .4em;border-radius:3px;color:#d62728">this round's new nodes</span>. Each new hypothesis is reasoned from a FINDING node.</p><div id="cground27" style="height:620px;border:1px solid #222b3a;border-radius:9px;background:#070a10"></div>
-<div style="margin:.4em 0"><button onclick="cground27_collapse()">⊟ Collapse experiments by phase</button>
-<button onclick="cground27_expand()">⊞ Expand all</button>
+<section class="block"><h2>Why</h2><p>Reconfirms <code>f_axiscross</code>: <code>triple_barrier</code>'s ±2σ barriers are calibrated for a magnitude clock, so the fractional-difference and volume-imbalance axes mis-time them (both negative). logdollar remains uniquely right for triple_barrier on TLT. New axes help UNSUPERVISED bgm (R45/46), not the supervised forward labeler — the axis×labeler co-design holds.</p></section>
+<section class="block"><h2>Reasoning path (from the causal graph)</h2><p>Custom axis × supervised labeler on the weakest: do new clocks beat logdollar for triple_barrier? No. TLT supervised stays 0.7679.</p></section>
+<section class="block"><h2>Next</h2><div class="next-box">TLT at its supervised ceiling (0.7679). The IWM exposure-tune lever (lower-thresh cdf_overlay) that won IWM is long-bias only; for two-sided TLT it doesn't apply. Continue ①② elsewhere / port the IWM unsupervised win pattern.</div></section>
+<section class="causalgraph"><h2>Causal graph (as of round 47) — interactive: collapse/expand, drag, hover</h2><details class="cg-details" ontoggle="if(this.open&&window['cground47_net']){var n=window['cground47_net'];n.setSize('100%','620px');n.redraw();n.fit();}"><summary>Show the interactive causal graph &nbsp;<span class="cg-count">72 nodes</span></summary><div class="cg-body"><p style="font-size:.9em"><b>Legend:</b> <span style="background:#fff3cd;border:1px solid #e0a800;padding:.05em .4em;border-radius:3px">FINDING (mechanism hub)</span> <span style="background:#d4edda;border:1px solid #28a745;padding:.05em .4em;border-radius:3px">milestone / KEEP</span> <span style="background:#e2dcff;border:1px solid #6f42c1;padding:.05em .4em;border-radius:3px">decision / unlock</span> <span style="background:#eef1f6;border:1px solid #9aa5b1;padding:.05em .4em;border-radius:3px">• experiment (collapsed)</span> <span style="border:1px dashed #d62728;padding:.05em .4em;border-radius:3px;color:#d62728">this round's new nodes</span>. Each new hypothesis is reasoned from a FINDING node.</p><div id="cground47" style="height:620px;border:1px solid #222b3a;border-radius:9px;background:#070a10"></div>
+<div style="margin:.4em 0"><button onclick="cground47_collapse()">⊟ Collapse experiments by phase</button>
+<button onclick="cground47_expand()">⊞ Expand all</button>
 <span style="color:#666;font-size:.85em"> · double-click a phase cluster to expand · drag / scroll-zoom · hover a node for full text</span></div>
 <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
 <script>
@@ -48,7 +48,7 @@
     interaction:{hover:true,tooltipDelay:120,navigationButtons:true,keyboard:false,zoomView:true,dragView:true},
     layout:{improvedLayout:true}
   };
-  var net=new vis.Network(document.getElementById('cground27'),{nodes:nodes,edges:edges},opts);
+  var net=new vis.Network(document.getElementById('cground47'),{nodes:nodes,edges:edges},opts);
   function collapse(){
     phases.forEach(function(p){
       net.cluster({
@@ -60,7 +60,7 @@
     });
   }
   function expand(){ net.body.nodeIndices.slice().forEach(function(id){ if(net.isCluster(id)) net.openCluster(id); }); }
-  window['cground27_collapse']=collapse; window['cground27_expand']=expand; window['cground27_net']=net;
+  window['cground47_collapse']=collapse; window['cground47_expand']=expand; window['cground47_net']=net;
   net.on('doubleClick',function(p){ if(p.nodes.length&&net.isCluster(p.nodes[0])) net.openCluster(p.nodes[0]); });
   net.once('stabilizationIterationsDone',function(){ net.setOptions({physics:false}); collapse(); });
 })();
