@@ -1070,11 +1070,13 @@
     },
     "GLD": {
       "cell": "GLD_logdollar_always_long_cdf_overlay_t0.45",
-      "real_calmar": 1.8021,
-      "real_da": 20.4157,
-      "trades": 691,
+      "real_calmar": 1.9891,
+      "real_cagr": 34.611,
+      "real_mdd": 17.4,
+      "real_da": 19.7284,
+      "trades": 657,
       "g2_pass": true,
-      "round": 10,
+      "round": 21,
       "source": "tournament",
       "config": {
         "ticker": "GLD",
@@ -1083,11 +1085,11 @@
         "thresh": 0.45,
         "sizing": "cdf_overlay"
       },
-      "leak_pending": true
+      "leak_fixed": true
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 20,
+  "last_round": 21,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1737,6 +1739,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "R69 HYG re-validation: 1.89 -> 2.21 under leak-fixed bars (leak HELPED HYG's overlay, opposite of XLE). KEEP. Leak impact is asset-dependent"
+      },
+      {
+        "id": "r70",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R70 GLD re-validation: always_long 1.80->1.99 (leak-fixed bars helped overlay); multi_horizon timing 0.79 underperforms. KEEP"
       }
     ],
     "edges": [
@@ -2434,6 +2442,16 @@
         "src": "r68",
         "dst": "r69",
         "label": "sweep continues"
+      },
+      {
+        "src": "r69",
+        "dst": "r70",
+        "label": "sweep: GLD"
+      },
+      {
+        "src": "r70",
+        "dst": "f_twosided",
+        "label": "timing underperforms overlay on GLD too"
       }
     ],
     "running": []
