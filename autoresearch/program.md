@@ -12,15 +12,17 @@ Maximize on the **TEST / OOS** period (2023-08 → 2026-06), from real `SetHoldi
 Nothing else is the goal. The whole pipeline is one system aimed at this; **① custom axis and ②
 unsupervised labeling matter most**, but no stage is ignored.
 
-## What you may edit
-Only `modules/`:
-- `bar_builder.py` — ① the custom axis (Wang: "the axis is the kingpin")
-- `labeler.py`     — ② unsupervised regime labels
-- `features.py`    — ③ features
-- `trainer.py`     — ④ reduce → ⑤ model → ⑥ calibrate → ⑦ ensemble → ⑧ size / meta-label
+## What you may edit — the whole pipeline; ①② matter most
+- **FOCUS (most rounds advance these):** ① custom axis `modules/bar_builder.py` (Wang: "the axis is the
+  kingpin") and ② unsupervised labeling `modules/labeler.py`.
+- **FLEXIBLE (open whenever it helps):** `features.py` (③), and the downstream — dim-reduce ④, model ⑤,
+  calibration ⑥, ensemble ⑦ in `templates/footer.py.tmpl`; bet-sizing ⑧ in `trainer.realistic_cstats` and
+  the executed rule in `templates/infer.py.tmpl`. Vol-targeting, CDF bet-sizing, meta-labeling, drawdown
+  gating all live here.
 
-`harness/` and `templates/` are **LOCKED** — they are *how you are scored*. Never edit them. This is what
-keeps you honest: you can only raise the score by genuinely improving the model.
+**LOCKED — the scorer ONLY** (never change): `harness/evaluator.py`, `harness/qc_client.py`, the
+train/val/test split dates + OOS window (2023-08→2026-06), the real `SetHoldings` execution, and the
+Calmar/DA computation. That is *how you are scored* — keeping it fixed is what keeps you honest.
 
 ## The pipeline (Wang, holistic — don't skip a stage)
 ⓪ analyze the asset's statistics → pick a strategy type (trend / mean-reversion / arbitrage / volatility)
