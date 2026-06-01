@@ -400,6 +400,20 @@
       "trades": 206,
       "round": 22,
       "note": "long-only directional too defensive on XLE"
+    },
+    "XLE_logdollar_multi_horizon_cdf_overlay_t45_R23": {
+      "real_calmar": 2.503,
+      "real_da": 4.06,
+      "trades": 92,
+      "round": 23,
+      "note": "KEPT - XLE 0.72->2.50; multi_horizon multi-timescale edge; best of all 7 ETFs"
+    },
+    "XLE_dollar_multi_horizon_cdf_overlay_t45_R23": {
+      "real_calmar": 0.5236,
+      "real_da": 18.8,
+      "trades": 296,
+      "round": 23,
+      "note": "dollar axis far worse than logdollar for multi_horizon"
     }
   },
   "baselines": {
@@ -442,7 +456,8 @@
     "ROUND19: IWM (new weakest). TLT recipe logdollar/triple_barrier/ls_cdf ports to +0.50/308tr (deployable, DA 4.2) but < IWM best 0.65; range/triple_barrier/ls_cdf = -0.08 (SHORT legs HURT trending-up IWM). LESSON: IWM != TLT - IWM trends UP so long-biased sizing wins; the lead is bgm (R11 1.13 edge, 24tr). Make bgm deployable on a DENSE axis.",
     "ROUND20 WIN: IWM 0.6542 -> +1.1046 (KEPT, deployable 394tr). logdollar/bgm/cdf_overlay. The R11 bgm edge (1.13 but 24tr on sparse vol) became deployable on a DENSE logdollar axis (394tr) w/ long-biased cdf_overlay (trending small-cap). GENERALIZABLE: bgm has real edge but needs a DENSE axis for G2; cdf_overlay (long-biased) suits trending equities, ls_cdf (short) suits two-sided/declining (TLT). 2 ETFs solved (TLT 0.75, IWM 1.10). New weakest = XLE (0.72).",
     "ROUND21: XLE DISCARD (stays 0.7185). XLE is TRENDING-UP not two-sided: the TLT short recipe (range/triple_barrier/ls_cdf) went NEGATIVE -0.06 on XLE. bgm (logdollar/cdf_overlay) cut DA 39.27->9.09 (real drawdown-timing) but cdf_overlay's vol-throttle sacrificed too much upside (0.72->0.60). The 0.72 incumbent (dollar_R5) is vol-targeted buy-hold (labeler washed out). To beat it: labeled edge + stay-long-in-trend (cdf_plain, not cdf_overlay).",
-    "ROUND22: XLE DISCARD (stays 0.7185). cdf_plain did NOT recover upside - bgm caps ~0.60 on XLE on BOTH overlay and plain; triple_barrier long-only too defensive (+0.25, DA 4.66). FINDING: every TIMED label under-returns XLE's vol-targeted-long incumbent (0.72) because the energy uptrend is strong and labels exit at wrong times (cut CAGR > MaxDD). R6 null resurfacing for a strongly-trending asset. XLE needs only +0.03 to overtake TLT(0.75)."
+    "ROUND22: XLE DISCARD (stays 0.7185). cdf_plain did NOT recover upside - bgm caps ~0.60 on XLE on BOTH overlay and plain; triple_barrier long-only too defensive (+0.25, DA 4.66). FINDING: every TIMED label under-returns XLE's vol-targeted-long incumbent (0.72) because the energy uptrend is strong and labels exit at wrong times (cut CAGR > MaxDD). R6 null resurfacing for a strongly-trending asset. XLE needs only +0.03 to overtake TLT(0.75).",
+    "ROUND23 WIN (causal-graph-reasoned): XLE 0.7185 -> +2.5030 (KEPT, deployable 92tr, DA 4.06) - HIGHEST Calmar of all 7 ETFs, nearing G1=3.0. logdollar/multi_horizon/cdf_overlay. NEW FINDING: multi_horizon (MULTI-TIMESCALE forward-return labels) has REAL directional edge where single-horizon bgm/triple_barrier washed out - the EXCEPTION to f_trenddom. Reasoned directly from the causal graph (f_trenddom said try the untested multi_horizon; f_character said stay long). Validates causal-graph-driven hypothesis generation. Open: does multi_horizon generalize to TLT/GLD?"
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -454,7 +469,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "ROUND23 (causal-graph-reasoned): XLE weakest 0.72, trending-up, needs only +0.03 to beat TLT 0.75. bgm/triple_barrier/carry EXHAUSTED on XLE (all under-return). Try the untested featured labeler multi_horizon, long-biased. H1 {logdollar,multi_horizon,0.45,cdf_overlay}; H2 {dollar,multi_horizon,0.45,cdf_overlay} (incumbent's own axis -> isolates labeler edge over buy-hold-long). If multi_horizon also caps <0.72 -> strong case XLE is trend-dominated/near single-asset ceiling.",
+  "next_idea": "ROUND24 (causal-graph-reasoned): new weakest = TLT (0.75). Test whether multi_horizon's edge (R23 unlock) GENERALIZES, combined with TLT's known winning recipe (f_character: TLT is two-sided/declining -> ls_cdf short; f_logdollar/f_density: dense logdollar/range). H1 {TLT,logdollar,multi_horizon,0.5,ls_cdf}; H2 {TLT,range,multi_horizon,0.5,ls_cdf}. Beat TLT 0.7537. If multi_horizon+ls_cdf > triple_barrier+ls_cdf -> multi_horizon generalizes.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -499,13 +514,20 @@
       "source": "active_seed"
     },
     "XLE": {
-      "cell": "XLE_dollar_R5",
-      "real_calmar": 0.7185,
-      "real_da": 39.27,
-      "trades": 866,
+      "cell": "XLE_logdollar_multi_horizon_cdf_overlay_t0.45",
+      "real_calmar": 2.503,
+      "real_da": 4.0631,
+      "trades": 92,
       "g2_pass": true,
       "round": 5,
-      "source": "active_seed"
+      "source": "tournament",
+      "config": {
+        "ticker": "XLE",
+        "axis": "logdollar",
+        "labeler": "multi_horizon",
+        "thresh": 0.45,
+        "sizing": "cdf_overlay"
+      }
     },
     "HYG": {
       "cell": "HYG_dollar_R5",
@@ -543,5 +565,492 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 4
+  "last_round": 5,
+  "causal_graph": {
+    "phases": [
+      "Landscape",
+      "TLT",
+      "IWM",
+      "XLE"
+    ],
+    "nodes": [
+      {
+        "id": "r1",
+        "type": "round",
+        "phase": "Landscape",
+        "label": "R1: every labeler = buy-hold (1 trade)"
+      },
+      {
+        "id": "f_sizing",
+        "type": "finding",
+        "phase": "Landscape",
+        "label": "FINDING: bottleneck is module-8 SIZING - infer saturates 100% long (w=min(1,(p-t)*200))"
+      },
+      {
+        "id": "r2",
+        "type": "round",
+        "phase": "Landscape",
+        "label": "R2: CDF x inverse-vol overlay -> 431 trades, DA -69%, but Calmar HALVED (over-de-levers)"
+      },
+      {
+        "id": "f_overlay",
+        "type": "finding",
+        "phase": "Landscape",
+        "label": "FINDING: inverse-vol overlay is LABEL-INDEPENDENT - it washes out the labeler (carry = always_long)"
+      },
+      {
+        "id": "r3",
+        "type": "round",
+        "phase": "Landscape",
+        "label": "R3: DD circuit-breaker -> both metrics WORSE"
+      },
+      {
+        "id": "f_stops",
+        "type": "finding",
+        "phase": "Landscape",
+        "label": "FINDING: drawdown STOPS are pro-cyclical on drift-up assets (sell the dip, re-enter at highs)"
+      },
+      {
+        "id": "r4",
+        "type": "round",
+        "phase": "Landscape",
+        "label": "R4: detuned sizing on VOL axis x7 ETF -> active but sub-buy-hold"
+      },
+      {
+        "id": "r5",
+        "type": "round",
+        "phase": "Landscape",
+        "label": "R5: DOLLAR x labelers x7 ETF (2-node parallel) -> labelers identical; SEEDS per-ETF best"
+      },
+      {
+        "id": "r6",
+        "type": "round",
+        "phase": "Landscape",
+        "label": "R6: overlay OFF -> every cell = buy-hold (model is always-long)"
+      },
+      {
+        "id": "f_null",
+        "type": "finding",
+        "phase": "Landscape",
+        "label": "FINDING (6-round NULL): single-asset long-only ML cannot beat buy-hold - axis/labeler/sizing all washed out"
+      },
+      {
+        "id": "reframe",
+        "type": "decision",
+        "phase": "Landscape",
+        "label": "REFRAME -> v2 tournament: need a label that CHANGES exposure; G2>80 trades; race 2 hyp/round, keep-if-better"
+      },
+      {
+        "id": "r7",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R7: TLT binary -> under-trade / 0 trades"
+      },
+      {
+        "id": "r8",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R8: TLT cdf_plain partial-long -> -0.29 (worse)"
+      },
+      {
+        "id": "f_longonly",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "FINDING: long-only cannot beat a DECLINING asset"
+      },
+      {
+        "id": "unlock_short",
+        "type": "decision",
+        "phase": "TLT",
+        "label": "UNLOCK (user): shorting allowed -> ls_cdf / longshort"
+      },
+      {
+        "id": "r9",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R9: TLT ls_cdf/longshort -> still worse (-0.29 / 0)"
+      },
+      {
+        "id": "f_signal",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "FINDING: shorting alone doesn't help - the SIGNAL must predict direction -> need a DIRECTIONAL label"
+      },
+      {
+        "id": "policy",
+        "type": "decision",
+        "phase": "TLT",
+        "label": "USER POLICY: persist on the weakest ETF until it beats the 2nd-weakest (never mark exhausted)"
+      },
+      {
+        "id": "r12",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R12: TLT tertile/logdollar/ls_cdf -> -0.05 (best yet), 71tr"
+      },
+      {
+        "id": "f_direction",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "FINDING: DIRECTIONAL label (tertile/triple_barrier) + SHORT (ls_cdf) lifts two-sided assets; remaining gap = ACTIVITY"
+      },
+      {
+        "id": "r13",
+        "type": "milestone",
+        "phase": "TLT",
+        "label": "R13 WIN: TLT -0.15 -> +0.04 (dense DOLLAR, 151tr)"
+      },
+      {
+        "id": "f_density",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "FINDING: edge needs a DENSE axis to clear G2 (>80tr) - tick has edge but under-trades"
+      },
+      {
+        "id": "r15",
+        "type": "milestone",
+        "phase": "TLT",
+        "label": "R15 WIN: TLT +0.04 -> +0.31 (RANGE axis = dense AND concentrated at rate-shocks, 234tr)"
+      },
+      {
+        "id": "r16",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R16: range tertile/longshort under-trade (~50tr)"
+      },
+      {
+        "id": "r17",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R17: on range, triple_barrier UNIQUELY high-edge (bgm/agglom low)"
+      },
+      {
+        "id": "f_logdollar",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "FINDING: logdollar compresses the flight-to-quality notional tail into dense, uniform regime coverage"
+      },
+      {
+        "id": "r18",
+        "type": "milestone",
+        "phase": "TLT",
+        "label": "R18 WIN: TLT +0.31 -> +0.75 (logdollar) - overtakes IWM"
+      },
+      {
+        "id": "r10",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R10: IWM dollar/carry -> +0.25/564tr (first clean active) but <0.65"
+      },
+      {
+        "id": "f_kmeans",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: kmeans2stage is degenerate (0 trades) in single-config mode"
+      },
+      {
+        "id": "r11",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R11: IWM vol/bgm -> Calmar 1.13 but 24tr (G2 FAIL)"
+      },
+      {
+        "id": "f_bgm",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: bgm = high-edge / low-DA but UNDER-TRADES on sparse axes -> deploy on a DENSE axis"
+      },
+      {
+        "id": "r19",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R19: TLT recipe ports -> +0.50/308tr but <0.65; SHORT legs HURT trending-up IWM"
+      },
+      {
+        "id": "f_character",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: ASSET CHARACTER sets sizing - trending-up->long-bias (cdf_overlay/plain); two-sided/declining->short (ls_cdf). Diagnose: does shorting help or hurt?"
+      },
+      {
+        "id": "r20",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R20 WIN: IWM 0.65 -> +1.10 (bgm on DENSE logdollar + long-biased cdf_overlay, 394tr)"
+      },
+      {
+        "id": "r21",
+        "type": "round",
+        "phase": "XLE",
+        "label": "R21: XLE bgm cut DA 39->9 but <0.72; short -0.06 hurts (trending-up)"
+      },
+      {
+        "id": "r22",
+        "type": "round",
+        "phase": "XLE",
+        "label": "R22: XLE bgm/triple_barrier cdf_plain still <0.72"
+      },
+      {
+        "id": "f_trenddom",
+        "type": "finding",
+        "phase": "XLE",
+        "label": "FINDING: timed labels UNDER-RETURN strongly-trending XLE (cut CAGR more than MaxDD) - R6 null resurfacing"
+      },
+      {
+        "id": "r23",
+        "type": "milestone",
+        "phase": "XLE",
+        "label": "R23 WIN: XLE 0.72 -> +2.50 (multi_horizon on logdollar + long cdf_overlay, 92tr, DA 4.06) - best of all 7 ETFs"
+      },
+      {
+        "id": "f_multihorizon",
+        "type": "finding",
+        "phase": "XLE",
+        "label": "FINDING: multi_horizon (MULTI-TIMESCALE forward-return labels) has REAL directional edge where single-horizon bgm/triple_barrier washed out - the exception to the trend-dominance null"
+      }
+    ],
+    "edges": [
+      {
+        "src": "r1",
+        "dst": "f_sizing",
+        "label": "labeler can't express; w pins 100% long"
+      },
+      {
+        "src": "f_sizing",
+        "dst": "r2",
+        "label": "de-saturate the sizing"
+      },
+      {
+        "src": "r2",
+        "dst": "f_overlay",
+        "label": "carry = always_long"
+      },
+      {
+        "src": "r2",
+        "dst": "r3",
+        "label": "over-de-levers -> try a DD breaker"
+      },
+      {
+        "src": "r3",
+        "dst": "f_stops",
+        "label": "both metrics worse"
+      },
+      {
+        "src": "f_stops",
+        "dst": "r4",
+        "label": "stops fail -> back to sizing"
+      },
+      {
+        "src": "f_overlay",
+        "dst": "r4",
+        "label": "detune on vol axis"
+      },
+      {
+        "src": "r4",
+        "dst": "r5",
+        "label": "3 sizing rounds never beat buy-hold -> pivot to axis x labeler"
+      },
+      {
+        "src": "r5",
+        "dst": "f_overlay",
+        "label": "labelers identical (reinforces)"
+      },
+      {
+        "src": "r5",
+        "dst": "r6",
+        "label": "turn overlay OFF"
+      },
+      {
+        "src": "r6",
+        "dst": "f_null",
+        "label": "always-long -> buy-hold"
+      },
+      {
+        "src": "f_null",
+        "dst": "reframe",
+        "label": ""
+      },
+      {
+        "src": "f_overlay",
+        "dst": "reframe",
+        "label": ""
+      },
+      {
+        "src": "reframe",
+        "dst": "r7",
+        "label": "TLT weakest (-0.15)"
+      },
+      {
+        "src": "r7",
+        "dst": "r8",
+        "label": "binary under-trades"
+      },
+      {
+        "src": "r8",
+        "dst": "f_longonly",
+        "label": ""
+      },
+      {
+        "src": "f_longonly",
+        "dst": "unlock_short",
+        "label": ""
+      },
+      {
+        "src": "unlock_short",
+        "dst": "r9",
+        "label": ""
+      },
+      {
+        "src": "r9",
+        "dst": "f_signal",
+        "label": "shorting alone fails"
+      },
+      {
+        "src": "r9",
+        "dst": "r10",
+        "label": "(pre-policy) moved to IWM"
+      },
+      {
+        "src": "policy",
+        "dst": "r12",
+        "label": "return to TLT; don't exhaust"
+      },
+      {
+        "src": "f_signal",
+        "dst": "r12",
+        "label": "need a directional label"
+      },
+      {
+        "src": "r10",
+        "dst": "f_kmeans",
+        "label": ""
+      },
+      {
+        "src": "r11",
+        "dst": "f_bgm",
+        "label": ""
+      },
+      {
+        "src": "r12",
+        "dst": "f_direction",
+        "label": ""
+      },
+      {
+        "src": "f_direction",
+        "dst": "r13",
+        "label": ""
+      },
+      {
+        "src": "r13",
+        "dst": "f_density",
+        "label": "tick edge but under-trades"
+      },
+      {
+        "src": "f_density",
+        "dst": "r15",
+        "label": "range = dense + at shocks"
+      },
+      {
+        "src": "r15",
+        "dst": "r16",
+        "label": ""
+      },
+      {
+        "src": "r15",
+        "dst": "r17",
+        "label": ""
+      },
+      {
+        "src": "r17",
+        "dst": "f_logdollar",
+        "label": "range plateaus +0.31"
+      },
+      {
+        "src": "f_density",
+        "dst": "r18",
+        "label": ""
+      },
+      {
+        "src": "f_direction",
+        "dst": "r18",
+        "label": ""
+      },
+      {
+        "src": "f_logdollar",
+        "dst": "r18",
+        "label": ""
+      },
+      {
+        "src": "r18",
+        "dst": "r19",
+        "label": "TLT 0.75 beats IWM -> loop moves to IWM"
+      },
+      {
+        "src": "r19",
+        "dst": "f_character",
+        "label": "short hurts trending-up IWM"
+      },
+      {
+        "src": "f_character",
+        "dst": "r20",
+        "label": ""
+      },
+      {
+        "src": "f_bgm",
+        "dst": "r20",
+        "label": "make bgm deployable on a dense axis"
+      },
+      {
+        "src": "f_density",
+        "dst": "r20",
+        "label": "dense axis for G2"
+      },
+      {
+        "src": "r20",
+        "dst": "r21",
+        "label": "IWM 1.10 -> loop moves to XLE"
+      },
+      {
+        "src": "f_character",
+        "dst": "r21",
+        "label": "XLE trending-up -> long-bias"
+      },
+      {
+        "src": "f_bgm",
+        "dst": "r21",
+        "label": "apply bgm"
+      },
+      {
+        "src": "r21",
+        "dst": "r22",
+        "label": "cut DA but under-return -> drop vol-throttle"
+      },
+      {
+        "src": "r21",
+        "dst": "f_trenddom",
+        "label": ""
+      },
+      {
+        "src": "r22",
+        "dst": "f_trenddom",
+        "label": ""
+      },
+      {
+        "src": "f_null",
+        "dst": "f_trenddom",
+        "label": "null resurfaces for a strong trend"
+      },
+      {
+        "src": "f_trenddom",
+        "dst": "r23",
+        "label": "labels under-return -> try multi_horizon, stay long"
+      },
+      {
+        "src": "r23",
+        "dst": "f_multihorizon",
+        "label": "multi-timescale edge breaks the null"
+      }
+    ],
+    "running": []
+  }
 }

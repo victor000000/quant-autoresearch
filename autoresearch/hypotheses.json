@@ -1,0 +1,69 @@
+{
+  "ticker": "TLT",
+  "queue": [
+    {
+      "axis": "dollar",
+      "labeler": "triple_barrier",
+      "thresh": 0.5,
+      "sizing": "ls_cdf",
+      "rank": 1,
+      "why": "BEST deployability x mechanism. Dollar is the densest TLT axis (TLT_dollar_R5 = 1215 OOS bars), so ls_cdf -- whose trade count scales with bar density and p-variation -- has the most headroom to clear the >80 G2 gate (R9's ls_cdf made only 60 on the SPARSE vol axis; dollar is ~20x denser). triple_barrier is genuinely directional (labeler.py l.475-483: label 1 iff +U*sigma hit before -L*sigma, 0 if lower hit first/timeout-down), untried on TLT, fixes the confirmed root cause (carry/kmeans2stage are vol-proxy/degenerate, never predicted DIRECTION). ls_cdf is thresh-free and short-capable (infer.py.tmpl l.20-23, centered at 0.5, maps to [-1,1]): it SHORTS the 2023 rate-rise down-legs (p<0.5) and LONGS the 2024-25 recovery (p>0.5), monetizing both sides of the two-sided move that sank every long-only attempt. thresh=0.5 is inert under ls_cdf."
+    },
+    {
+      "axis": "logdollar",
+      "labeler": "tertile",
+      "thresh": 0.4,
+      "sizing": "ls_cdf",
+      "rank": 2,
+      "why": "Strong A/B partner to rank 1: differs on BOTH structural levers (axis logdollar vs dollar, labeler tertile vs triple_barrier) so it is an independent test of the same directional+short root-cause fix. logdollar compresses the flight-to-quality notional tail -> more uniform bar spacing across TLT's calm-vs-shock regimes than raw dollar bars (which over-sample panic and starve the recovery), giving balanced regime coverage and dense bar count for ls_cdf activity. tertile (labeler.py l.215-217) is directional and high-purity: top forward-return tertile=long(1), bottom=short(0), ambiguous middle 33% DROPPED -- raises direction accuracy, the lever the knowledge base identifies as missing. ls_cdf shorts down-legs / longs recovery continuously; thresh inert."
+    },
+    {
+      "axis": "dollar",
+      "labeler": "multi_horizon",
+      "thresh": 0.4,
+      "sizing": "ls_cdf",
+      "rank": 3,
+      "why": "Same densest-axis + short-capable ls_cdf as rank 1, with the cleanest directional label as a backup if triple_barrier's vol-scaled barriers over/under-trigger on TLT. multi_horizon (labeler.py l.507) labels 1 iff fwd_ret[50,100,200] ALL agree up, 0 iff all agree down, skip on disagreement -- a denoised, persistent direction target that only commits when the trend is unanimous, mapping cleanly onto TLT's sustained down-leg then multi-quarter recovery. Risk vs rank 1: the label set is THINNER (disagreement bars skipped), modestly lowering ls_cdf activity, but the dense dollar grid (1215 bars) keeps it above the 60-trade R9 mark and likely past 80. Directional => short leg is predictive, fixing the R9 cause."
+    },
+    {
+      "axis": "range",
+      "labeler": "triple_barrier",
+      "thresh": 0.5,
+      "sizing": "ls_cdf",
+      "rank": 4,
+      "why": "Same directional triple_barrier + short-capable ls_cdf fix on the range axis, which emits MORE bars during violent rate-shock moves (denser sampling where TLT's signal lives) and goes quiet in chop -> less whipsaw. Ranked below the dollar/logdollar cells purely on DEPLOYABILITY RISK: range is a sparser axis than dollar/logdollar, and ls_cdf's activity scales with bar count -- R9 proved ls_cdf made only 60 trades (G2 FAIL) on the comparably-sparse vol axis, so clearing >80 here is plausible but less certain than on the dense dollar/logdollar grids. Mechanism for beating -0.15 is identical and strong (short the decline, long the recovery)."
+    },
+    {
+      "axis": "vol",
+      "labeler": "triple_barrier",
+      "thresh": 0.35,
+      "sizing": "ls_cdf",
+      "rank": 5,
+      "why": "Directional triple_barrier + short-capable ls_cdf on the vol axis (near-Gaussian for TLT per QA, so barrier-sigma and isotonic calibration are valid -> honest p). Strong mechanism (shorts the rate-rise declines, longs the recovery). Ranked 5th SOLELY on activity risk: this is the EXACT axis where R9's ls_cdf produced only 60 trades and FAILED G2. The bet is that swapping carry (vol-proxy, low p-variation) for triple_barrier (directional, p swings widely across 0.5) lifts the count past 80 on the same axis -- but that lift is unproven, so it sits below the denser-axis cells. thresh inert under ls_cdf."
+    },
+    {
+      "axis": "logdollar",
+      "labeler": "bgm",
+      "thresh": 0.3,
+      "sizing": "cdf_overlay",
+      "rank": 6,
+      "why": "Executes the knowledge-base lead: bgm carried the tournament's only demonstrated directional edge (IWM_vol_bgm_cdf_overlay_R11 = Calmar 1.13, DA 5.6) but FAILED G2 at 24 trades because thresh=0.45 gated it flat. Fix = drop thresh to 0.30 so far more bars clear cdf_overlay's entry gate, and cdf_overlay's per-bar inverse-vol multiplier (clip(slow/fast,0.6,1.0), infer.py.tmpl l.34-40) rebalances every invested bar -> this is the ONLY sizing with PROVEN >80 activity on TLT (1215 trades, dollar axis). DEPLOYABILITY here is the safest of the queue. CAVEAT: cdf_overlay clips b to [0,1] = LONG/FLAT ONLY, so it cannot short TLT's decline -- it can only de-lever to flat in turbulence (the R7 long-only ceiling). This is the directional-edge + activity CONTROL, not a primary two-sided bet; bgm's posterior-gated up-cluster only fires long in genuine low-vol up regimes (the recovery) and stays flat in the down-legs."
+    },
+    {
+      "axis": "logdollar",
+      "labeler": "triple_barrier",
+      "thresh": 0.45,
+      "sizing": "longshort",
+      "rank": 7,
+      "why": "Discrete-sizing replication leg for the directional thesis: same triple_barrier signal on dense logdollar, but longshort (+1/-1/0) instead of continuous ls_cdf. At thresh=0.45 the long zone (p>0.45) overlaps and dominates the short zone, so this is a LONG-BIASED long/short that flips outright short only on confident down-calls (p<=0.45) -- a conservative complement that won't whipsaw-short the recovery. Ranked 7th on activity risk: longshort trades only on discrete threshold crossings (R7 binary@0.55 = 17 trades, G2 FAIL); thresh=0.45 (not 0.55) plus triple_barrier's p swinging across 0.5 should produce many more crossings on the dense logdollar grid, but discrete sizing is inherently the least active engine. Value: if it AND a ls_cdf cell both beat -0.15, the result replicates across sizing (robust, not a fluke)."
+    },
+    {
+      "axis": "range",
+      "labeler": "tertile",
+      "thresh": 0.3,
+      "sizing": "longshort",
+      "rank": 8,
+      "why": "Discrete-sizing contrast leg with directional tertile on the rate-shock-dense range axis. WARNING (verified in infer.py.tmpl l.18-19): longshort returns +1 when p>thresh BEFORE checking the short branch, so at thresh=0.30 it is long whenever p>0.30 and shorts only when p<=0.30 -- effectively ALMOST-ALWAYS-LONG with rare deep-conviction shorts, NOT the symmetric full-conviction short the mechanism text claims. This makes it the weakest two-sided bet in the queue (least short exposure on the decline) and carries longshort's under-trade risk. Kept as the 8th/exploratory slot: tertile's middle-skip keeps the binary out of ambiguous chop, and if even this long-biased discrete config beats -0.15 it confirms the directional label alone (not the sizing) is doing the work."
+    }
+  ]
+}

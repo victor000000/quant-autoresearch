@@ -37,3 +37,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-01T17:06:47,XLE,0.7185,XLE_dollar_R5,B,XLE,range,triple_barrier,0.5,ls_cdf,-0.0619,5.6513,1775,True,True,0.0119,0.593,0.5123,False,False,completed,completed
 2026-06-01T17:09:56,XLE,0.7185,XLE_dollar_R5,A,XLE,logdollar,bgm,0.4,cdf_plain,0.592,12.5975,270,True,True,3.665,0.7178,0.5956,True,False,completed,completed
 2026-06-01T17:09:56,XLE,0.7185,XLE_dollar_R5,B,XLE,dollar,triple_barrier,0.5,cdf_plain,0.2459,4.6577,206,True,True,1.6042,0.648,0.5396,False,False,completed,completed
+2026-06-01T17:15:11,XLE,0.7185,XLE_dollar_R5,A,XLE,logdollar,multi_horizon,0.45,cdf_overlay,2.503,4.0631,92,True,True,0.6591,0.8689,0.8136,True,True,completed,completed
+2026-06-01T17:15:11,XLE,0.7185,XLE_dollar_R5,B,XLE,dollar,multi_horizon,0.45,cdf_overlay,0.5236,18.8274,296,True,True,0.7785,0.8899,0.5528,False,False,completed,completed
