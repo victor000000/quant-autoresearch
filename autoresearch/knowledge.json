@@ -849,6 +849,20 @@
       "trades": 939,
       "round": 57,
       "note": "multi_horizon+feats < triple_barrier on IWM"
+    },
+    "IWM_imbalance_3way_cdf_overlay_t40_R58": {
+      "real_calmar": 0.865,
+      "real_da": 4.95,
+      "trades": 1531,
+      "round": 58,
+      "note": "3-way ensemble dilutes (multi_horizon weaker leg)"
+    },
+    "IWM_imbalance_tb_x_bgm_cdf_overlay_t35_R58": {
+      "real_calmar": 0.8625,
+      "real_da": 5.78,
+      "trades": 1490,
+      "round": 58,
+      "note": "thresh 0.35 over-trades vs 0.40"
     }
   },
   "baselines": {
@@ -929,7 +943,8 @@
     "ROUND54 (verify TLT 1.52): CONTROL range/always_long/ls_overlay = -0.14 (features+axis alone, NO edge) << 1.52 -> the +1.52 is genuinely the triple_barrier labeler reading the mean-rev oscillators (leak-clean, causal). Unlock is triple_barrier-SPECIFIC (range/bgm 0.065). TLT SOLVED 0.77->1.52. \u2462 mean-rev features now GLOBAL. New weakest = IWM 0.8831.",
     "ROUND55 WIN: IWM 0.8831 -> +0.9316 (KEPT) via imbalance/triple_barrier/cdf_overlay + \u2462 mean-rev features. The triple_barrier+oscillators recipe GENERALIZES (TLT range 1.52, IWM imbalance 0.93): features HELP barrier-timing (triple_barrier), slightly HURT regime-clustering (bgm 0.88->0.83). \u2462 features x triple_barrier is a GENERAL synergy. IWM still weakest (0.9316 < QQQ 1.30).",
     "ROUND56: IWM push DISCARD (stays 0.9316). range/triple_barrier 0.38 (range suits mean-reverting TLT, not trending IWM), imbalance@0.30 0.73 (over-trades). IWM recipe LOCKED: imbalance/triple_barrier/cdf_overlay@0.40 + \u2462feats = 0.9316. Axis/thresh are character-specific (imbalance+0.40 trending IWM; range two-sided TLT).",
-    "ROUND57 WIN: IWM 0.9316 -> +1.0126 (KEPT) via \u2466 ENSEMBLE imbalance/triple_barrier+bgm/cdf_overlay. Averaging TWO COMPARABLE decorrelated signals (tb 0.93 + bgm 0.83) cut joint DA to 3.53 and lifted Calmar PAST 1.0 - the diversification win that couldn't happen on TLT (one dominant signal). VALIDATES \u2466: ensembles help with comparable signals, dilute with strong+weak. \u2462feats + \u2466ensemble: IWM 0.88->0.93->1.01."
+    "ROUND57 WIN: IWM 0.9316 -> +1.0126 (KEPT) via \u2466 ENSEMBLE imbalance/triple_barrier+bgm/cdf_overlay. Averaging TWO COMPARABLE decorrelated signals (tb 0.93 + bgm 0.83) cut joint DA to 3.53 and lifted Calmar PAST 1.0 - the diversification win that couldn't happen on TLT (one dominant signal). VALIDATES \u2466: ensembles help with comparable signals, dilute with strong+weak. \u2462feats + \u2466ensemble: IWM 0.88->0.93->1.01.",
+    "ROUND58: IWM ensemble tuning DISCARD (stays 1.0126). thresh 0.35 over-trades (0.86); 3-way (+multi_horizon) DILUTES (0.87) - adding a weaker leg drags the comparable tb+bgm pair down (strong+weak dilution). Optimal = 2 COMPARABLE legs (tb+bgm) @0.40. IWM locked 1.0126, still weakest (<QQQ 1.30)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -1577,6 +1592,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "R57 WIN: IWM 0.93->1.01 via \u2466 ENSEMBLE (tb+bgm comparable signals; DA 3.53). Ensemble pays off where TLT diluted"
+      },
+      {
+        "id": "r58",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R58 IWM ensemble tune: 3-way dilutes (0.87), thresh0.35 over-trades. 2-way tb+bgm@0.40 optimal (1.01)"
       }
     ],
     "edges": [
@@ -2104,6 +2125,11 @@
         "src": "r55",
         "dst": "r57",
         "label": "ensemble of comparable signals"
+      },
+      {
+        "src": "r57",
+        "dst": "r58",
+        "label": "more legs/lower thresh dilute"
       }
     ],
     "running": []
