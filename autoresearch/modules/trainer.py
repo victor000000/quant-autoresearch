@@ -3,6 +3,7 @@
 Orchestrates: dim reduction → model → calibration → ensemble → consensus.
 Imports from sibling modules: calibrator, ensembler, consensus.
 """
+import math
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -15,30 +16,64 @@ import xgboost as xgb
 # from consensus import apply_consensus, consensus_stats
 
 
+# ROUND 3 — stay-long-by-default drawdown circuit-breaker (AFML Ch.14 TuW/DD gate).
+# Fixed A PRIORI, identical here (VAL synth) and in templates/infer.py.tmpl (OOS).
+# Binary, persistent, causal: hold the model's long by default; step FLAT only once
+# the strategy's own realized drawdown exceeds DD_CUT (a genuine bear leg, not a
+# normal pullback), and stay flat until equity recovers within DD_RESUME of its peak
+# (hysteresis kills churn). Truncates the deep drawdowns that set MaxDD while leaving
+# the drift-period exposure (and thus CAGR) untouched.
+DD_CUT = 0.12      # de-risk to flat when underwater >= 12%
+DD_RESUME = 0.04   # re-enter once back within 4% of the running equity peak
+
+
 def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005, thresh=0.45):
-    """Realistic backtest statistics with transaction costs.
+    """Realistic backtest statistics with transaction costs + DD circuit-breaker.
     `thresh` is the per-ETF entry threshold; it gates entries AND sizes positions
-    (probs-thresh)*200, so it MUST equal the threshold infer executes with.
+    (probs-thresh)*200, so it MUST equal the threshold infer executes with. A
+    long-by-default realized-drawdown gate (DD_CUT/DD_RESUME, hysteresis) overlays
+    the sizing so genuine bear legs are stepped aside, normal pullbacks held.
     Returns: (calmar, trades, total_return, mdd, annual_return, drawdown_area)
     where drawdown_area DA = Σ_t (1 - E_t/peak_t) on the equity curve (lower=better).
     """
     n = min(len(probs) - 1, len(log_rets) - 1, len(lc_arr) - 1, len(ma_arr) - 1)
     if n < 2:
         return 0, 0, 0, 0, 0, 0.0
-    positions = np.zeros(n + 1); last_pos = 0.0; trades = 0
+    positions = np.zeros(n + 1)
+    strat_rets = np.zeros(n)
+    last_pos = 0.0
+    trades = 0
+    cum = 0.0            # cumulative log-equity (causal: realized up to bar i)
+    peak = 0.0           # running peak of cum
+    derisk = False       # DD-gate state: True == stepped aside (flat)
     for i in range(n):
-        target = min(1.0, (probs[i] - thresh) * 200) if (probs[i] > thresh) else 0.0
+        # 1) model target (unchanged sizing rule).
+        raw = min(1.0, (probs[i] - thresh) * 200) if (probs[i] > thresh) else 0.0
+        # 2) drawdown circuit-breaker on the strategy's OWN realized equity (causal).
+        dd = 1.0 - math.exp(min(0.0, cum - peak))  # underwater fraction in [0,1)
+        if derisk:
+            if dd <= DD_RESUME:
+                derisk = False
+        elif dd >= DD_CUT:
+            derisk = True
+        target = 0.0 if derisk else raw
+        # 3) count a trade on any material change, accrue return + cost.
         if (last_pos == 0 and target > 0) or (last_pos > 0 and target == 0) or abs(target - last_pos) > 0.01:
             trades += 1
-        positions[i] = target; last_pos = target
-    if trades < 2: return 0, trades, 0, 0, 0, 0.0
-    strat_rets = positions[:-1] * log_rets[1:n + 1]
-    for i in range(1, n):
-        if abs(positions[i] - positions[i - 1]) > 0.001:
-            strat_rets[i] -= tc * abs(positions[i] - positions[i - 1])
-    cum = np.cumsum(strat_rets); peak = np.maximum.accumulate(cum); dd = cum - peak
-    mdd = abs(float(np.min(dd))) + 1e-9; ann = float(np.mean(strat_rets)) * 880
-    da = float(np.sum(1.0 - np.exp(dd)))  # underwater area in fractional-equity terms
+        positions[i] = target
+        r = target * log_rets[i + 1]
+        if i >= 1 and abs(positions[i] - positions[i - 1]) > 0.001:
+            r -= tc * abs(positions[i] - positions[i - 1])
+        strat_rets[i] = r
+        cum += r
+        if cum > peak:
+            peak = cum
+        last_pos = target
+    if trades < 2:
+        return 0, trades, 0, 0, 0, 0.0
+    cumv = np.cumsum(strat_rets); peakv = np.maximum.accumulate(cumv); ddv = cumv - peakv
+    mdd = abs(float(np.min(ddv))) + 1e-9; ann = float(np.mean(strat_rets)) * 880
+    da = float(np.sum(1.0 - np.exp(ddv)))  # underwater area in fractional-equity terms
     cal = ann / mdd if mdd > 0.001 else 0
     return cal, trades, float(np.sum(strat_rets)), mdd, ann, da
 
