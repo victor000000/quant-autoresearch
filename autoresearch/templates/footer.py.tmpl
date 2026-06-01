@@ -342,9 +342,19 @@ class AutoresearchPipeline(QCAlgorithm):
                 labeler_registry = LABELERS
             except NameError:
                 labeler_registry = {}
+            # ⑦ ENSEMBLE: a "+"-joined labeler (e.g. "triple_barrier+bgm") trains EACH
+            # sub-labeler's model and AVERAGES their calibrated TEST predictions. All
+            # labelers emit preds over the SAME causal test bars (ex = fv & te_m), so the
+            # lists align by index. Decorrelated signals -> lower joint drawdown.
+            ens_parts = None
             if only_label is not None:
-                labeler_registry = ({only_label: labeler_registry[only_label]}
-                                    if only_label in labeler_registry else {})
+                if "+" in only_label:
+                    ens_parts = [p for p in only_label.split("+") if p in labeler_registry]
+                    labeler_registry = {p: labeler_registry[p] for p in ens_parts}
+                else:
+                    labeler_registry = ({only_label: labeler_registry[only_label]}
+                                        if only_label in labeler_registry else {})
+            _ens_preds, _ens_tauc, _ens_vauc = [], [], []
             for label_name, label_fn in labeler_registry.items():
                 try:
                     y, label_cfg, _ = label_fn(
@@ -362,6 +372,11 @@ class AutoresearchPipeline(QCAlgorithm):
                     continue
                 synth_cal, cfg, train_auc, val_auc, n_trades, test_preds, val_da = res
                 if test_preds is None or len(test_preds) == 0:
+                    continue
+                if ens_parts is not None:           # collect for averaging, don't save per-leg
+                    _ens_preds.append(test_preds)
+                    _ens_tauc.append(train_auc)
+                    _ens_vauc.append(val_auc)
                     continue
                 aucdiv = abs(train_auc - val_auc)
 
@@ -407,6 +422,37 @@ class AutoresearchPipeline(QCAlgorithm):
                 self.log(f"CELL {axis}_{label_name}: val_da={round(val_da,4)} "
                          f"synth_cal={round(synth_cal,4)} train_auc={round(train_auc,4)} "
                          f"val_auc={round(val_auc,4)} aucdiv={round(aucdiv,4)} n_trades={n_trades}")
+
+            # ⑦ ENSEMBLE: average the sub-labelers' calibrated TEST predictions (index-aligned,
+            # same ex bars). Save ONE cell keyed by the "+"-joined name (matches the driver's
+            # cell string + infer CELL), so infer replays the averaged signal.
+            if ens_parts is not None and len(_ens_preds) >= 2:
+                ml = min(len(p) for p in _ens_preds)
+                ens_list = []
+                for i in range(ml):
+                    avg_p = sum(float(pp[i]["pred"]) for pp in _ens_preds) / len(_ens_preds)
+                    ens_list.append({"time": _ens_preds[0][i]["time"],
+                                     "pred": float(avg_p), "above_ma": True})
+                e_tauc = sum(_ens_tauc) / len(_ens_tauc)
+                e_vauc = sum(_ens_vauc) / len(_ens_vauc)
+                ename = "+".join(ens_parts)
+                ekey = f"autoresearch/{TICKER}/cell_{axis}_{ename}_{sizing}_t{int(round(thresh*100))}.json"
+                self.object_store.save(ekey, json.dumps({
+                    "ticker": TICKER, "axis": axis, "label": ename, "cfg": f"ensemble_{ename}",
+                    "thresh": thresh, "sizing": sizing, "synth_cal": 0.0, "val_da": 0.0,
+                    "train_auc": round(e_tauc, 4), "val_auc": round(e_vauc, 4),
+                    "n_trades": len(ens_list), "predictions": ens_list,
+                }))
+                cells.append({"key": ekey, "axis": axis, "label": ename, "synth_cal": 0.0,
+                              "val_da": 0.0, "train_auc": round(e_tauc, 4), "val_auc": round(e_vauc, 4),
+                              "aucdiv": round(abs(e_tauc - e_vauc), 4), "n_trades": len(ens_list)})
+                best_key = ekey
+                best_cal = 0.0
+                best_tauc = e_tauc
+                best_vauc = e_vauc
+                best_axis = axis
+                self.log(f"ENSEMBLE {axis}_{ename}: legs={len(_ens_preds)} n_pred={len(ens_list)} "
+                         f"train_auc={round(e_tauc,4)} val_auc={round(e_vauc,4)}")
 
         # Manifest of all cells (for the driver / infer cell selection).
         self.object_store.save(f"autoresearch/{TICKER}/manifest.json", json.dumps({

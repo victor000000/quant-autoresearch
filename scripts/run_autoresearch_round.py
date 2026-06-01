@@ -257,8 +257,10 @@ def _validate_cfg(cfg):
         raise ValueError(f"ticker {cfg['ticker']!r} not in CORE_7 {CORE_7}")
     if cfg["axis"] not in VALID_AXES:
         raise ValueError(f"axis {cfg['axis']!r} not in {VALID_AXES}")
-    if cfg["labeler"] not in VALID_LABELERS:
-        raise ValueError(f"labeler {cfg['labeler']!r} not in {VALID_LABELERS}")
+    # labeler may be a single name OR a "+"-joined ENSEMBLE (⑦), e.g. "triple_barrier+bgm".
+    for _lp in str(cfg["labeler"]).split("+"):
+        if _lp not in VALID_LABELERS:
+            raise ValueError(f"labeler part {_lp!r} (of {cfg['labeler']!r}) not in {VALID_LABELERS}")
     if cfg["sizing"] not in VALID_SIZING:
         raise ValueError(f"sizing {cfg['sizing']!r} not in {VALID_SIZING}")
     cfg["thresh"] = float(cfg["thresh"])

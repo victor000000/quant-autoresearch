@@ -44,11 +44,12 @@ def _prune_labelers(src, keep):
     try:
         tree = ast.parse(src)
         funcs = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
-        keepfn = f"generate_labels_{keep}"
-        if keepfn not in funcs:
+        keeps = keep.split("+") if "+" in keep else [keep]    # "+"-joined = ENSEMBLE (⑦)
+        keepfns = [f"generate_labels_{k}" for k in keeps if f"generate_labels_{k}" in funcs]
+        if not keepfns:
             return src
-        # transitive closure of top-level funcs reachable from keepfn + compute_forward_metrics
-        need, stack = set(), [keepfn, "compute_forward_metrics"]
+        # transitive closure of top-level funcs reachable from the kept labelers + compute_forward_metrics
+        need, stack = set(), list(keepfns) + ["compute_forward_metrics"]
         while stack:
             fn = stack.pop()
             if fn in need or fn not in funcs:
@@ -57,6 +58,8 @@ def _prune_labelers(src, keep):
             for sub in ast.walk(funcs[fn]):
                 if isinstance(sub, ast.Name) and sub.id in funcs and sub.id not in need:
                     stack.append(sub.id)
+        minimal_labelers = "{" + ", ".join(f'"{k}": generate_labels_{k}' for k in keeps
+                                           if f"generate_labels_{k}" in funcs) + "}"
         new_body = []
         for n in tree.body:
             if isinstance(n, (ast.Import, ast.ImportFrom)):
@@ -67,7 +70,7 @@ def _prune_labelers(src, keep):
             elif isinstance(n, ast.Assign):
                 tgts = [t.id for t in n.targets if isinstance(t, ast.Name)]
                 if "LABELERS" in tgts:
-                    new_body.append(ast.parse(f'LABELERS = {{"{keep}": {keepfn}}}').body[0])
+                    new_body.append(ast.parse(f'LABELERS = {minimal_labelers}').body[0])
                 elif "FEATURED_LABELERS" in tgts or "BASELINE_LABELERS" in tgts:
                     continue
                 else:
