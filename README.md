@@ -1,58 +1,45 @@
-# Quant Workspace — Wang ML Pipeline
+# Quant Autoresearch Workspace
 
-Per-folder map. Run scripts from this root directory.
+An autonomous ML quant-research loop (inspired by [karpathy/autoresearch](https://github.com/karpathy/autoresearch))
+applied to ETF trading on QuantConnect. An agent edits the pipeline, backtests on QC, scores on **REAL
+out-of-sample Calmar + Drawdown Area**, keeps-if-better, and writes a tech report each round.
 
-## Top-level
+**Start here:** [`autoresearch/program.md`](autoresearch/program.md) — the one-page contract (goal, what's
+editable, the loop, the rules).
+
+## Layout
 
 | Path | Purpose |
 |---|---|
-| `pdfs/` | Reference books (AFML, CFI, MLAM, Wang course slides) |
-| `yiweihua_books/` | 姜伟生 Iris series (218 PDF chapters) — preserved |
-| `qa_doc/` | `wang_qa.tex/pdf`, V4-V6 final results, AFML excerpts |
-| `qc/` | QuantConnect API helpers + active state |
-| `qc/api.py` | Raw QC Cloud API (submit/read/poll) |
-| `qc/inflight.json` | Active backtests being polled |
-| `qc/last_results.json` | Most-recent results cache |
-| `qc/results/` | Archived JSON result dumps (15 files) |
-| `qc/.creds.json` | QC credentials (mode 0o600, never commit) |
-| `scripts/` | `run_*.py` — backtest submission scripts |
-| `tools/` | QC reporting + reorg utilities |
-| `lean_workspace/` | LEAN/QuantConnect projects |
-| `lean_workspace/_pipeline_v*_train\|infer\|ens/` | Active pipelines |
-| `lean_workspace/0[1-8]_*/` | Numbered stage scaffolds |
-| `lean_workspace/qqq_*/`, `slx_*/`, etc. | Historical experiments |
-| `uni_videos/` | Today's Bilibili video (BV1VZLi6PE2B) + transcripts |
-| `uni_yt/` | Prior Wang video transcripts (large-v3) |
-| `data_cache/` | Downloaded reference data |
-| `.venv-bili/` | Python venv for yutto (bilibili dl) |
+| `autoresearch/` | **The project.** |
+| `autoresearch/program.md` | The contract / instructions (read first). |
+| `autoresearch/harness/` | **LOCKED scorer** — `qc_client.py`, `orchestrator.py`, `evaluator.py` (gates G0–G4), `constants.py`. |
+| `autoresearch/templates/` | `header/footer/infer` rendered into the QC `main.py` (footer downstream + infer sizing are editable). |
+| `autoresearch/modules/` | **Editable pipeline** — `bar_builder.py` ① axis, `labeler.py` ② labels, `features.py` ③, `trainer.py` ④–⑧. |
+| `autoresearch/reports/` | **Per-round tech reports as HTML** (`round_N.html`, MathJax math) + `index.html` + `TEMPLATE.html`. |
+| `autoresearch/knowledge.json` · `techniques.json` | Shared memory (findings, dead-ends, idea queue). |
+| `autoresearch/results.tsv` · `*_results.csv` | Result logs. |
+| `scripts/` | QC drivers: `run_axis_label_study.py` (serial), `run_axis_label_parallel.py` (2-node), `_minify_check.py`; `diag/` scratch. |
+| `qc/` | QC Cloud API client + `.creds.json` (gitignored). |
+| `docs/research/` | Mined technique catalog + strategy-type spec. |
+| `docs/superpowers/` | Experiment design + specs. `docs/legacy/` | older session summaries. |
+| `uni/`, `uni_yt/` | Wang ("uni 的量化日记") course transcripts (idea source). |
+| `pdfs/` (gitignored) · `qa_doc/` | AFML/MLAM/causal-investing + Wang course PDF + Q&A. |
+| `_archive/` (gitignored) | Prior experiments, predecessor pipelines, corrupt-git backup, reset memory. |
 
 ## Running
 
-Scripts assume cwd = workspace root:
-
 ```bash
-cd /home/txy/lb
-python3 scripts/run_v4_train.py
+cd /home/ubuntu/lb
+# one experiment, both QC nodes:
+python3 scripts/run_axis_label_parallel.py QQQ,IWM,EEM,XLE,HYG,TLT,GLD <axis> <labelers_csv>
 ```
 
-QC API uses `qc/api.py`; inflight tracked in `qc/inflight.json`.
+QC project 31338454; each backtest is hard-capped at 5 min (auto-deleted on overrun). Splits: train ≤ 2021-08,
+val ≤ 2023-08, test ≤ 2026-06 (OOS). Universe = 7 core ETFs (QQQ IWM EEM XLE HYG TLT GLD).
 
-## Pipeline versions tested
+## Status (rounds so far)
 
-- v3: RV/Vol axis + 3-state [r,|r|] HMM
-- **v4: Dollar bars + Trend Scanning** — winner for liquid stable ETFs
-- v5: dollar + CUSUM
-- **v6: Tick-count bars + TS** — winner for volume-drift ETFs
-- v7: Renko + TS
-- v8: EWMA-adaptive dollar + TS
-- v9: dollar + K-bar persistence
-- v10: dollar + extreme-move
-- v11: dollar + combined (TS ∧ TB)
-- v12: dollar + KMeans regime
-- v14: range bars + TS
-- v15: bull-bear segmentation labels
-
-Per-asset best `Cal` (val-honest):
-XLE 2.25 (v4) · GLD 1.31 (v4) · IWM 0.88 (v4) · QQQ 0.86 (v4) · EEM 0.64 (v6) · HYG 0.40 (v4) · TLT 0.25 (v6)
-
-See `qa_doc/V4_V6_FINAL_RESULTS.md` for full report.
+Best **active** (>80-trade) config: EEM dollar Calmar 1.33 / GLD-complex on vol ~1.6. No single ETF clears the
+G1 > 3.0 gate yet — the frontier is cross-asset pairs (archive: best pair 2.91). See `reports/index.html` and
+`autoresearch/knowledge.json`.
