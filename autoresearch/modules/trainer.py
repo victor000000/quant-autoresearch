@@ -3,6 +3,7 @@
 Orchestrates: dim reduction → model → calibration → ensemble → consensus.
 Imports from sibling modules: calibrator, ensembler, consensus.
 """
+import math
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -15,10 +16,46 @@ import xgboost as xgb
 # from consensus import apply_consensus, consensus_stats
 
 
+# ------------------------------------------------------------------------- #
+# Module ⑧ sizing — de Prado CDF bet-size × causal inverse-vol overlay.       #
+# A-PRIORI params (NOT swept): VOL_FAST=20, VOL_SLOW=100, VOL_FLOOR=0.25,     #
+# leverage cap 1.0. Used IDENTICALLY by realistic_cstats (synth/val) and the  #
+# standalone infer template (real OOS) so train/infer stay consistent.        #
+# ------------------------------------------------------------------------- #
+VOL_FAST = 20
+VOL_SLOW = 100
+VOL_FLOOR = 0.25
+
+
+def _cdf_bet(p, thresh):
+    """de Prado prob->size: gate at thresh, then 2*Phi(z)-1, z=(p-.5)/sqrt(p(1-p)).
+    Long-only, clipped to [0,1]. Gentle slope => partial sizes, not saturation."""
+    if p <= thresh:
+        return 0.0
+    pp = min(max(p, 1e-6), 1 - 1e-6)
+    z = (pp - 0.5) / np.sqrt(pp * (1.0 - pp))
+    b = 2.0 * 0.5 * (1.0 + math.erf(z / np.sqrt(2.0))) - 1.0  # 2*Phi(z)-1
+    return float(min(1.0, max(0.0, b)))
+
+
+def _invvol_mult(rbuf):
+    """Causal inverse-vol overlay from a trailing buffer of bar log-returns.
+    g = clip(slow_vol / fast_vol, VOL_FLOOR, 1.0): de-lever when short-term vol
+    spikes above its slower baseline (where drawdowns cluster)."""
+    m = len(rbuf)
+    if m < VOL_FAST + 2:
+        return 1.0
+    fast = float(np.std(rbuf[-VOL_FAST:]))
+    slow = float(np.std(rbuf[-min(m, VOL_SLOW):]))
+    if fast <= 1e-9:
+        return 1.0
+    return float(min(1.0, max(VOL_FLOOR, slow / fast)))
+
+
 def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005, thresh=0.45):
     """Realistic backtest statistics with transaction costs.
-    `thresh` is the per-ETF entry threshold; it gates entries AND sizes positions
-    (probs-thresh)*200, so it MUST equal the threshold infer executes with.
+    `thresh` gates entries; sizing = de Prado CDF bet * causal inverse-vol overlay
+    (see _cdf_bet/_invvol_mult). It MUST match the infer template's rule.
     Returns: (calmar, trades, total_return, mdd, annual_return, drawdown_area)
     where drawdown_area DA = Σ_t (1 - E_t/peak_t) on the equity curve (lower=better).
     """
@@ -26,11 +63,14 @@ def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005, thresh=0.45):
     if n < 2:
         return 0, 0, 0, 0, 0, 0.0
     positions = np.zeros(n + 1); last_pos = 0.0; trades = 0
+    rbuf = []  # trailing bar log-returns (causal: only past returns)
     for i in range(n):
-        target = min(1.0, (probs[i] - thresh) * 200) if (probs[i] > thresh) else 0.0
+        g = _invvol_mult(rbuf)
+        target = _cdf_bet(probs[i], thresh) * g
         if (last_pos == 0 and target > 0) or (last_pos > 0 and target == 0) or abs(target - last_pos) > 0.01:
             trades += 1
         positions[i] = target; last_pos = target
+        rbuf.append(float(log_rets[i + 1]) if i + 1 < len(log_rets) else 0.0)
     if trades < 2: return 0, trades, 0, 0, 0, 0.0
     strat_rets = positions[:-1] * log_rets[1:n + 1]
     for i in range(1, n):

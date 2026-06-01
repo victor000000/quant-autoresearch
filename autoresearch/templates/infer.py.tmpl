@@ -1,6 +1,34 @@
 from AlgorithmImports import *
 import json
+import math
+import numpy as np
 from datetime import datetime
+
+# Module ⑧ sizing — MUST match trainer.realistic_cstats (_cdf_bet / _invvol_mult).
+# A-PRIORI params (not swept): VOL_FAST=20, VOL_SLOW=100, VOL_FLOOR=0.25, cap 1.0.
+VOL_FAST = 20
+VOL_SLOW = 100
+VOL_FLOOR = 0.25
+
+
+def _cdf_bet(p, thresh):
+    if p <= thresh:
+        return 0.0
+    pp = min(max(p, 1e-6), 1 - 1e-6)
+    z = (pp - 0.5) / math.sqrt(pp * (1.0 - pp))
+    b = 2.0 * 0.5 * (1.0 + math.erf(z / math.sqrt(2.0))) - 1.0  # 2*Phi(z)-1
+    return float(min(1.0, max(0.0, b)))
+
+
+def _invvol_mult(rbuf):
+    m = len(rbuf)
+    if m < VOL_FAST + 2:
+        return 1.0
+    fast = float(np.std(rbuf[-VOL_FAST:]))
+    slow = float(np.std(rbuf[-min(m, VOL_SLOW):]))
+    if fast <= 1e-9:
+        return 1.0
+    return float(min(1.0, max(VOL_FLOOR, slow / fast)))
 
 TICKER = "__TICKER__"
 # Cell selector "{axis}_{label}" substituted by the driver. If left literal
@@ -20,6 +48,9 @@ class AutoresearchInfer(QCAlgorithm):
         self.meta = {}
         self._eq = []          # daily equity, for Drawdown Area
         self._last_day = None
+        self._rbuf = []        # trailing bar log-returns (causal, for inverse-vol)
+        self._last_close = None
+        self._cur_w = 0.0      # current target weight (rebalance dead-band)
         try:
             if CELL == "__CELL__":
                 ptr = json.loads(self.object_store.read(f"autoresearch/{TICKER}/latest_key.json"))
@@ -54,11 +85,22 @@ class AutoresearchInfer(QCAlgorithm):
             pred_time = b.end_time
         if b.end_time >= pred_time:
             self.idx += 1
-            if p["pred"] > self.thresh:
-                # SAME threshold for gating AND sizing as synthetic selection.
-                self.set_holdings(self.sym, min(1.0, (p["pred"] - self.thresh) * 200))
-            else:
-                self.liquidate(self.sym)
+            # Inverse-vol overlay uses returns KNOWN at this bar (causal): decide
+            # size from _rbuf, THEN append this bar's realized return.
+            g = _invvol_mult(self._rbuf)
+            w = _cdf_bet(float(p["pred"]), self.thresh) * g
+            # Rebalance dead-band 0.01 matches realistic_cstats trade accounting.
+            if w <= 0.0:
+                if self._cur_w != 0.0:
+                    self.liquidate(self.sym)
+                    self._cur_w = 0.0
+            elif (self._cur_w == 0.0) or abs(w - self._cur_w) > 0.01:
+                self.set_holdings(self.sym, w)
+                self._cur_w = w
+            c = float(b.close)
+            if self._last_close is not None and self._last_close > 0:
+                self._rbuf.append(math.log(c / self._last_close))
+            self._last_close = c
 
     def on_end_of_algorithm(self):
         # Real OOS Drawdown Area: DA = Σ_t (1 - E_t / peak_t) on daily equity.
