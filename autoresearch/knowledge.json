@@ -1771,6 +1771,12 @@
         "type": "finding",
         "phase": "IWM",
         "label": "MILESTONE: leak-fix re-validation COMPLETE. Honest leaderboard HYG 2.21, EEM 2.15, GLD 1.99, TLT 1.52, QQQ 1.24, IWM 1.14, XLE 0.64. Timing models were leak-inflated (XLE); overlays honest-up; EEM newly modernized"
+      },
+      {
+        "id": "r73",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R73 XLE (new weakest): EEM recipe triple_barrier@0.30=0.55 (DA14.5), ensemble 0.23 - neither beats 0.64. XLE energy too noisy to time; EEM recipe doesn't generalize"
       }
     ],
     "edges": [
@@ -2508,6 +2514,16 @@
         "src": "r72",
         "dst": "f_qqq_pure",
         "label": "confirms: pure trender rejects timing"
+      },
+      {
+        "src": "f_sweep_done",
+        "dst": "r73",
+        "label": "resume on weakest XLE"
+      },
+      {
+        "src": "r71",
+        "dst": "r73",
+        "label": "EEM recipe tested on XLE \u2014 fails (noisy)"
       }
     ],
     "running": []
