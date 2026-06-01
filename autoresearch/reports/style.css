@@ -1,69 +1,366 @@
-/* Autoresearch round reports — polished, readable. */
-:root{
-  --ink:#11181c; --mut:#5b6770; --faint:#8b95a1; --line:#e6e9ec; --line2:#eef1f4;
-  --page:#f4f6f8; --card:#ffffff; --accent:#0a66c2; --accent-soft:#e8f1fb;
-  --pos:#1a7f4b; --pos-soft:#e6f6ec; --neg:#c92a3b; --neg-soft:#fdecee;
-  --amber:#9a6700; --amber-soft:#fff8e6; --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.06);
-  --r:14px;
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
-  color:var(--ink);background:var(--page);margin:0;padding:2.4rem 1rem 4rem}
-.wrap{max-width:900px;margin:0 auto}
-a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
-.nav{font-size:.9em;color:var(--mut);margin:0 0 1.1rem;display:flex;gap:.6rem;align-items:center}
-.nav .sep{color:var(--faint)}
+/* ============================================================================
+   Autoresearch · Round Reports — "ATELIER"
+   Quiet-luxury minimal. Near-white canvas, one oxblood accent, immense restraint.
+   Display: Bricolage Grotesque (precise modern grotesk, tight tracking)
+   Body:    Newsreader (refined readable serif, built for long-form data prose)
+   Mono:    IBM Plex Mono (tabular numerics, code, ticker chips)
+   ========================================================================== */
 
-/* hero */
-.hero{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
-  padding:1.5rem 1.7rem;margin-bottom:1.1rem}
-.hero .eyebrow{font-size:.74rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
-.hero h1{font-size:1.85rem;line-height:1.15;margin:.25em 0 .1em;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
-.chip{font:700 .9rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;background:#11181c;color:#fff;
-  padding:.4em .6em;border-radius:8px;letter-spacing:.02em}
-.pill{font-size:.78rem;font-weight:700;letter-spacing:.03em;padding:.32em .8em;border-radius:999px;text-transform:uppercase}
-.pill.keep{color:var(--pos);background:var(--pos-soft);border:1px solid #bce8cd}
-.pill.discard{color:var(--mut);background:#eef1f4;border:1px solid #dde2e7}
-.hero .tldr{margin:.7rem 0 0;font-size:1.04rem;color:#27313a}
+:root{
+  /* ---- ink + neutrals (near-white, warm) ---- */
+  --ink:#1a1714;          /* near-black, warm */
+  --ink-2:#3b3631;        /* secondary text */
+  --mut:#6f675e;          /* muted */
+  --faint:#9c948a;        /* eyebrows / labels */
+  --paper:#f6f4ef;        /* page canvas — warm near-white */
+  --paper-2:#efece5;      /* recessed wells / table head */
+  --card:#fdfcfa;         /* card surface */
+  --line:#e4dfd6;         /* hairline */
+  --line-2:#ece8e0;       /* faintest hairline (interior rules) */
+
+  /* ---- the one accent: oxblood ---- */
+  --accent:#7a2230;
+  --accent-deep:#5e1924;
+  --accent-soft:#f4e9ea;
+  --accent-line:#e6cdce;
+
+  /* ---- semantic ---- */
+  --pos:#2f6d4a;          /* deep green — KEEP / positive */
+  --pos-soft:#e9f1ea;
+  --pos-line:#cadfce;
+  --neg:#a3402f;          /* terracotta-red — DISCARD / negative */
+  --neg-soft:#f6eae6;
+  --neg-line:#e7cfc6;
+  --amber:#8a6a1f;        /* harmonizes with #fff3cd graph nodes */
+  --amber-soft:#faf3df;
+  --amber-line:#ece0bc;
+
+  /* ---- depth ---- */
+  --shadow-sm:0 1px 1px rgba(40,30,20,.03), 0 2px 6px rgba(40,30,20,.04);
+  --shadow:0 1px 2px rgba(40,30,20,.035), 0 10px 30px -12px rgba(40,30,20,.10);
+  --shadow-lift:0 2px 4px rgba(40,30,20,.05), 0 18px 44px -16px rgba(40,30,20,.16);
+
+  --r:16px;
+  --r-sm:10px;
+  --maxw:880px;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+
+body{
+  font:400 17px/1.72 "Newsreader", Georgia, "Times New Roman", serif;
+  color:var(--ink);
+  margin:0;
+  padding:3rem 1.15rem 6rem;
+  letter-spacing:.002em;
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+
+  /* layered atmosphere: warm paper + a whisper of grid + a top accent wash */
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(120% 70% at 50% -10%, rgba(122,34,48,.045) 0%, rgba(122,34,48,0) 55%),
+    linear-gradient(var(--line-2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-2) 1px, transparent 1px);
+  background-size:auto, 56px 56px, 56px 56px;
+  background-position:center top, center top, center top;
+  background-attachment:fixed, fixed, fixed;
+}
+
+.wrap{max-width:var(--maxw);margin:0 auto}
+
+/* keep grid texture from washing out the content column */
+.wrap::before{content:none}
+
+a{color:var(--accent);text-decoration:none;text-underline-offset:.22em;
+  text-decoration-thickness:.5px;transition:color .18s ease}
+a:hover{color:var(--accent-deep);text-decoration:underline;
+  text-decoration-color:var(--accent-line)}
+
+p{margin:.55em 0}
+b,strong{font-weight:600;color:var(--ink)}
+
+/* ---------------------------------------------------------------- nav ---- */
+.nav{
+  font:500 .82rem/1 "Bricolage Grotesque", sans-serif;
+  letter-spacing:.01em;color:var(--mut);
+  display:flex;gap:.7rem;align-items:center;
+  margin:0 0 1.6rem;
+  animation:rise .7s cubic-bezier(.2,.7,.2,1) both;
+}
+.nav a{color:var(--mut);position:relative}
+.nav a:hover{color:var(--accent)}
+.nav .sep{color:var(--line);font-weight:400}
+
+/* --------------------------------------------------------------- hero ---- */
+.hero{
+  position:relative;
+  background:
+    linear-gradient(180deg, #fffefb 0%, var(--card) 100%);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+  padding:2.1rem 2.2rem 2rem;
+  margin-bottom:1.2rem;
+  overflow:hidden;
+  animation:rise .8s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay:.04s;
+}
+/* a single oxblood seam down the left — the one refined flourish */
+.hero::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--accent),var(--accent-deep));
+}
+.hero .eyebrow{
+  font:600 .72rem/1 "Bricolage Grotesque", sans-serif;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+}
+.hero h1{
+  font:550 2.5rem/1.06 "Bricolage Grotesque", sans-serif;
+  letter-spacing:-.028em;
+  margin:.5em 0 .12em;
+  display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;
+  color:var(--ink);
+}
+.hero .tldr{
+  margin:.95rem 0 0;font-size:1.12rem;line-height:1.62;color:var(--ink-2);
+  max-width:64ch;
+}
 .hero .tldr b{color:var(--ink)}
 
-/* stat cards */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.7rem;margin:1.1rem 0}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.85rem 1rem;box-shadow:var(--shadow)}
-.stat .k{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
-.stat .v{font:700 1.6rem/1.1 -apple-system,Inter,system-ui;margin-top:.25rem;font-variant-numeric:tabular-nums}
-.stat .v.pos{color:var(--pos)} .stat .v.neg{color:var(--neg)}
-.stat .sub{font-size:.78rem;color:var(--mut);margin-top:.15rem}
+/* ticker chip — mono, ink slab */
+.chip{
+  font:600 1rem/1 "IBM Plex Mono", ui-monospace, monospace;
+  background:var(--ink);color:#fbf7f0;
+  padding:.46em .62em .42em;border-radius:8px;
+  letter-spacing:.04em;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06), 0 1px 2px rgba(40,30,20,.25);
+}
 
-/* sections */
-section.block{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
-  padding:1.25rem 1.5rem;margin:1.1rem 0}
-h2{font-size:1.12rem;margin:0 0 .7em;color:#1b242c;letter-spacing:-.01em}
+/* status pill */
+.pill{
+  font:600 .7rem/1 "Bricolage Grotesque", sans-serif;
+  letter-spacing:.13em;text-transform:uppercase;
+  padding:.5em .85em .46em;border-radius:999px;
+  display:inline-flex;align-items:center;gap:.4em;
+}
+.pill::before{content:"";width:.5em;height:.5em;border-radius:999px;background:currentColor;opacity:.9}
+.pill.keep{color:var(--pos);background:var(--pos-soft);border:1px solid var(--pos-line)}
+.pill.discard{color:var(--neg);background:var(--neg-soft);border:1px solid var(--neg-line)}
+
+/* -------------------------------------------------------------- stats ---- */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:.85rem;margin:1.2rem 0;
+}
+.stat{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:1.05rem 1.15rem 1rem;
+  box-shadow:var(--shadow-sm);
+  transition:transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease, border-color .25s ease;
+  animation:rise .7s cubic-bezier(.2,.7,.2,1) both;
+}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:#d9d2c6}
+.stats .stat:nth-child(1){animation-delay:.10s}
+.stats .stat:nth-child(2){animation-delay:.17s}
+.stats .stat:nth-child(3){animation-delay:.24s}
+.stats .stat:nth-child(4){animation-delay:.31s}
+.stats .stat:nth-child(5){animation-delay:.38s}
+
+.stat .k{
+  font:600 .68rem/1.2 "Bricolage Grotesque", sans-serif;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--faint);
+}
+.stat .v{
+  font:500 2.05rem/1.05 "IBM Plex Mono", ui-monospace, monospace;
+  letter-spacing:-.02em;
+  margin-top:.42rem;color:var(--ink);
+  font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
+}
+.stat .v.pos{color:var(--pos)}
+.stat .v.neg{color:var(--neg)}
+.stat .sub{
+  font:400 .8rem/1.4 "Newsreader", serif;color:var(--mut);
+  margin-top:.35rem;font-style:italic;
+}
+
+/* ------------------------------------------------------------ sections --- */
+section.block, section.causalgraph{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+  padding:1.6rem 1.9rem;
+  margin:1.2rem 0;
+  animation:rise .7s cubic-bezier(.2,.7,.2,1) both;
+}
+section.block:nth-of-type(1){animation-delay:.34s}
+section.block:nth-of-type(2){animation-delay:.40s}
+section.block:nth-of-type(3){animation-delay:.46s}
+section.block:nth-of-type(4){animation-delay:.52s}
+section.causalgraph{animation-delay:.56s}
+
+h2{
+  font:550 1.26rem/1.2 "Bricolage Grotesque", sans-serif;
+  letter-spacing:-.018em;color:var(--ink);
+  margin:0 0 1em;
+  padding-bottom:.6em;
+  border-bottom:1px solid var(--line-2);
+  display:flex;align-items:baseline;gap:.55em;
+}
+/* small oxblood index tick before each section title */
+h2::before{
+  content:"";flex:0 0 auto;width:7px;height:7px;border-radius:2px;
+  background:var(--accent);transform:translateY(-1px);
+  box-shadow:0 0 0 3px var(--accent-soft);
+}
 section.block:first-of-type h2{margin-top:0}
+section.block p{color:var(--ink-2);max-width:68ch}
 
-/* table */
-table{border-collapse:separate;border-spacing:0;width:100%;font-size:.95em;overflow:hidden;
-  border:1px solid var(--line);border-radius:10px}
-th,td{padding:.6em .8em;text-align:left;border-bottom:1px solid var(--line2)}
-th{background:#f7f9fb;font-weight:650;color:#3a444d;font-size:.86em;letter-spacing:.02em}
+/* --------------------------------------------------------------- table --- */
+table{
+  border-collapse:separate;border-spacing:0;width:100%;
+  font-size:.96rem;
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  overflow:hidden;
+  box-shadow:var(--shadow-sm);
+}
+th,td{
+  padding:.72em .95em;text-align:left;
+  border-bottom:1px solid var(--line-2);
+  vertical-align:top;
+}
+thead th{
+  background:var(--paper-2);
+  font:600 .72rem/1.3 "Bricolage Grotesque", sans-serif;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--mut);
+  border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+tbody tr{transition:background .18s ease}
+tbody tr:hover{background:var(--paper-2)}
 tbody tr:last-child td{border-bottom:0}
+
+/* winner row — quietly tinted, oxblood-marked */
 tbody tr.win{background:var(--pos-soft)}
-tbody tr.win td:first-child{font-weight:600}
-tbody tr.win td:first-child::after{content:" ★";color:var(--pos)}
-td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-.pos{color:var(--pos);font-weight:600} .neg{color:var(--neg);font-weight:600}
-code{background:#eef1f4;padding:.12em .42em;border-radius:6px;font:.88em ui-monospace,SFMono-Regular,Menlo,monospace}
+tbody tr.win:hover{background:#e2eee4}
+tbody tr.win td{border-bottom-color:var(--pos-line)}
+tbody tr.win td:first-child{font-weight:600;position:relative}
+tbody tr.win td:first-child::before{
+  content:"";position:absolute;left:0;top:.55em;bottom:.55em;width:3px;
+  border-radius:0 2px 2px 0;background:var(--pos);
+}
+tbody tr.win td:first-child{padding-left:1.15em}
 
-/* callouts */
-.tldr-box{background:var(--accent-soft);border:1px solid #cfe2f7;border-radius:12px;padding:.8em 1.1em;margin:.2em 0}
-.next-box{background:var(--amber-soft);border:1px solid #f1e4ad;border-radius:12px;padding:.8em 1.1em;color:#5c4a08}
-.small{color:var(--mut);font-size:.9em}
-p{margin:.5em 0}
+/* numeric cells — tabular, right-aligned, mono */
+td.num, th.num{text-align:right;white-space:nowrap}
+td.num{
+  font:500 .94rem/1.4 "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
+  color:var(--ink-2);
+}
+.pos{color:var(--pos);font-weight:600}
+.neg{color:var(--neg);font-weight:600}
+td.small,.small{color:var(--mut);font-size:.88rem;line-height:1.45}
 
-/* causal graph */
-section.causalgraph{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-  box-shadow:var(--shadow);padding:1.25rem 1.5rem;margin:1.1rem 0}
-button{cursor:pointer;padding:.35em .8em;margin-right:.4em;border:1px solid var(--line);
-  border-radius:8px;background:#f7f9fb;font-size:.9em;color:#2b343c}
-button:hover{background:#eef1f4}
+/* inline code + paths */
+code{
+  font:500 .86em/1.5 "IBM Plex Mono", ui-monospace, monospace;
+  background:var(--paper-2);
+  border:1px solid var(--line-2);
+  padding:.1em .42em;border-radius:6px;
+  color:var(--accent-deep);
+  word-break:break-word;
+}
+td code{background:transparent;border:none;padding:0;color:var(--ink)}
+
+/* --------------------------------------------------------------- boxes --- */
+.tldr-box{
+  background:var(--accent-soft);border:1px solid var(--accent-line);
+  border-radius:var(--r-sm);padding:.95em 1.2em;margin:.3em 0;color:var(--ink-2);
+}
+.next-box{
+  position:relative;
+  background:var(--amber-soft);
+  border:1px solid var(--amber-line);
+  border-radius:var(--r-sm);
+  padding:1em 1.25em 1em 1.5em;
+  color:#5e4a16;line-height:1.6;
+}
+.next-box::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  border-radius:var(--r-sm) 0 0 var(--r-sm);background:var(--amber);
+}
+.next-box code{background:#f3ead0;border-color:#e6d8ad;color:#6b521a}
+
+/* ---------------------------------------------------------- causalgraph -- */
+section.causalgraph p{color:var(--ink-2)}
+section.causalgraph [id^="cg"]{
+  border:1px solid var(--line)!important;
+  border-radius:var(--r-sm)!important;
+  background:
+    radial-gradient(110% 80% at 50% 0%, #fffefb 0%, var(--card) 60%),
+    var(--card)!important;
+  box-shadow:inset 0 1px 3px rgba(40,30,20,.04);
+}
+
+/* legend chips inherit inline node colors from the HTML — keep them crisp */
+section.causalgraph span[style]{
+  font:500 .82em/1 "IBM Plex Mono", ui-monospace, monospace!important;
+  border-radius:5px!important;
+}
+
+button{
+  cursor:pointer;
+  font:500 .82rem/1 "Bricolage Grotesque", sans-serif;
+  letter-spacing:.01em;
+  padding:.55em .95em;margin-right:.45em;
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  background:linear-gradient(180deg,#fffefb,var(--paper-2));
+  color:var(--ink-2);
+  box-shadow:var(--shadow-sm);
+  transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease, color .2s ease;
+}
+button:hover{
+  color:var(--accent-deep);border-color:var(--accent-line);
+  background:linear-gradient(180deg,#fff,var(--accent-soft));
+  box-shadow:var(--shadow);
+}
+button:active{transform:translateY(1px);box-shadow:var(--shadow-sm)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* vis-network navigation buttons — soften to match the palette */
+.vis-network .vis-navigation .vis-button{filter:saturate(.6) opacity(.85)}
+
+/* MathJax inline shouldn't break the serif rhythm */
+mjx-container{color:var(--ink)}
+
+/* --------------------------------------------------------------- motion -- */
+@keyframes rise{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+
+/* ------------------------------------------------------------ responsive - */
+@media (max-width:640px){
+  body{padding:1.6rem .8rem 4rem;font-size:16px}
+  .hero{padding:1.5rem 1.4rem}
+  .hero h1{font-size:2rem}
+  .hero .tldr{font-size:1.04rem}
+  section.block, section.causalgraph{padding:1.2rem 1.2rem}
+  table{font-size:.9rem}
+  th,td{padding:.6em .65em}
+  .stat .v{font-size:1.8rem}
+}
