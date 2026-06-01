@@ -323,7 +323,7 @@ class AutoresearchPipeline(QCAlgorithm):
                     continue
                 aucdiv = abs(train_auc - val_auc)
 
-                key = f"autoresearch/{TICKER}/cell_{axis}_{label_name}.json"
+                key = f"autoresearch/{TICKER}/cell_{axis}_{label_name}_{sizing}_t{thresh}.json"
                 # Per-cell train/val metrics saved in the payload so the infer
                 # backtest can echo them as runtime stats (the driver can't read
                 # ObjectStore) and the per-round report has everything per cell.

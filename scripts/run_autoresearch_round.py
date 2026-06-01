@@ -407,7 +407,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler']}"   # matches footer's saved cell key
+            cell = f"{cfg['axis']}_{cfg['labeler']}_{cfg['sizing']}_t{cfg['thresh']}"   # config-unique; matches footer key
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")
