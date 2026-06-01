@@ -66,7 +66,7 @@ def _size(p, thresh, sizing, rbuf):
                 fast = float(np.std(rbuf[-_VOL_FAST:]))
                 slow = float(np.std(rbuf[-min(m, _VOL_SLOW):]))
                 if fast > 1e-9:
-                    w *= float(min(1.0, max(0.6, slow / fast)))
+                    w *= float(min(1.0, max(0.45, slow / fast)))
         return w
     if sizing == "binary":
         return 1.0 if p > thresh else 0.0
