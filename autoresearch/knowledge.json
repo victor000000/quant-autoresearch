@@ -655,6 +655,20 @@
       "trades": 556,
       "round": 41,
       "note": "KEPT - EEM 1.33->1.40 via AXIS (logdollar); modest (EM choppier)"
+    },
+    "TLT_tickimb_bgm_ls_overlay_R42": {
+      "real_calmar": -0.0247,
+      "real_da": 37.46,
+      "trades": 413,
+      "round": 42,
+      "note": "sign-only tickimb HURTS bgm (vs dollar-imbalance 0.59); dollar weighting matters"
+    },
+    "TLT_tickimb_kmeans2stage_ls_overlay_R42": {
+      "real_calmar": 0.0,
+      "real_da": 0,
+      "trades": 0,
+      "round": 42,
+      "note": "kmeans2stage degenerate even on directional clock"
     }
   },
   "baselines": {
@@ -719,7 +733,8 @@
     "AUDIT CONFIRM: XLE +2.2559 -> +2.2619 under the new calibrator val->test embargo (+0.006, noise). The embargo leak was real but immaterial; XLE's edge is the causal model on causal features. Whole leaderboard trustworthy: TLT 0.768, IWM 0.779, QQQ 1.10, HYG 1.26, EEM 1.33, GLD 1.80, XLE 2.26.",
     "ROUND39 WIN: QQQ 1.0965 -> +1.2953 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - the GLD axis-unlock GENERALIZES (label-independent). Smaller than GLD (+0.20 vs +1.0) but real. multi_horizon DEGENERATE on QQQ (0 trades @0.15 thresh). The lever for trending stale bests is the AXIS (logdollar), not the labeler. Leaderboard: TLT 0.768, IWM 0.779, HYG 1.263, QQQ 1.295, EEM 1.328, GLD 1.802, XLE 2.262.",
     "ROUND40 WIN: HYG 1.2625 -> +1.8880 (KEPT, DA 3.67) via always_long/LOGDOLLAR/cdf_overlay. Credit carry + causal vol-targeting on logdollar de-levers into risk-off drawdowns -> DA collapses, Calmar +0.63. Label-independent (axis-unlock, biggest after GLD). multi_horizon under-trades credit (43, G2 fail). Leaderboard: TLT 0.768, IWM 0.779, QQQ 1.295, EEM 1.328, GLD 1.802, HYG 1.888, XLE 2.262.",
-    "ROUND41 WIN: EEM 1.3279 -> +1.4032 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - completes the stale-best modernization sweep (GLD 0.78->1.80, HYG 1.26->1.89, QQQ 1.10->1.30, EEM 1.33->1.40), ALL label-independent axis-unlock wins. multi_horizon degenerate on ALL four stale bests -> the modernization lever is the AXIS, not the labeler. SINGLE-ASSET FRONTIER CONVERGED: weakest TLT 0.768/IWM 0.779 at proven ceilings; modernized leaderboard TLT 0.768, IWM 0.779, QQQ 1.295, EEM 1.403, GLD 1.802, HYG 1.888, XLE 2.262. Next frontier = cross-asset PAIRS (G1>3.0, sign-off-worthy)."
+    "ROUND41 WIN: EEM 1.3279 -> +1.4032 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - completes the stale-best modernization sweep (GLD 0.78->1.80, HYG 1.26->1.89, QQQ 1.10->1.30, EEM 1.33->1.40), ALL label-independent axis-unlock wins. multi_horizon degenerate on ALL four stale bests -> the modernization lever is the AXIS, not the labeler. SINGLE-ASSET FRONTIER CONVERGED: weakest TLT 0.768/IWM 0.779 at proven ceilings; modernized leaderboard TLT 0.768, IWM 0.779, QQQ 1.295, EEM 1.403, GLD 1.802, HYG 1.888, XLE 2.262. Next frontier = cross-asset PAIRS (G1>3.0, sign-off-worthy).",
+    "ROUND42: tickimb (sign-only imbalance) HURTS bgm (-0.02) vs dollar-imbalance (0.59) -> the DOLLAR WEIGHTING (magnitude/conviction), not just direction, drives the imbalance x bgm synergy. kmeans2stage degenerate on any axis. bgm/imbalance 0.59 stays best unsupervised TLT. (Driver retry fix recovered the transient QC 'Compile id not found' infer flake.)"
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -1228,7 +1243,7 @@
         "id": "f_imbalance",
         "type": "finding",
         "phase": "TLT",
-        "label": "FINDING: de-Prado IMBALANCE axis (bars at directional runs) BOOSTS unsupervised labelers (bgm 0.35->0.59 on TLT) but breaks magnitude-calibrated triple_barrier. Custom axis & labeler must be CO-DESIGNED"
+        "label": "FINDING: de-Prado DOLLAR-imbalance axis BOOSTS unsupervised bgm on TLT (0.35->0.59) - the DOLLAR WEIGHTING matters (sign-only tickimb HURTS, -0.02). Axis & labeler co-designed; bgm-specific"
       },
       {
         "id": "r38",
@@ -1259,6 +1274,12 @@
         "type": "milestone",
         "phase": "XLE",
         "label": "R41 WIN: EEM 1.33->1.40 (axis). Modernization sweep COMPLETE; single-asset frontier converged"
+      },
+      {
+        "id": "r42",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R42 tickimb (sign-only): bgm -0.02 (vs dollar-imbalance 0.59), kmeans2stage degenerate. Dollar weighting drives the synergy"
       }
     ],
     "edges": [
@@ -1696,6 +1717,11 @@
         "src": "r41",
         "dst": "f_crossasset",
         "label": "single-asset converged -> pairs frontier"
+      },
+      {
+        "src": "f_imbalance",
+        "dst": "r42",
+        "label": "sign-only? no - weighting matters"
       }
     ],
     "running": []

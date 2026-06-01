@@ -324,7 +324,145 @@ class TickImbalanceBarBuilder:
         return None
 
 
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb"]
+class VolumeImbalanceBarBuilder:
+    """Custom axis (2c): VOLUME-imbalance bars (de Prado, information-driven).
+
+    Tick rule gives each minute a sign b_t (+1 up / -1 down / carry-forward on a
+    flat print). Accumulate signed *share volume* theta += b_t * vol; emit a bar
+    when |theta| >= threshold, then reset. This is the de Prado volume-imbalance
+    clock: it sits BETWEEN the two existing directional axes —
+        * `imbalance`  (signed-dollar) weights each minute by close*vol (notional),
+        * `tickimb`    (sign-only)     weights each minute by 1,
+        * `volumeimb`  (this axis)     weights each minute by raw share volume.
+    Weighting by SHARES rather than notional removes the price level from the
+    accumulator, so a single high-priced print no longer dominates a run; what
+    drives emission is *how many shares* trade with the trend. For a two-sided
+    bond proxy like TLT, institutional/rate-shock flow shows up as bursts of
+    one-sided VOLUME (asset reallocation) more cleanly than as notional, so the
+    clock fires on the directional volume runs that carry the rate-move edge,
+    rather than on whichever minutes happen to print at a high dollar value.
+
+    Threshold = TRAIN signed-volume volatility, random-walk scaled to
+    ~target_bars (|theta| after k minutes ~ sigma*sqrt(k)); see _make_builder.
+    Fit on TRAIN minutes only (causal), applied forward unchanged. The builder
+    itself fits nothing — it only consumes the frozen threshold.
+    """
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.theta = 0.0
+        self.last_lc = None
+        self.last_sign = 1.0
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0 or vol <= 0:
+            self.last_lc = None      # break the tick chain across invalid prints
+            return None
+        lc = math.log(close)
+        if self.last_lc is not None:
+            d = lc - self.last_lc
+            if d > 0:
+                self.last_sign = 1.0
+            elif d < 0:
+                self.last_sign = -1.0
+            # d == 0 -> carry forward last_sign (tick rule)
+        self.last_lc = lc
+        self.close_lc = lc
+        self.theta += self.last_sign * vol      # signed SHARE volume (not notional)
+        if abs(self.theta) >= self.thresh:
+            self.theta = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
+class FracDiffBarBuilder:
+    """Custom axis (3): FRACTIONAL-DIFFERENCE / memory-preserving bars (de Prado,
+    Ch.5 "Fractionally Differentiated Features"; novel as a SAMPLING CLOCK).
+
+    Motivation. Integer differencing (the log-RETURN, d=1) makes the series
+    stationary but ERASES memory — every level/trend signal is wiped out. The raw
+    log-PRICE (d=0) keeps all memory but is non-stationary (a unit root), so any
+    threshold defined on it drifts with the price level. Fractional differencing
+    with d in (0,1) is the minimal transform that stationarises the series while
+    PRESERVING the maximum amount of long memory. Sampling bars on the increments
+    of that fractionally-differenced log-price gives a clock that ticks on
+    *memory-bearing, stationarised* price information — neither pure notional
+    (dollar) nor pure realised variance (vol), but the persistent directional
+    structure that a two-sided asset like TLT carries in its level.
+
+    Mechanics. A fixed-width FFD (fixed-width-window fractional differentiation)
+    filter with frozen weights w (w[0] applies to the NEWEST log-price) is
+    convolved causally over the trailing log-price window. Let
+        fd_t = sum_j w[j] * log_price[t-j].
+    The accumulator sums the absolute first-difference of the FFD series,
+        cum += |fd_t - fd_{t-1}|,
+    and a bar is emitted when cum >= threshold (a "runs of FFD movement" clock),
+    then cum resets. Because fd is stationary, a single fixed threshold spaces
+    bars consistently across calm and shock regimes (unlike a level threshold on
+    raw price, which would drift).
+
+    CAUSALITY (G3). Both fitted parameters are estimated on TRAIN minutes ONLY
+    and then applied forward unchanged (see _fit_fracdiff_axis):
+      * d  — the smallest d on a grid whose TRAIN FFD-log-price series passes an
+             ADF unit-root test (ADF t-stat <= critical value), i.e. de Prado's
+             "minimum d that achieves stationarity". Smallest d = most memory kept.
+      * threshold — TRAIN total-variation of the FFD series per minute, scaled by
+             the full-series length to hit ~target_bars (same scaling philosophy
+             as the entropy/imbalance axes).
+    The FFD weights are a deterministic function of d (the binomial expansion of
+    (1-B)^d), so freezing d freezes the filter. The builder fits NOTHING itself;
+    it only consumes the frozen (threshold, weights). The convolution at bar t
+    uses only log-prices at t, t-1, ..., t-width+1 — strictly past/current. Each
+    PER-BAR observation is a pure causal feature of past prices (no forward look).
+    """
+
+    def __init__(self, threshold, weights=None):
+        self.thresh = float(threshold)
+        # weights: frozen FFD weights (len = window width); w[0] -> newest sample.
+        if weights is None:
+            self.w = None
+            self.width = 0
+        else:
+            self.w = np.asarray(weights, dtype=float)
+            self.width = int(len(self.w))
+        # Trailing log-price ring buffer (newest appended last). Plain list +
+        # manual trim keeps the module import-light (no collections import needed).
+        self._buf = []
+        self.cum = 0.0
+        self.last_fd = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.w is None or self.width == 0:
+            return None
+        self._buf.append(lc)
+        if len(self._buf) > self.width:
+            # keep only the trailing `width` log-prices
+            del self._buf[0:len(self._buf) - self.width]
+        if len(self._buf) < self.width:
+            return None
+        # FFD convolution: w[0] applies to the NEWEST sample (buf[-1]).
+        fd = 0.0
+        for j in range(self.width):
+            fd += self.w[j] * self._buf[self.width - 1 - j]
+        if self.last_fd is not None:
+            self.cum += abs(fd - self.last_fd)
+        self.last_fd = fd
+        if self.cum >= self.thresh:
+            self.cum = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
+# ----------------------------------------------------------------------------
+# Registry — names must be EXACTLY these and in this order.
+# ----------------------------------------------------------------------------
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -334,6 +472,8 @@ AXES = {
     "entropy": EntropyBarBuilder,
     "imbalance": DollarImbalanceBarBuilder,
     "tickimb": TickImbalanceBarBuilder,
+    "volumeimb": VolumeImbalanceBarBuilder,
+    "fracdiff": FracDiffBarBuilder,
 }
 
 
@@ -487,6 +627,158 @@ def _fit_entropy_axis(close, vol, ts_arr, target_bars):
     return edges, probs, T
 
 
+def _ffd_weights(d, w_thresh=1e-4, max_width=2000):
+    """Fixed-width-window fractional-difference weights for order d (de Prado).
+
+    The weights are the binomial expansion of (1 - B)^d:
+        w_0 = 1,  w_k = -w_{k-1} * (d - k + 1) / k.
+    The series is truncated once |w_k| < w_thresh (fixed-width window), bounding
+    the convolution cost and the warm-up length. Returned newest-first: w[0]
+    multiplies the most recent log-price. Deterministic in d only -> freezing d
+    (on TRAIN) freezes the entire filter, which is what keeps the axis causal.
+    """
+    w = [1.0]
+    k = 1
+    while k < int(max_width):
+        nw = -w[-1] * (d - k + 1) / k
+        if abs(nw) < w_thresh:
+            break
+        w.append(nw)
+        k += 1
+    return np.asarray(w, dtype=float)
+
+
+def _ffd_series_from_lc(lc, w):
+    """Causal FFD convolution of a log-price array with weights w.
+
+    out[i] = sum_j w[j] * lc[i-j] for i >= width-1, else NaN (warm-up). Uses only
+    past/current samples. lc must already be a clean (gap-free) log-price series.
+    """
+    lc = np.asarray(lc, dtype=float)
+    width = len(w)
+    n = len(lc)
+    out = np.full(n, np.nan)
+    if width == 0 or n < width:
+        return out
+    wr = w[::-1]  # so that a forward dot with the trailing window applies w[0] to newest
+    for i in range(width - 1, n):
+        out[i] = float(np.dot(wr, lc[i - width + 1:i + 1]))
+    return out
+
+
+def _adf_tstat(x):
+    """Augmented Dickey-Fuller t-stat with zero lags (the DF core), numpy-only.
+
+    Regress dY_t = a + rho * Y_{t-1} + e and return rho / se(rho). A more NEGATIVE
+    value => stronger mean reversion => more stationary (closer to rejecting the
+    unit root). Self-contained so the module never needs statsmodels.
+    """
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    if len(x) < 100:
+        return 0.0
+    Y = x[:-1]
+    dY = np.diff(x)
+    n = len(Y)
+    mx = Y.mean()
+    my = dY.mean()
+    sxx = float(np.dot(Y - mx, Y - mx))
+    if sxx <= 0:
+        return 0.0
+    sxy = float(np.dot(Y - mx, dY - my))
+    rho = sxy / sxx
+    a = my - rho * mx
+    resid = dY - a - rho * Y
+    sse = float(np.dot(resid, resid))
+    s2 = sse / max(1, (n - 2))
+    se = math.sqrt(s2 / sxx) if sxx > 0 else 1e9
+    return (rho / se) if se > 0 else 0.0
+
+
+# de Prado's ~5% ADF critical value (constant, no trend). Smallest d whose TRAIN
+# FFD series clears this is selected — minimum differencing => maximum memory.
+_FRACDIFF_ADF_CRIT = -2.9
+_FRACDIFF_D_GRID = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+
+
+def _clean_log_price(close):
+    """Gap-free causal log-price series for the FFD convolution.
+
+    log(close) where close>0; invalid prints are forward-filled with the last
+    valid log-price (carry-forward — strictly causal, no bfill) so the fixed-width
+    window stays contiguous. Leading invalid prints (no prior valid price) are
+    returned as NaN and trimmed by the caller.
+    """
+    close = np.asarray(close, dtype=float)
+    n = len(close)
+    lc = np.full(n, np.nan)
+    last = None
+    for i in range(n):
+        if close[i] > 0:
+            last = math.log(close[i])
+        if last is not None:
+            lc[i] = last
+    return lc
+
+
+def _fit_fracdiff_axis(close, vol, ts_arr, target_bars):
+    """Fit the fractional-difference axis on TRAIN minutes only.
+
+    Returns (threshold, weights) or (None, None) if uncalibratable.
+
+    1. Build a gap-free causal log-price series; trim leading NaNs.
+    2. For each d on the grid (ascending), build the TRAIN FFD series and its ADF
+       t-stat. Pick the SMALLEST d whose TRAIN ADF t-stat <= _FRACDIFF_ADF_CRIT
+       (most memory while stationary). If none clears it, keep the most-stationary
+       (most-negative-t) d as a fallback. d is fit on TRAIN only.
+    3. Threshold = TRAIN total-variation of the FFD series per valid minute,
+       scaled by the full-series valid length to hit ~target_bars. TRAIN-only fit.
+    """
+    lc_full = _clean_log_price(close)
+    first = int(np.argmax(np.isfinite(lc_full))) if np.any(np.isfinite(lc_full)) else 0
+    lc_full = lc_full[first:]
+    if len(lc_full) < 200 or not np.all(np.isfinite(lc_full)):
+        # still NaNs after trimming the lead -> too gappy to difference safely
+        if not np.all(np.isfinite(lc_full)):
+            return None, None
+
+    tr_mask = _train_minute_mask(ts_arr)[first:]
+    n_tr = int(np.count_nonzero(tr_mask))
+    if n_tr < 200:
+        return None, None
+
+    chosen = None  # (d, w, t)
+    for d in _FRACDIFF_D_GRID:
+        w = _ffd_weights(d)
+        if len(w) < 2 or len(w) >= (n_tr // 2):
+            continue
+        fd_tr = _ffd_series_from_lc(lc_full[tr_mask], w)
+        t = _adf_tstat(fd_tr)
+        if chosen is None or t < chosen[2]:
+            chosen = (d, w, t)
+        if t <= _FRACDIFF_ADF_CRIT:
+            chosen = (d, w, t)  # smallest d that clears the bar -> stop
+            break
+    if chosen is None:
+        return None, None
+    d, w, _t = chosen
+
+    # Threshold: TRAIN total-variation per minute, scaled to the full series.
+    fd_tr = _ffd_series_from_lc(lc_full[tr_mask], w)
+    fd_tr = fd_tr[np.isfinite(fd_tr)]
+    if len(fd_tr) < 50:
+        return None, None
+    total_tv_tr = float(np.sum(np.abs(np.diff(fd_tr))))
+    n_tr_valid = len(fd_tr)
+    n_all_valid = max(1, len(lc_full) - (len(w) - 1))
+    avg_tv = total_tv_tr / max(1, n_tr_valid - 1)
+    expected_total = avg_tv * n_all_valid
+    thresh = _safe_thresh(expected_total, target_bars)
+    if not np.isfinite(thresh) or thresh <= 0:
+        return None, None
+    return thresh, w
+
+
 def _make_builder(bar_type, close, vol, ts_arr, target_bars):
     """Instantiate the right Builder with an auto-calibrated threshold."""
     if bar_type == "dollar":
@@ -542,6 +834,38 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         m = max(1.0, len(close) / max(1, int(target_bars)))
         return TickImbalanceBarBuilder(max(2.0, math.sqrt(m)))
 
+    if bar_type == "volumeimb":
+        # Threshold from TRAIN signed-VOLUME volatility, random-walk scaled to
+        # ~target_bars: |theta| after k minutes ~ sigma*sqrt(k), so a threshold of
+        # sigma*sqrt(minutes_per_bar) crosses roughly every target interval. Same
+        # recipe as the signed-dollar `imbalance` axis but the per-minute weight is
+        # share VOLUME (sign(ret)*vol) rather than notional (sign(ret)*close*vol).
+        # Fit on TRAIN minutes only (causal); applied forward unchanged.
+        c = np.asarray(close, dtype=float)
+        v = np.asarray(vol, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        sv = np.sign(ret) * v
+        keep = tr & np.isfinite(sv) & (c > 0) & (v > 0) & (sv != 0)
+        svt = sv[keep]
+        if len(svt) < 100:
+            return None
+        sigma = float(np.std(svt))
+        m = max(1.0, len(c) / max(1, int(target_bars)))   # target minutes per bar
+        thresh = sigma * math.sqrt(m)
+        if not np.isfinite(thresh) or thresh <= 0:
+            return None
+        return VolumeImbalanceBarBuilder(thresh)
+
+    if bar_type == "fracdiff":
+        # Memory-preserving clock: smallest d whose TRAIN FFD log-price passes the
+        # ADF unit-root test, threshold = TRAIN total-variation scaled to
+        # ~target_bars. Both fit on TRAIN minutes only (causal), applied forward.
+        thresh, weights = _fit_fracdiff_axis(close, vol, ts_arr, target_bars)
+        if thresh is None or weights is None:
+            return None
+        return FracDiffBarBuilder(thresh, weights=weights)
+
     # Default / unknown -> volatility bar (Wang's workhorse axis).
     c = np.asarray(close, dtype=float)
     v = np.asarray(vol, dtype=float)
@@ -568,7 +892,8 @@ def build_bars(close, vol, ts_arr, bar_type="vol", target_bars=15000):
         close:   np.array of minute close prices.
         vol:     np.array of minute volumes.
         ts_arr:  np.array of minute timestamps (aligned with close/vol).
-        bar_type: one of ["dollar","tick","vol","range","logdollar","entropy"].
+        bar_type: one of ["dollar","tick","vol","range","logdollar","entropy",
+                  "imbalance","tickimb","volumeimb","fracdiff"].
                   Unknown values fall back to the volatility axis.
         target_bars: approximate number of bars desired; each axis auto-computes
                   its threshold to hit roughly this count.

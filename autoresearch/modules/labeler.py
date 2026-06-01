@@ -669,6 +669,167 @@ def generate_labels_always_long(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
 
 
 # --------------------------------------------------------------------------- #
+# Featured: Causal-feature GMM regime labeler (regime_gmm)                     #
+# --------------------------------------------------------------------------- #
+def _causal_regime_features(lc, lr):
+    """Cheap CAUSAL feature panel for regime detection (past/current bars only).
+
+    Six columns, each strictly causal (rolling/lagged, no .shift(-N), no reversal):
+        0  mom20      : 20-bar log-return momentum  lc[t]-lc[t-20]
+        1  vol50      : 50-bar rolling std of lr (realized vol)
+        2  volratio   : (10-bar std)/(100-bar std) — vol expansion/contraction
+        3  zmom20     : 20-bar momentum z-scored over a 100-bar window (trend strength)
+        4  madist50   : lc[t] - 50-bar moving average of lc (distance from trend)
+        5  absmom5    : |lc[t]-lc[t-5]| — short-horizon move magnitude
+
+    A regime in this space is e.g. "calm uptrend", "high-vol selloff",
+    "low-vol drift" — exactly the states that map to a directional stance. These
+    are a deliberate subset of features.py's panel, recomputed here because the
+    labeler receives only (lc, lr), not the full feature matrix (same pattern as
+    the hmm baseline which builds [r,|r|] internally). NaN where a window does
+    not fit; the caller restricts to fully-formed rows. Nothing is fit here.
+    """
+    N = len(lc)
+    slr = pd.Series(lr)
+    slc = pd.Series(lc)
+
+    mom20 = np.full(N, np.nan)
+    mom20[20:] = lc[20:] - lc[:-20]
+
+    absmom5 = np.full(N, np.nan)
+    absmom5[5:] = np.abs(lc[5:] - lc[:-5])
+
+    vol50 = slr.rolling(50, min_periods=50).std().to_numpy()
+    std10 = slr.rolling(10, min_periods=10).std().to_numpy()
+    std100 = slr.rolling(100, min_periods=100).std().to_numpy()
+    volratio = std10 / (std100 + 1e-12)
+
+    m_mom = pd.Series(mom20).rolling(100, min_periods=100).mean().to_numpy()
+    s_mom = pd.Series(mom20).rolling(100, min_periods=100).std().to_numpy()
+    zmom20 = (mom20 - m_mom) / (s_mom + 1e-12)
+
+    ma50 = slc.rolling(50, min_periods=50).mean().to_numpy()
+    madist50 = lc - ma50
+
+    X = np.column_stack([mom20, vol50, volratio, zmom20, madist50, absmom5])
+    return X
+
+
+def generate_labels_regime_gmm(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                               horizons=[50, 100, 200]):
+    """Causal-feature Gaussian-Mixture REGIME labeler (directional, TRAIN-fit).
+
+    Contrast with `bgm`, which clusters on FORWARD returns [fwd_ret,|fwd_ret|];
+    that makes the per-bar regime a function of the future. Here the per-bar
+    regime is a CAUSAL function of features only:
+
+      1. Build a causal feature panel (_causal_regime_features) from (lc, lr).
+      2. Fit a StandardScaler + GaussianMixture (full covariance) on the TRAIN
+         causal rows ONLY. This is the only fitted object; it never sees the
+         future and never sees val/test.
+      3. Assign EVERY causal bar (train/val/test) its regime by GMM.predict on
+         the causally-scaled features — a pure forward application of the frozen
+         model. Each bar's regime is therefore decided by its own past/current
+         features, exactly like an online detector would decide it live.
+      4. Map regime -> direction using TRAIN forward-return means ONLY: a regime
+         whose TRAIN mean fwd_ret > 0 is "long" (label 1), else "short/flat" (0).
+         Forward returns are used solely to define the TARGET (allowed by G3);
+         they do NOT pick which OOS bars trade — every causal bar gets a label,
+         and the footer emits a prediction for every causal bar.
+
+    Because direction is a CAUSAL regime -> a TRAIN-fixed sign map, the XGBoost
+    downstream learns "which causal feature regime tends to go up next", which is
+    a genuinely directional, two-sided target (a high-vol-selloff regime maps to
+    0/short, a calm-uptrend regime to 1/long). This is built to give TLT a real
+    directional, short-capable signal and to pair with the directional imbalance/
+    tickimb/volumeimb axes (regimes are cleaner on a directional clock).
+
+    Sweeps K in {2,3,4} and the horizon used for the TRAIN sign map; selects the
+    most TRAIN-balanced configuration in (0.2, 0.8). Returns
+    (best_labels, best_cfg, best_horizon). Missing sklearn -> (None, ..., None).
+    """
+    try:
+        from sklearn.mixture import GaussianMixture
+        from sklearn.preprocessing import StandardScaler as FS
+    except ImportError:
+        return None, "regime_gmm_unavailable", None
+
+    N = len(lc)
+    X = _causal_regime_features(lc, lr)
+    # Rows with a fully-formed causal feature vector (windows have warmed up).
+    row_ok = np.isfinite(X).all(axis=1)
+
+    tr_fit = tr_m & row_ok          # TRAIN rows used to fit scaler + GMM
+    if int(tr_fit.sum()) < 200:
+        return None, "regime_gmm_insufficient_train", None
+
+    fs = FS().fit(X[tr_fit])        # scaler fit on TRAIN only
+    Xz_tr = fs.transform(X[tr_fit])
+
+    best_labels = None
+    best_cfg = ""
+    best_score = -999
+    best_horizon = None
+
+    for K in [2, 3, 4]:
+        try:
+            gmm = GaussianMixture(
+                n_components=K, covariance_type='full',
+                reg_covar=1e-5, max_iter=300, n_init=3, random_state=42)
+            gmm.fit(Xz_tr)          # TRAIN-fit ONLY
+        except Exception:
+            continue
+
+        # Forward application: regime for EVERY causal row (frozen model).
+        regime = np.full(N, -1, dtype=int)
+        try:
+            regime[row_ok] = gmm.predict(fs.transform(X[row_ok]))
+        except Exception:
+            continue
+
+        for fk in horizons:
+            fr = fwd_ret[fk]
+            fvd_k = np.isfinite(fr)
+
+            # Regime -> direction using TRAIN forward-return means ONLY.
+            up_regimes = set()
+            for c in range(K):
+                sel = tr_m & row_ok & fvd_k & fv & (regime == c)
+                if sel.sum() < 20:
+                    # Too few TRAIN points to trust this regime's sign -> short/flat.
+                    continue
+                if float(np.mean(fr[sel])) > 0.0:
+                    up_regimes.add(c)
+
+            # Per-bar label is the CAUSAL regime mapped through the TRAIN sign map.
+            valid = fv & row_ok & fvd_k
+            y = np.full(N, -1, dtype=int)
+            y[valid] = 0
+            for c in up_regimes:
+                y[valid & (regime == c)] = 1
+
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 200 or vx.sum() < 20:
+                continue
+
+            balance = float(y[tx].mean())
+            if 0.2 < balance < 0.8:
+                cfg = f"regimegmm_f{fk}_K{K}_up{len(up_regimes)}"
+                score = min(balance, 1 - balance)
+                if score > best_score:
+                    best_score = score
+                    best_labels = y
+                    best_cfg = cfg
+                    best_horizon = fk
+
+    if best_labels is None:
+        return None, "regime_gmm_no_balanced_cfg", None
+    return best_labels, best_cfg, best_horizon
+
+
+# --------------------------------------------------------------------------- #
 # Registry                                                                    #
 # --------------------------------------------------------------------------- #
 # Every value is callable with the CANONICAL uniform signature:
@@ -693,6 +854,7 @@ LABELERS = {
     "triple_barrier": generate_labels_triple_barrier,
     "triple_barrier_tight": generate_labels_triple_barrier_tight,
     "multi_horizon": generate_labels_multi_horizon,
+    "regime_gmm": generate_labels_regime_gmm,         # causal-feature GMM regimes.
     "hmm": generate_labels_hmm,                       # BASELINE comparator only.
     "always_long": generate_labels_always_long,       # BASELINE: buy-and-hold floor.
 }
@@ -701,5 +863,6 @@ LABELERS = {
 FEATURED_LABELERS = [
     "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "multi_horizon",
+    "regime_gmm",
 ]
 BASELINE_LABELERS = ["hmm", "always_long"]
