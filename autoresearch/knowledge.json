@@ -1682,6 +1682,12 @@
         "type": "decision",
         "phase": "IWM",
         "label": "DECISION: QQQ ceilinged -> modernize EEM (1.40, two-sided emerging markets) - a genuine long/short candidate"
+      },
+      {
+        "id": "r66",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R66 EEM modernize #1: reversal ensemble misreads EEM - long/short loses (-0.33, DA 53), long-only 0 trades (leans bearish). Try trend label next"
       }
     ],
     "edges": [
@@ -2314,6 +2320,16 @@
         "src": "f_qqq_pure",
         "dst": "d_eem",
         "label": "modernize a two-sided ETF instead"
+      },
+      {
+        "src": "d_eem",
+        "dst": "r66",
+        "label": "modernize EEM - attempt 1"
+      },
+      {
+        "src": "r66",
+        "dst": "f_signal",
+        "label": "long/short loses when the signal is wrong"
       }
     ],
     "running": []
