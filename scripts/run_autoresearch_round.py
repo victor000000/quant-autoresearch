@@ -131,7 +131,7 @@ def run_pool(jobs):
     overlaps the run phase across both nodes. 'no spare nodes' is TRANSIENT — the
     job is re-queued and we wait for a node to free (300s cap per backtest).
     Returns {label: backtest_result_dict}."""
-    results, inflight, pending = {}, {}, list(jobs)
+    results, inflight, pending, retries = {}, {}, list(jobs), {}
     while pending or inflight:
         while pending and len(inflight) < MAX_INFLIGHT:
             label, code = pending.pop(0)
@@ -141,9 +141,16 @@ def run_pool(jobs):
                 inflight[label] = (bid, time.time())
             except Exception as e:
                 msg = str(e)
-                if "spare node" in msg.lower():
+                low = msg.lower()
+                # TRANSIENT submit failures -> re-queue + wait (bounded). 'spare node'
+                # (no free node) and 'compile id not found' (QC compile-cache miss at
+                # create) are both flaky and clear on retry.
+                transient = ("spare node" in low) or ("compile id not found" in low)
+                if transient and retries.get(label, 0) < 4:
+                    retries[label] = retries.get(label, 0) + 1
                     pending.insert(0, (label, code))
-                    print(f"[{_now()}]   {label} no free node yet — re-queue + wait")
+                    print(f"[{_now()}]   {label} transient submit error (retry {retries[label]}/4): {msg[:90]} — re-queue + wait")
+                    time.sleep(8)
                     break
                 results[label] = {"status": "crash", "error": msg}
                 print(f"[{_now()}]   {label} submit CRASH: {msg[:160]}")
