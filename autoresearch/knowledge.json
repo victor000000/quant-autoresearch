@@ -821,6 +821,20 @@
       "trades": 1037,
       "round": 55,
       "note": "bgm incumbent slipped under new global features (0.88->0.83)"
+    },
+    "IWM_imbalance_triple_barrier_cdf_overlay_t30_R56": {
+      "real_calmar": 0.7313,
+      "real_da": 8.37,
+      "trades": 1179,
+      "round": 56,
+      "note": "thresh 0.30 over-trades vs 0.40"
+    },
+    "IWM_range_triple_barrier_cdf_overlay_R56": {
+      "real_calmar": 0.3826,
+      "real_da": 7.39,
+      "trades": 1131,
+      "round": 56,
+      "note": "range axis wrong for trending IWM (suits two-sided)"
     }
   },
   "baselines": {
@@ -899,7 +913,8 @@
     "ROUND52: \u2466 ensemble DILUTES on TLT - triple_barrier+bgm 0.23, +multi_horizon 0.18 (avg of dominant 0.77 + weak same-axis leg washes out edge, over-trades). Ensembles need comparable decorrelated signals; TLT has ONE dominant barrier signal. CONCLUSIVE: TLT single-asset MAXED at 0.7679 across ALL Wang modules \u2460\u2461\u2466\u2467 + character (mean-reverting, continuous L+S, one dominant signal). Last untried module class = \u2462 features. Frontier = cross-asset pairs (sign-off).",
     "ROUND53 BREAKTHROUGH: TLT 0.7679 -> +1.5221 (KEPT, DA 3.84) via \u2462 MEAN-REVERSION FEATURES (RSI + Bollinger %b) on the RANGE axis with triple_barrier/ls_overlay. range/triple_barrier was 0.31 WITHOUT feats (R15) -> 1.52 WITH. TLT is mean-reverting; oscillators read overbought/oversold + range bars sample at reversals = times the rate-shock turning points. On logdollar the feats HURT (0.77->0.41) - axis x feature interaction. Causal (RSI/Bollinger backward-only). The NON-\u2460\u2461 module (\u2462 features, per user guidance) broke the ceiling after \u2460\u2461\u2466\u2467 plateaued. New weakest = IWM 0.8831.",
     "ROUND54 (verify TLT 1.52): CONTROL range/always_long/ls_overlay = -0.14 (features+axis alone, NO edge) << 1.52 -> the +1.52 is genuinely the triple_barrier labeler reading the mean-rev oscillators (leak-clean, causal). Unlock is triple_barrier-SPECIFIC (range/bgm 0.065). TLT SOLVED 0.77->1.52. \u2462 mean-rev features now GLOBAL. New weakest = IWM 0.8831.",
-    "ROUND55 WIN: IWM 0.8831 -> +0.9316 (KEPT) via imbalance/triple_barrier/cdf_overlay + \u2462 mean-rev features. The triple_barrier+oscillators recipe GENERALIZES (TLT range 1.52, IWM imbalance 0.93): features HELP barrier-timing (triple_barrier), slightly HURT regime-clustering (bgm 0.88->0.83). \u2462 features x triple_barrier is a GENERAL synergy. IWM still weakest (0.9316 < QQQ 1.30)."
+    "ROUND55 WIN: IWM 0.8831 -> +0.9316 (KEPT) via imbalance/triple_barrier/cdf_overlay + \u2462 mean-rev features. The triple_barrier+oscillators recipe GENERALIZES (TLT range 1.52, IWM imbalance 0.93): features HELP barrier-timing (triple_barrier), slightly HURT regime-clustering (bgm 0.88->0.83). \u2462 features x triple_barrier is a GENERAL synergy. IWM still weakest (0.9316 < QQQ 1.30).",
+    "ROUND56: IWM push DISCARD (stays 0.9316). range/triple_barrier 0.38 (range suits mean-reverting TLT, not trending IWM), imbalance@0.30 0.73 (over-trades). IWM recipe LOCKED: imbalance/triple_barrier/cdf_overlay@0.40 + \u2462feats = 0.9316. Axis/thresh are character-specific (imbalance+0.40 trending IWM; range two-sided TLT)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -1535,6 +1550,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "R55 WIN: IWM 0.88->0.93 - triple_barrier+\u2462feats GENERALIZES from TLT. Oscillators sharpen barrier-timing across assets"
+      },
+      {
+        "id": "r56",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R56 IWM push: range 0.38 (wrong for trending), thresh0.30 0.73 (over-trades). IWM locked imbalance/triple_barrier@0.40 = 0.93"
       }
     ],
     "edges": [
@@ -2052,6 +2073,11 @@
         "src": "f_meanrev_feat",
         "dst": "r55",
         "label": "generalizes to IWM"
+      },
+      {
+        "src": "r55",
+        "dst": "r56",
+        "label": "push variants -> worse"
       }
     ],
     "running": []
