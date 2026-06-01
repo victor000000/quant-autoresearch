@@ -181,7 +181,7 @@ class AutoresearchPipeline(QCAlgorithm):
         Xv_raw = sc.transform(feats[vx])
         Xe_raw = sc.transform(feats[ex])
         Xt, Xv, Xe, nk, dim_name = reduce_dims(
-            Xt_raw, Xv_raw, Xe_raw, method="correlation", n_components=20)
+            Xt_raw, Xv_raw, Xe_raw, method="correlation", n_components=26)
 
         vi = np.where(vx)[0]
         ei = np.where(ex)[0]
