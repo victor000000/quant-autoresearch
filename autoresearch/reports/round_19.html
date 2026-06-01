@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Round 19 — IWM</title>
+<style>body{font:16px/1.6 system-ui;max-width:820px;margin:2rem auto;padding:0 1.2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d0d7de;padding:.4em .6em}th{background:#f6f8fa}code{background:#f3f4f6;padding:.1em .3em}a{color:#0969da;text-decoration:none}</style></head><body>
+<p><a href="index.html">&larr; all reports</a></p><h1>Round 19 — IWM (new weakest): port the TLT directional+short recipe</h1>
+<table><tr><th>H</th><th>config</th><th>Calmar</th><th>DA</th><th>trades</th><th>deployable</th></tr>
+<tr><td>A</td><td>logdollar/triple_barrier/0.5/ls_cdf</td><td>+0.5017</td><td>4.16</td><td>308</td><td>✓ (but &lt; 0.65)</td></tr>
+<tr><td>B</td><td>range/triple_barrier/0.5/ls_cdf</td><td>−0.0819</td><td>5.47</td><td>221</td><td>✓ (neg)</td></tr></table>
+<p><b>Discard</b> — the TLT recipe ports decently (A: +0.50, DA 4.2, 308tr) but doesn't beat IWM's long-biased 0.65, and the
+short legs HURT a trending-up asset (B negative). <b>Key:</b> IWM ≠ TLT — IWM trends up, so long-biased sizing wins, and the
+real lead is <code>bgm</code> (R11: Calmar 1.13, DA 5.6, but only 24 trades). Round 20 makes bgm deployable by moving it to a
+DENSE axis (logdollar/dollar) with long-biased cdf_overlay → keep the edge, get &gt;80 trades.</p>
+</body></html>
