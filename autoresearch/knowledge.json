@@ -586,6 +586,20 @@
       "trades": 737,
       "round": 35,
       "note": "agglomerative clusters mistimed (DA 71)"
+    },
+    "GLD_logdollar_always_long_cdf_overlay_R36": {
+      "real_calmar": 1.8021,
+      "real_da": 20.42,
+      "trades": 691,
+      "round": 36,
+      "note": "KEPT - GLD 0.78->1.80 via AXIS (logdollar vs dollar) for vol-targeted buy-hold; label-independent"
+    },
+    "GLD_logdollar_multi_horizon_cdf_overlay_R36": {
+      "real_calmar": 0.4674,
+      "real_da": 9.72,
+      "trades": 245,
+      "round": 36,
+      "note": "multi_horizon HURTS GLD (exits smooth trend at wrong times)"
     }
   },
   "baselines": {
@@ -642,7 +656,8 @@
     "ROUND32: TLT ls_overlay floor 0.6->0.45 = +0.003 (NOISE; 0.7654->0.7679). The de-lever floor rarely binds for TLT (fast vol seldom >> slow vol). TLT at honest single-asset ceiling ~0.768, still < IWM 0.7788. Floor lever exhausted -> next = \u2460\u2461 labeling module (triple_barrier barrier WIDTH).",
     "ROUND33: TLT tighter triple_barrier (U=L=1.5) = 0.17 << default 2.0's 0.77 (over-trades 828 on noise). TLT's edge is in LARGER rate-shock moves; default barrier well-tuned. SINGLE-ASSET LEVERS EXHAUSTED for TLT (axis/labeler/sizing/floor/barrier all explored) -> ceiling ~0.768, within noise of IWM 0.779. Documented frontier = CROSS-ASSET (TLT = flight-to-quality, equity risk-off driven); SPY already loaded -> enable causal SPY-relative features.",
     "ROUND34: cross-asset SPY-relative features REGRESSED TLT (0.7679->0.677; multi_horizon leg 0.01). Not catastrophic crowd-out (445tr) but the features displaced useful price features and diluted the edge. CONFIRMS: TLT's cross-asset edge needs a 2-symbol PAIRS strategy (trade TLT-SPY spread), not SPY features in a single-asset model. REVERTED features.py + n_components 26->20. TLT single-asset ceiling = 0.7679, tied with IWM/GLD ~0.78. Frontier = pairs harness (sign-off-worthy).",
-    "ROUND35: TLT agglomerative +0.01 / bgm +0.35 (both << triple_barrier 0.7679). Every labeler now tested on TLT's optimal logdollar/ls_overlay -> triple_barrier UNIQUELY best. TLT DEFINITIVELY exhausted single-asset at 0.7679, tied with IWM 0.7788 within noise. Only remaining lever = 2-symbol PAIRS harness (sign-off-worthy). Alt: modernize stale-best ETFs (GLD/QQQ/HYG/EEM = buy-hold-overlay) with multi_horizon/ls_overlay."
+    "ROUND35: TLT agglomerative +0.01 / bgm +0.35 (both << triple_barrier 0.7679). Every labeler now tested on TLT's optimal logdollar/ls_overlay -> triple_barrier UNIQUELY best. TLT DEFINITIVELY exhausted single-asset at 0.7679, tied with IWM 0.7788 within noise. Only remaining lever = 2-symbol PAIRS harness (sign-off-worthy). Alt: modernize stale-best ETFs (GLD/QQQ/HYG/EEM = buy-hold-overlay) with multi_horizon/ls_overlay.",
+    "ROUND36 WIN: GLD 0.7792 -> +1.8021 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - an AXIS unlock, label-INDEPENDENT (always_long can't leak). The SAME vol-targeted buy-hold on logdollar vs dollar bars MORE THAN DOUBLED Calmar -> the axis sets how cdf_overlay times drawdowns. multi_horizon HURT GLD (0.47): timing labels hurt a smooth trend (f_trenddom). GENERALIZABLE: stale dollar_R5 bests (QQQ/HYG/EEM) are UNDER-TUNED ON AXIS -> logdollar+cdf_overlay likely lifts them too."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -654,7 +669,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "MODERNIZE CLUSTER (user choice). Round 36: GLD (trending-up gold, stale 0.7792 buy-hold-overlay) -> logdollar/multi_horizon/cdf_overlay vs always_long control. Then QQQ/HYG/EEM (also dollar_R5 stale) similarly. multi_horizon won XLE 2.26 + IWM 0.78 on trending assets; GLD trends up -> expect a real jump. TLT pairs harness deferred (needs explicit sign-off).",
+  "next_idea": "USER redirect: explore CUSTOM AXIS (\u2460) + UNSUPERVISED LABELING (\u2461) for TLT (weakest 0.7679). Plan: add information-driven IMBALANCE bars (de Prado) to bar_builder - sample on cumulative signed-return imbalance, concentrating bars at directional rate-shocks where TLT's edge lives. Round 37: TLT imbalance-axis/triple_barrier/ls_overlay + an unsupervised-labeling leg. Separately: GLD axis unlock generalizes -> re-tune QQQ/HYG/EEM onto logdollar later.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -741,17 +756,24 @@
       }
     },
     "GLD": {
-      "cell": "GLD_dollar_R5",
-      "real_calmar": 0.7792,
-      "real_da": 10.42,
-      "trades": 541,
+      "cell": "GLD_logdollar_always_long_cdf_overlay_t0.45",
+      "real_calmar": 1.8021,
+      "real_da": 20.4157,
+      "trades": 691,
       "g2_pass": true,
-      "round": 5,
-      "source": "active_seed"
+      "round": 10,
+      "source": "tournament",
+      "config": {
+        "ticker": "GLD",
+        "axis": "logdollar",
+        "labeler": "always_long",
+        "thresh": 0.45,
+        "sizing": "cdf_overlay"
+      }
     }
   },
-  "policy": "PERSIST on the weakest ETF until it beats the 2nd-weakest. EXCEPTION (user decision 2026-06-01): when the weakest is at a PROVEN single-asset ceiling and tied with the cluster within noise (e.g. TLT 0.768 ~ IWM/GLD 0.78), do NOT grind it or silently build pairs (sign-off-worthy) -> MODERNIZE the cluster's stale-best ETFs (those still on buy-hold-overlay dollar_R5) with the proven multi_horizon/ls_overlay toolkit, reshape the leaderboard, then re-target the true weakest.",
-  "last_round": 9,
+  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
+  "last_round": 10,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1101,6 +1123,18 @@
         "type": "round",
         "phase": "TLT",
         "label": "R35 TLT: agglomerative +0.01 / bgm +0.35 << triple_barrier 0.77. ALL labelers tested -> TLT single-asset DEFINITIVELY exhausted at 0.768"
+      },
+      {
+        "id": "r36",
+        "type": "milestone",
+        "phase": "XLE",
+        "label": "R36 WIN: GLD 0.78 -> 1.80 via AXIS (logdollar vs dollar) for vol-targeted buy-hold (label-independent). multi_horizon hurt GLD"
+      },
+      {
+        "id": "f_axisbuyhold",
+        "type": "finding",
+        "phase": "XLE",
+        "label": "FINDING: the AXIS dramatically changes vol-targeted buy-hold (GLD dollar 0.78 -> logdollar 1.80, label-independent). Stale dollar_R5 bests are UNDER-TUNED ON AXIS -> re-tune QQQ/HYG/EEM onto logdollar"
       }
     ],
     "edges": [
@@ -1493,6 +1527,16 @@
         "src": "r35",
         "dst": "f_crossasset",
         "label": "single-asset done -> pairs or modernize cluster"
+      },
+      {
+        "src": "f_overlay",
+        "dst": "r36",
+        "label": "axis x overlay (no labeler)"
+      },
+      {
+        "src": "r36",
+        "dst": "f_axisbuyhold",
+        "label": ""
       }
     ],
     "running": []
