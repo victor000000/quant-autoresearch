@@ -16,7 +16,8 @@ AUC, AUC-divergence gate, the val-selection rule). Those are research knobs, not
 ## What you edit
 The whole pipeline (`modules/` + `templates/` downstream + sizing). **①②/axis+labeling matter most.**
 A hypothesis is one render-time CONFIG (no code edits between two hypotheses):
-`{ticker, axis, labeler, thresh, sizing}`, `sizing ∈ {ramp, binary, cdf_plain, cdf_overlay}`.
+`{ticker, axis, labeler, thresh, sizing}`, `sizing ∈ {ramp, binary, cdf_plain, cdf_overlay, longshort, ls_cdf}`.
+**Shorting is allowed** — `longshort`/`ls_cdf` go negative (short the down-legs); essential for declining assets like TLT.
 
 ## The loop (tournament)
 1. **Pick the weakest ETF** — lowest REAL OOS Calmar of its best *active* (trades>80) config
