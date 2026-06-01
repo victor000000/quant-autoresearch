@@ -18,7 +18,7 @@ wants range (0.75), fails on logdollar (−0.03). <b>The right axis is labeler-s
 <p><b>Next (round 25):</b> TLT still weakest, needs only +0.03 to overtake GLD (0.78). The two proven labelers plateau ~0.75 on
 their preferred axes → try two <i>untested dense</i> axes that may concentrate at TLT's rate-shocks better. H1 {entropy,triple_barrier,0.5,ls_cdf};
 H2 {vol,multi_horizon,0.5,ls_cdf}.</p>
-<section class="causalgraph"><h2>Causal graph (as of round 24)</h2><p style="font-size:.9em"><b>Legend:</b> <span style="background:#fff3cd;border:1px solid #e0a800;padding:.05em .4em;border-radius:3px">FINDING (mechanism hub)</span> <span style="background:#d4edda;border:1px solid #28a745;padding:.05em .4em;border-radius:3px">milestone / KEEP</span> <span style="background:#e2dcff;border:1px solid #6f42c1;padding:.05em .4em;border-radius:3px">decision / unlock</span> <span style="background:#eef1f6;border:1px solid #9aa5b1;padding:.05em .4em;border-radius:3px">experiment</span> <span style="border:1px dashed #9aa5b1;padding:.05em .4em;border-radius:3px">running</span>. Edges read cause &rarr; effect (the label is the mechanism). FINDING nodes are the hubs: each new hypothesis is reasoned from them.</p><div class="mermaid">
+<section class="causalgraph"><h2>Causal graph (as of round 24) — red ring = this round's new/changed nodes</h2><p style="font-size:.92em;color:#444"><b>This round's reasoning path:</b> f_multihorizon (does R23's edge generalize?) + f_character (TLT two-sided -> short ls_cdf) + f_density/f_logdollar (dense axis) -> tested multi_horizon x ls_cdf on TLT's two axes -> it generalizes (range +0.75) but the axis preference is crossed -> added f_axiscross.</p><p style="font-size:.9em"><b>Legend:</b> <span style="background:#fff3cd;border:1px solid #e0a800;padding:.05em .4em;border-radius:3px">FINDING (mechanism hub)</span> <span style="background:#d4edda;border:1px solid #28a745;padding:.05em .4em;border-radius:3px">milestone / KEEP</span> <span style="background:#e2dcff;border:1px solid #6f42c1;padding:.05em .4em;border-radius:3px">decision / unlock</span> <span style="background:#eef1f6;border:1px solid #9aa5b1;padding:.05em .4em;border-radius:3px">experiment</span> <span style="border:1px dashed #9aa5b1;padding:.05em .4em;border-radius:3px">running</span>. Edges read cause &rarr; effect (the label is the mechanism). FINDING nodes are the hubs: each new hypothesis is reasoned from them.</p><div class="mermaid">
 flowchart TB
   subgraph sg_Landscape["Phase A - Landscape / the 6-round null"]
     direction TB
@@ -123,7 +123,6 @@ flowchart TB
   r23 -->|"multi-timescale edge breaks the null"| f_multihorizon
   f_multihorizon -->|"does it generalize?"| r24
   r24 -->|"mirror-image axis preference"| f_axiscross
-  f_multihorizon --> r24
   classDef finding fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#5c4500;
   classDef round fill:#eef1f6,stroke:#9aa5b1,color:#1b1f23;
   classDef milestone fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#0b3d1a;
@@ -132,5 +131,7 @@ flowchart TB
   classDef finding_run fill:#fff3cd,stroke:#e0a800,color:#5c4500,stroke-dasharray:5 4;
   classDef milestone_run fill:#d4edda,stroke:#28a745,color:#0b3d1a,stroke-dasharray:5 4;
   classDef decision_run fill:#e2dcff,stroke:#6f42c1,color:#2d1a5c,stroke-dasharray:5 4;
+  style r24 stroke:#d62728,stroke-width:4px;
+  style f_axiscross stroke:#d62728,stroke-width:4px;
 </div><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';mermaid.initialize({startOnLoad:true,securityLevel:'loose',flowchart:{useMaxWidth:true,htmlLabels:true},maxTextSize:200000});</script></section>
 </body></html>

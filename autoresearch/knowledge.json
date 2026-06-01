@@ -1086,11 +1086,6 @@
         "src": "r24",
         "dst": "f_axiscross",
         "label": "mirror-image axis preference"
-      },
-      {
-        "src": "f_multihorizon",
-        "dst": "r24",
-        "label": ""
       }
     ],
     "running": []

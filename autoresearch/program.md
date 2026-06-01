@@ -36,8 +36,9 @@ A hypothesis is one render-time CONFIG (no code edits between two hypotheses):
    `index.html`. **Update the causal graph:** append the round's node(s) + causal edge(s) to
    `knowledge.json.causal_graph` (types: finding/round/milestone/decision; a KEEP becomes a milestone, a
    new mechanism becomes a finding hub), then run
-   `python3 scripts/render_causal_graph.py --inject reports/round_N.html --label "round N"` — this regenerates
-   `reports/causal_graph.html` AND embeds the up-to-date graph in the round report. `git commit` the round.
+   `python3 scripts/render_causal_graph.py --inject reports/round_N.html --label "round N" --highlight "<new node ids>" --note "<reasoning path>"`
+   — this regenerates `reports/causal_graph.html` AND embeds the up-to-date graph in the round report, **red-ringing
+   this round's new/changed nodes** and printing the reasoning path so a reader can see what changed. `git commit` the round.
 7. Re-rank → the new weakest ETF is next. Don't ask permission. Run until interrupted.
 
 ## Rules

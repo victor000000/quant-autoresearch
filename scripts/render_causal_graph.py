@@ -25,7 +25,8 @@ def _esc(s):
     return (s or "").replace('"', "'").replace("[", "(").replace("]", ")").replace("{", "(").replace("}", ")")
 
 
-def mermaid(cg):
+def mermaid(cg, highlight=None):
+    highlight = set(highlight or [])
     running = set(cg.get("running", []))
     phases = cg.get("phases", [])
     by_phase = {p: [] for p in phases}
@@ -57,6 +58,9 @@ def mermaid(cg):
         "  classDef milestone_run fill:#d4edda,stroke:#28a745,color:#0b3d1a,stroke-dasharray:5 4;",
         "  classDef decision_run fill:#e2dcff,stroke:#6f42c1,color:#2d1a5c,stroke-dasharray:5 4;",
     ]
+    # ring this round's new/changed nodes in red so the reader sees what's new
+    for h in highlight:
+        L.append(f"  style {h} stroke:#d62728,stroke-width:4px;")
     return "\n".join(L)
 
 
@@ -84,9 +88,10 @@ def leaderboard(d):
             '<table><tr><th>ETF</th><th>Calmar</th><th>trades</th><th>cell</th></tr>' + tr + '</table>')
 
 
-def section(graph, title):
+def section(graph, title, note=""):
     """Self-contained embeddable section (its own mermaid include)."""
-    return (f'<section class="causalgraph"><h2>{title}</h2>{LEGEND}'
+    cap = (f'<p style="font-size:.92em;color:#444"><b>This round\'s reasoning path:</b> {note}</p>' if note else "")
+    return (f'<section class="causalgraph"><h2>{title}</h2>{cap}{LEGEND}'
             f'<div class="mermaid">\n{graph}\n</div>{MERMAID_CDN}</section>')
 
 
@@ -118,9 +123,9 @@ design choices; the arc of each ETF reads top-to-bottom within its phase.</p>
 </body></html>"""
 
 
-def inject(path, graph, round_label):
+def inject(path, graph, round_label, note=""):
     html = open(path).read()
-    sec = section(graph, f"Causal graph (as of {round_label})")
+    sec = section(graph, f"Causal graph (as of {round_label}) — red ring = this round's new/changed nodes", note)
     pat = re.compile(r'<section class="causalgraph">.*?</section>', re.S)
     if pat.search(html):
         html = pat.sub(sec, html, count=1)
@@ -134,14 +139,15 @@ def main():
     cg = d.get("causal_graph")
     if not cg:
         print("no causal_graph in knowledge.json; run seed_causal_graph.py first"); sys.exit(1)
-    g = mermaid(cg)
-    open(OUT, "w").write(standalone(d, g))
+    open(OUT, "w").write(standalone(d, mermaid(cg)))
     print(f"wrote {OUT} ({len(cg['nodes'])} nodes, {len(cg['edges'])} edges)")
     if "--inject" in sys.argv:
         f = sys.argv[sys.argv.index("--inject") + 1]
         lab = sys.argv[sys.argv.index("--label") + 1] if "--label" in sys.argv else "latest round"
-        inject(f, g, lab)
-        print(f"injected causal graph into {f}")
+        hl = sys.argv[sys.argv.index("--highlight") + 1].split(",") if "--highlight" in sys.argv else []
+        note = sys.argv[sys.argv.index("--note") + 1] if "--note" in sys.argv else ""
+        inject(f, mermaid(cg, highlight=hl), lab, note)
+        print(f"injected causal graph into {f} (highlight={hl})")
 
 
 if __name__ == "__main__":
