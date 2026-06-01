@@ -1881,6 +1881,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R85 tertile on EEM under-trades (56tr, G2 fail) at 1.9 < triple_barrier 2.15. f_tertile CONFIRMED XLE/noisiest-asset specific. EEM stays 2.15"
+      },
+      {
+        "id": "r86",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R86 tertile useless on TLT (0.24). CONVERGED: label-to-asset map fully characterized, all 7 ETFs at leak-free ceilings. Single-config swaps exhausted -> next gains need a build"
       }
     ],
     "edges": [
@@ -2783,6 +2789,16 @@
         "src": "r85",
         "dst": "f_tertile",
         "label": "confirmed: noisiest-asset only"
+      },
+      {
+        "src": "r85",
+        "dst": "r86",
+        "label": "final tertile check"
+      },
+      {
+        "src": "r86",
+        "dst": "f_plateau",
+        "label": "single-config space exhausted -> converged"
       }
     ],
     "running": []
