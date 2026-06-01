@@ -470,6 +470,20 @@
       "real_da": 11.76,
       "trades": 493,
       "note": "CONTROL: clean labeler 0.47 << multi_horizon 2.26"
+    },
+    "TLT_logdollar_triple_barrier_ls_cdf_HONEST_R26": {
+      "real_calmar": 0.6263,
+      "real_da": 5.56,
+      "trades": 325,
+      "round": 26,
+      "note": "incumbent RE-VERIFIED honest under leak-fix (was 0.7537; last-H tail exclusion was mild look-ahead)"
+    },
+    "TLT_range_multi_horizon_ls_cdf_HONEST_R26": {
+      "real_calmar": 0.4867,
+      "real_da": 12.95,
+      "trades": 187,
+      "round": 26,
+      "note": "honest (was 0.7478 leaked); multi_horizon weak on two-sided TLT -> f_multihorizon is trend-specific"
     }
   },
   "baselines": {
@@ -516,7 +530,8 @@
     "ROUND23 WIN (causal-graph-reasoned): XLE 0.7185 -> +2.5030 (KEPT, deployable 92tr, DA 4.06) - HIGHEST Calmar of all 7 ETFs, nearing G1=3.0. logdollar/multi_horizon/cdf_overlay. NEW FINDING: multi_horizon (MULTI-TIMESCALE forward-return labels) has REAL directional edge where single-horizon bgm/triple_barrier washed out - the EXCEPTION to f_trenddom. Reasoned directly from the causal graph (f_trenddom said try the untested multi_horizon; f_character said stay long). Validates causal-graph-driven hypothesis generation. Open: does multi_horizon generalize to TLT/GLD?",
     "ROUND24: TLT DISCARD (stays 0.7537). multi_horizon GENERALIZES (range/ls_cdf +0.7478/117tr nearly ties triple_barrier 0.75) - real transferable labeler, not an XLE fluke. NEW FINDING (axis x labeler CROSSED): triple_barrier wants logdollar(0.75)/fails range(0.31); multi_horizon is the MIRROR - wants range(0.75)/fails logdollar(-0.03). The right axis is labeler-specific.",
     "ROUND25: TLT DISCARD (stays 0.7537). Untested dense axes fail: entropy/triple_barrier +0.05 (dense 189tr but edge collapses off logdollar -> reinforces f_axiscross); vol/multi_horizon +0.20/33tr G2 fail. triple_barrier EXHAUSTED on TLT (logdollar 0.75 >> range 0.31 >> entropy 0.05 >> dollar -0.21). NEW FINDING f_tlt_plateau: TLT deployable best plateaus ~0.75 on the two preferred axis x labeler pairs; off-preferred axes collapse. Labeler with headroom = multi_horizon (generalizes).",
-    "AUDIT (look-ahead): footer used ex=fv&(y>=0)&te_m -> the FUTURE-derived label selected which OOS bars get a position (hindsight trade selection). Heavy for multi_horizon/tertile (drop bars by own forward outcome); ~harmless for triple_barrier (labels every bar) & clustering labelers (causal-feature labels). FIXED footer.py.tmpl: TEST+VAL preds now cover EVERY causal bar; fit still on labeled bars. IMPACT: XLE multi_horizon 2.50->2.26 (leak was SMALL); honest +2.26 SURVIVES. CONTROLS (leak-fixed, same logdollar/cdf_overlay): always_long(overlay-only)=0.83, bgm=0.47 << multi_horizon 2.26 -> the edge is the LABELER, not the overlay, and is causal (code-verified). program.md G3 updated."
+    "AUDIT (look-ahead): footer used ex=fv&(y>=0)&te_m -> the FUTURE-derived label selected which OOS bars get a position (hindsight trade selection). Heavy for multi_horizon/tertile (drop bars by own forward outcome); ~harmless for triple_barrier (labels every bar) & clustering labelers (causal-feature labels). FIXED footer.py.tmpl: TEST+VAL preds now cover EVERY causal bar; fit still on labeled bars. IMPACT: XLE multi_horizon 2.50->2.26 (leak was SMALL); honest +2.26 SURVIVES. CONTROLS (leak-fixed, same logdollar/cdf_overlay): always_long(overlay-only)=0.83, bgm=0.47 << multi_horizon 2.26 -> the edge is the LABELER, not the overlay, and is causal (code-verified). program.md G3 updated.",
+    "ROUND26 (re-verify under leak-fix): TLT incumbent logdollar/triple_barrier/ls_cdf 0.7537 -> +0.6263 HONEST (even triple_barrier was mildly inflated: old code excluded the last-H bars = end-of-series look-ahead, ~0.13). range/multi_horizon 0.7478 -> 0.4867 (multi_horizon is TREND-specific, weak on two-sided TLT). Leaderboard TLT CORRECTED to 0.6263. The leak affected MORE than multi_horizon/tertile -> must re-verify every best (IWM/bgm next)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -528,7 +543,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "POST-FIX re-verification: all prior results ran under leaky code. multi_horizon/tertile were leak-prone; triple_barrier/bgm/clustering ~clean. Re-verify the two other bests under the FIXED footer: TLT logdollar/triple_barrier/ls_cdf (0.7537) and IWM logdollar/bgm/cdf_overlay (1.1046). If both survive ~unchanged -> leaderboard trustworthy (XLE 2.26 honest, IWM 1.10, ... TLT 0.75 weakest). Then resume loop on weakest.",
+  "next_idea": "Re-verify IWM/bgm (1.1046) under leak-fix - last un-reverified best (bgm clustering, expected cleanest). Then leaderboard is trustworthy; resume gain-seeking on weakest (TLT honest 0.6263, must beat GLD 0.7792 - but GLD/QQQ/HYG/EEM are dollar_R5=always_long-equiv, clean).",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -600,12 +615,13 @@
     },
     "TLT": {
       "cell": "TLT_logdollar_triple_barrier_ls_cdf_t0.50",
-      "real_calmar": 0.7537,
-      "real_da": 5.5332,
-      "trades": 292,
+      "real_calmar": 0.6263,
+      "real_da": 5.56,
+      "trades": 325,
       "g2_pass": true,
-      "round": 3,
+      "round": "26-honest",
       "source": "tournament",
+      "note": "RE-VERIFIED honest under leak-fix (was 0.7537)",
       "config": {
         "ticker": "TLT",
         "axis": "logdollar",
@@ -794,7 +810,7 @@
         "id": "r18",
         "type": "milestone",
         "phase": "TLT",
-        "label": "R18 WIN: TLT +0.31 -> +0.75 (logdollar) - overtakes IWM"
+        "label": "R18 (TLT logdollar/triple_barrier/ls_cdf): +0.75 leaky -> +0.63 HONEST after leak-fix"
       },
       {
         "id": "r10",
@@ -890,19 +906,25 @@
         "id": "f_tlt_plateau",
         "type": "finding",
         "phase": "TLT",
-        "label": "FINDING: TLT deployable best PLATEAUS ~0.75 (logdollar/triple_barrier 0.7537, range/multi_horizon 0.7478); off-preferred axes collapse. triple_barrier exhausted -> multi_horizon has the headroom"
+        "label": "FINDING: TLT plateaus ~0.63 HONEST (logdollar/triple_barrier de-leaked); multi_horizon trend-specific (weak on two-sided TLT)"
       },
       {
         "id": "f_lookahead",
         "type": "decision",
         "phase": "XLE",
-        "label": "AUDIT+FIX (G3): footer selected OOS bars by FUTURE label (ex=fv&(y>=0)&te_m) -> hindsight trade selection. FIXED: TEST/VAL preds over EVERY causal bar. Leak was small for XLE (2.50->2.26)"
+        "label": "AUDIT+FIX (G3): footer picked OOS bars by FUTURE label. Leak BROADER than first thought: multi_horizon heavy, but even triple_barrier inflated via last-H tail exclusion (TLT 0.75->0.63). Fixed: preds over every causal bar"
       },
       {
         "id": "r_ctrl",
         "type": "round",
         "phase": "XLE",
         "label": "CONTROLS (leak-fixed, logdollar/cdf_overlay): always_long +0.83 (DA 38), bgm +0.47 -> overlay alone doesn't explain 2.26"
+      },
+      {
+        "id": "r_reverify",
+        "type": "round",
+        "phase": "TLT",
+        "label": "RE-VERIFY (leak-fixed): TLT triple_barrier 0.75->0.63, multi_horizon 0.75->0.49. Leaderboard corrected; re-verify all bests"
       }
     ],
     "edges": [
@@ -1195,6 +1217,16 @@
         "src": "r_ctrl",
         "dst": "f_multihorizon",
         "label": "labeler-driven, causal"
+      },
+      {
+        "src": "f_lookahead",
+        "dst": "r_reverify",
+        "label": "re-verify every best"
+      },
+      {
+        "src": "r_reverify",
+        "dst": "f_tlt_plateau",
+        "label": "honest plateau ~0.63"
       }
     ],
     "running": []
