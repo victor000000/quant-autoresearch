@@ -104,7 +104,7 @@ def _write_status(**kw):
         pass
 
 VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc"]
-VALID_LABELERS = ["kmeans2stage", "carry", "tertile", "bgm", "agglomerative",
+VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "multi_horizon",
                   "regime_gmm", "cusum_regime", "dc_trend", "dc_reversal", "hmm", "always_long"]
 VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "longshort", "ls_cdf", "ls_overlay"]

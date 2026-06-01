@@ -1869,6 +1869,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R83 tertile does NOT generalize to IWM: 0.85/0.51 < tb+bgm ensemble 1.14. tertile is XLE/noisy-asset specific; cleaner IWM wants the ensemble"
+      },
+      {
+        "id": "r84",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R84 carry labeler still runtime-errors on QC (deeper than None-return; script compiles+has fallback). Deprioritized from rotation. XLE stays 0.91"
       }
     ],
     "edges": [
@@ -2751,6 +2757,16 @@
         "src": "r83",
         "dst": "f_tertile",
         "label": "refines: noisiest-asset-specific, not universal"
+      },
+      {
+        "src": "r82",
+        "dst": "r84",
+        "label": "fix+test carry"
+      },
+      {
+        "src": "r83",
+        "dst": "r84",
+        "label": "carry broken -> deprioritize"
       }
     ],
     "running": []
