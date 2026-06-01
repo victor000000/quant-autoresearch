@@ -183,6 +183,55 @@
       "trades": 541,
       "round": 5,
       "note": "kmeans2stage==carry==always_long IDENTICAL (overlay washes out labeler)"
+    },
+    "QQQ_dollar_R6_overlayoff": {
+      "real_calmar": 1.1094,
+      "real_da": 22.87,
+      "trades": 1,
+      "round": 6,
+      "note": "overlay OFF -> 1 trade buy-hold; kmeans2stage==carry==always_long"
+    },
+    "IWM_dollar_R6_overlayoff": {
+      "real_calmar": 0.5615,
+      "real_da": 40.68,
+      "trades": 1,
+      "round": 6,
+      "note": "overlay OFF -> 1 trade buy-hold; kmeans2stage==carry==always_long"
+    },
+    "EEM_dollar_R6_overlayoff": {
+      "real_calmar": 1.2539,
+      "real_da": 26.7,
+      "trades": 1,
+      "round": 6,
+      "note": "overlay OFF -> 1 trade buy-hold; kmeans2stage==carry==always_long"
+    },
+    "XLE_dollar_R6_overlayoff": {
+      "real_calmar": 0.6057,
+      "real_da": 46.03,
+      "trades": 1,
+      "round": 6,
+      "note": "overlay OFF -> 1 trade buy-hold; kmeans2stage==carry==always_long"
+    },
+    "HYG_dollar_R6_overlayoff": {
+      "real_calmar": 1.6471,
+      "real_da": 3.65,
+      "trades": 1,
+      "round": 6,
+      "note": "overlay OFF -> 1 trade buy-hold; kmeans2stage==carry==always_long"
+    },
+    "TLT_dollar_R6_overlayoff": {
+      "real_calmar": -0.0569,
+      "real_da": 56.26,
+      "trades": 1,
+      "round": 6,
+      "note": "overlay OFF -> 1 trade buy-hold; kmeans2stage==carry==always_long"
+    },
+    "GLD_dollar_R6_overlayoff": {
+      "real_calmar": 1.62,
+      "real_da": 23.99,
+      "trades": 1,
+      "round": 6,
+      "note": "overlay OFF -> 1 trade buy-hold; kmeans2stage==carry==always_long"
     }
   },
   "baselines": {
@@ -210,7 +259,8 @@
     "ROUND2: the new VAL synth_cal = -0.3511 CORRECTLY predicted OOS underperformance (R1 synth_cal was a flat uninformative 0.0). Restoring train/infer sizing consistency restored a usable in-sample selection signal.",
     "ROUND3: a binary stay-long-by-default DD circuit-breaker (flat at 12% underwater, re-enter within 4% of peak, hysteresis) on QQQ vol made BOTH metrics WORSE: Calmar 1.11->0.26 AND DA 22.83->76.54 (3x worse). On a drift-up asset with V-shaped recoveries, stepping flat sells the dip and the hysteresis re-enters only near new highs => the strategy is flat through the entire rebound => equity stays underwater far longer (DA explodes) and CAGR collapses. Drawdown STOPS are PRO-CYCLICAL on mean-reverting-up assets. carry==always_long once more (breaker dominates). Reverted.",
     "ROUND4: de-tuned active sizing (CDF recentered on tau x inverse-vol, floor 0.6) on VOL axis, 7 ETFs. Recovered QQQ Calmar 0.54->0.90 (629 trades, DA 14.9<buy-hold) - best active config - but NO ETF beats its buy-hold Calmar; XLE collapses 0.11, EEM under-trades (23, G2 fail). carry==always_long AGAIN. Conclusion: 3 rounds of SIZING tweaks on the vol axis never beat buy-hold => the bottleneck was likely \u2460 axis x \u2461 labeler being WRONG for the asset, not \u2467 sizing.",
-    "ROUND5: dollar axis x {kmeans2stage,carry,always_long} x 7 ETFs (2-node parallel). EVERY labeler IDENTICAL to 4dp within each ETF (even IWM where the model has AUC 0.88). History hypothesis 'kmeans2stage beats carry' FALSE/untestable. ROOT CAUSE (key finding): the inverse-vol overlay g=clip(sigma_slow/sigma_fast,0.6,1) is LABEL-INDEPENDENT and dominates the position path; on up-trending ETFs calibrated p is mostly high so _cdf_bet(p)~1 for every labeler => w~g, identical regardless of label. 'Labeler irrelevant' (R1-R5) is an ARTIFACT OF THE SIZING OVERLAY, not the axis/labels. Best ACTIVE configs so far: EEM dollar 1.33 (DA 4.4, 113 trades, G2 pass), HYG dollar 1.26 (DA 4.0, 1310 trades). Dollar genuinely helps EEM/HYG vs vol. Still << G1 (3.0). TLT -0.15 (neg control)."
+    "ROUND5: dollar axis x {kmeans2stage,carry,always_long} x 7 ETFs (2-node parallel). EVERY labeler IDENTICAL to 4dp within each ETF (even IWM where the model has AUC 0.88). History hypothesis 'kmeans2stage beats carry' FALSE/untestable. ROOT CAUSE (key finding): the inverse-vol overlay g=clip(sigma_slow/sigma_fast,0.6,1) is LABEL-INDEPENDENT and dominates the position path; on up-trending ETFs calibrated p is mostly high so _cdf_bet(p)~1 for every labeler => w~g, identical regardless of label. 'Labeler irrelevant' (R1-R5) is an ARTIFACT OF THE SIZING OVERLAY, not the axis/labels. Best ACTIVE configs so far: EEM dollar 1.33 (DA 4.4, 113 trades, G2 pass), HYG dollar 1.26 (DA 4.0, 1310 trades). Dollar genuinely helps EEM/HYG vs vol. Still << G1 (3.0). TLT -0.15 (neg control).",
+    "ROUND6: turned the inverse-vol overlay OFF (VOL_FLOOR=1.0, w=cdf_bet(p,tau)). Result: EVERY cell = 1 trade = buy-and-hold, all labelers IDENTICAL. With no overlay the position never goes flat because on up-trending ETFs the calibrated p is almost always > tau (model predicts 'up' nearly everywhere) -> always long -> buy-hold. So overlay-ON (R5) washes the label via the overlay; overlay-OFF (R6) washes it via the always-long model. SIX-ROUND CONCLUSION (confirmed, not assumed): single-asset long-only ML on trending ETFs CANNOT beat buy-hold; axis/labeler/sizing are all washed out. Best single ~1.6 (HYG 1.65, GLD 1.62 buy-hold). The >3.0 frontier is CROSS-ASSET (archive pair 2.91 >> single 1.6)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -218,11 +268,12 @@
     "ROUND2: a CDF map centered at p=0.5 + an aggressive inverse-vol overlay (floor 0.25, fast=20/slow=100) is TOO AGGRESSIVE for drift assets -- it cuts CAGR faster than MaxDD and halves Calmar. Do NOT use floor 0.25 / center-0.5 again. The DA win (-69%) is real but useless if CAGR collapses. The fix is to STAY INVESTED BY DEFAULT and only de-lever in genuine turbulence.",
     "ROUND3: binary realized-drawdown STOP overlays (step flat past an underwater threshold, re-enter near peak) are a DEAD END on drift-up / V-shaped-recovery assets (QQQ): they sell the dip, miss the rebound, and WORSEN both Calmar (1.11->0.26) and DA (22.83->76.54), and fail G2 (2 trades). Do NOT retry drawdown-stop / de-risking overlays on drift assets in ANY form (continuous R2, binary R3 both failed). Such a stop may only help an asset with SUSTAINED (non-V) bear legs.",
     "ROUND4: forcing the VOL axis on all 7 ETFs is wrong - it is the wrong axis for equities (QQQ/IWM); and pairing it with carry (which fails on equities) makes every cell tie/lose to buy-hold. Use per-ETF optimal axis + kmeans2stage (history hypothesis, under test R5). Stop tweaking sizing on the vol axis.",
-    "ROUND5: a label-INDEPENDENT inverse-vol overlay multiplied onto the bet makes the labeler untestable (it dominates the path). To test whether \u2461 labeling matters, the sizing must be LABEL-DRIVEN (position responds to the model prob / goes flat when p<=tau), not a vol overlay."
+    "ROUND5: a label-INDEPENDENT inverse-vol overlay multiplied onto the bet makes the labeler untestable (it dominates the path). To test whether \u2461 labeling matters, the sizing must be LABEL-DRIVEN (position responds to the model prob / goes flat when p<=tau), not a vol overlay.",
+    "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "ROUND6 (running): turn the inverse-vol overlay OFF (VOL_FLOOR=1.0 => g==1) so w=_cdf_bet(p,tau) is LABEL-DRIVEN (flat when p<=tau). Same dollar axis (isolates overlay on->off). Predict: always_long reverts to ~buy-hold (1 trade); a real labeler (kmeans2stage) that sometimes predicts down DIVERGES from it and from carry. If kmeans2stage!=always_long AND trades>80 AND Calmar>buy-hold => the label finally matters and the history hypothesis is testable. Then R7: per-ETF optimal axis (tick/vol) with the label-driven sizing.",
-  "frontier": "Make \u2461 labeling EXPRESSIBLE by removing the label-independent inverse-vol overlay (R6). Best active so far EEM/HYG dollar ~1.3. >3.0 still likely needs cross-asset pairs (history: best single ~1.6, best pair 2.91).",
+  "next_idea": "ROUND7: PIVOT to cross-asset PAIRS (spread trading). Wang's arbitrage framework: build a spread of two assets (e.g. SHY-IWM, GDX-GLD), treat the spread as its own time series, and trend-forecast it. Archive: SHY-IWM 2.91, GDX-GLD 1.70 -- the only configs that beat the single-asset ~1.6 ceiling. REQUIRES a harness upgrade: the LOCKED footer/infer trade ONE symbol; pairs need a 2-symbol spread build (footer) + a spread/relative-weight execution (infer). This touches the scorer layer -> needs sign-off (program.md Required Upgrades). Until then, single-asset rounds will only reproduce buy-hold.",
+  "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
     "source": "_archive/knowledge.prior.json + _archive/experiment_summary/results/per_ticker_optimal.csv (prior code path; HYPOTHESES to CONFIRM, not accept)",

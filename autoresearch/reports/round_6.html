@@ -1,0 +1,66 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autoresearch Round 6 — overlay OFF (label-driven sizing), dollar, 7 ETFs</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>
+ body{font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1b1f23;max-width:900px;margin:2rem auto;padding:0 1.2rem;background:#fff}
+ h1,h2{line-height:1.25;margin-top:1.6em} h1{border-bottom:2px solid #eaecef;padding-bottom:.3em} h2{border-bottom:1px solid #eaecef;padding-bottom:.2em}
+ code{background:#f3f4f6;padding:.15em .35em;border-radius:4px;font-family:SFMono-Regular,Consolas,monospace;font-size:.88em}
+ table{border-collapse:collapse;margin:1em 0;width:100%;font-size:.94em} th,td{border:1px solid #d0d7de;padding:.45em .7em;text-align:left} th{background:#f6f8fa} tr:nth-child(even) td{background:#fbfcfd}
+ blockquote{border-left:4px solid #d0d7de;color:#57606a;margin:1em 0;padding:.2em 1em;background:#f6f8fa}
+ a{color:#0969da;text-decoration:none} .nav{font-size:.9em;color:#57606a;margin-bottom:1.5em} .v{font-weight:700}
+</style></head><body>
+<div class="nav"><a href="index.html">&larr; all reports</a></div>
+
+<h1>Round 6 — overlay OFF (label-driven sizing), dollar axis, 7 ETFs</h1>
+<table>
+<tr><th>round</th><td>6</td></tr><tr><th>date</th><td>2026-06-01</td></tr>
+<tr><th>under test</th><td>does removing the inverse-vol overlay let ② labeling drive the position?</td></tr>
+<tr><th>verdict</th><td class="v">discard / NULL — reverts to buy-and-hold; closes the single-asset chapter</td></tr>
+</table>
+
+<h2>1. Hypothesis</h2>
+<p>Round 5 showed the label-independent inverse-vol overlay washes out the labeler. Turn it <strong>off</strong>
+(<code>VOL_FLOOR=1.0</code> ⇒ $g\equiv1$) so sizing is purely label-driven, $w=\texttt{cdf\_bet}(p,\tau)$, and the
+position goes flat when $p\le\tau$. Prediction: <code>always_long</code> reverts to ~buy-hold while a real labeler
+(kmeans2stage) that sometimes predicts down <em>diverges</em> from it.</p>
+
+<h2>2. Method</h2>
+<p>Dollar axis (held constant vs R5 to isolate the overlay on→off change) × {kmeans2stage, carry, always_long} ×
+7 ETFs, 2-node parallel. $w=\texttt{cdf\_bet}(p,\tau)=\big[2\Phi(z)-1\big]_0^1,\ z=(p-\tau)/\sqrt{p(1-p)}$, gate
+$w=0$ if $p\le\tau$. Identical in trainer (VAL) and infer (OOS). Splits standard.</p>
+
+<h2>3. Results — REAL OOS</h2>
+<p>$$\text{Calmar}=\text{CAGR}/\text{MaxDD},\qquad \text{DA}=\textstyle\sum_t(1-E_t/\max_{s\le t}E_s).$$</p>
+<table>
+<tr><th>ETF</th><th>Calmar</th><th>DA</th><th>trades</th></tr>
+<tr><td>HYG</td><td>1.647</td><td>3.65</td><td>1</td></tr>
+<tr><td>GLD</td><td>1.620</td><td>23.99</td><td>1</td></tr>
+<tr><td>EEM</td><td>1.254</td><td>26.70</td><td>1</td></tr>
+<tr><td>QQQ</td><td>1.109</td><td>22.87</td><td>1</td></tr>
+<tr><td>XLE</td><td>0.606</td><td>46.03</td><td>1</td></tr>
+<tr><td>IWM</td><td>0.562</td><td>40.68</td><td>1</td></tr>
+<tr><td>TLT</td><td>−0.057</td><td>56.26</td><td>1</td></tr>
+</table>
+<p><strong>Every cell: 1 trade, and kmeans2stage = carry = always_long identical.</strong> All seven are exactly
+each ETF's dollar-bar buy-and-hold. G2 (trades&gt;80) fails for all — these are reference ceilings, not strategies.</p>
+
+<h2>4. Verdict &amp; the chapter-closing finding</h2>
+<p>The hypothesis is <strong>false</strong>: with the overlay off the position does not go flat, because on these
+up-trending ETFs the calibrated $p$ is almost always $&gt;\tau$ — the model predicts "up" nearly everywhere — so
+$w&gt;0$ for the whole OOS window → one entry, held → buy-hold, identical for every labeler.</p>
+<blockquote>Overlay ON (R5): active but the overlay drives trades → label washed out. Overlay OFF (R6): the
+model is always-long → buy-hold → label washed out. Either way <strong>② labeling cannot express itself</strong>
+on a single trending long-only asset.</blockquote>
+<p><strong>Six rounds converge:</strong> single-asset, long-only ML on trending ETFs ≈ buy-hold; axis/labeler/sizing
+are all washed out because the model predicts "up" almost always. This experimentally <em>confirms</em> the
+archive's lesson rather than assuming it: best single ≈ 1.6, and the only path past it (best pair 2.91; G1&gt;3.0)
+is <strong>cross-asset structure</strong>. TLT −0.06 (negative control, as expected).</p>
+
+<h2>5. Next — Round 7: pivot to cross-asset PAIRS</h2>
+<p>The single-asset axis×labeling×sizing space is exhausted (null). The genuine frontier is <strong>pairs / spread
+trading</strong> (Wang's arbitrage video: treat the spread as its own series and trend-forecast it; archive
+SHY-IWM 2.91). This needs a harness extension — the LOCKED footer/infer trade one symbol; pairs need a 2-symbol
+spread path. That is a scorer-layer change requiring sign-off (flagged in program.md "Required Upgrades").</p>
+</body></html>
