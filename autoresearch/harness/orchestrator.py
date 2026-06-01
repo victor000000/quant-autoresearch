@@ -36,6 +36,52 @@ def read_module(name):
     with open(path) as f: return f.read()
 
 
+def _prune_labelers(src, keep):
+    """Keep only the ONE labeler a hypothesis uses (+ compute_forward_metrics + its
+    transitive top-level helpers), shrinking labeler.py from ~10 labelers to 1 so the
+    rendered script stays under QC's 64,000-char limit. Falls back to the full source
+    on any error. Hypothesis mode uses LABELERS[keep] only, so this is semantics-safe."""
+    try:
+        tree = ast.parse(src)
+        funcs = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
+        keepfn = f"generate_labels_{keep}"
+        if keepfn not in funcs:
+            return src
+        # transitive closure of top-level funcs reachable from keepfn + compute_forward_metrics
+        need, stack = set(), [keepfn, "compute_forward_metrics"]
+        while stack:
+            fn = stack.pop()
+            if fn in need or fn not in funcs:
+                continue
+            need.add(fn)
+            for sub in ast.walk(funcs[fn]):
+                if isinstance(sub, ast.Name) and sub.id in funcs and sub.id not in need:
+                    stack.append(sub.id)
+        new_body = []
+        for n in tree.body:
+            if isinstance(n, (ast.Import, ast.ImportFrom)):
+                new_body.append(n)
+            elif isinstance(n, ast.FunctionDef):
+                if n.name in need:
+                    new_body.append(n)
+            elif isinstance(n, ast.Assign):
+                tgts = [t.id for t in n.targets if isinstance(t, ast.Name)]
+                if "LABELERS" in tgts:
+                    new_body.append(ast.parse(f'LABELERS = {{"{keep}": {keepfn}}}').body[0])
+                elif "FEATURED_LABELERS" in tgts or "BASELINE_LABELERS" in tgts:
+                    continue
+                else:
+                    new_body.append(n)
+            else:
+                new_body.append(n)
+        tree.body = new_body
+        out = ast.unparse(tree)
+        compile(out, "<pruned-labelers>", "exec")
+        return out
+    except Exception:
+        return src
+
+
 def render_script(ticker, axis=None):
     """Render ONE QC train script = header + modules (in order) + footer.
 
@@ -78,7 +124,10 @@ def render_train_config(config):
     footer_path = os.path.join(TEMPLATES_DIR, "footer.py.tmpl")
     with open(header_path) as f: script = f.read()
     for mod in ["bar_builder.py", "labeler.py", "features.py", "trainer.py"]:
-        script += f"\n# === {mod} ===\n" + read_module(mod) + "\n"
+        body = read_module(mod)
+        if mod == "labeler.py" and config.get("labeler"):
+            body = _prune_labelers(body, str(config["labeler"]))   # keep only the 1 used labeler (size)
+        script += f"\n# === {mod} ===\n" + body + "\n"
     with open(footer_path) as f: script += f.read()
     script = (script
               .replace("__TICKER__", str(config["ticker"]))

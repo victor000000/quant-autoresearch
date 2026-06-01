@@ -830,6 +830,219 @@ def generate_labels_regime_gmm(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
 
 
 # --------------------------------------------------------------------------- #
+# Featured: CUSUM change-point regime labeler (cusum_regime)                  #
+# --------------------------------------------------------------------------- #
+def _cusum_change_points(z, h, k):
+    """Online two-sided (symmetric) CUSUM change-point detector (de Prado's
+    "CUSUM filter", AFML Ch.2/Ch.17 change-point tests).
+
+    z : standardized increments (z-scored log-returns). k is a small reference /
+    slack value (the per-step drift we tolerate as noise); only the part of an
+    increment beyond +/-k accumulates, so the filter ignores pure noise and fires
+    only on a PERSISTENT directional run (a regime shift). h is the decision
+    threshold: a change point is declared the bar the running sum crosses +/-h,
+    after which both accumulators reset (a fresh regime begins).
+
+        S+_t = max(0, S+_{t-1} + z_t - k)      ->  fires when S+_t >= h
+        S-_t = min(0, S-_{t-1} + z_t + k)      ->  fires when S-_t <= -h
+
+    Strictly online/causal: each step uses only z_t and the running sums, never a
+    future value. Returns the sorted list of change-point bar indices.
+    """
+    cps = []
+    s_pos = 0.0
+    s_neg = 0.0
+    n = len(z)
+    for t in range(n):
+        v = z[t]
+        if not np.isfinite(v):
+            v = 0.0
+        s_pos = max(0.0, s_pos + v - k)
+        s_neg = min(0.0, s_neg + v + k)
+        if s_pos >= h or s_neg <= -h:
+            cps.append(t)
+            s_pos = 0.0
+            s_neg = 0.0
+    return cps
+
+
+def _calibrate_cusum_h(z_tr, k, target_seg):
+    """Bisect the CUSUM threshold h on the TRAIN increments z_tr so the detector
+    yields ~target_seg segments (= target_seg-1 change points) over TRAIN.
+
+    Monotone: larger h -> fewer change points. Fit on TRAIN ONLY; the resulting
+    h is then applied forward unchanged. Returns a positive float h.
+    """
+    lo, hi = 0.5, 5000.0
+
+    def n_cp(h):
+        return len(_cusum_change_points(z_tr, h, k))
+
+    # Make sure the bracket straddles the target (defensive widening).
+    for _ in range(8):
+        if n_cp(hi) + 1 > target_seg:
+            hi *= 4.0
+        else:
+            break
+    for _ in range(40):
+        mid = 0.5 * (lo + hi)
+        if n_cp(mid) + 1 > target_seg:   # too many segments -> raise h
+            lo = mid
+        else:                            # too few segments -> lower h
+            hi = mid
+    h = 0.5 * (lo + hi)
+    return h if (np.isfinite(h) and h > 0) else 1.0
+
+
+def generate_labels_cusum_regime(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                 horizons=[50, 100, 200]):
+    """CUSUM change-point REGIME labeler (directional, causal, TRAIN-fit).
+
+    Built for two-sided assets (TLT): an online CUSUM filter segments the return
+    path into regimes, and each bar's label is the SIGN of that regime's drift,
+    estimated CAUSALLY from the bars already seen inside the regime. Because the
+    sign is a running (online) drift estimate that resets at each detected change
+    point, the per-bar label is a strict function of PAST/CURRENT bars only -- it
+    is exactly what a live detector would output, and it is defined for every
+    causal bar (including a regime that lives entirely in the OOS segment, which a
+    per-segment TRAIN map could never sign).
+
+    Pipeline:
+      1. Standardize log-returns with the TRAIN mean/std ONLY:
+             z_t = (lr_t - mu_train) / sd_train.
+         (mu_train, sd_train are the only globally fitted scalars; both TRAIN-only.)
+      2. Slack k = K_FRAC * (TRAIN mean |z|) -- a TRAIN-fit noise floor so the
+         filter accumulates only persistent drift, not single-bar noise.
+      3. Threshold h is bisected on the TRAIN z-series to yield ~target_seg
+         regimes (_calibrate_cusum_h). h is frozen and applied forward.
+      4. Run the frozen (h, k) CUSUM forward over the FULL z-series to get change
+         points and contiguous regime ids (a pure forward application).
+      5. PER-BAR LABEL = sign of a CAUSAL EWMA drift of lr within the regime,
+         re-initialised at the regime's start:  label 1 if EWMA-drift > 0 else 0.
+         This uses NO forward information at all -> unambiguously G3-clean. The
+         EWMA (span ~ EWMA_ALPHA) adapts within a regime and FORGETS the stale
+         start, so it stays accurate even when the frozen TRAIN threshold sizes an
+         OOS regime imperfectly (a simple cumulative mean degrades badly when one
+         regime accidentally spans a true flip; the EWMA does not). The estimate
+         resets at each detected change point, so it is exactly what a live online
+         detector would output bar-by-bar.
+
+    Forward returns are used ONLY to PICK the configuration (which TRAIN segment
+    count / which `fk` produces the most TRAIN-balanced, validating labels) -- i.e.
+    purely for model selection on TRAIN/VAL balance, never to decide which OOS bar
+    trades. Every causal bar receives a label and the footer emits a prediction
+    for every causal bar; the forward target only tunes (target_seg, fk).
+
+    Co-design note: this pairs naturally with the DIRECTIONAL axes (imbalance /
+    tickimb / volumeimb / fracdiff). Those clocks already concentrate bars on
+    directional runs, so the CUSUM regimes are cleaner and the running-drift sign
+    is sharper -- the same axis-labeler synergy that boosted bgm on TLT, here made
+    explicitly directional and short-capable.
+
+    Sweeps target_seg in {10, 20, 40} (TRAIN regime granularity) and the horizon
+    fk used only for the TRAIN/VAL balance selection; keeps the most TRAIN-balanced
+    config in (0.2, 0.8). Returns (best_labels, best_cfg, best_horizon).
+    """
+    K_FRAC = 0.10      # slack as a fraction of TRAIN mean |z| (noise floor)
+    EWMA_ALPHA = 0.05  # within-regime drift forgetting factor (causal)
+
+    N = len(lc)
+    tr_idx = np.where(tr_m)[0]
+    if len(tr_idx) < 200:
+        return None, "cusum_insufficient_train", None
+
+    lr_tr = lr[tr_idx]
+    lr_tr = lr_tr[np.isfinite(lr_tr)]
+    if len(lr_tr) < 100:
+        return None, "cusum_insufficient_train", None
+
+    mu_tr = float(np.mean(lr_tr))
+    sd_tr = float(np.std(lr_tr))
+    if not np.isfinite(sd_tr) or sd_tr <= 0:
+        return None, "cusum_degenerate_train", None
+
+    # TRAIN-fit standardization, applied forward to the full series.
+    z = (lr - mu_tr) / sd_tr
+    z = np.where(np.isfinite(z), z, 0.0)
+
+    # Slack k from TRAIN-only |z| (noise floor); guard tiny/degenerate scales.
+    z_tr = z[tr_idx]
+    mean_abs_z_tr = float(np.mean(np.abs(z_tr))) if len(z_tr) else 1.0
+    k = K_FRAC * mean_abs_z_tr
+    if not np.isfinite(k) or k <= 0:
+        k = 0.05
+
+    best_labels = None
+    best_cfg = ""
+    best_score = -999
+    best_horizon = None
+
+    for target_seg in [10, 20, 40]:
+        # Threshold fit on TRAIN z only, then frozen.
+        h = _calibrate_cusum_h(z_tr, k, target_seg)
+
+        # Forward application of the frozen (h, k) detector over the FULL series.
+        cps = _cusum_change_points(z, h, k)
+
+        # Contiguous regime ids + CAUSAL EWMA-drift sign within each regime.
+        run_sign = np.zeros(N, dtype=int)
+        cur_seg = 0
+        ewma = 0.0
+        started = False
+        cp_set = set(cps)
+        for t in range(N):
+            r = lr[t] if np.isfinite(lr[t]) else 0.0
+            if not started:                       # re-init EWMA at regime start
+                ewma = r
+                started = True
+            else:
+                ewma = EWMA_ALPHA * r + (1.0 - EWMA_ALPHA) * ewma
+            run_sign[t] = 1 if ewma > 0.0 else 0  # causal within-regime drift sign
+            if t in cp_set:                       # close regime AFTER labeling bar t
+                cur_seg += 1
+                started = False
+        n_seg = cur_seg + 1
+
+        for fk in horizons:
+            fr = fwd_ret[fk]
+            fvd_k = np.isfinite(fr)
+
+            # Per-bar label = CAUSAL running-drift sign on every causal bar.
+            valid = fv & fvd_k
+            y = np.full(N, -1, dtype=int)
+            y[valid] = run_sign[valid]
+
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 200 or vx.sum() < 20:
+                continue
+
+            # Gate on TRAIN label balance (avoid a degenerate one-sided target).
+            balance = float(y[tx].mean())
+            if not (0.2 < balance < 0.8):
+                continue
+
+            # CONFIG SELECTION (allowed: forward returns may TUNE the target on a
+            # holdout, just not pick which OOS bars trade). Score = how well the
+            # CAUSAL regime sign agrees with the realised forward direction on VAL,
+            # minus a parsimony penalty on regime count: coarse, persistent regimes
+            # generalise OOS; over-segmentation memorises TRAIN and decays on TEST.
+            agree_va = (y[vx] == (fr[vx] > 0).astype(int))
+            va_dir_acc = float(np.mean(agree_va)) if vx.sum() > 0 else 0.0
+            score = va_dir_acc - 0.0008 * n_seg
+            if score > best_score:
+                best_score = score
+                best_labels = y
+                best_cfg = f"cusum_f{fk}_seg{target_seg}_n{n_seg}"
+                best_horizon = fk
+
+    if best_labels is None:
+        return None, "cusum_no_balanced_cfg", None
+    return best_labels, best_cfg, best_horizon
+
+
+# --------------------------------------------------------------------------- #
 # Registry                                                                    #
 # --------------------------------------------------------------------------- #
 # Every value is callable with the CANONICAL uniform signature:
@@ -855,6 +1068,7 @@ LABELERS = {
     "triple_barrier_tight": generate_labels_triple_barrier_tight,
     "multi_horizon": generate_labels_multi_horizon,
     "regime_gmm": generate_labels_regime_gmm,         # causal-feature GMM regimes.
+    "cusum_regime": generate_labels_cusum_regime,     # CUSUM change-point regimes.
     "hmm": generate_labels_hmm,                       # BASELINE comparator only.
     "always_long": generate_labels_always_long,       # BASELINE: buy-and-hold floor.
 }
@@ -863,6 +1077,6 @@ LABELERS = {
 FEATURED_LABELERS = [
     "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "multi_horizon",
-    "regime_gmm",
+    "regime_gmm", "cusum_regime",
 ]
 BASELINE_LABELERS = ["hmm", "always_long"]
