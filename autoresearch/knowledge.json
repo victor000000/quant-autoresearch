@@ -669,6 +669,20 @@
       "trades": 0,
       "round": 42,
       "note": "kmeans2stage degenerate even on directional clock"
+    },
+    "TLT_imbalance_regime_gmm_ls_overlay_R43": {
+      "real_calmar": 0.0,
+      "real_da": 0,
+      "trades": 0,
+      "round": 43,
+      "note": "causal-feature GMM degenerate (narrow p, kmeans pattern)"
+    },
+    "TLT_imbalance_cusum_regime_ls_overlay_R43": {
+      "real_calmar": -0.2306,
+      "real_da": 78.91,
+      "trades": 2753,
+      "round": 43,
+      "note": "CUSUM regime over-trades (flips too often), churns to neg"
     }
   },
   "baselines": {
@@ -734,7 +748,8 @@
     "ROUND39 WIN: QQQ 1.0965 -> +1.2953 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - the GLD axis-unlock GENERALIZES (label-independent). Smaller than GLD (+0.20 vs +1.0) but real. multi_horizon DEGENERATE on QQQ (0 trades @0.15 thresh). The lever for trending stale bests is the AXIS (logdollar), not the labeler. Leaderboard: TLT 0.768, IWM 0.779, HYG 1.263, QQQ 1.295, EEM 1.328, GLD 1.802, XLE 2.262.",
     "ROUND40 WIN: HYG 1.2625 -> +1.8880 (KEPT, DA 3.67) via always_long/LOGDOLLAR/cdf_overlay. Credit carry + causal vol-targeting on logdollar de-levers into risk-off drawdowns -> DA collapses, Calmar +0.63. Label-independent (axis-unlock, biggest after GLD). multi_horizon under-trades credit (43, G2 fail). Leaderboard: TLT 0.768, IWM 0.779, QQQ 1.295, EEM 1.328, GLD 1.802, HYG 1.888, XLE 2.262.",
     "ROUND41 WIN: EEM 1.3279 -> +1.4032 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - completes the stale-best modernization sweep (GLD 0.78->1.80, HYG 1.26->1.89, QQQ 1.10->1.30, EEM 1.33->1.40), ALL label-independent axis-unlock wins. multi_horizon degenerate on ALL four stale bests -> the modernization lever is the AXIS, not the labeler. SINGLE-ASSET FRONTIER CONVERGED: weakest TLT 0.768/IWM 0.779 at proven ceilings; modernized leaderboard TLT 0.768, IWM 0.779, QQQ 1.295, EEM 1.403, GLD 1.802, HYG 1.888, XLE 2.262. Next frontier = cross-asset PAIRS (G1>3.0, sign-off-worthy).",
-    "ROUND42: tickimb (sign-only imbalance) HURTS bgm (-0.02) vs dollar-imbalance (0.59) -> the DOLLAR WEIGHTING (magnitude/conviction), not just direction, drives the imbalance x bgm synergy. kmeans2stage degenerate on any axis. bgm/imbalance 0.59 stays best unsupervised TLT. (Driver retry fix recovered the transient QC 'Compile id not found' infer flake.)"
+    "ROUND42: tickimb (sign-only imbalance) HURTS bgm (-0.02) vs dollar-imbalance (0.59) -> the DOLLAR WEIGHTING (magnitude/conviction), not just direction, drives the imbalance x bgm synergy. kmeans2stage degenerate on any axis. bgm/imbalance 0.59 stays best unsupervised TLT. (Driver retry fix recovered the transient QC 'Compile id not found' infer flake.)",
+    "ROUND43: workflow's NOVEL unsupervised labelers fail on TLT - regime_gmm (GMM on causal features) DEGENERATE (0 trades, feature-clusters don't separate forward direction; kmeans pattern); cusum_regime over-trades (2753 trades, DA 79, -0.23; change-points too sensitive). Both causal/leak-free but no edge. bgm/imbalance 0.59 stays best unsupervised TLT. Causal-feature clustering alone doesn't carry TLT's directional edge - bgm's vol-gated forward-return mixture does."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -1280,6 +1295,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R42 tickimb (sign-only): bgm -0.02 (vs dollar-imbalance 0.59), kmeans2stage degenerate. Dollar weighting drives the synergy"
+      },
+      {
+        "id": "r43",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R43 novel unsupervised: regime_gmm degenerate (0tr), cusum_regime over-trades (-0.23). bgm/imbalance 0.59 stays best"
       }
     ],
     "edges": [
@@ -1722,6 +1743,11 @@
         "src": "f_imbalance",
         "dst": "r42",
         "label": "sign-only? no - weighting matters"
+      },
+      {
+        "src": "f_imbalance",
+        "dst": "r43",
+        "label": "novel labelers? no edge"
       }
     ],
     "running": []

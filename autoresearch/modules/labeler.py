@@ -940,8 +940,12 @@ def generate_labels_cusum_regime(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     explicitly directional and short-capable.
 
     Sweeps target_seg in {10, 20, 40} (TRAIN regime granularity) and the horizon
-    fk used only for the TRAIN/VAL balance selection; keeps the most TRAIN-balanced
-    config in (0.2, 0.8). Returns (best_labels, best_cfg, best_horizon).
+    fk. Each config must first be TRAIN-balanced in (0.2, 0.8); among those, the
+    winner maximises VAL directional agreement (causal sign vs realised forward
+    sign) minus a parsimony penalty on regime count, so coarse/persistent regimes
+    that generalise OOS beat over-segmented ones that memorise TRAIN. The forward
+    return is used ONLY for this holdout config selection, never to gate OOS bars.
+    Returns (best_labels, best_cfg, best_horizon).
     """
     K_FRAC = 0.10      # slack as a fraction of TRAIN mean |z| (noise floor)
     EWMA_ALPHA = 0.05  # within-regime drift forgetting factor (causal)
