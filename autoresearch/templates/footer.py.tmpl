@@ -228,6 +228,14 @@ class AutoresearchPipeline(QCAlgorithm):
         # the SAME thresh). NO future-label selection -> no look-ahead.
         test_preds = _pred_list(pe_cal[:-1], lc[ei][:-1],
                                 np.zeros_like(lc)[ei][:-1], bar_ts[ei][:-1])
+        # LEAK SENTINEL (checked every round): preds MUST cover every causal test
+        # bar. n_pred << n_test_bars => a labeler is selecting OOS bars by the
+        # future label again (the bug fixed 2026-06-01). Echoed as runtime stats.
+        try:
+            self.set_runtime_statistic("n_test_bars", str(int(ex.sum())))
+            self.set_runtime_statistic("n_pred", str(len(test_preds)))
+        except Exception:
+            pass
         cfg = f"{label_cfg}_corr{nk}_xgbd3_iso"
         return (float(synth_cal), cfg, train_auc, val_auc, int(n_trades),
                 test_preds, float(val_da))

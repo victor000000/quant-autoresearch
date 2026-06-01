@@ -22,16 +22,23 @@ A hypothesis is one render-time CONFIG (no code edits between two hypotheses):
 ## The loop (tournament)
 1. **Pick the weakest ETF** — lowest REAL OOS Calmar of its best *active* (trades>80) config
    (`knowledge.json.per_etf_best`).
-2. **Propose 2 hypotheses** for it — **reason from the causal graph** (`knowledge.json.causal_graph`,
-   rendered at `reports/causal_graph.html`): derive each hypothesis from a **FINDING** node (the mechanism
-   hubs), not from scratch. Also analyze the asset (kurtosis, memory/Hurst, vol-clustering) + mine `pdfs/`,
-   Wang transcripts, `docs/research/technique_catalog.md`, the web. They must differ on ≥1 structural lever
-   (axis/labeler/sizing) and each carry a written mechanism tracing back to a finding. Think hard here.
-3. **Race them:** `python3 scripts/run_autoresearch_round.py '<cfgA>' '<cfgB>'` (2 nodes, 5-min cap each;
-   overruns are cancelled via the QC API). Same thresh+sizing in VAL and OOS.
+2. **Target the next intervention (LeGIT-style — think hard here).** Run `python3 scripts/target_next.py`
+   for the brief (weakest ETF, cells already tried, FINDING hubs, open question). Then:
+   (a) **enumerate** 3–5 candidate interventions, each derived from a **FINDING** node in
+   `knowledge.json.causal_graph` (a lever change — axis/labeler/sizing/thresh — or a new method), with a
+   one-line mechanism; (b) **rank** them by *expected metric-gain × confidence* **and** *edge-disambiguation*
+   (does it resolve an open finding / test a hypothesis?); (c) the round's **2 hypotheses = the top of that
+   ranking** (must differ on ≥1 structural lever). Don't propose from scratch — propose from the graph.
+   Asset analysis (kurtosis, Hurst, vol-clustering) + `pdfs/`/Wang/`docs/research/`/web inform the candidates.
+3. **Race them:** `python3 scripts/run_autoresearch_round.py '<cfgA>' '<cfgB>'` (ONE ETF, 2 nodes, 5-min cap
+   each; overruns cancelled via the QC API). Same thresh+sizing in VAL and OOS.
 4. **Score on REAL OOS:** Calmar + DA. Deployable ⟺ both legs completed, DA reported, trades>80.
-5. **Keep** iff the winner is deployable AND beats the target's current best → update `per_etf_best`.
-   Else discard. Log both legs.
+5. **Keep + look-ahead check (every round).** Keep iff the winner is deployable AND beats the target's best.
+   Before trusting any KEEP, **verify no leak**: (i) the footer logs `n_pred ≈ n_test_bars` — if `n_pred` is
+   far smaller, a labeler is selecting OOS bars by the future label (the bug fixed 2026-06-01) → reject;
+   (ii) if the KEEP shows a **leak signature** — Calmar ≫ buy-hold, or DA ≪ buy-hold, or trades barely >80 —
+   run a **label-independent control** (`always_long`, same axis+sizing): the KEEP must clearly beat it
+   (else the "edge" is the overlay, not the labeler). Only then update `per_etf_best`. Else discard. Log both legs.
 6. Write `reports/round_N.html` directly from `reports/TEMPLATE.html` (MathJax math), link it in
    `index.html`. **Update the causal graph:** append the round's node(s) + causal edge(s) to
    `knowledge.json.causal_graph` (types: finding/round/milestone/decision; a KEEP becomes a milestone, a
