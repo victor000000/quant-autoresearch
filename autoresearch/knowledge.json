@@ -745,6 +745,19 @@
       "trades": 527,
       "round": 49,
       "note": "DC trend-state trend-follows -> whipsaws TLT (mean-reverting)"
+    },
+    "TLT_logdollar_triple_barrier_longshort_R50": {
+      "real_calmar": 0.3906,
+      "real_da": 33.9,
+      "trades": 145,
+      "round": 50,
+      "note": "binary longshort << continuous ls_overlay"
+    },
+    "TLT_logdollar_triple_barrier_cdf_overlay_LONGONLY_R50": {
+      "real_calmar": 0.0,
+      "trades": 0,
+      "round": 50,
+      "note": "long-only degenerate - TLT short leg essential"
     }
   },
   "baselines": {
@@ -817,7 +830,8 @@
     "ROUND46 WIN: IWM 0.7788 -> +0.8831 (KEPT) via imbalance/bgm/cdf_overlay@thresh0.40 - an UNSUPERVISED labeler (bgm) on the custom dollar-imbalance axis BEATS the supervised multi_horizon. Key: bgm/imbalance is a low-DA regime-timer that was UNDER-LEVERED (R45 DA 1.92); lowering the entry threshold 0.45->0.40 raised exposure -> Calmar 0.88, DA still 3.78. cdf_plain@0.45 also beat (0.79, DA 2.0). The \u2460\u2461 exploration (custom axis + unsupervised labeling + exposure) delivers a real win. Leak-clean (beats always_long control 0.57). New leaderboard: TLT 0.768 (sole weakest), IWM 0.883, QQQ 1.30, EEM 1.40, GLD 1.80, HYG 1.89, XLE 2.26.",
     "ROUND47: new axes (fracdiff/volumeimb) BREAK triple_barrier on TLT (-0.05/-0.21) - reconfirms f_axiscross (triple_barrier wants logdollar; magnitude-calibrated sigma-barriers mis-fire on memory/volume clocks). New axes help UNSUPERVISED bgm (R45/46), NOT supervised forward labelers - axis x labeler co-design holds. TLT supervised ceiling stays logdollar/triple_barrier/ls_overlay 0.7679.",
     "ROUND48: bgm/imbalance synergy does NOT universally generalize - degenerate (0 trades) on EEM. Asset-specific (TLT 0.59, IWM 0.88; EEM degenerate). bgm's vol-regime gate needs the asset's imbalance bars to form a balanced separable regime. EEM stays buy-hold 1.40.",
-    "ROUND49: Directional-Change method FAILS on TLT - dc/dc_trend -0.03 (DA 87!), logdollar/dc_trend -0.11. dc_trend TREND-FOLLOWS; it whipsaws -> FINDING: TLT is MEAN-REVERTING around rate regimes (not trending), which is why barrier-based triple_barrier wins (reversal-shock) and trend-following loses. Implication: a DC-REVERSAL label (mean-reversion) is the right sign. Now broadening beyond \u2460\u2461 (user): explore long/short + other modules (\u2467 sizing, \u2466 ensemble)."
+    "ROUND49: Directional-Change method FAILS on TLT - dc/dc_trend -0.03 (DA 87!), logdollar/dc_trend -0.11. dc_trend TREND-FOLLOWS; it whipsaws -> FINDING: TLT is MEAN-REVERTING around rate regimes (not trending), which is why barrier-based triple_barrier wins (reversal-shock) and trend-following loses. Implication: a DC-REVERSAL label (mean-reversion) is the right sign. Now broadening beyond \u2460\u2461 (user): explore long/short + other modules (\u2467 sizing, \u2466 ensemble).",
+    "ROUND50 (long/short, \u2467): TLT needs CONTINUOUS long+short. binary longshort 0.39 << continuous ls_overlay 0.77 (binary over-shoots, DA 34). long-only cdf_overlay@0.55 = 0 trades DEGENERATE -> the SHORT leg is essential (triple_barrier rarely predicts strong-up on mostly-down/two-sided TLT). Confirms ls_overlay (continuous L+S) is the right sizing for TLT."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -1411,6 +1425,12 @@
         "type": "finding",
         "phase": "TLT",
         "label": "FINDING: TLT is MEAN-REVERTING around rate regimes - trend-following (dc_trend) whipsaws (DA 87); barrier/reversal labels (triple_barrier) win. Broaden beyond \u2460\u2461: try long/short + \u2466ensemble/\u2467sizing"
+      },
+      {
+        "id": "r50",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R50 (\u2467 long/short): TLT needs CONTINUOUS L+S - binary 0.39<<ls_overlay 0.77; long-only degenerate (short essential)"
       }
     ],
     "edges": [
@@ -1888,6 +1908,11 @@
         "src": "r49",
         "dst": "f_tlt_meanrev",
         "label": "trend-follow fails -> mean-reverting"
+      },
+      {
+        "src": "f_tlt_meanrev",
+        "dst": "r50",
+        "label": "continuous L+S; short essential"
       }
     ],
     "running": []
