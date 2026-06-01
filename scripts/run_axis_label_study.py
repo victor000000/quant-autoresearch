@@ -44,7 +44,7 @@ INFER_TMPL = os.path.join(AUTORESEARCH_DIR, "templates", "infer.py.tmpl")
 RESULTS_CSV = os.path.join(AUTORESEARCH_DIR, "axis_label_results.csv")
 RESULTS_TSV = os.path.join(AUTORESEARCH_DIR, "results.tsv")
 
-CSV_COLS = ["ticker", "axis", "label", "real_calmar", "trades",
+CSV_COLS = ["ticker", "axis", "label", "real_calmar", "real_da", "trades",
             "synth_cal", "train_auc", "val_auc", "status"]
 
 # Small pilot defaults (overridable via argv).
@@ -84,8 +84,9 @@ def parse_train_stats(bt_train):
 
 
 def parse_infer_stats(bt_infer):
-    """Extract REAL Calmar (= CAGR / Drawdown) and Total Orders from infer."""
+    """Extract REAL Calmar (=CAGR/Drawdown), Total Orders, and real OOS DA from infer."""
     st = bt_infer.get("statistics", {}) or {}
+    rt = bt_infer.get("runtimeStatistics", {}) or {}
     cagr = _f(st.get("Compounding Annual Return", "0%"))
     mdd = _f(st.get("Drawdown", "0%"))
     real_calmar = (cagr / mdd) if abs(mdd) > 0.01 else 0.0
@@ -93,7 +94,8 @@ def parse_infer_stats(bt_infer):
         trades = int(st.get("Total Orders", "0"))
     except (ValueError, TypeError):
         trades = 0
-    return real_calmar, trades
+    real_da = _f(rt.get("da_oos", 0.0))   # real OOS Drawdown Area (lower=better)
+    return real_calmar, trades, real_da
 
 
 def write_csv(rows):
@@ -160,12 +162,12 @@ def run_study(ticker, axes, labelers):
             infer_code = render_infer(ticker, cell)
             bt_infer, status_infer = submit_and_wait(
                 infer_code, f"infer_{ticker}_{cell}", timeout_s=300)
-            real_calmar, trades = parse_infer_stats(bt_infer)
-            print(f"      >>> REAL Calmar={real_calmar:.4f} Trades={trades} "
-                  f"status={status_infer}")
+            real_calmar, trades, real_da = parse_infer_stats(bt_infer)
+            print(f"      >>> REAL Calmar={real_calmar:.4f} DA={real_da:.4f} "
+                  f"Trades={trades} status={status_infer}")
             rows.append({
                 "ticker": ticker, "axis": axis, "label": label,
-                "real_calmar": real_calmar, "trades": trades,
+                "real_calmar": real_calmar, "real_da": real_da, "trades": trades,
                 "synth_cal": tstats["synth_cal"],
                 "train_auc": tstats["train_auc"],
                 "val_auc": tstats["val_auc"],

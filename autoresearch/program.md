@@ -27,9 +27,11 @@ keeps you honest: you can only raise the score by genuinely improving the model.
 → ① custom axis → ② unsupervised labels → ③ features → ④ dim-reduce → ⑤ model → ⑥ calibrate →
 ⑦ ensemble → ⑧ bet-size / meta-label.
 
-## The loop — NEVER STOP
-1. Read `knowledge.json` + `techniques.json`. Pick the highest-priority idea. (Out of ideas? Mine
-   `pdfs/` (AFML, MLAM), Wang transcripts, and the web — arXiv/SSRN — and add them.)
+## The loop — NEVER STOP (one research round at a time)
+1. **Start with analysis.** Read `knowledge.json` + prior `reports/`. Analyze the asset's data character
+   (⓪ kurtosis, memory/Hurst, vol-clustering) and which *strategy type* fits it, then pick or **research one
+   idea** for ① axis or ② labeling — mine `pdfs/` (AFML, MLAM), Wang transcripts, `docs/research/technique_catalog.md`,
+   and the web (arXiv/SSRN). Think hard here; this is where the work goes.
 2. Edit a module. Keep it simple.
 3. `git commit`.
 4. Backtest train → val → test on QC. **Each backtest is capped at 5 minutes; if it exceeds, cancel and
