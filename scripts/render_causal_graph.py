@@ -154,7 +154,12 @@ def inject(path, cid, nodes, edges, phases, round_label, note=""):
     sec = section(cid, nodes, edges, phases,
                   f"Causal graph (as of {round_label}) — interactive: collapse/expand, drag, hover", note)
     pat = re.compile(r'<section class="causalgraph">.*?</section>', re.S)
-    html = pat.sub(sec, html, count=1) if pat.search(html) else html.replace("</body>", sec + "\n</body>")
+    if pat.search(html):
+        html = pat.sub(sec, html, count=1)
+    elif "</div></body>" in html:                 # new .wrap layout: keep graph inside wrap
+        html = html.replace("</div></body>", sec + "\n</div></body>", 1)
+    else:
+        html = html.replace("</body>", sec + "\n</body>", 1)
     open(path, "w").write(html)
 
 

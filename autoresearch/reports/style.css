@@ -1,37 +1,69 @@
-/* Shared style for autoresearch round reports — readable, consistent. */
-:root{ --ink:#1b1f23; --mut:#57606a; --line:#d8dee4; --bg:#fff; --accent:#0969da;
-       --keep:#1a7f37; --keepbg:#dafbe1; --disc:#6e7781; --discbg:#f0f1f3; }
+/* Autoresearch round reports — polished, readable. */
+:root{
+  --ink:#11181c; --mut:#5b6770; --faint:#8b95a1; --line:#e6e9ec; --line2:#eef1f4;
+  --page:#f4f6f8; --card:#ffffff; --accent:#0a66c2; --accent-soft:#e8f1fb;
+  --pos:#1a7f4b; --pos-soft:#e6f6ec; --neg:#c92a3b; --neg-soft:#fdecee;
+  --amber:#9a6700; --amber-soft:#fff8e6; --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.06);
+  --r:14px;
+}
 *{box-sizing:border-box}
-body{font:17px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  color:var(--ink);background:var(--bg);max-width:880px;margin:2.2rem auto;padding:0 1.3rem}
+html{-webkit-text-size-adjust:100%}
+body{font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
+  color:var(--ink);background:var(--page);margin:0;padding:2.4rem 1rem 4rem}
+.wrap{max-width:900px;margin:0 auto}
 a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
-.nav{font-size:.92em;color:var(--mut);margin-bottom:1.4rem}
-h1{font-size:1.7rem;line-height:1.25;margin:.2em 0 .5em;border-bottom:2px solid #eaecef;padding-bottom:.35em}
-h2{font-size:1.18rem;margin:1.8em 0 .5em;color:#24292f}
-/* verdict badge */
-.badge{display:inline-block;font-weight:700;font-size:.82em;letter-spacing:.03em;
-  padding:.18em .7em;border-radius:999px;vertical-align:middle}
-.badge.keep{color:var(--keep);background:var(--keepbg);border:1px solid #b6e8c4}
-.badge.discard{color:var(--disc);background:var(--discbg);border:1px solid #d6d9dd}
-/* tl;dr callout */
-.tldr{background:#f6f8fa;border-left:4px solid var(--accent);border-radius:0 8px 8px 0;
-  padding:.7em 1.1em;margin:1.1em 0;font-size:1.02em}
-.tldr b{color:#24292f}
-/* results table */
-table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.96em}
-th,td{border:1px solid var(--line);padding:.5em .7em;text-align:left}
-th{background:#f6f8fa;font-weight:600}
-tbody tr:nth-child(even){background:#fbfcfd}
-tr.win{background:#dafbe1 !important}
-tr.win td:first-child::after{content:" ★";color:var(--keep)}
-td.num{font-variant-numeric:tabular-nums;text-align:right}
-.pos{color:var(--keep);font-weight:600} .neg{color:#cf222e}
-/* misc */
-code{background:#eff1f3;padding:.1em .38em;border-radius:5px;font-size:.9em}
-.why,.next{margin:.6em 0}
-.next{background:#fffdf5;border:1px solid #eee0a8;border-radius:8px;padding:.6em 1em}
-section.causalgraph{border-top:2px solid #eaecef;margin-top:2.4em;padding-top:.6em}
-button{cursor:pointer;padding:.3em .7em;margin-right:.4em;border:1px solid var(--line);
-  border-radius:6px;background:#f6f8fa;font-size:.92em}
-button:hover{background:#eef1f4}
+.nav{font-size:.9em;color:var(--mut);margin:0 0 1.1rem;display:flex;gap:.6rem;align-items:center}
+.nav .sep{color:var(--faint)}
+
+/* hero */
+.hero{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:1.5rem 1.7rem;margin-bottom:1.1rem}
+.hero .eyebrow{font-size:.74rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.hero h1{font-size:1.85rem;line-height:1.15;margin:.25em 0 .1em;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.chip{font:700 .9rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;background:#11181c;color:#fff;
+  padding:.4em .6em;border-radius:8px;letter-spacing:.02em}
+.pill{font-size:.78rem;font-weight:700;letter-spacing:.03em;padding:.32em .8em;border-radius:999px;text-transform:uppercase}
+.pill.keep{color:var(--pos);background:var(--pos-soft);border:1px solid #bce8cd}
+.pill.discard{color:var(--mut);background:#eef1f4;border:1px solid #dde2e7}
+.hero .tldr{margin:.7rem 0 0;font-size:1.04rem;color:#27313a}
+.hero .tldr b{color:var(--ink)}
+
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.7rem;margin:1.1rem 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.85rem 1rem;box-shadow:var(--shadow)}
+.stat .k{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.stat .v{font:700 1.6rem/1.1 -apple-system,Inter,system-ui;margin-top:.25rem;font-variant-numeric:tabular-nums}
+.stat .v.pos{color:var(--pos)} .stat .v.neg{color:var(--neg)}
+.stat .sub{font-size:.78rem;color:var(--mut);margin-top:.15rem}
+
+/* sections */
+section.block{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:1.25rem 1.5rem;margin:1.1rem 0}
+h2{font-size:1.12rem;margin:0 0 .7em;color:#1b242c;letter-spacing:-.01em}
+section.block:first-of-type h2{margin-top:0}
+
+/* table */
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:.95em;overflow:hidden;
+  border:1px solid var(--line);border-radius:10px}
+th,td{padding:.6em .8em;text-align:left;border-bottom:1px solid var(--line2)}
+th{background:#f7f9fb;font-weight:650;color:#3a444d;font-size:.86em;letter-spacing:.02em}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.win{background:var(--pos-soft)}
+tbody tr.win td:first-child{font-weight:600}
+tbody tr.win td:first-child::after{content:" ★";color:var(--pos)}
+td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.pos{color:var(--pos);font-weight:600} .neg{color:var(--neg);font-weight:600}
+code{background:#eef1f4;padding:.12em .42em;border-radius:6px;font:.88em ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* callouts */
+.tldr-box{background:var(--accent-soft);border:1px solid #cfe2f7;border-radius:12px;padding:.8em 1.1em;margin:.2em 0}
+.next-box{background:var(--amber-soft);border:1px solid #f1e4ad;border-radius:12px;padding:.8em 1.1em;color:#5c4a08}
 .small{color:var(--mut);font-size:.9em}
+p{margin:.5em 0}
+
+/* causal graph */
+section.causalgraph{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:1.25rem 1.5rem;margin:1.1rem 0}
+button{cursor:pointer;padding:.35em .8em;margin-right:.4em;border:1px solid var(--line);
+  border-radius:8px;background:#f7f9fb;font-size:.9em;color:#2b343c}
+button:hover{background:#eef1f4}
