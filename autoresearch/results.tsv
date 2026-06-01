@@ -17,3 +17,5 @@ axis_label	1.1094	1	completed	axislabel QQQ dollar/carry synth_cal=0.0000 val_au
 axis_label	1.1094	1	completed	axislabel QQQ dollar/kmeans2stage synth_cal=0.0000 val_auc=0.5000
 axis_label	1.1094	1	completed	axislabel QQQ dollar/always_long synth_cal=0.0000 val_auc=0.5000
 axis_label	1.1094	1	completed	axislabel QQQ dollar/hmm synth_cal=0.0000 val_auc=0.5000
+axis_label	0.5387	431	completed	axislabel QQQ vol/carry synth_cal=-0.3511 val_auc=0.7676
+axis_label	0.5387	431	completed	axislabel QQQ vol/always_long synth_cal=-0.3511 val_auc=0.7676
