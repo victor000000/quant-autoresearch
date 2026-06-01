@@ -704,6 +704,20 @@
       "trades": 705,
       "round": 45,
       "note": "imbalance HURTS supervised multi_horizon (0.54 vs logdollar 0.78)"
+    },
+    "IWM_imbalance_bgm_cdf_overlay_t40_R46": {
+      "real_calmar": 0.8831,
+      "real_da": 3.78,
+      "trades": 588,
+      "round": 46,
+      "note": "KEPT - IWM 0.78->0.88; UNSUPERVISED bgm/imbalance + exposure tune beats supervised multi_horizon"
+    },
+    "IWM_imbalance_bgm_cdf_plain_t45_R46": {
+      "real_calmar": 0.7919,
+      "real_da": 2.0,
+      "trades": 141,
+      "round": 46,
+      "note": "also beats 0.7788 (DA 2.0)"
     }
   },
   "baselines": {
@@ -772,7 +786,8 @@
     "ROUND42: tickimb (sign-only imbalance) HURTS bgm (-0.02) vs dollar-imbalance (0.59) -> the DOLLAR WEIGHTING (magnitude/conviction), not just direction, drives the imbalance x bgm synergy. kmeans2stage degenerate on any axis. bgm/imbalance 0.59 stays best unsupervised TLT. (Driver retry fix recovered the transient QC 'Compile id not found' infer flake.)",
     "ROUND43: workflow's NOVEL unsupervised labelers fail on TLT - regime_gmm (GMM on causal features) DEGENERATE (0 trades, feature-clusters don't separate forward direction; kmeans pattern); cusum_regime over-trades (2753 trades, DA 79, -0.23; change-points too sensitive). Both causal/leak-free but no edge. bgm/imbalance 0.59 stays best unsupervised TLT. Causal-feature clustering alone doesn't carry TLT's directional edge - bgm's vol-gated forward-return mixture does.",
     "ROUND44: new axes don't help bgm on TLT - fracdiff/bgm -0.01 (memory axis, no edge), volumeimb/bgm transient QC build-cache crash (train OK; broadened retry). bgm axis sweep complete: dollar-imbalance 0.59 >> logdollar 0.35 >> fracdiff -0.01 ~ tickimb -0.02. The DOLLAR-WEIGHTED directional clock is uniquely good for bgm. Unsupervised labeling caps ~0.59 on TLT < supervised triple_barrier/logdollar 0.77.",
-    "ROUND45: dollar-imbalance x bgm synergy GENERALIZES to IWM - imbalance/bgm/cdf_overlay 0.7476 (vs bgm/logdollar 0.71), DA 1.92 (exceptional). Just under IWM multi_horizon best 0.7788. imbalance HURTS multi_horizon (0.54 vs logdollar 0.78) -> axis x labeler co-design: imbalance suits UNSUPERVISED bgm, not forward labelers. bgm/imbalance is a general low-DA unsupervised combo (TLT 0.59, IWM 0.7476); the tiny DA means it's UNDER-LEVERED -> sizing headroom."
+    "ROUND45: dollar-imbalance x bgm synergy GENERALIZES to IWM - imbalance/bgm/cdf_overlay 0.7476 (vs bgm/logdollar 0.71), DA 1.92 (exceptional). Just under IWM multi_horizon best 0.7788. imbalance HURTS multi_horizon (0.54 vs logdollar 0.78) -> axis x labeler co-design: imbalance suits UNSUPERVISED bgm, not forward labelers. bgm/imbalance is a general low-DA unsupervised combo (TLT 0.59, IWM 0.7476); the tiny DA means it's UNDER-LEVERED -> sizing headroom.",
+    "ROUND46 WIN: IWM 0.7788 -> +0.8831 (KEPT) via imbalance/bgm/cdf_overlay@thresh0.40 - an UNSUPERVISED labeler (bgm) on the custom dollar-imbalance axis BEATS the supervised multi_horizon. Key: bgm/imbalance is a low-DA regime-timer that was UNDER-LEVERED (R45 DA 1.92); lowering the entry threshold 0.45->0.40 raised exposure -> Calmar 0.88, DA still 3.78. cdf_plain@0.45 also beat (0.79, DA 2.0). The \u2460\u2461 exploration (custom axis + unsupervised labeling + exposure) delivers a real win. Leak-clean (beats always_long control 0.57). New leaderboard: TLT 0.768 (sole weakest), IWM 0.883, QQQ 1.30, EEM 1.40, GLD 1.80, HYG 1.89, XLE 2.26."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -784,7 +799,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "SINGLE-ASSET CONVERGED (modernization done + audited). Weakest TLT 0.768/IWM 0.779 at proven ceilings. DECISION: build the cross-asset PAIRS harness (the documented >3.0/G1 path, sign-off-worthy) OR keep marginal single-asset exploration. Awaiting user direction.",
+  "next_idea": "IWM 0.88 (unsupervised bgm/imbalance win). TLT sole weakest 0.7679. Round 47: new axes x TLT's best SUPERVISED labeler - fracdiff/triple_barrier/ls_overlay + volumeimb/triple_barrier/ls_overlay - does a memory/volume clock beat logdollar 0.7679? Also: the IWM exposure-tune lever (lower thresh on cdf_overlay) could be tried on the trending bests.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -811,18 +826,18 @@
       }
     },
     "IWM": {
-      "cell": "IWM_logdollar_multi_horizon_cdf_overlay_t0.45",
-      "real_calmar": 0.7788,
-      "real_da": 5.7318,
-      "trades": 347,
+      "cell": "IWM_imbalance_bgm_cdf_overlay_t0.40",
+      "real_calmar": 0.8831,
+      "real_da": 3.7775,
+      "trades": 588,
       "g2_pass": true,
-      "round": 8,
+      "round": 15,
       "source": "tournament",
       "config": {
         "ticker": "IWM",
-        "axis": "logdollar",
-        "labeler": "multi_horizon",
-        "thresh": 0.45,
+        "axis": "imbalance",
+        "labeler": "bgm",
+        "thresh": 0.4,
         "sizing": "cdf_overlay"
       }
     },
@@ -908,7 +923,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 14,
+  "last_round": 15,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1281,7 +1296,7 @@
         "id": "f_imbalance",
         "type": "finding",
         "phase": "TLT",
-        "label": "FINDING: dollar-imbalance axis BOOSTS unsupervised bgm GENERALLY (TLT 0.35->0.59, IWM 0.71->0.7476, DA 1.92) - a low-DA regime-timer. Dollar weighting matters; imbalance HURTS supervised forward labelers (co-design). bgm under-levered -> sizing headroom"
+        "label": "FINDING: dollar-imbalance x UNSUPERVISED bgm = low-DA regime-timer, generalizes (TLT 0.59, IWM). On IWM, exposure-tuning (cdf_overlay@0.40) made it WIN: 0.78->0.88, beating supervised multi_horizon. Imbalance suits unsupervised bgm (hurts forward labelers)"
       },
       {
         "id": "r38",
@@ -1336,6 +1351,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R45 imbalance x bgm GENERALIZES to IWM: 0.7476, DA 1.92 (under-levered). imbalance hurts multi_horizon (0.54). Synergy is general"
+      },
+      {
+        "id": "r46",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R46 WIN: IWM 0.78->0.88 - UNSUPERVISED bgm/imbalance + exposure tune beats supervised multi_horizon. \u2460\u2461 win"
       }
     ],
     "edges": [
@@ -1793,6 +1814,11 @@
         "src": "f_imbalance",
         "dst": "r45",
         "label": "generalizes to IWM"
+      },
+      {
+        "src": "f_imbalance",
+        "dst": "r46",
+        "label": "exposure-tune -> WIN on IWM"
       }
     ],
     "running": []
