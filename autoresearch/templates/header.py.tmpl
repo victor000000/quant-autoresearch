@@ -13,3 +13,8 @@ _train_year = _TRAIN_SPLITS.get(TICKER, 2021)
 TRAIN_END = datetime(_train_year, 8, 1)
 VAL_END = datetime(2023, 8, 1)
 TEST_END = datetime(2026, 6, 1)
+
+# Axis this train run sweeps. The orchestrator substitutes __AXIS__ with one axis
+# name (e.g. "vol", "dollar", "tick") for a per-axis train backtest. If left as
+# the literal "__AXIS__" (not substituted), the footer sweeps ALL axes.
+AXIS = "__AXIS__"

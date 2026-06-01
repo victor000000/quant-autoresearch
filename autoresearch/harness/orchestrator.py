@@ -1,13 +1,29 @@
 """Loop orchestrator: two-phase train→infer with REAL Calmar from QC backtest."""
 
-import os, sys, time, json, subprocess
+import os, sys, time, json, subprocess, ast
 from datetime import datetime
+
+
+def _minify(src):
+    """Strip comments + docstrings so the rendered script fits QC's 64,000-char
+    main.py limit. Semantics-preserving (AST round-trip); validated by compile."""
+    tree = ast.parse(src)
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)):
+            b = node.body
+            if (b and isinstance(b[0], ast.Expr)
+                    and isinstance(getattr(b[0], "value", None), ast.Constant)
+                    and isinstance(b[0].value.value, str)):
+                node.body = b[1:] or [ast.Pass()]
+    out = ast.unparse(tree)
+    compile(out, "<minified>", "exec")
+    return out
 
 from .constants import (CORE_7_ETFS, TEMPLATES_DIR, MODULES_DIR, QC_SCRIPTS_DIR, TARGET_BARS)
 from .qc_client import submit_and_wait
 from .evaluator import evaluate
 
-PROJECT_ROOT = "/Users/liyuanjun/ai_work/lb"
+PROJECT_ROOT = "/home/ubuntu/lb"
 AUTORESEARCH_DIR = os.path.join(PROJECT_ROOT, "autoresearch")
 RESULTS_TSV = os.path.join(AUTORESEARCH_DIR, "results.tsv")
 KNOWLEDGE_JSON = os.path.join(AUTORESEARCH_DIR, "knowledge.json")
@@ -20,14 +36,28 @@ def read_module(name):
     with open(path) as f: return f.read()
 
 
-def render_script(ticker):
+def render_script(ticker, axis=None):
+    """Render ONE QC train script = header + modules (in order) + footer.
+
+    The rendered modules are bar_builder.py, labeler.py, features.py, trainer.py
+    (calibrator/consensus/ensembler stay out — the footer's FIXED downstream only
+    needs reduce_dims/realistic_cstats from trainer.py). All share ONE global
+    namespace, so modules must not import siblings.
+
+    axis: if given, substitute the AXIS placeholder so the train run sweeps just
+    that one axis; if None, the literal '__AXIS__' remains and the footer sweeps
+    ALL axes.
+    """
     header_path = os.path.join(TEMPLATES_DIR, "header.py.tmpl")
     footer_path = os.path.join(TEMPLATES_DIR, "footer.py.tmpl")
     with open(header_path) as f: script = f.read()
     for mod in ["bar_builder.py", "labeler.py", "features.py", "trainer.py"]:
         script += f"\n# === {mod} ===\n" + read_module(mod) + "\n"
     with open(footer_path) as f: script += f.read()
-    return script.replace("__TICKER__", ticker)
+    script = script.replace("__TICKER__", ticker)
+    if axis is not None:
+        script = script.replace("__AXIS__", axis)
+    return _minify(script)
 
 
 def validate_script(script_text):

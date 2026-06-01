@@ -1,102 +1,124 @@
 {
+  "study": "axis_x_labeling",
   "queue": [
     {
-      "id": "t001",
-      "technique": "Triple-barrier labeling on vol bars",
-      "description": "Replace fixed-horizon labels with triple-barrier (profit-taking at +2σ, stop-loss at -1σ, time-out at 100 bars).",
-      "source": {"type": "pdf", "ref": "AFML.pdf Chapter 3", "url": null},
-      "hypothesis": "Vol bars create more IID returns so triple-barrier thresholds will be more stable.",
+      "id": "h1-axis-tails",
+      "technique": "Information-driven axes reduce return tails",
+      "description": "Build the 6 axes {dollar, tick, vol, range, logdollar, entropy} in bar_builder.py; add NEW LogDollarBarBuilder (cumulative log(1+close*vol)) and EntropyBarBuilder (TRAIN-frozen 5-bucket Shannon-surprise accumulator, causal). Measure TRAIN bar-return excess kurtosis per axis.",
+      "hypothesis": "H1: the four information-driven axes (vol, dollar, logdollar, entropy) have lower TRAIN bar-return excess kurtosis than count/price axes (tick, range) AND higher median REAL OOS Calmar. Reject if info axes do not have lower median kurtosis OR their median REAL Calmar is <= that of {tick, range}.",
       "priority": 5,
-      "applicable_assets": ["GLD", "XLE", "EEM"],
-      "status": "queued",
-      "tried_count": 0,
-      "created": "2026-05-31T00:00:00Z"
+      "role": "featured",
+      "status": "queued"
     },
     {
-      "id": "t002",
-      "technique": "Hurst-adaptive labeling on vol bars",
-      "description": "Compute rolling Hurst exponent. H > 0.6 → trend labels. H < 0.45 → MR labels. On vol bars.",
-      "source": {"type": "transcript", "ref": "Wang course: adaptive labels + Hurst", "url": null},
-      "hypothesis": "Adaptive switching prevents applying wrong label type to wrong regime.",
+      "id": "h1b-kurtosis-mechanism",
+      "technique": "Kurtosis is the mechanism, not a correlate",
+      "description": "Across all 48 cells per ticker, rank-correlate (-TRAIN bar-return kurtosis) against REAL OOS Calmar, pooled and within-ticker.",
+      "hypothesis": "H1b: rank correlation rho between -kurtosis and Calmar > 0 (pooled and within ticker). Reject if rho <= 0 or not directionally consistent across >=2 tickers. Guards against 'more bars always wins regardless of distribution'.",
       "priority": 5,
-      "applicable_assets": ["GLD", "GDX", "XLE", "TLT"],
-      "status": "queued",
-      "tried_count": 0,
-      "created": "2026-05-31T00:00:00Z"
+      "role": "featured",
+      "status": "queued"
     },
     {
-      "id": "t003",
-      "technique": "Multi-order combination labels",
-      "description": "Combine labels at multiple forward horizons (50, 100, 200) into consensus. Only trade when all agree.",
-      "source": {"type": "pdf", "ref": "wang_course_2026-06.pdf", "url": null},
-      "hypothesis": "Multi-horizon agreement filters noise.",
+      "id": "lbl-kmeans2stage",
+      "technique": "kmeans2stage labeler (vol-cluster -> direction-cluster)",
+      "description": "Existing labeler. Stage-1 KMeans(2) on forward-vol -> low-vol cluster; Stage-2 KMeans({2,3}) on standardized [fwd_ret, |fwd_ret|] within low-vol; up-cluster->1, else 0, high-vol->-1 (abstain). Sweep horizons {50,100,200} and nc {2,3}; pick VAL balance in (0.2,0.8). Centers/scaler TRAIN-frozen, VAL/TEST predict-assigned.",
+      "hypothesis": "H2: featured clustering labelers beat max(hmm, always_long) baseline on REAL OOS Calmar, replicated across >=2 tickers.",
+      "priority": 5,
+      "role": "featured",
+      "status": "queued"
+    },
+    {
+      "id": "lbl-carry",
+      "technique": "carry labeler (low forward-vol => long)",
+      "description": "Existing labeler. TRAIN median forward-vol med_v; fwd_vol<=med_v ->1, else 0. Sweep horizons; VAL balance gate (0.2,0.8). med_v is a TRAIN scalar applied forward.",
+      "hypothesis": "H2: carry (featured) beats max(hmm, always_long) on REAL OOS Calmar, replicated across >=2 tickers; expected strongest on gold/metals (GLD pilot).",
+      "priority": 5,
+      "role": "featured",
+      "status": "queued"
+    },
+    {
+      "id": "lbl-tertile",
+      "technique": "tertile labeler (extreme-move purity, skip middle)",
+      "description": "Existing labeler. TRAIN 33rd/67th percentiles of forward return; fwd_ret>=top ->1, <=bottom ->0, middle third ->-1 (abstain). TRAIN balance gate (0.3,0.7). Percentile cuts are TRAIN scalars.",
+      "hypothesis": "H2: tertile (featured) beats max(hmm, always_long) on REAL OOS Calmar, replicated across >=2 tickers.",
+      "priority": 5,
+      "role": "featured",
+      "status": "queued"
+    },
+    {
+      "id": "lbl-bgm",
+      "technique": "bgm labeler (Bayesian GMM, sparse Dirichlet)",
+      "description": "Existing labeler. KMeans-2 vol filter, then BayesianGaussianMixture(n_components {3,4,5}, covariance_type='full', weight_concentration_prior=0.1, n_init=3, max_iter=300, random_state=42) on low-vol [fwd_ret,|fwd_ret|]. up-component=max mean fwd_ret; label 1 iff predict==up AND posterior(up)>0.40, else 0; high-vol->-1. Sparse Dirichlet self-prunes K. GMM+scaler TRAIN-fit; predict_proba forward.",
+      "hypothesis": "H2: bgm (featured) beats max(hmm, always_long) on REAL OOS Calmar, replicated across >=2 tickers.",
+      "priority": 5,
+      "role": "featured",
+      "status": "queued"
+    },
+    {
+      "id": "lbl-agglomerative",
+      "technique": "agglomerative labeler (Ward) with TRAIN-centroid 1-NN forward assignment",
+      "description": "Existing labeler, made OOS-applicable. Vol filter, then AgglomerativeClustering(n_clusters {2,3,4}, linkage='ward') on TRAIN low-vol [fwd_ret,|fwd_ret|]. up-cluster=max mean fwd_ret; up->1 else 0; high-vol->-1. Agglomerative has no native predict: compute centroids from TRAIN cluster membership, assign VAL/TEST by nearest TRAIN centroid (1-NN). Do NOT refit jointly.",
+      "hypothesis": "H2: agglomerative (featured) beats max(hmm, always_long) on REAL OOS Calmar, replicated across >=2 tickers; historically GLD-specific.",
+      "priority": 5,
+      "role": "featured",
+      "status": "queued"
+    },
+    {
+      "id": "lbl-triple_barrier",
+      "technique": "triple_barrier labeler (AFML standard)",
+      "description": "Featured AFML labeler: profit-take / stop-loss / time-out barriers on forward path; long when upper barrier hit first. TRAIN-fit barrier widths (sigma-scaled) frozen and replayed forward. Forward look-ahead is inside the label only (Wang: labels may peek forward); features and model stay causal (G3 audits feature/model leaks, not the label window).",
+      "hypothesis": "H2: triple_barrier (featured) beats max(hmm, always_long) on REAL OOS Calmar, replicated across >=2 tickers.",
+      "priority": 5,
+      "role": "featured",
+      "status": "queued"
+    },
+    {
+      "id": "lbl-multi_horizon",
+      "technique": "multi_horizon labeler (agreement gate, NEW)",
+      "description": "NEW. Run base labeler (default kmeans2stage) independently at h in {50,100,200}. Trade only where all three agree: 1 iff all h==1; 0 iff all h==0; else -1 (abstain). Wang multi-scale consensus at the LABEL level (distinct from trainer seed-consensus). Each per-horizon labeler TRAIN-fit and frozen.",
+      "hypothesis": "H2: multi_horizon (featured) beats max(hmm, always_long) on REAL OOS Calmar, replicated across >=2 tickers.",
+      "priority": 5,
+      "role": "featured",
+      "status": "queued"
+    },
+    {
+      "id": "h3-axis-labeler-interaction",
+      "technique": "Axis x labeler interaction is real (not separable)",
+      "description": "From the 6x8 factorial Calmar matrix per ticker, test whether the best labeler depends on the axis (non-trivial interaction), e.g. ensemble-style labelers unlock vol bars but hurt dollar bars.",
+      "hypothesis": "H3: the best labeler differs by axis. Reject if the same labeler is optimal on every axis for every ticker (pure main effects, no interaction).",
+      "priority": 5,
+      "role": "featured",
+      "status": "queued"
+    },
+    {
+      "id": "h5-structural-fat-tails",
+      "technique": "Structural fat tails on HYG/XLE survive any axis",
+      "description": "Reserved for full study (not pilot). On HYG (kurt >=28 every axis) and XLE (kurt >=12), check no axis brings TRAIN kurtosis near-Gaussian and Calmar stays below panel median.",
+      "hypothesis": "H5: no axis drives HYG or XLE TRAIN kurt below ~5 while lifting Calmar to panel-median. Reject if some axis does both.",
       "priority": 4,
-      "applicable_assets": ["QQQ", "IWM", "GLD", "XLE"],
-      "status": "queued",
-      "tried_count": 0,
-      "created": "2026-05-31T00:00:00Z"
+      "role": "featured",
+      "status": "queued"
     },
     {
-      "id": "t004",
-      "technique": "Quantile tertile labels with skip-middle",
-      "description": "Top tertile = long, bottom = skip, middle = no-trade. Avoids noisy middle.",
-      "source": {"type": "pdf", "ref": "v386 pipeline", "url": null},
-      "hypothesis": "Skipping middle tertile increases signal purity.",
-      "priority": 4,
-      "applicable_assets": ["QQQ", "IWM", "HYG"],
-      "status": "queued",
-      "tried_count": 0,
-      "created": "2026-05-31T00:00:00Z"
+      "id": "base-hmm",
+      "technique": "hmm baseline (GaussianHMM, 3-state, [r,|r|]) -- BASELINE comparator only",
+      "description": "BASELINE. Wang does NOT use HMM as a method (he dislikes HMM-as-trading-model; HMM is global-optimum only, cannot do online causal inference). GaussianHMM(n_components=3, covariance_type='diag', n_iter=100, random_state=42) on TRAIN bar obs [r_bar, |r_bar|]. Sort states by mean of dim 0; up=highest. Use CAUSAL forward-filter posterior phi_t^up (NOT smoothed/Viterbi -- smoothing peeks at future bars). y=1{phi>0.5} else 0; never abstains (dense baseline). Params TRAIN-fit; forward filter applied causally at VAL/TEST.",
+      "hypothesis": "Baseline: featured labelers are expected to BEAT this. It is the strongest HMM config (Q2 3-state [r,|r|]) so the featured-vs-baseline test is conservative.",
+      "priority": 1,
+      "role": "baseline",
+      "status": "queued"
     },
     {
-      "id": "t005",
-      "technique": "Meta-labeling with confidence gating",
-      "description": "Secondary XGBoost predicts whether primary prediction is correct. Only trade when both agree.",
-      "source": {"type": "pdf", "ref": "AFML.pdf §3.6", "url": null},
-      "hypothesis": "Meta-labeling filters false positives.",
-      "priority": 3,
-      "applicable_assets": ["GLD", "QQQ", "XLE", "IWM"],
-      "status": "queued",
-      "tried_count": 0,
-      "created": "2026-05-31T00:00:00Z"
-    },
-    {
-      "id": "t006",
-      "technique": "Change-point detection labels",
-      "description": "Use CUSUM or PELT on volatility/price for regime boundaries. Label post-change regimes by return.",
-      "source": {"type": "web", "ref": "ruptures library + Wang recommendation", "url": null},
-      "hypothesis": "Change-point detection explicitly models regime shifts.",
-      "priority": 3,
-      "applicable_assets": ["EEM", "TLT", "HYG"],
-      "status": "queued",
-      "tried_count": 0,
-      "created": "2026-05-31T00:00:00Z"
-    },
-    {
-      "id": "t007",
-      "technique": "Range bars for volatile ETFs",
-      "description": "Use range bars (price-move-based sampling) instead of vol/dollar/tick. Uniform price space.",
-      "source": {"type": "pdf", "ref": "De Prado — range bars", "url": null},
-      "hypothesis": "Range bars normalize price movement for volatile ETFs.",
-      "priority": 3,
-      "applicable_assets": ["EEM", "XLE", "IWM"],
-      "status": "queued",
-      "tried_count": 0,
-      "created": "2026-05-31T00:00:00Z"
-    },
-    {
-      "id": "t008",
-      "technique": "Ridge regression with isotonic calibration",
-      "description": "Replace XGBoost with Ridge + isotonic calibration. Less overfitting for linear signals.",
-      "source": {"type": "pdf", "ref": "v274 pipeline", "url": null},
-      "hypothesis": "Ridge + isotonic may beat XGBoost on assets with linear signal structure.",
-      "priority": 2,
-      "applicable_assets": ["TLT", "HYG"],
-      "status": "queued",
-      "tried_count": 0,
-      "created": "2026-05-31T00:00:00Z"
+      "id": "base-always_long",
+      "technique": "always_long baseline (naive majority) -- BASELINE",
+      "description": "BASELINE. y=1 for every labeled bar; no direction info at label stage. Downstream model still trains on features. REAL Calmar ~ buy-and-hold-while-above-threshold floor. Quantifies how much of a cell's Calmar is just drift capture vs genuine regime signal. Hard to beat on drift-heavy ETFs (QQQ beta200=0.74).",
+      "hypothesis": "Baseline: featured labelers must beat max(hmm, always_long). Featured-vs-baseline lift reported per ticker as Calmar(best featured) - Calmar(best baseline).",
+      "priority": 1,
+      "role": "baseline",
+      "status": "queued"
     }
   ],
   "dead_ends": [],
-  "last_idea_search": "2026-05-31T00:00:00Z"
+  "last_idea_search": "2026-06-01T00:00:00Z"
 }

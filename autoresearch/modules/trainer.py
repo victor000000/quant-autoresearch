@@ -15,32 +15,32 @@ import xgboost as xgb
 # from consensus import apply_consensus, consensus_stats
 
 
-def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005):
+def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005, thresh=0.45):
     """Realistic backtest statistics with transaction costs.
-    Returns: (calmar, trades, total_return, mdd, annual_return)
+    `thresh` is the per-ETF entry threshold; it gates entries AND sizes positions
+    (probs-thresh)*200, so it MUST equal the threshold infer executes with.
+    Returns: (calmar, trades, total_return, mdd, annual_return, drawdown_area)
+    where drawdown_area DA = Σ_t (1 - E_t/peak_t) on the equity curve (lower=better).
     """
     n = min(len(probs) - 1, len(log_rets) - 1, len(lc_arr) - 1, len(ma_arr) - 1)
     if n < 2:
-        return 0, 0, 0, 0, 0
+        return 0, 0, 0, 0, 0, 0.0
     positions = np.zeros(n + 1); last_pos = 0.0; trades = 0
     for i in range(n):
-        # Per-ETF threshold (from core-7 calibration):
-        # Bonds (HYG,TLT) need higher threshold to filter noise
-        # Tech (QQQ) needs lower threshold to get any trades
-        # Gold/EM/energy balanced at 0.45
-        thresh = 0.45  # Default: works for GLD, EEM, IWM, XLE
         target = min(1.0, (probs[i] - thresh) * 200) if (probs[i] > thresh) else 0.0
         if (last_pos == 0 and target > 0) or (last_pos > 0 and target == 0) or abs(target - last_pos) > 0.01:
             trades += 1
         positions[i] = target; last_pos = target
-    if trades < 2: return 0, trades, 0, 0, 0
+    if trades < 2: return 0, trades, 0, 0, 0, 0.0
     strat_rets = positions[:-1] * log_rets[1:n + 1]
     for i in range(1, n):
         if abs(positions[i] - positions[i - 1]) > 0.001:
             strat_rets[i] -= tc * abs(positions[i] - positions[i - 1])
     cum = np.cumsum(strat_rets); peak = np.maximum.accumulate(cum); dd = cum - peak
     mdd = abs(float(np.min(dd))) + 1e-9; ann = float(np.mean(strat_rets)) * 880
-    return ann / mdd if mdd > 0.001 else 0, trades, float(np.sum(strat_rets)), mdd, ann
+    da = float(np.sum(1.0 - np.exp(dd)))  # underwater area in fractional-equity terms
+    cal = ann / mdd if mdd > 0.001 else 0
+    return cal, trades, float(np.sum(strat_rets)), mdd, ann, da
 
 
 def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20):
@@ -155,7 +155,7 @@ def train_and_evaluate(feats, y, tr_m, va_m, te_m, lc, lr, bar_ts, fv,
 
                     for inv, vp, ep in [(False, pv_cal, pe_cal), (True, 1-pv_cal, 1-pe_cal)]:
                         inv_suf = "_inv" if inv else ""
-                        rc, nt, _, _, _ = realistic_cstats(vp[:-1], lc[vi][:-1], ma[vi][:-1], lr[vi][1:])
+                        rc, nt, _, _, _, _ = realistic_cstats(vp[:-1], lc[vi][:-1], ma[vi][:-1], lr[vi][1:])
                         if nt >= 2 and rc > best_real_cal:
                             best_real_cal = rc; best_trades = nt
                             best_cfg = f"{bar_type}_{label_cfg}_{dim_name}_iso{ens_suf}{suf}{inv_suf}"

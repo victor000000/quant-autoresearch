@@ -10,7 +10,7 @@ TEST_END = datetime(2026, 6, 1)
 
 # === QC Cloud ===
 QC_PROJECT_ID = 31338454
-QC_CREDS_PATH = "/Users/liyuanjun/ai_work/lb/qc/.creds.json"
+QC_CREDS_PATH = "/home/ubuntu/lb/qc/.creds.json"
 QC_POLL_INTERVAL = 30  # seconds between status checks
 TIME_BUDGET = 300       # 5 minutes max per backtest
 
@@ -20,9 +20,10 @@ GATE_TRADES_MIN = 80        # OOS trade count must exceed this
 GATE_AUC_DIVERGENCE_MAX = 0.05  # |train_AUC - val_AUC| must be below this
 
 # === Rendering ===
-TEMPLATES_DIR = "/Users/liyuanjun/ai_work/lb/autoresearch/templates"
-MODULES_DIR = "/Users/liyuanjun/ai_work/lb/autoresearch/modules"
-QC_SCRIPTS_DIR = "/Users/liyuanjun/ai_work/lb/lean_workspace/_autoresearch"
+TEMPLATES_DIR = "/home/ubuntu/lb/autoresearch/templates"
+MODULES_DIR = "/home/ubuntu/lb/autoresearch/modules"
+# lean_workspace is archived on this machine; use the standalone scripts dir instead.
+QC_SCRIPTS_DIR = "/home/ubuntu/lb/_autoresearch_scripts"
 
 # === Asset Fingerprinting (for ETF selection) ===
 ASSET_AFFINITY = {

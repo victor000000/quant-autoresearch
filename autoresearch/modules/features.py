@@ -94,12 +94,12 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None):
             stride = max(1, W // 5)
             for i in range(W, N, stride):
                 se[i] = sample_entropy(lc[i - W:i], m=2, r_factor=r_f)
-            feats.append(pd.Series(se).fillna(method='ffill').fillna(0.0).astype(np.float32).to_numpy())
+            feats.append(pd.Series(se).ffill().fillna(0.0).astype(np.float32).to_numpy())
     for W in [50, 100]:
         se = np.full(N, np.nan, dtype=np.float32)
         stride = max(1, W // 5)
         for i in range(W, N, stride):
             se[i] = sample_entropy(lr_abs[i - W:i], m=2, r_factor=0.2)
-        feats.append(pd.Series(se).fillna(method='ffill').fillna(0.0).astype(np.float32).to_numpy())
+        feats.append(pd.Series(se).ffill().fillna(0.0).astype(np.float32).to_numpy())
 
     return np.column_stack(feats).astype(np.float32)

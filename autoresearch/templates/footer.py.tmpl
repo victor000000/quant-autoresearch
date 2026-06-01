@@ -1,62 +1,303 @@
-"""Footer — reliable on_end_of_algorithm training. Saves predictions to ObjectStore.
-REAL Calmar requires separate infer backtest (see templates/infer.py.tmpl).
+"""Footer — SCIENTIFIC axis x labeling sweep, run in on_end_of_algorithm.
+
+For the axis(es) named by AXIS (header) and EACH labeler in the LABELERS registry
+we run a FIXED downstream pipeline and save that (axis,label) cell's TEST-period
+predictions to ObjectStore. REAL Calmar comes from a separate infer backtest
+(templates/infer.py.tmpl) that replays these predictions with real SetHoldings.
+
+FIXED downstream (identical for every cell — do NOT vary):
+    build_feats  ->  StandardScaler  ->  reduce_dims(correlation, 20)
+    ->  XGBoost(max_depth=3, learning_rate=0.03, n_estimators=200,
+                scale_pos_weight=class_balance)
+    ->  isotonic calibration (fit on VAL)
+    ->  realistic_cstats on VAL  (synthetic selection metric)
+
+reduce_dims / realistic_cstats are reused from trainer.py (globals at runtime).
+
+THRESHOLD CONSISTENCY: a single per-ETF threshold is chosen per cell, used for
+synthetic selection AND saved in the cell payload, so infer applies the SAME
+threshold (fixes the historical train/infer threshold mismatch).
+
+Cell payload key:   autoresearch/{TICKER}/cell_{axis}_{label}.json
+  -> {ticker, axis, label, cfg, thresh, predictions}
+Manifest key:       autoresearch/{TICKER}/manifest.json
+  -> {ticker, cells: [{key, axis, label, synth_cal, train_auc, val_auc, n_trades}], ...}
 """
+
+
+def _cell_threshold(ticker):
+    """Per-ETF entry threshold (consistent across synth selection AND infer)."""
+    if ticker in ["XLE"]:
+        return 0.10
+    if ticker == "QQQ":
+        return 0.15
+    if ticker in ["HYG", "TLT"]:
+        return 0.55
+    if ticker == "GLD":
+        return 0.35
+    return 0.45
+
+
 class AutoresearchPipeline(QCAlgorithm):
     def initialize(self):
-        self.set_start_date(2009,8,1); self.set_end_date(2026,6,1); self.set_cash(100000)
-        self.sym=self.add_equity(TICKER,Resolution.MINUTE).symbol
-        self.spy=self.add_equity(CROSS_ASSET,Resolution.MINUTE).symbol
-        self.tsl=[]; self.cll=[]; self.vll=[]
-        self.spy_cll=[]  # SPY close prices for cross-asset features
-    def on_data(self,slice):
-        if self.sym not in slice.bars: return
-        b=slice.bars[self.sym]
-        self.tsl.append(b.end_time); self.cll.append(float(b.close)); self.vll.append(float(b.volume))
-        if self.spy in slice.bars: self.spy_cll.append(float(slice.bars[self.spy].close))
-        else: self.spy_cll.append(self.spy_cll[-1] if self.spy_cll else 0.0)
-    def on_end_of_algorithm(self):
-        close=np.array(self.cll); vol=np.array(self.vll); ts_arr=np.array(self.tsl)
-        best_cal=-999; best_cfg=""; best_bar="dollar"; best_test=None; best_tauc=0; best_vauc=0; best_nt=0
-        bar_types = ["tick"] if TICKER in ["QQQ","EEM","XLE"] else ["dollar"]
-        for bar_type in bar_types:
-            try: lc,lr,N,bar_ts=build_bars(close,vol,ts_arr,bar_type=bar_type,target_bars=TARGET_BARS)
-            except NameError: continue
-            # Build SPY bars for cross-asset features
+        self.set_start_date(2009, 8, 1)
+        self.set_end_date(2026, 6, 1)
+        self.set_cash(100000)
+        self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol
+        self.spy = self.add_equity(CROSS_ASSET, Resolution.MINUTE).symbol
+        self.tsl = []
+        self.cll = []
+        self.vll = []
+        self.spy_cll = []  # SPY close prices for cross-asset features
+
+    def on_data(self, slice):
+        if self.sym not in slice.bars:
+            return
+        b = slice.bars[self.sym]
+        self.tsl.append(b.end_time)
+        self.cll.append(float(b.close))
+        self.vll.append(float(b.volume))
+        if self.spy in slice.bars:
+            self.spy_cll.append(float(slice.bars[self.spy].close))
+        else:
+            self.spy_cll.append(self.spy_cll[-1] if self.spy_cll else 0.0)
+
+    # --------------------------------------------------------------------- #
+    # FIXED downstream pipeline for one (axis, labeler) cell.               #
+    # Returns (synth_cal, cfg, train_auc, val_auc, n_trades, test_preds)    #
+    # or None when the cell cannot be trained.                             #
+    # --------------------------------------------------------------------- #
+    def _run_cell(self, feats, y, label_cfg, tr_m, va_m, te_m, lc, lr, bar_ts, fv,
+                  thresh):
+        try:
+            from sklearn.preprocessing import StandardScaler
+            from sklearn.metrics import roc_auc_score
+            import xgboost as xgb
+        except ImportError:
+            return None
+
+        ly = y >= 0
+        tx = fv & ly & tr_m
+        vx = fv & ly & va_m
+        ex = fv & ly & te_m
+        if tx.sum() < 200 or vx.sum() < 30 or ex.sum() < 30:
+            return None
+
+        # FIXED: StandardScaler -> correlation reduce_dims(20).
+        sc = StandardScaler()
+        Xt_raw = sc.fit_transform(feats[tx])
+        Xv_raw = sc.transform(feats[vx])
+        Xe_raw = sc.transform(feats[ex])
+        Xt, Xv, Xe, nk, dim_name = reduce_dims(
+            Xt_raw, Xv_raw, Xe_raw, method="correlation", n_components=20)
+
+        vi = np.where(vx)[0]
+        ei = np.where(ex)[0]
+        n_pos = int(y[tx].sum())
+        n_neg = int((1 - y[tx]).sum())
+
+        if n_pos == 0 or n_neg == 0:
+            # Single-class baseline (e.g. always_long): bypass the model with a
+            # constant long signal == buy-and-hold. No fit, no AUC.
+            pv_cal = np.ones(len(vi))
+            pe_cal = np.ones(len(ei))
+            train_auc = val_auc = 0.5
+        else:
+            # FIXED: single XGBoost depth3 / lr0.03 / n200 / scale_pos_weight.
+            scale_w = n_neg / max(1, n_pos)
             try:
-                spy_close=np.array(self.spy_cll); spy_vol=np.ones_like(spy_close)
-                spy_lc,spy_lr,_,_ = build_bars(spy_close,spy_vol,ts_arr,bar_type=bar_type,target_bars=TARGET_BARS)
-                spy_lc=spy_lc[:N]; spy_lr=spy_lr[:N]  # Align lengths
-                if len(spy_lc) < N: spy_lc=np.pad(spy_lc,(0,N-len(spy_lc)),'edge')
-                if len(spy_lr) < N: spy_lr=np.pad(spy_lr,(0,N-len(spy_lr)),'edge')
-            except: spy_lc=None; spy_lr=None
-            bar_ts_np=np.array([np.datetime64(str(t)) for t in bar_ts])
-            tr_m=bar_ts_np<np.datetime64(TRAIN_END); va_m=(bar_ts_np>=np.datetime64(TRAIN_END))&(bar_ts_np<np.datetime64(VAL_END))
-            te_m=(bar_ts_np>=np.datetime64(VAL_END))&(bar_ts_np<np.datetime64(TEST_END))
-            if tr_m.sum()<500 or va_m.sum()<50 or te_m.sum()<50: continue
-            try: feats=build_feats(lc,lr,spy_lc,spy_lr)
-            except NameError: feats=build_feats(lc,lr); continue
-            fv=~np.isnan(feats).any(axis=1)
-            fwd_ret,fwd_vol=compute_forward_metrics(lc,lr)
-            y=label_cfg=None
-            # Per-ETF labeling (from core-7 calibration):
-            # GLD: Agglomerative (best Cal 1.59, G4✓). Others: Carry→KMeans (universal).
-            # Forest removed for QQQ — too conservative, 1 trade even at threshold 0.15
-            if TICKER in ["GLD"] and y is None:
-                y,label_cfg,_=generate_labels_agglomerative(lc,lr,tr_m,va_m,te_m,fv,fwd_ret,fwd_vol)
-            if y is None: y,label_cfg,_=generate_labels_carry(fwd_vol,tr_m,va_m,fv)
-            if y is None: y,label_cfg,_=generate_labels_kmeans_two_stage(lc,lr,tr_m,va_m,te_m,fv,fwd_ret,fwd_vol)
-            if y is None: continue
-            rc,cfg,valp,testp,tauc,vauc,nt=train_and_evaluate(feats,y,tr_m,va_m,te_m,lc,lr,bar_ts,fv,bar_type=bar_type,label_cfg=label_cfg)
-            if rc>best_cal: best_cal=rc; best_cfg=cfg; best_bar=bar_type; best_test=testp; best_tauc=tauc; best_vauc=vauc; best_nt=nt
-        if best_test is not None:
-            # Unique key per backtest to avoid stale cache
-            import time as _time
-            key = f"autoresearch/{TICKER}/test_preds_{int(_time.time())}.json"
-            self.object_store.save(key, json.dumps({"ticker":TICKER,"best_cfg":best_cfg,"n_preds":len(best_test),"predictions":best_test}))
-            # Also save to latest pointer
-            self.object_store.save(f"autoresearch/{TICKER}/latest_key.json", json.dumps({"key":key}))
-            self.set_runtime_statistic("storage_key", key)
-        self.set_runtime_statistic("best_cfg",str(best_cfg)); self.set_runtime_statistic("best_cal",str(round(float(best_cal),4)))
-        self.set_runtime_statistic("train_auc",str(round(float(best_tauc),4))); self.set_runtime_statistic("val_auc",str(round(float(best_vauc),4)))
-        self.set_runtime_statistic("n_trades_val",str(best_nt)); self.set_runtime_statistic("bar_type",str(best_bar))
-        self.log(f"BEST:{best_cfg} cal={round(float(best_cal),4)} bar={best_bar}")
+                m = xgb.XGBClassifier(
+                    n_estimators=200, max_depth=3, learning_rate=0.03,
+                    reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+                    scale_pos_weight=scale_w, objective="binary:logistic",
+                    eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
+                    early_stopping_rounds=30, base_score=0.5)
+                m.fit(Xt, y[tx], eval_set=[(Xv, y[vx])], verbose=False)
+            except Exception:
+                return None
+            pt_raw = m.predict_proba(Xt)[:, 1]
+            pv_raw = m.predict_proba(Xv)[:, 1]
+            pe_raw = m.predict_proba(Xe)[:, 1]
+            try:
+                train_auc = float(roc_auc_score(y[tx], pt_raw))
+                val_auc = float(roc_auc_score(y[vx], pv_raw))
+            except ValueError:
+                train_auc = 0.5
+                val_auc = 0.5
+            # FIXED: isotonic calibration, fit on VAL.
+            try:
+                from sklearn.isotonic import IsotonicRegression
+                cal = IsotonicRegression(out_of_bounds='clip', y_min=0.0, y_max=1.0)
+                cal.fit(np.clip(pv_raw, 1e-6, 1 - 1e-6), y[vx])
+                pv_cal = cal.transform(np.clip(pv_raw, 1e-6, 1 - 1e-6))
+                pe_cal = cal.transform(np.clip(pe_raw, 1e-6, 1 - 1e-6))
+            except Exception:
+                pv_cal, pe_cal = pv_raw, pe_raw
+
+        # VAL "middle" metrics: synthetic Calmar + Drawdown Area, scored at the
+        # SAME per-ETF thresh infer executes with (fixes train/infer mismatch).
+        ma_v = np.zeros_like(lc)
+        synth_cal, n_trades, _, _, _, val_da = realistic_cstats(
+            pv_cal[:-1], lc[vi][:-1], ma_v[vi][:-1], lr[vi][1:], thresh=thresh)
+
+        # TEST-period predictions saved for infer (replay with SAME thresh).
+        test_preds = _pred_list(pe_cal[:-1], lc[ei][:-1],
+                                np.zeros_like(lc)[ei][:-1], bar_ts[ei][:-1])
+        cfg = f"{label_cfg}_corr{nk}_xgbd3_iso"
+        return (float(synth_cal), cfg, train_auc, val_auc, int(n_trades),
+                test_preds, float(val_da))
+
+    def on_end_of_algorithm(self):
+        close = np.array(self.cll)
+        vol = np.array(self.vll)
+        ts_arr = np.array(self.tsl)
+        thresh = _cell_threshold(TICKER)
+
+        # Which axes to sweep: a single substituted axis, or ALL axes if AXIS was
+        # left as the literal placeholder.
+        try:
+            axis_registry = AXES
+        except NameError:
+            axis_registry = {"dollar": None}
+        if AXIS in axis_registry:
+            axes = [AXIS]
+        else:
+            axes = list(axis_registry.keys())
+
+        cells = []                # manifest entries
+        best_da = 1e18            # selection: MIN val Drawdown Area (Wang's val metric)
+        best_cal = 0.0
+        best_tauc = 0.0
+        best_vauc = 0.0
+        best_axis = axes[0] if axes else "dollar"
+        best_key = None
+
+        for axis in axes:
+            try:
+                lc, lr, N, bar_ts = build_bars(
+                    close, vol, ts_arr, bar_type=axis, target_bars=TARGET_BARS)
+            except NameError:
+                continue
+            if N == 0:
+                continue
+
+            # Cross-asset SPY bars on the same axis (reserved; aligned to N).
+            try:
+                spy_close = np.array(self.spy_cll)
+                spy_vol = np.ones_like(spy_close)
+                spy_lc, spy_lr, _, _ = build_bars(
+                    spy_close, spy_vol, ts_arr, bar_type=axis, target_bars=TARGET_BARS)
+                spy_lc = spy_lc[:N]
+                spy_lr = spy_lr[:N]
+                if len(spy_lc) < N:
+                    spy_lc = np.pad(spy_lc, (0, N - len(spy_lc)), 'edge')
+                if len(spy_lr) < N:
+                    spy_lr = np.pad(spy_lr, (0, N - len(spy_lr)), 'edge')
+            except Exception:
+                spy_lc = None
+                spy_lr = None
+
+            bar_ts_np = np.array([np.datetime64(str(t)) for t in bar_ts])
+            tr_m = bar_ts_np < np.datetime64(TRAIN_END)
+            va_m = (bar_ts_np >= np.datetime64(TRAIN_END)) & (bar_ts_np < np.datetime64(VAL_END))
+            te_m = (bar_ts_np >= np.datetime64(VAL_END)) & (bar_ts_np < np.datetime64(TEST_END))
+            if tr_m.sum() < 500 or va_m.sum() < 50 or te_m.sum() < 50:
+                continue
+
+            try:
+                feats = build_feats(lc, lr, spy_lc, spy_lr)
+            except NameError:
+                continue
+            except TypeError:
+                feats = build_feats(lc, lr)
+            fv = ~np.isnan(feats).any(axis=1)
+            fwd_ret, fwd_vol = compute_forward_metrics(lc, lr)
+
+            # Sweep EVERY labeler in the registry for this axis.
+            try:
+                labeler_registry = LABELERS
+            except NameError:
+                labeler_registry = {}
+            for label_name, label_fn in labeler_registry.items():
+                try:
+                    y, label_cfg, _ = label_fn(
+                        lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol)
+                except Exception:
+                    y = None
+                    label_cfg = f"{label_name}_error"
+                if y is None:
+                    continue
+
+                res = self._run_cell(feats, y, label_cfg or label_name,
+                                     tr_m, va_m, te_m, lc, lr, bar_ts, fv, thresh)
+                if res is None:
+                    continue
+                synth_cal, cfg, train_auc, val_auc, n_trades, test_preds, val_da = res
+                if test_preds is None or len(test_preds) == 0:
+                    continue
+                aucdiv = abs(train_auc - val_auc)
+
+                key = f"autoresearch/{TICKER}/cell_{axis}_{label_name}.json"
+                # Per-cell train/val metrics saved in the payload so the infer
+                # backtest can echo them as runtime stats (the driver can't read
+                # ObjectStore) and the per-round report has everything per cell.
+                self.object_store.save(key, json.dumps({
+                    "ticker": TICKER,
+                    "axis": axis,
+                    "label": label_name,
+                    "cfg": cfg,
+                    "thresh": thresh,
+                    "synth_cal": round(synth_cal, 4),
+                    "val_da": round(val_da, 4),
+                    "train_auc": round(train_auc, 4),
+                    "val_auc": round(val_auc, 4),
+                    "n_trades": n_trades,
+                    "predictions": test_preds,
+                }))
+                cells.append({
+                    "key": key,
+                    "axis": axis,
+                    "label": label_name,
+                    "synth_cal": round(synth_cal, 4),
+                    "val_da": round(val_da, 4),
+                    "train_auc": round(train_auc, 4),
+                    "val_auc": round(val_auc, 4),
+                    "aucdiv": round(aucdiv, 4),
+                    "n_trades": n_trades,
+                })
+                # Pointer selection: MIN val DA among non-overfit cells (AUCdiv<0.05),
+                # overfit cells penalized so they only win if nothing else exists.
+                score = val_da if aucdiv < 0.05 else val_da + 1e6
+                if score < best_da:
+                    best_da = score
+                    best_cal = synth_cal
+                    best_tauc = train_auc
+                    best_vauc = val_auc
+                    best_axis = axis
+                    best_key = key
+                self.log(f"CELL {axis}_{label_name}: val_da={round(val_da,4)} "
+                         f"synth_cal={round(synth_cal,4)} train_auc={round(train_auc,4)} "
+                         f"val_auc={round(val_auc,4)} aucdiv={round(aucdiv,4)} n_trades={n_trades}")
+
+        # Manifest of all cells (for the driver / infer cell selection).
+        self.object_store.save(f"autoresearch/{TICKER}/manifest.json", json.dumps({
+            "ticker": TICKER,
+            "thresh": thresh,
+            "n_cells": len(cells),
+            "cells": cells,
+        }))
+        # Latest pointer = the cell selected by MIN val DA (Wang's val metric).
+        if best_key is not None:
+            self.object_store.save(f"autoresearch/{TICKER}/latest_key.json",
+                                   json.dumps({"key": best_key}))
+
+        # Stats consumed by validate_script()/orchestrator (best_cal, train_auc,
+        # val_auc MUST be set). best_* describe the val-DA-selected cell.
+        self.set_runtime_statistic("best_cal", str(round(float(best_cal), 4)))
+        self.set_runtime_statistic("best_da", str(round(float(best_da if best_da < 1e17 else 0.0), 4)))
+        self.set_runtime_statistic("train_auc", str(round(float(best_tauc), 4)))
+        self.set_runtime_statistic("val_auc", str(round(float(best_vauc), 4)))
+        self.set_runtime_statistic("n_cells", str(len(cells)))
+        self.set_runtime_statistic("bar_type", str(best_axis))
+        self.log(f"SWEEP done: n_cells={len(cells)} best_da={round(float(best_da),4)} "
+                 f"best_cal={round(float(best_cal),4)} best_axis={best_axis}")

@@ -3,36 +3,72 @@ import json
 from datetime import datetime
 
 TICKER = "__TICKER__"
+# Cell selector "{axis}_{label}" substituted by the driver. If left literal
+# "__CELL__", fall back to the val-DA-selected best cell via latest_key.json.
+CELL = "__CELL__"
 
 
 class AutoresearchInfer(QCAlgorithm):
     def initialize(self):
-        self.set_start_date(2023, 8, 1)
+        self.set_start_date(2023, 8, 1)   # OOS window
         self.set_end_date(2026, 6, 1)
         self.set_cash(100000)
         self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol
         self.preds = []
         self.idx = 0
-        # Load predictions from latest train backtest via pointer key
+        self.thresh = 0.45
+        self.meta = {}
+        self._eq = []          # daily equity, for Drawdown Area
+        self._last_day = None
         try:
-            ptr = json.loads(self.object_store.read(f"autoresearch/{TICKER}/latest_key.json"))
-            key = ptr["key"]
+            if CELL == "__CELL__":
+                ptr = json.loads(self.object_store.read(f"autoresearch/{TICKER}/latest_key.json"))
+                key = ptr["key"]
+            else:
+                key = f"autoresearch/{TICKER}/cell_{CELL}.json"
             data = json.loads(self.object_store.read(key))
             self.preds = data.get("predictions", [])
+            if data.get("thresh") is not None:
+                self.thresh = float(data["thresh"])
+            self.meta = {k: data.get(k) for k in
+                         ("synth_cal", "val_da", "train_auc", "val_auc", "cfg")}
         except Exception:
             self.preds = []
 
     def on_data(self, slice):
-        if self.idx >= len(self.preds): return
-        if self.sym not in slice.bars: return
+        # Sample equity once per day (for DA), regardless of prediction state.
+        now = self.time.date()
+        if now != self._last_day:
+            self._last_day = now
+            self._eq.append(float(self.portfolio.total_portfolio_value))
+
+        if self.idx >= len(self.preds):
+            return
+        if self.sym not in slice.bars:
+            return
         b = slice.bars[self.sym]
         p = self.preds[self.idx]
-        try: pred_time = datetime.strptime(p["time"][:19], "%Y-%m-%dT%H:%M:%S")
-        except: pred_time = b.end_time
+        try:
+            pred_time = datetime.strptime(p["time"][:19], "%Y-%m-%dT%H:%M:%S")
+        except Exception:
+            pred_time = b.end_time
         if b.end_time >= pred_time:
             self.idx += 1
-            thresh = 0.10 if TICKER in ["XLE"] else (0.15 if TICKER == "QQQ" else (0.55 if TICKER in ["HYG","TLT"] else (0.35 if TICKER == "GLD" else 0.45)))
-            if p["pred"] > thresh:
-                self.SetHoldings(self.sym, min(1.0, (p["pred"] - 0.5) * 200))
+            if p["pred"] > self.thresh:
+                # SAME threshold for gating AND sizing as synthetic selection.
+                self.set_holdings(self.sym, min(1.0, (p["pred"] - self.thresh) * 200))
             else:
-                self.Liquidate(self.sym)
+                self.liquidate(self.sym)
+
+    def on_end_of_algorithm(self):
+        # Real OOS Drawdown Area: DA = Σ_t (1 - E_t / peak_t) on daily equity.
+        da, peak = 0.0, None
+        for v in self._eq:
+            peak = v if (peak is None or v > peak) else peak
+            if peak and peak > 0:
+                da += 1.0 - v / peak
+        self.set_runtime_statistic("da_oos", str(round(da, 4)))
+        # Echo the per-cell train/val metrics so the round runner has them.
+        for k in ("synth_cal", "val_da", "train_auc", "val_auc"):
+            if self.meta.get(k) is not None:
+                self.set_runtime_statistic(k, str(self.meta[k]))
