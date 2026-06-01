@@ -414,6 +414,20 @@
       "trades": 296,
       "round": 23,
       "note": "dollar axis far worse than logdollar for multi_horizon"
+    },
+    "TLT_range_multi_horizon_ls_cdf_t50_R24": {
+      "real_calmar": 0.7478,
+      "real_da": 10.17,
+      "trades": 117,
+      "round": 24,
+      "note": "multi_horizon GENERALIZES to TLT (nearly ties triple_barrier 0.75); deployable"
+    },
+    "TLT_logdollar_multi_horizon_ls_cdf_t50_R24": {
+      "real_calmar": -0.0288,
+      "real_da": 44.2,
+      "trades": 42,
+      "round": 24,
+      "note": "multi_horizon FAILS on logdollar (mirror of triple_barrier) - axis x labeler crossed"
     }
   },
   "baselines": {
@@ -457,7 +471,8 @@
     "ROUND20 WIN: IWM 0.6542 -> +1.1046 (KEPT, deployable 394tr). logdollar/bgm/cdf_overlay. The R11 bgm edge (1.13 but 24tr on sparse vol) became deployable on a DENSE logdollar axis (394tr) w/ long-biased cdf_overlay (trending small-cap). GENERALIZABLE: bgm has real edge but needs a DENSE axis for G2; cdf_overlay (long-biased) suits trending equities, ls_cdf (short) suits two-sided/declining (TLT). 2 ETFs solved (TLT 0.75, IWM 1.10). New weakest = XLE (0.72).",
     "ROUND21: XLE DISCARD (stays 0.7185). XLE is TRENDING-UP not two-sided: the TLT short recipe (range/triple_barrier/ls_cdf) went NEGATIVE -0.06 on XLE. bgm (logdollar/cdf_overlay) cut DA 39.27->9.09 (real drawdown-timing) but cdf_overlay's vol-throttle sacrificed too much upside (0.72->0.60). The 0.72 incumbent (dollar_R5) is vol-targeted buy-hold (labeler washed out). To beat it: labeled edge + stay-long-in-trend (cdf_plain, not cdf_overlay).",
     "ROUND22: XLE DISCARD (stays 0.7185). cdf_plain did NOT recover upside - bgm caps ~0.60 on XLE on BOTH overlay and plain; triple_barrier long-only too defensive (+0.25, DA 4.66). FINDING: every TIMED label under-returns XLE's vol-targeted-long incumbent (0.72) because the energy uptrend is strong and labels exit at wrong times (cut CAGR > MaxDD). R6 null resurfacing for a strongly-trending asset. XLE needs only +0.03 to overtake TLT(0.75).",
-    "ROUND23 WIN (causal-graph-reasoned): XLE 0.7185 -> +2.5030 (KEPT, deployable 92tr, DA 4.06) - HIGHEST Calmar of all 7 ETFs, nearing G1=3.0. logdollar/multi_horizon/cdf_overlay. NEW FINDING: multi_horizon (MULTI-TIMESCALE forward-return labels) has REAL directional edge where single-horizon bgm/triple_barrier washed out - the EXCEPTION to f_trenddom. Reasoned directly from the causal graph (f_trenddom said try the untested multi_horizon; f_character said stay long). Validates causal-graph-driven hypothesis generation. Open: does multi_horizon generalize to TLT/GLD?"
+    "ROUND23 WIN (causal-graph-reasoned): XLE 0.7185 -> +2.5030 (KEPT, deployable 92tr, DA 4.06) - HIGHEST Calmar of all 7 ETFs, nearing G1=3.0. logdollar/multi_horizon/cdf_overlay. NEW FINDING: multi_horizon (MULTI-TIMESCALE forward-return labels) has REAL directional edge where single-horizon bgm/triple_barrier washed out - the EXCEPTION to f_trenddom. Reasoned directly from the causal graph (f_trenddom said try the untested multi_horizon; f_character said stay long). Validates causal-graph-driven hypothesis generation. Open: does multi_horizon generalize to TLT/GLD?",
+    "ROUND24: TLT DISCARD (stays 0.7537). multi_horizon GENERALIZES (range/ls_cdf +0.7478/117tr nearly ties triple_barrier 0.75) - real transferable labeler, not an XLE fluke. NEW FINDING (axis x labeler CROSSED): triple_barrier wants logdollar(0.75)/fails range(0.31); multi_horizon is the MIRROR - wants range(0.75)/fails logdollar(-0.03). The right axis is labeler-specific."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -469,7 +484,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "ROUND24 (causal-graph-reasoned): new weakest = TLT (0.75). Test whether multi_horizon's edge (R23 unlock) GENERALIZES, combined with TLT's known winning recipe (f_character: TLT is two-sided/declining -> ls_cdf short; f_logdollar/f_density: dense logdollar/range). H1 {TLT,logdollar,multi_horizon,0.5,ls_cdf}; H2 {TLT,range,multi_horizon,0.5,ls_cdf}. Beat TLT 0.7537. If multi_horizon+ls_cdf > triple_barrier+ls_cdf -> multi_horizon generalizes.",
+  "next_idea": "ROUND25 (causal-graph-reasoned): TLT weakest 0.7537, needs +0.03 to overtake GLD 0.78. Proven labelers plateau ~0.75 on their preferred axes (logdollar/triple_barrier, range/multi_horizon). f_axiscross+f_density+f_logdollar -> try UNTESTED dense axes that may concentrate at TLT's rate-shocks. H1 {TLT,entropy,triple_barrier,0.5,ls_cdf} (entropy bars=info-content sampling, concentrate at regime shifts); H2 {TLT,vol,multi_horizon,0.5,ls_cdf} (vol axis, the generalizing labeler). Beat 0.7537.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -807,6 +822,18 @@
         "type": "finding",
         "phase": "XLE",
         "label": "FINDING: multi_horizon (MULTI-TIMESCALE forward-return labels) has REAL directional edge where single-horizon bgm/triple_barrier washed out - the exception to the trend-dominance null"
+      },
+      {
+        "id": "r24",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R24: TLT multi_horizon - range/ls_cdf +0.75/117tr (ties triple_barrier, deployable); logdollar/ls_cdf -0.03/42tr (fails)"
+      },
+      {
+        "id": "f_axiscross",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "FINDING: axis x labeler is CROSSED - triple_barrier wants logdollar (fails range); multi_horizon wants range (fails logdollar). The right axis is labeler-specific"
       }
     ],
     "edges": [
@@ -1049,6 +1076,21 @@
         "src": "r23",
         "dst": "f_multihorizon",
         "label": "multi-timescale edge breaks the null"
+      },
+      {
+        "src": "f_multihorizon",
+        "dst": "r24",
+        "label": "does it generalize?"
+      },
+      {
+        "src": "r24",
+        "dst": "f_axiscross",
+        "label": "mirror-image axis preference"
+      },
+      {
+        "src": "f_multihorizon",
+        "dst": "r24",
+        "label": ""
       }
     ],
     "running": []
