@@ -450,16 +450,16 @@
       "source": "active_seed"
     },
     "TLT": {
-      "cell": "TLT_range_triple_barrier_ls_cdf_t0.50",
-      "real_calmar": 0.3122,
-      "real_da": 11.0106,
-      "trades": 234,
+      "cell": "TLT_logdollar_triple_barrier_ls_cdf_t0.50",
+      "real_calmar": 0.7537,
+      "real_da": 5.5332,
+      "trades": 292,
       "g2_pass": true,
-      "round": 2,
+      "round": 3,
       "source": "tournament",
       "config": {
         "ticker": "TLT",
-        "axis": "range",
+        "axis": "logdollar",
         "labeler": "triple_barrier",
         "thresh": 0.5,
         "sizing": "ls_cdf"
@@ -476,5 +476,5 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 2
+  "last_round": 3
 }
