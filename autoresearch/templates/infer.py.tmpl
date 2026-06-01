@@ -57,7 +57,7 @@ class AutoresearchInfer(QCAlgorithm):
         self._last_close = None
         self._cur_w = 0.0      # current target weight (rebalance dead-band)
         try:
-            if CELL == "__CELL__":
+            if CELL == ("__" "CELL__"):   # split literal so render's .replace can't clobber this guard
                 ptr = json.loads(self.object_store.read(f"autoresearch/{TICKER}/latest_key.json"))
                 key = ptr["key"]
             else:
