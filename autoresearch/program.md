@@ -47,7 +47,13 @@ A hypothesis is one render-time CONFIG (no code edits between two hypotheses):
 - **Trade actively:** a deployable config makes **>80** OOS trades. Buy-and-hold (1 trade) is an exempt
   reference ceiling, not a result.
 - **Simpler is better.** Confirm nothing on one run (replicate on ≥2 tickers or seeds {42,7}).
-- **No lookahead:** fit on TRAIN only; labels may use the future, features may not.
+- **No lookahead (G3 invariant):** features causal (past-only); the model/scaler/dim-reduce/calibrator
+  fit on TRAIN (calibrator on labeled VAL). The future-derived **label may filter only the bars used to
+  FIT** — it must **never** decide which VAL/TEST bars get a position. TEST predictions + the VAL synth
+  metric are emitted for **every causal bar** (`fv & mask`), not just labeled (`y>=0`) bars. *(Audit 2026-06-01:
+  `ex = fv & (y>=0) & te_m` violated this — it let forward-derived labels pick OOS trades with hindsight.
+  Severe for `multi_horizon` (kept only all-horizon-agreement bars → the bogus XLE +2.50) and `tertile`;
+  ~harmless for `triple_barrier`/clustering labelers which label every bar. Fixed in `footer.py.tmpl`.)*
 - Log everything, including failures. HMM / always-long are baselines to beat (Wang doesn't use HMM).
 
 ## Setup

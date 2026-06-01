@@ -153,14 +153,21 @@ class AutoresearchPipeline(QCAlgorithm):
         except ImportError:
             return None
 
+        # ---- NO-LOOKAHEAD INVARIANT (G3) ----------------------------------- #
+        # The label y is future-derived. It MAY filter the bars used to FIT the
+        # model/calibrator (training on future labels is allowed). It must NEVER
+        # decide WHICH out-of-sample bars get a position — doing so picks trades
+        # with hindsight. So: fit on labeled bars; but emit VAL-synth + TEST
+        # predictions for EVERY causal bar (fv & mask), no future-label filter.
         ly = y >= 0
-        tx = fv & ly & tr_m
-        vx = fv & ly & va_m
-        ex = fv & ly & te_m
-        if tx.sum() < 200 or vx.sum() < 30 or ex.sum() < 30:
+        tx = fv & ly & tr_m                 # train: labeled bars only (model fit)
+        vx_lab = fv & ly & va_m             # val labeled: calibrator fit + val_auc
+        vx = fv & va_m                      # val ALL causal bars: synth metric
+        ex = fv & te_m                      # test ALL causal bars: OOS preds (no label filter)
+        if tx.sum() < 200 or vx_lab.sum() < 30 or ex.sum() < 30:
             return None
 
-        # FIXED: StandardScaler -> correlation reduce_dims(20).
+        # FIXED: StandardScaler -> correlation reduce_dims(20). (fit on TRAIN only)
         sc = StandardScaler()
         Xt_raw = sc.fit_transform(feats[tx])
         Xv_raw = sc.transform(feats[vx])
@@ -170,6 +177,7 @@ class AutoresearchPipeline(QCAlgorithm):
 
         vi = np.where(vx)[0]
         ei = np.where(ex)[0]
+        vlab = ly[vi]                       # labeled subset within the ALL-val bars
         n_pos = int(y[tx].sum())
         n_neg = int((1 - y[tx]).sum())
 
@@ -189,34 +197,35 @@ class AutoresearchPipeline(QCAlgorithm):
                     scale_pos_weight=scale_w, objective="binary:logistic",
                     eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
                     early_stopping_rounds=30, base_score=0.5)
-                m.fit(Xt, y[tx], eval_set=[(Xv, y[vx])], verbose=False)
+                m.fit(Xt, y[tx], eval_set=[(Xv[vlab], y[vx_lab])], verbose=False)
             except Exception:
                 return None
             pt_raw = m.predict_proba(Xt)[:, 1]
-            pv_raw = m.predict_proba(Xv)[:, 1]
-            pe_raw = m.predict_proba(Xe)[:, 1]
+            pv_raw = m.predict_proba(Xv)[:, 1]        # ALL val bars
+            pe_raw = m.predict_proba(Xe)[:, 1]        # ALL test bars
             try:
                 train_auc = float(roc_auc_score(y[tx], pt_raw))
-                val_auc = float(roc_auc_score(y[vx], pv_raw))
+                val_auc = float(roc_auc_score(y[vx_lab], pv_raw[vlab]))  # labeled val only
             except ValueError:
                 train_auc = 0.5
                 val_auc = 0.5
-            # FIXED: isotonic calibration, fit on VAL.
+            # FIXED: isotonic calibration, fit on labeled VAL; applied to ALL bars.
             try:
                 from sklearn.isotonic import IsotonicRegression
                 cal = IsotonicRegression(out_of_bounds='clip', y_min=0.0, y_max=1.0)
-                cal.fit(np.clip(pv_raw, 1e-6, 1 - 1e-6), y[vx])
+                cal.fit(np.clip(pv_raw[vlab], 1e-6, 1 - 1e-6), y[vx_lab])
                 pv_cal = cal.transform(np.clip(pv_raw, 1e-6, 1 - 1e-6))
                 pe_cal = cal.transform(np.clip(pe_raw, 1e-6, 1 - 1e-6))
             except Exception:
                 pv_cal, pe_cal = pv_raw, pe_raw
 
-        # VAL "middle" metrics: synthetic Calmar + Drawdown Area, scored at the
-        # SAME per-ETF thresh AND sizing infer executes with (no train/infer mismatch).
+        # VAL "middle" metrics over ALL causal val bars (honest OOS preview), at the
+        # SAME thresh+sizing infer executes with (no train/infer mismatch).
         synth_cal, n_trades, _, _, _, val_da = _cstats_sized(
             pv_cal[:-1], lc[vi][:-1], lr[vi][1:], thresh, sizing)
 
-        # TEST-period predictions saved for infer (replay with SAME thresh).
+        # TEST-period predictions over ALL causal test bars (replayed by infer at
+        # the SAME thresh). NO future-label selection -> no look-ahead.
         test_preds = _pred_list(pe_cal[:-1], lc[ei][:-1],
                                 np.zeros_like(lc)[ei][:-1], bar_ts[ei][:-1])
         cfg = f"{label_cfg}_corr{nk}_xgbd3_iso"

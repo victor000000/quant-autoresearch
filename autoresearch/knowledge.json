@@ -294,21 +294,24 @@
       "real_da": 33.52,
       "trades": 71,
       "round": 12,
-      "note": "BEST TLT yet (-0.05) but 71 trades (G2 fail by 9); tertile+ls_cdf is the recipe"
+      "note": "BEST TLT yet (-0.05) but 71 trades (G2 fail by 9); tertile+ls_cdf is the recipe",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     },
     "TLT_dollar_tertile_ls_cdf_t40_R13": {
       "real_calmar": 0.0413,
       "real_da": 39.85,
       "trades": 151,
       "round": 13,
-      "note": "KEPT - first TLT improvement (-0.15->+0.04), deployable 151tr"
+      "note": "KEPT - first TLT improvement (-0.15->+0.04), deployable 151tr",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     },
     "TLT_tick_tertile_ls_cdf_t40_R13": {
       "real_calmar": 0.4077,
       "real_da": 16.04,
       "trades": 59,
       "round": 13,
-      "note": "+0.41 DA16 but 59tr (G2 fail) - tick axis has the real edge, under-trades"
+      "note": "+0.41 DA16 but 59tr (G2 fail) - tick axis has the real edge, under-trades",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     },
     "TLT_range_triple_barrier_ls_cdf_t50_R15": {
       "real_calmar": 0.3122,
@@ -322,7 +325,8 @@
       "real_da": 12.85,
       "trades": 51,
       "round": 16,
-      "note": "+0.20 but 51tr (tertile drops middle -> under-trades on range)"
+      "note": "+0.20 but 51tr (tertile drops middle -> under-trades on range)",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     },
     "TLT_range_triple_barrier_longshort_t50_R16": {
       "real_calmar": 0.1835,
@@ -406,28 +410,32 @@
       "real_da": 4.06,
       "trades": 92,
       "round": 23,
-      "note": "KEPT - XLE 0.72->2.50; multi_horizon multi-timescale edge; best of all 7 ETFs"
+      "note": "KEPT - XLE 0.72->2.50; multi_horizon multi-timescale edge; best of all 7 ETFs",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     },
     "XLE_dollar_multi_horizon_cdf_overlay_t45_R23": {
       "real_calmar": 0.5236,
       "real_da": 18.8,
       "trades": 296,
       "round": 23,
-      "note": "dollar axis far worse than logdollar for multi_horizon"
+      "note": "dollar axis far worse than logdollar for multi_horizon",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     },
     "TLT_range_multi_horizon_ls_cdf_t50_R24": {
       "real_calmar": 0.7478,
       "real_da": 10.17,
       "trades": 117,
       "round": 24,
-      "note": "multi_horizon GENERALIZES to TLT (nearly ties triple_barrier 0.75); deployable"
+      "note": "multi_horizon GENERALIZES to TLT (nearly ties triple_barrier 0.75); deployable",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     },
     "TLT_logdollar_multi_horizon_ls_cdf_t50_R24": {
       "real_calmar": -0.0288,
       "real_da": 44.2,
       "trades": 42,
       "round": 24,
-      "note": "multi_horizon FAILS on logdollar (mirror of triple_barrier) - axis x labeler crossed"
+      "note": "multi_horizon FAILS on logdollar (mirror of triple_barrier) - axis x labeler crossed",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     },
     "TLT_entropy_triple_barrier_ls_cdf_t50_R25": {
       "real_calmar": 0.0532,
@@ -441,7 +449,8 @@
       "real_da": 37.2,
       "trades": 33,
       "round": 25,
-      "note": "vol under-trades for multi_horizon (G2 fail)"
+      "note": "vol under-trades for multi_horizon (G2 fail)",
+      "LEAK": "forward-label selection of OOS bars (pre-fix); value invalid"
     }
   },
   "baselines": {
@@ -544,20 +553,14 @@
       "source": "active_seed"
     },
     "XLE": {
-      "cell": "XLE_logdollar_multi_horizon_cdf_overlay_t0.45",
-      "real_calmar": 2.503,
-      "real_da": 4.0631,
-      "trades": 92,
+      "cell": "XLE_dollar_R5",
+      "real_calmar": 0.7185,
+      "real_da": 39.27,
+      "trades": 866,
       "g2_pass": true,
       "round": 5,
-      "source": "tournament",
-      "config": {
-        "ticker": "XLE",
-        "axis": "logdollar",
-        "labeler": "multi_horizon",
-        "thresh": 0.45,
-        "sizing": "cdf_overlay"
-      }
+      "source": "active_seed",
+      "note": "restored after R23 +2.50 found to be look-ahead leaked (multi_horizon)"
     },
     "HYG": {
       "cell": "HYG_dollar_R5",
