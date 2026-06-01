@@ -102,9 +102,25 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None):
             se[i] = sample_entropy(lr_abs[i - W:i], m=2, r_factor=0.2)
         feats.append(pd.Series(se).ffill().fillna(0.0).astype(np.float32).to_numpy())
 
+    # Mean-reversion oscillators (③, causal) — for assets whose edge is in reversals
+    # (e.g. TLT around rate regimes): RSI and Bollinger %b over a few windows. All use
+    # only past/current bars (rolling, no forward window).
+    slr2 = pd.Series(lr)
+    up = slr2.clip(lower=0.0)
+    dn = (-slr2).clip(lower=0.0)
+    for W in [14, 30, 60]:
+        rs = up.rolling(W, min_periods=W).mean() / (dn.rolling(W, min_periods=W).mean() + 1e-12)
+        rsi = 1.0 - 1.0 / (1.0 + rs)                  # in [0,1]; <0.5 oversold, >0.5 overbought
+        feats.append((rsi - 0.5).astype(np.float32).to_numpy())
+    slc2 = pd.Series(lc)
+    for W in [20, 50]:
+        ma = slc2.rolling(W, min_periods=W).mean()
+        sd = slc2.rolling(W, min_periods=W).std()
+        pctb = (slc2 - ma) / (2.0 * sd + 1e-12)       # Bollinger %b (centered): >0 above band mid
+        feats.append(pctb.astype(np.float32).to_numpy())
+
     # NOTE: SPY-relative cross-asset features were tested (round 34) and REGRESSED
-    # TLT (0.7679 -> 0.677); they dilute the edge rather than help. A real cross-
-    # asset edge needs a 2-symbol PAIRS strategy, not SPY features in a single-asset
-    # model. Reverted; left disabled. See knowledge.json f_crossasset.
+    # TLT (0.7679 -> 0.677); a real cross-asset edge needs a 2-symbol PAIRS strategy,
+    # not SPY features in a single-asset model. Reverted; left disabled. See f_crossasset.
 
     return np.column_stack(feats).astype(np.float32)
