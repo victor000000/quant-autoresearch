@@ -15,13 +15,22 @@ for f in glob.glob(os.path.join(R, "round_*.html")):
     m = re.match(r"round_(\d+)([a-z]?)\.html$", base)
     if not m:
         continue
+    title, summary = base, ""
     try:
-        mt = re.search(r"<title>(.*?)</title>", open(f).read())
-        title = re.sub(r"\s+", " ", mt.group(1)).strip() if mt else base
+        txt = open(f).read()
+        mt = re.search(r"<title>(.*?)</title>", txt)
+        if mt:
+            title = re.sub(r"\s+", " ", mt.group(1)).strip()
+        ms = re.search(r'class="tldr"[^>]*>(.*?)</(?:p|div)>', txt, re.S)  # the hero TL;DR
+        if ms:
+            s = re.sub(r"<[^>]+>", "", ms.group(1))
+            s = re.sub(r"\s+", " ", s).strip()
+            s = re.sub(r"^TL;DR\.?\s*", "", s, flags=re.I)
+            summary = (s[:260].rstrip() + "…") if len(s) > 260 else s
     except Exception:
-        title = base
+        pass
     key = int(m.group(1)) + (0.5 if m.group(2) else 0)
-    rounds.append((key, base, title))
+    rounds.append((key, base, title, summary))
 rounds.sort(reverse=True)                      # NEWEST FIRST (descending)
 
 K = {}
@@ -69,13 +78,14 @@ except Exception:
     pass
 
 
-def li(base, title):
+def li(base, title, summary):
     v = "keep" if "KEEP" in title.upper() else ("discard" if "DISCARD" in title.upper() else "")
     tag = f'<span class="pill {v}">{v.upper()}</span>' if v else ""
-    return f'<li><a href="{base}">{title}</a> {tag}</li>'
+    summ = f'<div class="rsum">{summary}</div>' if summary else ""
+    return f'<li><div class="rmain"><a href="{base}">{title}</a> {tag}</div>{summ}</li>'
 
 
-items = "\n".join(li(b, t) for _, b, t in rounds)
+items = "\n".join(li(b, t, s) for _, b, t, s in rounds)
 
 html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -86,11 +96,12 @@ html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <style>
 ol.rounds{{list-style:none;padding:0;margin:0}}
 ol.rounds li{{border:1px solid var(--line);border-radius:9px;background:var(--card);margin:.5rem 0;
-  padding:.85rem 1.1rem;display:flex;align-items:center;gap:.7rem;justify-content:space-between;
-  transition:border-color .18s, transform .18s}}
+  padding:.85rem 1.1rem;transition:border-color .18s, transform .18s}}
 ol.rounds li:hover{{border-color:var(--accent-line);transform:translateX(3px)}}
-ol.rounds a{{font:500 1.05rem/1.4 "IBM Plex Sans",sans-serif;color:var(--ink)}}
+.rmain{{display:flex;align-items:center;gap:.7rem;justify-content:space-between}}
+ol.rounds a{{font:600 1.06rem/1.35 "Space Grotesk",sans-serif;color:var(--ink)}}
 ol.rounds a:hover{{color:var(--accent)}}
+.rsum{{margin-top:.45rem;color:var(--ink-2);font-size:.97rem;line-height:1.55}}
 section.running{{border-color:var(--accent-line);box-shadow:var(--glow)}}
 ul.hyps{{list-style:none;padding:0;margin:.4rem 0 0}} ul.hyps li{{margin:.3rem 0}}
 .livedot{{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--accent);
