@@ -49,6 +49,7 @@ A hypothesis is one render-time CONFIG (no code edits between two hypotheses):
 ## Setup
 QC project 31338454, creds `qc/.creds.json`. Splits train→2021-08, val→2023-08, test→2026-06; ~15k bars/asset
 (IWM 2018 split). Runtime: Python 3.11, pandas 2.3.3 (`.ffill()`), numpy 1.26, sklearn 1.6.1, xgboost 3.0.5,
-hmmlearn 0.3.3, arch, torch. Axes: dollar,tick,vol,range,logdollar,entropy. Labelers: kmeans2stage,carry,
-tertile,bgm,agglomerative,triple_barrier,multi_horizon + baselines hmm,always_long.
+hmmlearn 0.3.3, arch, torch. Axes: dollar,tick,vol,range,logdollar,entropy,imbalance(de-Prado signed-dollar,
+directional). Labelers: kmeans2stage,carry,tertile,bgm,agglomerative,triple_barrier,triple_barrier_tight,
+multi_horizon + baselines hmm,always_long.
 Spec: `docs/superpowers/specs/2026-06-01-autoresearch-v2-tournament.md`. Prior work archived in `_archive/`.

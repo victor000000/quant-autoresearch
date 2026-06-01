@@ -249,7 +249,46 @@ class EntropyBarBuilder:
 # ----------------------------------------------------------------------------
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy"]
+class DollarImbalanceBarBuilder:
+    """Custom axis (2): signed-dollar IMBALANCE bars (de Prado, information-driven).
+
+    Tick rule gives each minute a sign b_t (+1 up / -1 down / carry-forward on a
+    flat print). Accumulate signed dollar flow theta += b_t * close * vol; emit a
+    bar when |theta| >= threshold, then reset. Unlike the magnitude axes
+    (dollar/logdollar) that sample symmetrically on traded notional, this clock
+    fires on DIRECTIONAL runs and shocks — concentrating bars exactly where a
+    two-sided asset (e.g. TLT's rate moves) carries its directional edge.
+    """
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.theta = 0.0
+        self.last_lc = None
+        self.last_sign = 1.0
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0 or vol <= 0:
+            self.last_lc = None      # break the tick chain across invalid prints
+            return None
+        lc = math.log(close)
+        if self.last_lc is not None:
+            d = lc - self.last_lc
+            if d > 0:
+                self.last_sign = 1.0
+            elif d < 0:
+                self.last_sign = -1.0
+            # d == 0 -> carry forward last_sign (tick rule)
+        self.last_lc = lc
+        self.close_lc = lc
+        self.theta += self.last_sign * (close * vol)
+        if abs(self.theta) >= self.thresh:
+            self.theta = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -257,6 +296,7 @@ AXES = {
     "range": RangeBarBuilder,
     "logdollar": LogDollarBarBuilder,
     "entropy": EntropyBarBuilder,
+    "imbalance": DollarImbalanceBarBuilder,
 }
 
 
@@ -437,6 +477,27 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         if edges is None:
             return None
         return EntropyBarBuilder(T, edges=edges, probs=probs)
+
+    if bar_type == "imbalance":
+        # Threshold from TRAIN signed-dollar volatility, random-walk scaled to
+        # ~target_bars: |theta| after k minutes ~ sigma*sqrt(k), so a threshold of
+        # sigma*sqrt(minutes_per_bar) crosses roughly every target interval. Fit on
+        # TRAIN minutes only (causal); applied forward unchanged.
+        c = np.asarray(close, dtype=float)
+        v = np.asarray(vol, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        sd = np.sign(ret) * (c * v)
+        keep = tr & np.isfinite(sd) & (c > 0) & (v > 0) & (sd != 0)
+        sdt = sd[keep]
+        if len(sdt) < 100:
+            return None
+        sigma = float(np.std(sdt))
+        m = max(1.0, len(c) / max(1, int(target_bars)))   # target minutes per bar
+        thresh = sigma * math.sqrt(m)
+        if not np.isfinite(thresh) or thresh <= 0:
+            return None
+        return DollarImbalanceBarBuilder(thresh)
 
     # Default / unknown -> volatility bar (Wang's workhorse axis).
     c = np.asarray(close, dtype=float)
