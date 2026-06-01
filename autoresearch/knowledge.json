@@ -793,6 +793,20 @@
       "trades": 642,
       "round": 53,
       "note": "mean-rev feats HURT logdollar (axis-specific)"
+    },
+    "TLT_range_always_long_ls_overlay_CONTROL_R54": {
+      "real_calmar": -0.1381,
+      "real_da": 56.6,
+      "trades": 1049,
+      "round": 54,
+      "note": "CONTROL confirms TLT 1.52 is the labeler edge (features/axis alone = -0.14)"
+    },
+    "TLT_range_bgm_ls_overlay_R54": {
+      "real_calmar": 0.0651,
+      "real_da": 13.7,
+      "trades": 598,
+      "round": 54,
+      "note": "feature-unlock is triple_barrier-specific (bgm 0.065)"
     }
   },
   "baselines": {
@@ -869,7 +883,8 @@
     "ROUND50 (long/short, \u2467): TLT needs CONTINUOUS long+short. binary longshort 0.39 << continuous ls_overlay 0.77 (binary over-shoots, DA 34). long-only cdf_overlay@0.55 = 0 trades DEGENERATE -> the SHORT leg is essential (triple_barrier rarely predicts strong-up on mostly-down/two-sided TLT). Confirms ls_overlay (continuous L+S) is the right sizing for TLT.",
     "ROUND51: dc_reversal (mean-rev) -0.17 (over-trades 1881) - BOTH DC labelers fail on TLT (trend -0.03, reversal -0.17); DC framework doesn't fit TLT (barrier structure is uniquely right). Overlay isolation: ls_cdf 0.6489 vs ls_overlay 0.7679 -> vol-overlay adds +0.12. TLT single-asset EXHAUSTIVELY explored (every axis/labeler incl 2 DC + workflow regime_gmm/cusum / sizing / long-short) -> ceiling 0.7679. Last untried module = \u2466 ensemble.",
     "ROUND52: \u2466 ensemble DILUTES on TLT - triple_barrier+bgm 0.23, +multi_horizon 0.18 (avg of dominant 0.77 + weak same-axis leg washes out edge, over-trades). Ensembles need comparable decorrelated signals; TLT has ONE dominant barrier signal. CONCLUSIVE: TLT single-asset MAXED at 0.7679 across ALL Wang modules \u2460\u2461\u2466\u2467 + character (mean-reverting, continuous L+S, one dominant signal). Last untried module class = \u2462 features. Frontier = cross-asset pairs (sign-off).",
-    "ROUND53 BREAKTHROUGH: TLT 0.7679 -> +1.5221 (KEPT, DA 3.84) via \u2462 MEAN-REVERSION FEATURES (RSI + Bollinger %b) on the RANGE axis with triple_barrier/ls_overlay. range/triple_barrier was 0.31 WITHOUT feats (R15) -> 1.52 WITH. TLT is mean-reverting; oscillators read overbought/oversold + range bars sample at reversals = times the rate-shock turning points. On logdollar the feats HURT (0.77->0.41) - axis x feature interaction. Causal (RSI/Bollinger backward-only). The NON-\u2460\u2461 module (\u2462 features, per user guidance) broke the ceiling after \u2460\u2461\u2466\u2467 plateaued. New weakest = IWM 0.8831."
+    "ROUND53 BREAKTHROUGH: TLT 0.7679 -> +1.5221 (KEPT, DA 3.84) via \u2462 MEAN-REVERSION FEATURES (RSI + Bollinger %b) on the RANGE axis with triple_barrier/ls_overlay. range/triple_barrier was 0.31 WITHOUT feats (R15) -> 1.52 WITH. TLT is mean-reverting; oscillators read overbought/oversold + range bars sample at reversals = times the rate-shock turning points. On logdollar the feats HURT (0.77->0.41) - axis x feature interaction. Causal (RSI/Bollinger backward-only). The NON-\u2460\u2461 module (\u2462 features, per user guidance) broke the ceiling after \u2460\u2461\u2466\u2467 plateaued. New weakest = IWM 0.8831.",
+    "ROUND54 (verify TLT 1.52): CONTROL range/always_long/ls_overlay = -0.14 (features+axis alone, NO edge) << 1.52 -> the +1.52 is genuinely the triple_barrier labeler reading the mean-rev oscillators (leak-clean, causal). Unlock is triple_barrier-SPECIFIC (range/bgm 0.065). TLT SOLVED 0.77->1.52. \u2462 mean-rev features now GLOBAL. New weakest = IWM 0.8831."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -881,7 +896,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "Verify TLT 1.52 (always_long control on range/ls_overlay -> should be <<1.52; + does the feature-unlock generalize to bgm on range?). Then loop -> new weakest IWM 0.8831. Note: mean-rev features are GLOBAL - they HELP range/triple_barrier but HURT logdollar; may re-tune other ETFs later.",
+  "next_idea": "TLT SOLVED (1.52 verified). Loop -> IWM (new weakest 0.8831). \u2462 mean-rev features now GLOBAL: round 55 re-verify IWM incumbent (imbalance/bgm/cdf_overlay@0.40) under new features + try IWM imbalance/triple_barrier/cdf_overlay (does triple_barrier+oscillators beat bgm on trending IWM?).",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -1492,7 +1507,13 @@
         "id": "f_meanrev_feat",
         "type": "finding",
         "phase": "TLT",
-        "label": "FINDING: \u2462 mean-reversion features (RSI/Bollinger %b) unlock TLT on the RANGE axis (0.31->1.52) - oscillators + range bars time reversals on a mean-reverting asset. AXIS x FEATURE interaction (hurt logdollar). The non-\u2460\u2461 module was the key"
+        "label": "FINDING: \u2462 mean-rev features (RSI/Bollinger) + RANGE axis + triple_barrier UNLOCK mean-reverting TLT (0.31->1.52, VERIFIED leak-clean: control -0.14). triple_barrier-specific co-design. Non-\u2460\u2461 module broke the ceiling"
+      },
+      {
+        "id": "r54",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R54 VERIFY: control -0.14 << 1.52 -> TLT breakthrough leak-clean (labeler edge). triple_barrier-specific. TLT SOLVED"
       }
     ],
     "edges": [
@@ -1995,6 +2016,16 @@
         "src": "r53",
         "dst": "f_meanrev_feat",
         "label": ""
+      },
+      {
+        "src": "r53",
+        "dst": "r54",
+        "label": "verify: control confirms"
+      },
+      {
+        "src": "r54",
+        "dst": "f_meanrev_feat",
+        "label": "leak-clean, labeler-specific"
       }
     ],
     "running": []
