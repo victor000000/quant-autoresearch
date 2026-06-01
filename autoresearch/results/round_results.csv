@@ -79,3 +79,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-01T19:18:51,XLE,2.2559,XLE_logdollar_multi_horizon_cdf_overlay_t0.45,B,XLE,dollar,multi_horizon,0.45,cdf_overlay,0.676,12.9881,533,True,True,0.883,0.8899,0.6074,False,False,completed,completed
 2026-06-01T19:22:17,QQQ,1.0965,QQQ_dollar_R5,A,QQQ,logdollar,always_long,0.15,cdf_overlay,1.2953,22.0363,811,True,True,0.0503,0.5,0.5,True,True,completed,completed
 2026-06-01T19:22:17,QQQ,1.0965,QQQ_dollar_R5,B,QQQ,logdollar,multi_horizon,0.15,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,False,False,completed,completed
+2026-06-01T19:25:25,HYG,1.2625,HYG_dollar_R5,A,HYG,logdollar,always_long,0.55,cdf_overlay,1.888,3.6684,779,True,True,-0.1869,0.5,0.5,True,True,completed,completed
+2026-06-01T19:25:25,HYG,1.2625,HYG_dollar_R5,B,HYG,logdollar,multi_horizon,0.55,cdf_overlay,0.0925,0.2198,43,False,False,-0.0125,0.9091,0.7044,False,False,completed,completed

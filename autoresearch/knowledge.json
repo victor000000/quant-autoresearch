@@ -641,6 +641,13 @@
       "trades": 811,
       "round": 39,
       "note": "KEPT - QQQ 1.10->1.30 via AXIS (logdollar vs dollar); GLD unlock generalizes"
+    },
+    "HYG_logdollar_always_long_cdf_overlay_R40": {
+      "real_calmar": 1.888,
+      "real_da": 3.67,
+      "trades": 779,
+      "round": 40,
+      "note": "KEPT - HYG 1.26->1.89 via AXIS (logdollar); DA 3.67. biggest jump after GLD"
     }
   },
   "baselines": {
@@ -703,7 +710,8 @@
     "ROUND38: imbalance axis does NOT generalize - agglomerative -0.12, multi_horizon -0.02 (both neg, DA 70-100). Imbalance axis uniquely suits BGM (R37 0.59, its vol-regime gate matches the directional clock); breaks magnitude/forward-calibrated labelers. Axis x labeler synergy is SPECIFIC, not general.",
     "AUDIT-2 (look-ahead re-audit, all components incl. new imbalance/ls_overlay/triple_barrier_tight + reverted cross-asset): pipeline LEAK-FREE for scored OOS except a minor calibrator val->test EMBARGO (val bars within ~200 of VAL_END carry early-test returns into the isotonic fit). FIXED: purge last 200 val bars from the calibrator/model-eval fit sets (footer). Features causal, cross-asset reverted (0 refs), core ex=fv&te_m invariant intact, model train-fit (train->test impossible, val 2yr>>200bar), imbalance axis causal/train-fit, ls_overlay causal, clustering labelers' forward use is training-target-only + train-fit clusters.",
     "AUDIT CONFIRM: XLE +2.2559 -> +2.2619 under the new calibrator val->test embargo (+0.006, noise). The embargo leak was real but immaterial; XLE's edge is the causal model on causal features. Whole leaderboard trustworthy: TLT 0.768, IWM 0.779, QQQ 1.10, HYG 1.26, EEM 1.33, GLD 1.80, XLE 2.26.",
-    "ROUND39 WIN: QQQ 1.0965 -> +1.2953 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - the GLD axis-unlock GENERALIZES (label-independent). Smaller than GLD (+0.20 vs +1.0) but real. multi_horizon DEGENERATE on QQQ (0 trades @0.15 thresh). The lever for trending stale bests is the AXIS (logdollar), not the labeler. Leaderboard: TLT 0.768, IWM 0.779, HYG 1.263, QQQ 1.295, EEM 1.328, GLD 1.802, XLE 2.262."
+    "ROUND39 WIN: QQQ 1.0965 -> +1.2953 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - the GLD axis-unlock GENERALIZES (label-independent). Smaller than GLD (+0.20 vs +1.0) but real. multi_horizon DEGENERATE on QQQ (0 trades @0.15 thresh). The lever for trending stale bests is the AXIS (logdollar), not the labeler. Leaderboard: TLT 0.768, IWM 0.779, HYG 1.263, QQQ 1.295, EEM 1.328, GLD 1.802, XLE 2.262.",
+    "ROUND40 WIN: HYG 1.2625 -> +1.8880 (KEPT, DA 3.67) via always_long/LOGDOLLAR/cdf_overlay. Credit carry + causal vol-targeting on logdollar de-levers into risk-off drawdowns -> DA collapses, Calmar +0.63. Label-independent (axis-unlock, biggest after GLD). multi_horizon under-trades credit (43, G2 fail). Leaderboard: TLT 0.768, IWM 0.779, QQQ 1.295, EEM 1.328, GLD 1.802, HYG 1.888, XLE 2.262."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -715,7 +723,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "Continue modernizing stale dollar_R5 bests via axis-unlock. Round 40: HYG (1.2625) -> always_long/logdollar/cdf_overlay (thresh 0.55) vs multi_horizon/logdollar/cdf_overlay. Then EEM (1.3279). TLT/IWM at ceiling (pairs deferred).",
+  "next_idea": "Round 41: modernize EEM (1.3279, last stale dollar_R5) -> always_long/logdollar/cdf_overlay (thresh 0.45) vs multi_horizon. Then leaderboard fully modernized. TLT/IWM at ceiling (pairs deferred). Note: multi_horizon keeps going degenerate on the stale bests at their per-ETF thresholds - the AXIS (not labeler) is the modernization lever.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -783,13 +791,20 @@
       }
     },
     "HYG": {
-      "cell": "HYG_dollar_R5",
-      "real_calmar": 1.2625,
-      "real_da": 4.0,
-      "trades": 1310,
+      "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
+      "real_calmar": 1.888,
+      "real_da": 3.6684,
+      "trades": 779,
       "g2_pass": true,
-      "round": 5,
-      "source": "active_seed"
+      "round": 13,
+      "source": "tournament",
+      "config": {
+        "ticker": "HYG",
+        "axis": "logdollar",
+        "labeler": "always_long",
+        "thresh": 0.55,
+        "sizing": "cdf_overlay"
+      }
     },
     "TLT": {
       "cell": "TLT_logdollar_triple_barrier_ls_overlay_t0.50",
@@ -825,7 +840,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 12,
+  "last_round": 13,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1186,7 +1201,7 @@
         "id": "f_axisbuyhold",
         "type": "finding",
         "phase": "XLE",
-        "label": "FINDING (generalizes): AXIS dramatically changes vol-targeted buy-hold - GLD 0.78->1.80, QQQ 1.10->1.30 (logdollar vs dollar, label-independent). Stale dollar_R5 bests are UNDER-TUNED ON AXIS"
+        "label": "FINDING (strong, generalizes): AXIS dramatically changes vol-targeted buy-hold - GLD 0.78->1.80, HYG 1.26->1.89 (DA 3.7), QQQ 1.10->1.30 (logdollar vs dollar, label-independent). Stale dollar_R5 bests were UNDER-TUNED ON AXIS"
       },
       {
         "id": "r37",
@@ -1217,6 +1232,12 @@
         "type": "milestone",
         "phase": "XLE",
         "label": "R39 WIN: QQQ 1.10->1.30 via AXIS (logdollar). GLD axis-unlock generalizes; multi_horizon degenerate @0.15"
+      },
+      {
+        "id": "r40",
+        "type": "milestone",
+        "phase": "XLE",
+        "label": "R40 WIN: HYG 1.26->1.89 (DA 3.67) via AXIS (logdollar). Biggest axis-unlock after GLD"
       }
     ],
     "edges": [
@@ -1639,6 +1660,11 @@
         "src": "f_axisbuyhold",
         "dst": "r39",
         "label": "generalize to QQQ"
+      },
+      {
+        "src": "f_axisbuyhold",
+        "dst": "r40",
+        "label": "generalize to HYG (credit)"
       }
     ],
     "running": []
