@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Round 12 — TLT directional+short</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>body{font:16px/1.6 system-ui;max-width:820px;margin:2rem auto;padding:0 1.2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d0d7de;padding:.4em .6em}th{background:#f6f8fa}code{background:#f3f4f6;padding:.1em .3em}a{color:#0969da;text-decoration:none}</style></head><body>
+<p><a href="index.html">&larr; all reports</a></p><h1>Round 12 — TLT: directional labels + short (ls_cdf) on dense axes</h1>
+<p>Fix TLT's two root causes at once: directional labelers (triple_barrier/tertile) instead of carry/kmeans, and ls_cdf to SHORT the 2023 decline / LONG the 2024-25 recovery, on dense axes for G2 activity.</p>
+<table><tr><th>H</th><th>config</th><th>Calmar</th><th>DA</th><th>trades</th><th>deployable</th></tr>
+<tr><td>A</td><td>dollar/triple_barrier/0.5/ls_cdf</td><td>−0.2068</td><td>28.2</td><td>284</td><td>✓ (but &lt; −0.15)</td></tr>
+<tr><td>B</td><td>logdollar/tertile/0.4/ls_cdf</td><td><b>−0.0521</b></td><td>33.5</td><td>71</td><td>✗ (71&lt;80)</td></tr></table>
+<p><b>Verdict: discard</b> (A deployable but −0.21 &lt; −0.15; B best-TLT-yet −0.05 but 9 trades short of G2). <b>Breakthrough direction:</b>
+<code>tertile</code>+<code>ls_cdf</code> (directional + short) lifts TLT from −0.15 to ≈break-even (−0.05) — the short/long now roughly tracks the two-sided move.
+The only gap is activity. Round 13: same recipe on a DENSER axis (dollar/tick, 1215 bars) → &gt;80 trades while keeping ~−0.05 → beats −0.1543, first TLT improvement.</p>
+</body></html>

@@ -281,6 +281,20 @@
       "trades": 24,
       "round": 11,
       "note": "STRONG edge (Cal 1.13, DA 5.6) but 24 trades G2-FAIL; bgm under-trades -> revisit w/ lower thresh"
+    },
+    "TLT_dollar_triple_barrier_ls_cdf_t50_R12": {
+      "real_calmar": -0.2068,
+      "real_da": 28.19,
+      "trades": 284,
+      "round": 12,
+      "note": "deployable(284tr) but -0.21 < -0.15"
+    },
+    "TLT_logdollar_tertile_ls_cdf_t40_R12": {
+      "real_calmar": -0.0521,
+      "real_da": 33.52,
+      "trades": 71,
+      "round": 12,
+      "note": "BEST TLT yet (-0.05) but 71 trades (G2 fail by 9); tertile+ls_cdf is the recipe"
     }
   },
   "baselines": {
@@ -314,7 +328,8 @@
     "ROUND8: TLT cdf_plain (partial long-only). vol/carry=-0.2852/56tr (WORSE: partial-long still loses on a declining asset); dollar/kmeans2stage=0 trades. DISCARD. CONFIRMS long-only cannot beat a declining bond. UNLOCK (user): shorting now allowed -> longshort/ls_cdf sizing go negative. R9 shorts TLT's rate-rise declines.",
     "ROUND9: TLT long-short (shorting unlocked). ls_cdf=-0.2929/60tr (WORSE than long-only), longshort=0tr. Shorting did NOT help -> the bottleneck is the SIGNAL (carry/kmeans don't predict TLT direction), not the sizing. TLT EXHAUSTED after 3 tournaments. Loop moves to next-weakest = IWM (0.65).",
     "ROUND10: IWM. B dollar/carry/cdf_plain=+0.2532/564tr DEPLOYABLE (first clean active+G2 config of the tournament) but < best 0.65 -> discard. A vol/kmeans2stage/cdf_overlay=0 trades. PATTERN: kmeans2stage repeatedly yields 0 trades in single-config mode (TLT R8/R9, IWM R10) -> its calibrated p sits in too narrow a band to cross tau; prefer carry/bgm/tertile for active configs.",
-    "ROUND11: IWM vol/bgm/cdf_overlay = Calmar 1.131, DA 5.6 but 24 trades (G2 FAIL). bgm gives high-edge low-DA signal but UNDER-TRADES -> activity (G2) is the binding constraint, not edge. Lead for IWM later: bgm at lower thresh / more-active sizing. (Per policy, stay on weakest=TLT first.)"
+    "ROUND11: IWM vol/bgm/cdf_overlay = Calmar 1.131, DA 5.6 but 24 trades (G2 FAIL). bgm gives high-edge low-DA signal but UNDER-TRADES -> activity (G2) is the binding constraint, not edge. Lead for IWM later: bgm at lower thresh / more-active sizing. (Per policy, stay on weakest=TLT first.)",
+    "ROUND12: TLT directional+short BREAKTHROUGH direction. tertile/logdollar/ls_cdf = -0.0521 (best TLT yet, vs -0.15) but 71 trades (G2 fail by 9). triple_barrier/dollar/ls_cdf = -0.2068/284tr (deployable but worse). LESSON: directional label (tertile) + ls_cdf short/long lifts TLT from -0.15 to ~break-even; the gap is ACTIVITY -> same recipe on a denser axis (dollar/tick) for >80 trades. R13 pushes it."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -326,7 +341,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "ROUND11: IWM still weakest (0.65). Hold IWM's best axis+sizing (vol + cdf_overlay) and vary the labeler off kmeans2stage: H1 {vol,carry,0.45,cdf_overlay}; H2 {vol,bgm,0.45,cdf_overlay}. Goal: active(>80) AND Calmar>0.65.",
+  "next_idea": "ROUND13: TLT tertile+ls_cdf on a DENSER axis to clear G2 while keeping ~-0.05. H1 {dollar,tertile,0.4,ls_cdf}; H2 {tick,tertile,0.4,ls_cdf}. If >80 trades & Calmar>-0.1543 -> TLT best updates (first improvement).",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
