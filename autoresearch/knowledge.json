@@ -1652,6 +1652,12 @@
         "type": "decision",
         "phase": "IWM",
         "label": "DECISION: IWM ceilinged -> MODERNIZE QQQ (2nd-weakest 1.30, still plain buy-hold-overlay) with the proven multi_horizon + tb+bgm toolkit"
+      },
+      {
+        "id": "r64",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R64 QQQ modernize #1: multi_horizon@0.45 = 0 trades (threshold mismatch); tb+bgm ensemble over-trades (2067) -> 0.29 << 1.30. QQQ resists timing"
       }
     ],
     "edges": [
@@ -2254,6 +2260,16 @@
         "src": "f_iwm_ceiling",
         "dst": "d_qqq",
         "label": "stop grinding -> modernize"
+      },
+      {
+        "src": "d_qqq",
+        "dst": "r64",
+        "label": "modernize QQQ \u2014 attempt 1"
+      },
+      {
+        "src": "r64",
+        "dst": "f_trenddom",
+        "label": "directional ensemble over-trades strong trender"
       }
     ],
     "running": []
