@@ -18,3 +18,27 @@ TEST_END = datetime(2026, 6, 1)
 # name (e.g. "vol", "dollar", "tick") for a per-axis train backtest. If left as
 # the literal "__AXIS__" (not substituted), the footer sweeps ALL axes.
 AXIS = "__AXIS__"
+
+# A hypothesis is FULLY render-time config: the orchestrator substitutes the five
+# placeholders below (NO code edits between hypotheses). The footer then builds
+# ONLY CONFIG['axis'] and runs ONLY CONFIG['labeler'] as ONE cell, sizing with
+# CONFIG['sizing'] + CONFIG['thresh'] (same rule reused in infer OOS).
+#   axis    in bar_builder.AXES (dollar,tick,vol,range,logdollar,entropy)
+#   labeler in labeler.LABELERS (kmeans2stage,carry,tertile,bgm,agglomerative,
+#                                triple_barrier,multi_horizon,hmm,always_long)
+#   thresh  per-ETF entry threshold (e.g. 0.10-0.55)
+#   sizing  in {ramp, binary, cdf_plain, cdf_overlay}
+# BACK-COMPAT: if __AXIS__/__LABELER__ are left literal (not substituted), the
+# footer ignores CONFIG and falls back to the existing full sweep, so the old
+# per-axis drivers (render_script(ticker, axis)) keep working unchanged.
+def _cfg_or(val, placeholder, fallback):
+    return fallback if val == placeholder else val
+
+
+CONFIG = {
+    "ticker": TICKER,
+    "axis": _cfg_or("__AXIS__", "__" "AXIS__", None),
+    "labeler": _cfg_or("__LABELER__", "__" "LABELER__", None),
+    "thresh": float(_cfg_or("__THRESH__", "__" "THRESH__", "nan")),
+    "sizing": _cfg_or("__SIZING__", "__" "SIZING__", "cdf_overlay"),
+}

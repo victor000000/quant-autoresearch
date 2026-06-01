@@ -28,7 +28,9 @@ from harness.qc_client import (submit_backtest, read_backtest, read_backtest_sta
 from harness.orchestrator import render_script  # noqa: E402
 
 INFER_TMPL = os.path.join(AR, "templates", "infer.py.tmpl")
-RESULTS_CSV = os.path.join(AR, "axis_label_parallel_results.csv")
+RESULTS_DIR = os.path.join(AR, "results")
+os.makedirs(RESULTS_DIR, exist_ok=True)
+RESULTS_CSV = os.path.join(RESULTS_DIR, "axis_label_parallel_results.csv")
 TIMEOUT = 300          # hard 5-min cap per backtest
 POLL = 15              # seconds between status sweeps
 MAX_INFLIGHT = 2       # QC node count

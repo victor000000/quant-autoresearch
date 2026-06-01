@@ -4,31 +4,35 @@ import math
 import numpy as np
 from datetime import datetime
 
-# Module ⑧ sizing — MUST match trainer.realistic_cstats (_cdf_bet / _invvol_mult).
-# ROUND 4 de-tune (identical to trainer): floor 0.6, trigger 10/60, CDF recentered on thresh.
-VOL_FAST = 10
-VOL_SLOW = 60
-VOL_FLOOR = 1.0  # ROUND 6: overlay OFF (g==1) -> sizing is LABEL-DRIVEN _cdf_bet(p,tau)
+# Render-time sizing — the SAME _size() rule the footer used for VAL, replayed
+# here for OOS. mode + thresh come from the saved cell payload (no mismatch).
+#   ramp        = min(1,(p-thresh)*200) if p>thresh else 0          (legacy)
+#   binary      = 1.0 if p>thresh else 0.0                          (label-responsive)
+#   cdf_plain   = clip(2*Phi((p-thresh)/sqrt(p(1-p)))-1,0,1) if p>thresh else 0
+#   cdf_overlay = cdf_plain * clip(std_slow/std_fast, 0.6, 1.0)     (vol-targeted)
+_VOL_FAST = 10
+_VOL_SLOW = 60
 
 
-def _cdf_bet(p, thresh):
+def _size(p, thresh, sizing, rbuf):
+    if sizing == "binary":
+        return 1.0 if p > thresh else 0.0
+    if sizing == "ramp":
+        return float(min(1.0, (p - thresh) * 200.0)) if p > thresh else 0.0
     if p <= thresh:
         return 0.0
     pp = min(max(p, 1e-6), 1 - 1e-6)
     z = (pp - thresh) / math.sqrt(pp * (1.0 - pp))
     b = 2.0 * 0.5 * (1.0 + math.erf(z / math.sqrt(2.0))) - 1.0  # 2*Phi(z)-1
-    return float(min(1.0, max(0.0, b)))
-
-
-def _invvol_mult(rbuf):
-    m = len(rbuf)
-    if m < VOL_FAST + 2:
-        return 1.0
-    fast = float(np.std(rbuf[-VOL_FAST:]))
-    slow = float(np.std(rbuf[-min(m, VOL_SLOW):]))
-    if fast <= 1e-9:
-        return 1.0
-    return float(min(1.0, max(VOL_FLOOR, slow / fast)))
+    b = float(min(1.0, max(0.0, b)))
+    if sizing == "cdf_overlay":
+        m = len(rbuf)
+        if m >= _VOL_FAST + 2:
+            fast = float(np.std(rbuf[-_VOL_FAST:]))
+            slow = float(np.std(rbuf[-min(m, _VOL_SLOW):]))
+            if fast > 1e-9:
+                b *= float(min(1.0, max(0.6, slow / fast)))
+    return b
 
 TICKER = "__TICKER__"
 # Cell selector "{axis}_{label}" substituted by the driver. If left literal
@@ -45,6 +49,7 @@ class AutoresearchInfer(QCAlgorithm):
         self.preds = []
         self.idx = 0
         self.thresh = 0.45
+        self.sizing = "cdf_overlay"
         self.meta = {}
         self._eq = []          # daily equity, for Drawdown Area
         self._last_day = None
@@ -61,6 +66,8 @@ class AutoresearchInfer(QCAlgorithm):
             self.preds = data.get("predictions", [])
             if data.get("thresh") is not None:
                 self.thresh = float(data["thresh"])
+            if data.get("sizing"):
+                self.sizing = str(data["sizing"])
             self.meta = {k: data.get(k) for k in
                          ("synth_cal", "val_da", "train_auc", "val_auc", "cfg")}
         except Exception:
@@ -85,10 +92,9 @@ class AutoresearchInfer(QCAlgorithm):
             pred_time = b.end_time
         if b.end_time >= pred_time:
             self.idx += 1
-            # Inverse-vol overlay uses returns KNOWN at this bar (causal): decide
-            # size from _rbuf, THEN append this bar's realized return.
-            g = _invvol_mult(self._rbuf)
-            w = _cdf_bet(float(p["pred"]), self.thresh) * g
+            # _size() uses returns KNOWN at this bar (causal): decide size from
+            # _rbuf, THEN append this bar's realized return. SAME rule as VAL.
+            w = _size(float(p["pred"]), self.thresh, self.sizing, self._rbuf)
             # Rebalance dead-band 0.01 matches realistic_cstats trade accounting.
             if w <= 0.0:
                 if self._cur_w != 0.0:

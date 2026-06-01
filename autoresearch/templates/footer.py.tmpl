@@ -38,6 +38,75 @@ def _cell_threshold(ticker):
     return 0.45
 
 
+# Render-time sizing for ONE hypothesis. The SAME _size() rule runs here (VAL,
+# inside _cstats_sized) and in the infer template (OOS), keyed by CONFIG['sizing'].
+# rbuf = trailing bar log-returns KNOWN at this bar (causal; only the overlay uses it).
+_VOL_FAST = 10
+_VOL_SLOW = 60
+
+
+def _size(p, thresh, sizing, rbuf):
+    """Return target weight in [0,1] for prob p under the named sizing mode.
+      ramp        = min(1,(p-thresh)*200) if p>thresh else 0          (legacy)
+      binary      = 1.0 if p>thresh else 0.0                          (label-responsive)
+      cdf_plain   = clip(2*Phi((p-thresh)/sqrt(p(1-p)))-1,0,1) if p>thresh else 0
+      cdf_overlay = cdf_plain * clip(std_slow/std_fast, 0.6, 1.0)     (vol-targeted)
+    """
+    if sizing == "binary":
+        return 1.0 if p > thresh else 0.0
+    if sizing == "ramp":
+        return float(min(1.0, (p - thresh) * 200.0)) if p > thresh else 0.0
+    if p <= thresh:
+        return 0.0
+    pp = min(max(p, 1e-6), 1.0 - 1e-6)
+    z = (pp - thresh) / math.sqrt(pp * (1.0 - pp))
+    b = 2.0 * 0.5 * (1.0 + math.erf(z / math.sqrt(2.0))) - 1.0  # 2*Phi(z)-1
+    b = float(min(1.0, max(0.0, b)))
+    if sizing == "cdf_overlay":
+        m = len(rbuf)
+        if m >= _VOL_FAST + 2:
+            fast = float(np.std(rbuf[-_VOL_FAST:]))
+            slow = float(np.std(rbuf[-min(m, _VOL_SLOW):]))
+            if fast > 1e-9:
+                b *= float(min(1.0, max(0.6, slow / fast)))
+    return b
+
+
+def _cstats_sized(probs, lc_arr, log_rets, thresh, sizing, tc=0.0005):
+    """realistic_cstats variant that sizes via _size() (CONFIG['sizing']).
+    Mirrors trainer.realistic_cstats accounting (decide-then-append causal rbuf,
+    0.01 rebalance dead-band, tc on |delta|). Returns (calmar,trades,tot,mdd,ann,da)."""
+    n = min(len(probs) - 1, len(log_rets) - 1, len(lc_arr) - 1)
+    if n < 2:
+        return 0, 0, 0, 0, 0, 0.0
+    positions = np.zeros(n + 1)
+    last_pos = 0.0
+    trades = 0
+    rbuf = []
+    for i in range(n):
+        target = _size(float(probs[i]), thresh, sizing, rbuf)
+        if (last_pos == 0 and target > 0) or (last_pos > 0 and target == 0) or abs(target - last_pos) > 0.01:
+            trades += 1
+        positions[i] = target
+        last_pos = target
+        if i - 1 >= 0:
+            rbuf.append(float(log_rets[i - 1]))
+    if trades < 2:
+        return 0, trades, 0, 0, 0, 0.0
+    strat_rets = positions[:-1] * log_rets[1:n + 1]
+    for i in range(1, n):
+        if abs(positions[i] - positions[i - 1]) > 0.01:
+            strat_rets[i] -= tc * abs(positions[i] - positions[i - 1])
+    cum = np.cumsum(strat_rets)
+    peak = np.maximum.accumulate(cum)
+    dd = cum - peak
+    mdd = abs(float(np.min(dd))) + 1e-9
+    ann = float(np.mean(strat_rets)) * 880
+    da = float(np.sum(1.0 - np.exp(dd)))
+    cal = ann / mdd if mdd > 0.001 else 0
+    return cal, trades, float(np.sum(strat_rets)), mdd, ann, da
+
+
 class AutoresearchPipeline(QCAlgorithm):
     def initialize(self):
         self.set_start_date(2009, 8, 1)
@@ -68,7 +137,7 @@ class AutoresearchPipeline(QCAlgorithm):
     # or None when the cell cannot be trained.                             #
     # --------------------------------------------------------------------- #
     def _run_cell(self, feats, y, label_cfg, tr_m, va_m, te_m, lc, lr, bar_ts, fv,
-                  thresh):
+                  thresh, sizing="cdf_overlay"):
         try:
             from sklearn.preprocessing import StandardScaler
             from sklearn.metrics import roc_auc_score
@@ -135,10 +204,9 @@ class AutoresearchPipeline(QCAlgorithm):
                 pv_cal, pe_cal = pv_raw, pe_raw
 
         # VAL "middle" metrics: synthetic Calmar + Drawdown Area, scored at the
-        # SAME per-ETF thresh infer executes with (fixes train/infer mismatch).
-        ma_v = np.zeros_like(lc)
-        synth_cal, n_trades, _, _, _, val_da = realistic_cstats(
-            pv_cal[:-1], lc[vi][:-1], ma_v[vi][:-1], lr[vi][1:], thresh=thresh)
+        # SAME per-ETF thresh AND sizing infer executes with (no train/infer mismatch).
+        synth_cal, n_trades, _, _, _, val_da = _cstats_sized(
+            pv_cal[:-1], lc[vi][:-1], lr[vi][1:], thresh, sizing)
 
         # TEST-period predictions saved for infer (replay with SAME thresh).
         test_preds = _pred_list(pe_cal[:-1], lc[ei][:-1],
@@ -151,18 +219,32 @@ class AutoresearchPipeline(QCAlgorithm):
         close = np.array(self.cll)
         vol = np.array(self.vll)
         ts_arr = np.array(self.tsl)
-        thresh = _cell_threshold(TICKER)
 
-        # Which axes to sweep: a single substituted axis, or ALL axes if AXIS was
-        # left as the literal placeholder.
         try:
             axis_registry = AXES
         except NameError:
             axis_registry = {"dollar": None}
-        if AXIS in axis_registry:
-            axes = [AXIS]
+
+        # HYPOTHESIS MODE: CONFIG fully specifies the cell -> build ONLY CONFIG['axis']
+        # and run ONLY CONFIG['labeler'] as ONE cell (no registry sweep), sizing with
+        # CONFIG['sizing'] + CONFIG['thresh']. Active only when BOTH axis and labeler
+        # were substituted (back-compat: literal placeholders -> full sweep below).
+        cfg_axis = CONFIG.get("axis")
+        cfg_label = CONFIG.get("labeler")
+        cfg_thresh = CONFIG.get("thresh")
+        sizing = CONFIG.get("sizing") or "cdf_overlay"
+        hypo_mode = (cfg_axis in axis_registry) and bool(cfg_label)
+        if hypo_mode:
+            thresh = float(cfg_thresh) if (cfg_thresh is not None and cfg_thresh == cfg_thresh) \
+                else _cell_threshold(TICKER)
+            axes = [cfg_axis]
+            only_label = cfg_label
         else:
-            axes = list(axis_registry.keys())
+            thresh = _cell_threshold(TICKER)
+            sizing = "cdf_overlay"
+            only_label = None
+            # Single substituted axis, or ALL axes if AXIS left literal.
+            axes = [AXIS] if AXIS in axis_registry else list(axis_registry.keys())
 
         cells = []                # manifest entries
         best_da = 1e18            # selection: MIN val Drawdown Area (Wang's val metric)
@@ -213,11 +295,14 @@ class AutoresearchPipeline(QCAlgorithm):
             fv = ~np.isnan(feats).any(axis=1)
             fwd_ret, fwd_vol = compute_forward_metrics(lc, lr)
 
-            # Sweep EVERY labeler in the registry for this axis.
+            # Hypothesis mode -> ONLY CONFIG['labeler']; else sweep the full registry.
             try:
                 labeler_registry = LABELERS
             except NameError:
                 labeler_registry = {}
+            if only_label is not None:
+                labeler_registry = ({only_label: labeler_registry[only_label]}
+                                    if only_label in labeler_registry else {})
             for label_name, label_fn in labeler_registry.items():
                 try:
                     y, label_cfg, _ = label_fn(
@@ -229,7 +314,8 @@ class AutoresearchPipeline(QCAlgorithm):
                     continue
 
                 res = self._run_cell(feats, y, label_cfg or label_name,
-                                     tr_m, va_m, te_m, lc, lr, bar_ts, fv, thresh)
+                                     tr_m, va_m, te_m, lc, lr, bar_ts, fv, thresh,
+                                     sizing)
                 if res is None:
                     continue
                 synth_cal, cfg, train_auc, val_auc, n_trades, test_preds, val_da = res
@@ -247,6 +333,7 @@ class AutoresearchPipeline(QCAlgorithm):
                     "label": label_name,
                     "cfg": cfg,
                     "thresh": thresh,
+                    "sizing": sizing,
                     "synth_cal": round(synth_cal, 4),
                     "val_da": round(val_da, 4),
                     "train_auc": round(train_auc, 4),
@@ -283,6 +370,7 @@ class AutoresearchPipeline(QCAlgorithm):
         self.object_store.save(f"autoresearch/{TICKER}/manifest.json", json.dumps({
             "ticker": TICKER,
             "thresh": thresh,
+            "sizing": sizing,
             "n_cells": len(cells),
             "cells": cells,
         }))

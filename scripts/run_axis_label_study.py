@@ -41,7 +41,9 @@ from harness.orchestrator import render_script          # noqa: E402
 # render_script only renders the TRAIN script).
 INFER_TMPL = os.path.join(AUTORESEARCH_DIR, "templates", "infer.py.tmpl")
 
-RESULTS_CSV = os.path.join(AUTORESEARCH_DIR, "axis_label_results.csv")
+RESULTS_DIR = os.path.join(AUTORESEARCH_DIR, "results")
+os.makedirs(RESULTS_DIR, exist_ok=True)
+RESULTS_CSV = os.path.join(RESULTS_DIR, "axis_label_results.csv")
 RESULTS_TSV = os.path.join(AUTORESEARCH_DIR, "results.tsv")
 
 CSV_COLS = ["ticker", "axis", "label", "real_calmar", "real_da", "trades",

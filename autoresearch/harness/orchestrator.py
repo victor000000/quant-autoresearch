@@ -60,6 +60,47 @@ def render_script(ticker, axis=None):
     return _minify(script)
 
 
+def render_train_config(config):
+    """Render ONE single-config TRAIN script for a hypothesis CONFIG.
+
+    CONFIG = {"ticker","axis","labeler","thresh","sizing"} is injected at RENDER
+    TIME by substituting the header's five placeholders (__TICKER__, __AXIS__,
+    __LABELER__, __THRESH__, __SIZING__) — NO code edits between hypotheses. With
+    axis+labeler both substituted the footer enters HYPOTHESIS MODE: it builds ONLY
+    CONFIG['axis'] and runs ONLY CONFIG['labeler'] as ONE cell, sizing on VAL via
+    _size(CONFIG['sizing'], CONFIG['thresh']) and SAVING that sizing+thresh into the
+    cell payload so infer (OOS) replays the identical rule.
+
+    The cell written is autoresearch/{ticker}/cell_{axis}_{labeler}.json; pass that
+    same '{axis}_{labeler}' to render_infer_cell as the CELL key.
+    """
+    header_path = os.path.join(TEMPLATES_DIR, "header.py.tmpl")
+    footer_path = os.path.join(TEMPLATES_DIR, "footer.py.tmpl")
+    with open(header_path) as f: script = f.read()
+    for mod in ["bar_builder.py", "labeler.py", "features.py", "trainer.py"]:
+        script += f"\n# === {mod} ===\n" + read_module(mod) + "\n"
+    with open(footer_path) as f: script += f.read()
+    script = (script
+              .replace("__TICKER__", str(config["ticker"]))
+              .replace("__AXIS__", str(config["axis"]))
+              .replace("__LABELER__", str(config["labeler"]))
+              .replace("__THRESH__", repr(float(config["thresh"])))
+              .replace("__SIZING__", str(config["sizing"])))
+    return _minify(script)
+
+
+def render_infer_cell(ticker, cell):
+    """Render the INFER script bound to one cell key '{axis}_{labeler}'.
+
+    Substitutes __TICKER__/__CELL__ only; the infer template reads sizing+thresh
+    from the saved cell payload, so OOS execution matches the train/VAL leg.
+    NOT minified (infer template is already compact and well under 64k)."""
+    infer_path = os.path.join(TEMPLATES_DIR, "infer.py.tmpl")
+    with open(infer_path) as f:
+        code = f.read()
+    return code.replace("__TICKER__", str(ticker)).replace("__CELL__", str(cell))
+
+
 def validate_script(script_text):
     errors = []
     try: compile(script_text, '<pipeline>', 'exec')
