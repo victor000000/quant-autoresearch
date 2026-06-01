@@ -330,6 +330,20 @@
       "trades": 49,
       "round": 16,
       "note": "+0.18 but 49tr (binary flips less)"
+    },
+    "TLT_range_bgm_ls_cdf_t40_R17": {
+      "real_calmar": 0.0192,
+      "real_da": 13.9,
+      "trades": 212,
+      "round": 17,
+      "note": "deployable 212tr but +0.02 << +0.31"
+    },
+    "TLT_range_agglomerative_ls_cdf_t40_R17": {
+      "real_calmar": -0.034,
+      "real_da": 39.96,
+      "trades": 38,
+      "round": 17,
+      "note": "neg, G2 fail"
     }
   },
   "baselines": {
@@ -367,7 +381,8 @@
     "ROUND12: TLT directional+short BREAKTHROUGH direction. tertile/logdollar/ls_cdf = -0.0521 (best TLT yet, vs -0.15) but 71 trades (G2 fail by 9). triple_barrier/dollar/ls_cdf = -0.2068/284tr (deployable but worse). LESSON: directional label (tertile) + ls_cdf short/long lifts TLT from -0.15 to ~break-even; the gap is ACTIVITY -> same recipe on a denser axis (dollar/tick) for >80 trades. R13 pushes it.",
     "ROUND13 WIN: TLT -0.1543 -> +0.0413 (KEPT, deployable 151tr). Recipe: directional tertile + ls_cdf (short decline/long recovery) + DENSE dollar axis. B tick/tertile/ls_cdf = +0.4077 (DA 16!) but 59 trades -> tick-class sampling has HIGHER edge, just under-trades. Path to beat IWM(0.65): get tick-class edge to >80 trades.",
     "ROUND15 WIN: TLT +0.0413 -> +0.3122 (KEPT, deployable 234tr, DA 11). range/triple_barrier/ls_cdf. The RANGE axis is the unlock: dense (clears G2) AND concentrated at the rate-shock moves where the edge is -> directional triple_barrier + short ls_cdf gets both edge and activity (what bar-sparse tick couldn't). TLT -0.15->+0.04->+0.31 in 3 kept steps. Still < IWM 0.65; keep pushing range axis.",
-    "ROUND16: range/tertile/ls_cdf +0.20/51tr, range/triple_barrier/longshort +0.18/49tr -> both G2 fail. The R15 winner recipe is specific: triple_barrier+ls_cdf is the ACTIVE one on range (234tr); tertile (drops mid-33%) and binary longshort under-trade (~50). TLT best stays +0.3122. Sizing=ls_cdf (continuous) + a label that signals on most bars (triple_barrier) is what clears G2 on range."
+    "ROUND16: range/tertile/ls_cdf +0.20/51tr, range/triple_barrier/longshort +0.18/49tr -> both G2 fail. The R15 winner recipe is specific: triple_barrier+ls_cdf is the ACTIVE one on range (234tr); tertile (drops mid-33%) and binary longshort under-trade (~50). TLT best stays +0.3122. Sizing=ls_cdf (continuous) + a label that signals on most bars (triple_barrier) is what clears G2 on range.",
+    "ROUND17: range/bgm/ls_cdf +0.02/212tr (deployable but low), range/agglomerative -0.03/38tr. On range, triple_barrier is UNIQUELY the high-edge labeler (+0.31 vs bgm +0.02 / agglom -0.03 / tertile +0.20@51tr). TLT deployable best PLATEAUS at +0.3122 (R15). Higher edge only on bar-capped tick (tick/tertile +0.41@59tr, un-deployable)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -379,7 +394,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "ROUND17: keep range+ls_cdf (the active base); swap directional labeler. H1 {range,bgm,0.4,ls_cdf} (bgm showed real edge on IWM); H2 {range,agglomerative,0.4,ls_cdf} (untried regime label). Goal: deployable Calmar > +0.31, toward IWM 0.65. If range plateaus ~+0.3 across labelers, TLT's deployable ceiling is ~+0.3 -> report (improved -0.15->+0.3 but may not reach 0.65).",
+  "next_idea": "ROUND18: try the winning triple_barrier+ls_cdf on other DENSE axes to break +0.31: H1 {logdollar,triple_barrier,0.5,ls_cdf}; H2 {vol,triple_barrier,0.35,ls_cdf}. If neither beats +0.31, TLT's deployable ceiling is ~+0.31 (-0.15->+0.31 is a big win but likely cannot reach IWM 0.65) -> surface decision: relax 'must-beat-2nd-lowest' and move to IWM (bgm 1.13 lead), or bump TLT bar density to make the +0.41 tick edge deployable.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
