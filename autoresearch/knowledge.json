@@ -1634,6 +1634,24 @@
         "type": "round",
         "phase": "IWM",
         "label": "R62 IWM axis sweep on the ensemble: imbalance 1.14 >> logdollar 0.73 >> dollar 0.35. Directional axis wins. imbalance locked"
+      },
+      {
+        "id": "r63",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R63 IWM first-leg sweep: multi_horizon+bgm 0.75, tertile+bgm 0.44 << triple_barrier+bgm 1.14. tb is the uniquely best first leg"
+      },
+      {
+        "id": "f_iwm_ceiling",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: IWM ceilinged at imbalance/triple_barrier+bgm/cdf_overlay@0.45 = 1.14. Every lever (3-way, long/short, threshold, unsupervised legs, axis, first-leg) loses. Robust local optimum"
+      },
+      {
+        "id": "d_qqq",
+        "type": "decision",
+        "phase": "IWM",
+        "label": "DECISION: IWM ceilinged -> MODERNIZE QQQ (2nd-weakest 1.30, still plain buy-hold-overlay) with the proven multi_horizon + tb+bgm toolkit"
       }
     ],
     "edges": [
@@ -2221,6 +2239,21 @@
         "src": "r62",
         "dst": "f_axiscross",
         "label": "imbalance >> dollar for directional ensemble"
+      },
+      {
+        "src": "r62",
+        "dst": "r63",
+        "label": "first-leg sweep"
+      },
+      {
+        "src": "r63",
+        "dst": "f_iwm_ceiling",
+        "label": "tb uniquely best, all levers tried"
+      },
+      {
+        "src": "f_iwm_ceiling",
+        "dst": "d_qqq",
+        "label": "stop grinding -> modernize"
       }
     ],
     "running": []
