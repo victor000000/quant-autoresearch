@@ -29,7 +29,8 @@ A hypothesis is one render-time CONFIG (no code edits between two hypotheses):
 4. **Score real OOS** — Calmar + DA. Deployable ⟺ both legs done, DA reported, trades>80.
 5. **Keep** iff deployable AND beats the ETF's best — but **leak-check first** (see Rules); then update
    `per_etf_best`, else discard. Log both legs.
-6. **Record** — write `reports/round_N.html`, append the round's node/edges to `knowledge.json.causal_graph`
+6. **Record** — `python3 scripts/render_round.py '<spec json>'` (hero + stat cards + table, shared
+   `style.css`), append the round's node/edges to `knowledge.json.causal_graph`
    (KEEP→milestone, new mechanism→finding), run
    `python3 scripts/render_causal_graph.py --inject reports/round_N.html --label "round N" --highlight "<ids>" --note "<path>"`,
    `git commit`.
