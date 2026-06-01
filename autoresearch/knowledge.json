@@ -1019,20 +1019,20 @@
       "leak_fixed": true
     },
     "XLE": {
-      "cell": "XLE_logdollar_always_long_cdf_overlay_t0.45",
-      "real_calmar": 0.7493,
-      "real_cagr": 13.488,
-      "real_mdd": 18.0,
-      "real_da": 38.7437,
-      "trades": 732,
+      "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
+      "real_calmar": 0.9052,
+      "real_cagr": 7.513,
+      "real_mdd": 8.3,
+      "real_da": 14.8217,
+      "trades": 376,
       "g2_pass": true,
-      "round": 23,
+      "round": 24,
       "source": "tournament",
       "config": {
         "ticker": "XLE",
         "axis": "logdollar",
-        "labeler": "always_long",
-        "thresh": 0.45,
+        "labeler": "tertile",
+        "thresh": 0.3,
         "sizing": "cdf_overlay"
       },
       "leak_fixed": true
@@ -1093,7 +1093,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 23,
+  "last_round": 24,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1845,6 +1845,18 @@
         "type": "finding",
         "phase": "IWM",
         "label": "MILESTONE: post-leak-fix plateau. All 7 ETFs at honest ceilings via standard modules. Next frontier = regime-switching meta-strategy (operationalize f_timing_when) or defensive labelers, not more axis/labeler swaps"
+      },
+      {
+        "id": "r81",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R81 XLE 0.75->0.91: tertile (forward-tercile) directional label beats the overlay-hold where multi_horizon/triple_barrier failed. XLE NOT fully ceilinged. carry labeler runtime-errored"
+      },
+      {
+        "id": "f_tertile",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: tertile (forward-tercile) is a strong UNDER-USED directional label - coarser/more robust than triple_barrier on noisy assets. Beat XLE's hold (0.91>0.75) where other directional labels lost. Test on other assets"
       }
     ],
     "edges": [
@@ -2692,6 +2704,21 @@
         "src": "r80",
         "dst": "f_plateau",
         "label": "swaps exhausted"
+      },
+      {
+        "src": "r80",
+        "dst": "r81",
+        "label": "probe untried labelers"
+      },
+      {
+        "src": "r81",
+        "dst": "f_tertile",
+        "label": "tertile beats hold on XLE"
+      },
+      {
+        "src": "f_tertile",
+        "dst": "f_xle_ceiling",
+        "label": "REVISES \u2014 XLE not fully ceilinged"
       }
     ],
     "running": []
