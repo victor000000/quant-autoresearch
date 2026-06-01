@@ -56,6 +56,8 @@ Calmar/DA computation. That is *how you are scored* — keeping it fixed is what
 - **No lookahead.** Fit every parameter on TRAIN only. Labels may use the future (they are the target);
   features may not. (The harness audits `.shift(-N)`, `arr[::-1]`, `tr_m|te_m`, `bfill`.)
 - **HMM and always-long are BASELINES to beat**, not methods — Wang does not use HMM.
+- **Trade actively (G2).** Every *deployable* config must make **> 80 real OOS trades**. Buy-and-hold
+  (1 trade) is an **exempt reference ceiling**, not a result — beating its Calmar with < 80 trades does not count.
 
 ## The factors
 - **Axes** (`bar_builder.AXES`): dollar, tick, vol, range, logdollar, entropy (information-driven).

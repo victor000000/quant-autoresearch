@@ -20,13 +20,6 @@ class AutoresearchInfer(QCAlgorithm):
         self.meta = {}
         self._eq = []          # daily equity, for Drawdown Area
         self._last_day = None
-        # ROUND 3 — stay-long-by-default drawdown circuit-breaker (AFML Ch.14).
-        # Identical rule + thresholds to trainer.realistic_cstats (VAL synth).
-        # Causal: uses only the strategy's own realized portfolio value.
-        self._dd_cut = 0.12
-        self._dd_resume = 0.04
-        self._peak = None       # running peak of total_portfolio_value
-        self._derisk = False    # True == stepped aside (flat) during a bear leg
         try:
             if CELL == "__CELL__":
                 ptr = json.loads(self.object_store.read(f"autoresearch/{TICKER}/latest_key.json"))
@@ -45,10 +38,9 @@ class AutoresearchInfer(QCAlgorithm):
     def on_data(self, slice):
         # Sample equity once per day (for DA), regardless of prediction state.
         now = self.time.date()
-        pv = float(self.portfolio.total_portfolio_value)
         if now != self._last_day:
             self._last_day = now
-            self._eq.append(pv)
+            self._eq.append(float(self.portfolio.total_portfolio_value))
 
         if self.idx >= len(self.preds):
             return
@@ -62,18 +54,7 @@ class AutoresearchInfer(QCAlgorithm):
             pred_time = b.end_time
         if b.end_time >= pred_time:
             self.idx += 1
-            # Drawdown circuit-breaker (causal, on the strategy's own equity).
-            if self._peak is None or pv > self._peak:
-                self._peak = pv
-            dd = (1.0 - pv / self._peak) if (self._peak and self._peak > 0) else 0.0
-            if self._derisk:
-                if dd <= self._dd_resume:
-                    self._derisk = False
-            elif dd >= self._dd_cut:
-                self._derisk = True
-            if self._derisk:
-                self.liquidate(self.sym)        # bear leg: step aside (flat)
-            elif p["pred"] > self.thresh:
+            if p["pred"] > self.thresh:
                 # SAME threshold for gating AND sizing as synthetic selection.
                 self.set_holdings(self.sym, min(1.0, (p["pred"] - self.thresh) * 200))
             else:
