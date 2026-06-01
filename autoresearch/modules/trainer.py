@@ -25,7 +25,7 @@ import xgboost as xgb
 # ------------------------------------------------------------------------- #
 VOL_FAST = 10
 VOL_SLOW = 60
-VOL_FLOOR = 0.6
+VOL_FLOOR = 1.0  # ROUND 6: overlay OFF (g==1) -> sizing is LABEL-DRIVEN _cdf_bet(p,tau)
 
 
 def _cdf_bet(p, thresh):
