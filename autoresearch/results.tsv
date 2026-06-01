@@ -21,3 +21,15 @@ axis_label	0.5387	431	completed	axislabel QQQ vol/carry synth_cal=-0.3511 val_au
 axis_label	0.5387	431	completed	axislabel QQQ vol/always_long synth_cal=-0.3511 val_auc=0.7676
 axis_label	0.2605	2	completed	axislabel QQQ vol/carry synth_cal=-0.1566 val_auc=0.5000
 axis_label	0.2605	2	completed	axislabel QQQ vol/always_long synth_cal=-0.1566 val_auc=0.5000
+axis_label	0.8978	629	completed	axislabel QQQ vol/carry synth_cal=-0.2292 val_auc=0.7676
+axis_label	0.8978	629	completed	axislabel QQQ vol/always_long synth_cal=-0.2292 val_auc=0.7676
+axis_label	0.6542	544	completed	axislabel IWM vol/carry synth_cal=-0.2755 val_auc=0.7072
+axis_label	0.6542	544	completed	axislabel IWM vol/always_long synth_cal=-0.2755 val_auc=0.7072
+axis_label	0.5702	23	completed	axislabel EEM vol/carry synth_cal=4.1715 val_auc=0.8652
+axis_label	0.5702	23	completed	axislabel EEM vol/always_long synth_cal=4.1715 val_auc=0.8652
+axis_label	0.1117	398	completed	axislabel XLE vol/carry synth_cal=2.4907 val_auc=0.9989
+axis_label	0.1117	398	completed	axislabel XLE vol/always_long synth_cal=2.4907 val_auc=0.9989
+axis_label	1.0485	186	completed	axislabel HYG vol/carry synth_cal=0.0000 val_auc=0.0000
+axis_label	1.0485	186	completed	axislabel HYG vol/always_long synth_cal=0.0000 val_auc=0.0000
+axis_label	-0.2783	680	completed	axislabel TLT vol/carry synth_cal=-0.7514 val_auc=0.8487
+axis_label	-0.2783	680	completed	axislabel TLT vol/always_long synth_cal=-0.7514 val_auc=0.8487

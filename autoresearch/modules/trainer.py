@@ -72,11 +72,14 @@ def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005, thresh=0.45):
         if (last_pos == 0 and target > 0) or (last_pos > 0 and target == 0) or abs(target - last_pos) > 0.01:
             trades += 1
         positions[i] = target; last_pos = target
-        rbuf.append(float(log_rets[i + 1]) if i + 1 < len(log_rets) else 0.0)
+        # Append the return INTO the current bar AFTER deciding (parity with infer's
+        # decide-then-append ordering; fixes the VAL inverse-vol off-by-one lookahead).
+        if i - 1 >= 0:
+            rbuf.append(float(log_rets[i - 1]))
     if trades < 2: return 0, trades, 0, 0, 0, 0.0
     strat_rets = positions[:-1] * log_rets[1:n + 1]
     for i in range(1, n):
-        if abs(positions[i] - positions[i - 1]) > 0.001:
+        if abs(positions[i] - positions[i - 1]) > 0.01:  # match trade-count + infer rebalance band
             strat_rets[i] -= tc * abs(positions[i] - positions[i - 1])
     cum = np.cumsum(strat_rets); peak = np.maximum.accumulate(cum); dd = cum - peak
     mdd = abs(float(np.min(dd))) + 1e-9; ann = float(np.mean(strat_rets)) * 880
