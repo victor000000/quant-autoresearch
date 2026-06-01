@@ -418,7 +418,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler']}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}"   # config-unique, dot-free (QC ObjectStore path)
+            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}"   # config-unique; dot- AND plus-free (QC ObjectStore path)
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")
