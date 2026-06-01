@@ -551,6 +551,13 @@
       "trades": 452,
       "round": 31,
       "note": "ls_overlay does NOT rescue range axis (logdollar>>range for triple_barrier)"
+    },
+    "TLT_logdollar_triple_barrier_ls_overlay_floor45_R32": {
+      "real_calmar": 0.7679,
+      "real_da": 5.11,
+      "trades": 566,
+      "round": 32,
+      "note": "floor 0.6->0.45 noise-level (+0.003); floor not the lever"
     }
   },
   "baselines": {
@@ -603,7 +610,8 @@
     "ROUND28: TLT gain-seek DISCARD (stays 0.6263 honest). bgm/ls_cdf 0.21 (bgm is trending-equity, doesn't transfer to two-sided bond); triple_barrier/longshort 0.35 (binary short over-trades, DA 30 >> ls_cdf's 5.6). CONFIRMS: continuous ls_cdf >> binary longshort for two-sided assets. TLT plateaus ~0.63 with current sizing -> next lever = module-8 ls_overlay (ls_cdf x inverse-vol).",
     "ROUND29 WIN: TLT 0.6263 -> +0.7654 (KEPT). NEW sizing ls_overlay = ls_cdf x clip(slow/fast vol,0.6,1) (causal). Clean A/B (only sizing differs from ls_cdf control 0.6263): +0.14 purely from vol-targeting the short magnitude -> trims MaxDD on rate-shock spikes (DA 5.1, 565tr). Fully causal, no leak signature. TLT now BEATS IWM (0.7146) -> loop moves to IWM. GENERALIZABLE: ls_overlay/vol-targeting wherever MaxDD is the binding constraint on a short-capable two-sided asset.",
     "ROUND30 WIN: IWM 0.7146 -> +0.7788 (KEPT). multi_horizon GENERALIZES to IWM (trending-up): beats bgm control 0.7146 in clean A/B (only labeler differs) and HALVES DA (11.97->5.73). Confirms f_multihorizon beyond XLE - multi_horizon is a strong CAUSAL trend-target on any trending-up asset. Bottom cluster now tight: TLT 0.7654, IWM 0.7788, GLD 0.7792.",
-    "ROUND31: TLT DISCARD (stays 0.7654). (1) honest tertile -0.02 (DA 31) -> tertile's old 'wins' (R12/R13) were the look-ahead leak; honest it has little edge. (2) ls_overlay does NOT rescue the range axis (range/tb/ls_overlay 0.33 << logdollar/tb/ls_overlay 0.77) -> f_axiscross: axis+labeler is the locked recipe, sizing is a multiplier. TLT config-exhausted at 0.7654."
+    "ROUND31: TLT DISCARD (stays 0.7654). (1) honest tertile -0.02 (DA 31) -> tertile's old 'wins' (R12/R13) were the look-ahead leak; honest it has little edge. (2) ls_overlay does NOT rescue the range axis (range/tb/ls_overlay 0.33 << logdollar/tb/ls_overlay 0.77) -> f_axiscross: axis+labeler is the locked recipe, sizing is a multiplier. TLT config-exhausted at 0.7654.",
+    "ROUND32: TLT ls_overlay floor 0.6->0.45 = +0.003 (NOISE; 0.7654->0.7679). The de-lever floor rarely binds for TLT (fast vol seldom >> slow vol). TLT at honest single-asset ceiling ~0.768, still < IWM 0.7788. Floor lever exhausted -> next = \u2460\u2461 labeling module (triple_barrier barrier WIDTH)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -615,7 +623,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "TLT config-exhausted at 0.7654 (needs +0.013 to beat IWM 0.7788). Lever: sharper ls_overlay vol-floor 0.6->0.45 (trim MaxDD more in vol spikes). Round 32 (floor 0.45 global): H_A logdollar/triple_barrier/ls_overlay (vs 0.7654@0.6), H_B range/triple_barrier/ls_overlay (vs 0.3258@0.6). If H_A>0.7788 keep floor 0.45; else revert.",
+  "next_idea": "TLT at honest ceiling ~0.768 (< IWM 0.7788). Test \u2460\u2461 labeling lever: triple_barrier_tight (U=L=1.5 vs 2.0) - sharper/more-frequent directional labels. Round 33: TLT logdollar/triple_barrier_tight/ls_overlay vs logdollar/triple_barrier/ls_overlay (control 0.7679). If tighter barriers > 0.7788, TLT beats IWM.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -687,11 +695,11 @@
     },
     "TLT": {
       "cell": "TLT_logdollar_triple_barrier_ls_overlay_t0.50",
-      "real_calmar": 0.7654,
-      "real_da": 5.1083,
-      "trades": 565,
+      "real_calmar": 0.7679,
+      "real_da": 5.1088,
+      "trades": 566,
       "g2_pass": true,
-      "round": 7,
+      "round": 9,
       "source": "tournament",
       "config": {
         "ticker": "TLT",
@@ -712,7 +720,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 8,
+  "last_round": 9,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1032,6 +1040,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R31 TLT: honest tertile -0.02 (old wins were leak); ls_overlay can't rescue range axis (0.33<<0.77). Recipe locked to logdollar/triple_barrier"
+      },
+      {
+        "id": "r32",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R32 TLT: ls_overlay floor 0.6->0.45 = +0.003 (noise). Floor not the lever; TLT at ceiling ~0.768. Next: tighten triple_barrier barriers"
       }
     ],
     "edges": [
@@ -1389,6 +1403,11 @@
         "src": "r31",
         "dst": "f_axiscross",
         "label": "axis dominates sizing"
+      },
+      {
+        "src": "f_lsoverlay",
+        "dst": "r32",
+        "label": "tune overlay floor -> negligible"
       }
     ],
     "running": []

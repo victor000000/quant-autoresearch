@@ -676,6 +676,14 @@ def generate_labels_always_long(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
 #       -> (labels|None, cfg, horizon|None)
 # Names exactly as specified. carry is exposed through its uniform wrapper.
 # hmm is a BASELINE comparator (Wang does NOT use HMM); the other 7 are featured.
+def generate_labels_triple_barrier_tight(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
+    """Tighter triple-barrier (U=L=1.5 sigma vs the default 2.0): labels trigger on
+    smaller moves -> a sharper, more frequent directional signal. Same forward-path
+    labeling (allowed for a target); same TRAIN-fit vol scale. Module-①② lever."""
+    return generate_labels_triple_barrier(
+        lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, U=1.5, L=1.5)
+
+
 LABELERS = {
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "carry": generate_labels_carry_uniform,
@@ -683,6 +691,7 @@ LABELERS = {
     "bgm": generate_labels_bgm,
     "agglomerative": generate_labels_agglomerative,
     "triple_barrier": generate_labels_triple_barrier,
+    "triple_barrier_tight": generate_labels_triple_barrier_tight,
     "multi_horizon": generate_labels_multi_horizon,
     "hmm": generate_labels_hmm,                       # BASELINE comparator only.
     "always_long": generate_labels_always_long,       # BASELINE: buy-and-hold floor.
@@ -691,6 +700,6 @@ LABELERS = {
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
     "kmeans2stage", "carry", "tertile", "bgm",
-    "agglomerative", "triple_barrier", "multi_horizon",
+    "agglomerative", "triple_barrier", "triple_barrier_tight", "multi_horizon",
 ]
 BASELINE_LABELERS = ["hmm", "always_long"]
