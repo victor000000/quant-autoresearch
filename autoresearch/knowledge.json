@@ -968,20 +968,20 @@
   "per_etf_best": {
     "QQQ": {
       "cell": "QQQ_logdollar_always_long_cdf_overlay_t0.15",
-      "real_calmar": 1.2953,
-      "real_da": 22.0363,
-      "trades": 811,
+      "real_calmar": 1.2431,
+      "real_da": 21.872,
+      "trades": 820,
       "g2_pass": true,
-      "round": 12,
-      "source": "tournament",
+      "round": 72,
+      "source": "revalidation",
+      "leak_fixed": true,
       "config": {
         "ticker": "QQQ",
         "axis": "logdollar",
         "labeler": "always_long",
         "thresh": 0.15,
         "sizing": "cdf_overlay"
-      },
-      "leak_pending": true
+      }
     },
     "IWM": {
       "cell": "IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45",
@@ -1759,6 +1759,18 @@
         "type": "finding",
         "phase": "IWM",
         "label": "FINDING (revises f_eem_ceiling): under the leak-fixed pipeline EEM IS modernizable - a single directional triple_barrier label beats buy-hold. Two-sided assets reward timing; the earlier 'ceiling' used wrong configs (ensemble/multi_horizon)"
+      },
+      {
+        "id": "r72",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R72 QQQ re-validated 1.30->1.24; triple_barrier@0.30=1.03 underperforms (pure trender rejects timing). SWEEP COMPLETE: all 7 ETFs leak-fixed"
+      },
+      {
+        "id": "f_sweep_done",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "MILESTONE: leak-fix re-validation COMPLETE. Honest leaderboard HYG 2.21, EEM 2.15, GLD 1.99, TLT 1.52, QQQ 1.24, IWM 1.14, XLE 0.64. Timing models were leak-inflated (XLE); overlays honest-up; EEM newly modernized"
       }
     ],
     "edges": [
@@ -2481,6 +2493,21 @@
         "src": "f_eem_timing",
         "dst": "f_eem_ceiling",
         "label": "REVISES \u2014 not a ceiling"
+      },
+      {
+        "src": "r71",
+        "dst": "r72",
+        "label": "sweep: QQQ + cross-check"
+      },
+      {
+        "src": "r72",
+        "dst": "f_sweep_done",
+        "label": "all 7 leak-fixed"
+      },
+      {
+        "src": "r72",
+        "dst": "f_qqq_pure",
+        "label": "confirms: pure trender rejects timing"
       }
     ],
     "running": []
