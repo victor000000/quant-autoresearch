@@ -1,0 +1,38 @@
+from AlgorithmImports import *
+import json
+from datetime import datetime
+
+TICKER = "__TICKER__"
+
+
+class AutoresearchInfer(QCAlgorithm):
+    def initialize(self):
+        self.set_start_date(2023, 8, 1)
+        self.set_end_date(2026, 6, 1)
+        self.set_cash(100000)
+        self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol
+        self.preds = []
+        self.idx = 0
+        # Load predictions from latest train backtest via pointer key
+        try:
+            ptr = json.loads(self.object_store.read(f"autoresearch/{TICKER}/latest_key.json"))
+            key = ptr["key"]
+            data = json.loads(self.object_store.read(key))
+            self.preds = data.get("predictions", [])
+        except Exception:
+            self.preds = []
+
+    def on_data(self, slice):
+        if self.idx >= len(self.preds): return
+        if self.sym not in slice.bars: return
+        b = slice.bars[self.sym]
+        p = self.preds[self.idx]
+        try: pred_time = datetime.strptime(p["time"][:19], "%Y-%m-%dT%H:%M:%S")
+        except: pred_time = b.end_time
+        if b.end_time >= pred_time:
+            self.idx += 1
+            thresh = 0.10 if TICKER in ["XLE"] else (0.15 if TICKER == "QQQ" else (0.55 if TICKER in ["HYG","TLT"] else (0.35 if TICKER == "GLD" else 0.45)))
+            if p["pred"] > thresh:
+                self.SetHoldings(self.sym, min(1.0, (p["pred"] - 0.5) * 200))
+            else:
+                self.Liquidate(self.sym)

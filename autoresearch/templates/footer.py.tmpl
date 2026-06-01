@@ -1,0 +1,62 @@
+"""Footer — reliable on_end_of_algorithm training. Saves predictions to ObjectStore.
+REAL Calmar requires separate infer backtest (see templates/infer.py.tmpl).
+"""
+class AutoresearchPipeline(QCAlgorithm):
+    def initialize(self):
+        self.set_start_date(2009,8,1); self.set_end_date(2026,6,1); self.set_cash(100000)
+        self.sym=self.add_equity(TICKER,Resolution.MINUTE).symbol
+        self.spy=self.add_equity(CROSS_ASSET,Resolution.MINUTE).symbol
+        self.tsl=[]; self.cll=[]; self.vll=[]
+        self.spy_cll=[]  # SPY close prices for cross-asset features
+    def on_data(self,slice):
+        if self.sym not in slice.bars: return
+        b=slice.bars[self.sym]
+        self.tsl.append(b.end_time); self.cll.append(float(b.close)); self.vll.append(float(b.volume))
+        if self.spy in slice.bars: self.spy_cll.append(float(slice.bars[self.spy].close))
+        else: self.spy_cll.append(self.spy_cll[-1] if self.spy_cll else 0.0)
+    def on_end_of_algorithm(self):
+        close=np.array(self.cll); vol=np.array(self.vll); ts_arr=np.array(self.tsl)
+        best_cal=-999; best_cfg=""; best_bar="dollar"; best_test=None; best_tauc=0; best_vauc=0; best_nt=0
+        bar_types = ["tick"] if TICKER in ["QQQ","EEM","XLE"] else ["dollar"]
+        for bar_type in bar_types:
+            try: lc,lr,N,bar_ts=build_bars(close,vol,ts_arr,bar_type=bar_type,target_bars=TARGET_BARS)
+            except NameError: continue
+            # Build SPY bars for cross-asset features
+            try:
+                spy_close=np.array(self.spy_cll); spy_vol=np.ones_like(spy_close)
+                spy_lc,spy_lr,_,_ = build_bars(spy_close,spy_vol,ts_arr,bar_type=bar_type,target_bars=TARGET_BARS)
+                spy_lc=spy_lc[:N]; spy_lr=spy_lr[:N]  # Align lengths
+                if len(spy_lc) < N: spy_lc=np.pad(spy_lc,(0,N-len(spy_lc)),'edge')
+                if len(spy_lr) < N: spy_lr=np.pad(spy_lr,(0,N-len(spy_lr)),'edge')
+            except: spy_lc=None; spy_lr=None
+            bar_ts_np=np.array([np.datetime64(str(t)) for t in bar_ts])
+            tr_m=bar_ts_np<np.datetime64(TRAIN_END); va_m=(bar_ts_np>=np.datetime64(TRAIN_END))&(bar_ts_np<np.datetime64(VAL_END))
+            te_m=(bar_ts_np>=np.datetime64(VAL_END))&(bar_ts_np<np.datetime64(TEST_END))
+            if tr_m.sum()<500 or va_m.sum()<50 or te_m.sum()<50: continue
+            try: feats=build_feats(lc,lr,spy_lc,spy_lr)
+            except NameError: feats=build_feats(lc,lr); continue
+            fv=~np.isnan(feats).any(axis=1)
+            fwd_ret,fwd_vol=compute_forward_metrics(lc,lr)
+            y=label_cfg=None
+            # Per-ETF labeling (from core-7 calibration):
+            # GLD: Agglomerative (best Cal 1.59, G4✓). Others: Carry→KMeans (universal).
+            # Forest removed for QQQ — too conservative, 1 trade even at threshold 0.15
+            if TICKER in ["GLD"] and y is None:
+                y,label_cfg,_=generate_labels_agglomerative(lc,lr,tr_m,va_m,te_m,fv,fwd_ret,fwd_vol)
+            if y is None: y,label_cfg,_=generate_labels_carry(fwd_vol,tr_m,va_m,fv)
+            if y is None: y,label_cfg,_=generate_labels_kmeans_two_stage(lc,lr,tr_m,va_m,te_m,fv,fwd_ret,fwd_vol)
+            if y is None: continue
+            rc,cfg,valp,testp,tauc,vauc,nt=train_and_evaluate(feats,y,tr_m,va_m,te_m,lc,lr,bar_ts,fv,bar_type=bar_type,label_cfg=label_cfg)
+            if rc>best_cal: best_cal=rc; best_cfg=cfg; best_bar=bar_type; best_test=testp; best_tauc=tauc; best_vauc=vauc; best_nt=nt
+        if best_test is not None:
+            # Unique key per backtest to avoid stale cache
+            import time as _time
+            key = f"autoresearch/{TICKER}/test_preds_{int(_time.time())}.json"
+            self.object_store.save(key, json.dumps({"ticker":TICKER,"best_cfg":best_cfg,"n_preds":len(best_test),"predictions":best_test}))
+            # Also save to latest pointer
+            self.object_store.save(f"autoresearch/{TICKER}/latest_key.json", json.dumps({"key":key}))
+            self.set_runtime_statistic("storage_key", key)
+        self.set_runtime_statistic("best_cfg",str(best_cfg)); self.set_runtime_statistic("best_cal",str(round(float(best_cal),4)))
+        self.set_runtime_statistic("train_auc",str(round(float(best_tauc),4))); self.set_runtime_statistic("val_auc",str(round(float(best_vauc),4)))
+        self.set_runtime_statistic("n_trades_val",str(best_nt)); self.set_runtime_statistic("bar_type",str(best_bar))
+        self.log(f"BEST:{best_cfg} cal={round(float(best_cal),4)} bar={best_bar}")

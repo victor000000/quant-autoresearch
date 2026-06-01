@@ -1,0 +1,210 @@
+\documentclass[11pt]{article}
+\usepackage[top=1.8cm, bottom=1.8cm, left=1.9cm, right=1.9cm]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\setlength{\parskip}{7pt}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.25}
+
+\setlist[enumerate]{leftmargin=*, topsep=4pt, itemsep=4pt, parsep=0pt}
+\setlist[itemize]{leftmargin=*, topsep=4pt, itemsep=3pt, parsep=0pt}
+
+\newcommand{\qhead}[2]{%
+  \par\vspace{6pt}%
+  \noindent\rule{\linewidth}{0.5pt}\par\vspace{2pt}%
+  \noindent\textbf{\Large #1}\par\vspace{3pt}%
+  \noindent\textit{#2}\par\vspace{6pt}}
+
+\newcommand{\shead}[1]{\par\vspace{6pt}\noindent\textbf{\large #1}\par\vspace{3pt}}
+
+\begin{document}
+
+\begin{center}
+{\small Custom-axis and unsupervised-label questions, 19 US-ETF experiments}
+\end{center}
+
+\shead{Experiment setting}
+
+19 US ETFs spanning:
+
+\begin{tabular}{@{}ll@{}}
+\textbf{US equity} & QQQ, SPY, IWM \\
+\textbf{International equity} & EFA, EEM, EWJ \\
+\textbf{Sector / REIT} & XLE, XLU, XLP, VNQ \\
+\textbf{Bonds} & AGG, TLT, SHY, TIP, HYG \\
+\textbf{Commodities} & GLD, DBC \\
+\textbf{Currency / volatility} & UUP, VXX \\
+\end{tabular}
+
+\smallskip
+Minute-level data 2009-08 to 2026-05; train / validation / test $= 70 / 15 / 15$ chronological split.
+
+\shead{Pipeline}
+
+\begin{tabular}{@{}ll@{}}
+\textbf{Custom axis} & LogDollar dollar bars, per-asset calibrated; 15--23k bars per ETF \\
+\textbf{Label (unsupervised)} & sticky 2-state Gaussian HMM smoothed posterior $\to$ binary label \\
+\textbf{Features} & 512 dims: 400 integer-diff $+$ 32 fractional-diff $+$ 40 entropy $+$ 40 freq/vol \\
+\textbf{Dim reduction} & VAE \\
+\textbf{Train (supervised)} & XGBoost binary classifier, early-stop on validation \\
+\textbf{Out-of-sample} & long-only execution, position decided at bar close \\
+\end{tabular}
+
+\shead{Custom-axis math (LogDollar)}
+
+For each minute $t$, let $x_t = \log(P_t V_t)$, then standardize on a rolling window $w = 1950$:
+\[ z_t \,=\, \frac{x_t - \mu_t^{(w)}}{\sigma_t^{(w)}}, \qquad C_t \,=\, \sum_{j \le t} z_j \]
+Emit a bar when $\max_j C_j - C_t \ge T$ or $C_t - \min_j C_j \ge T$, with per-asset $T \in [13.2, 36.6]$.
+
+\shead{Label math (purely unsupervised, 2-state Gaussian HMM)}
+
+Fit sticky HMM on TRAIN with $o_t = \log\mathrm{ret}_t$. The transition matrix $A$ has $A_{kk} = P(s_{t+1}{=}k \mid s_t{=}k)$ (probability of staying in state $k$); we floor $A_{kk} \ge 0.95$ during EM to enforce regime persistence. EM gives parameters $\hat\theta_{\mathrm{tr}} = (\hat\pi, \hat A, \hat\mu, \hat\Sigma)$. Apply forward-backward over the full sequence to get the smoothed posterior:
+\[ \gamma_t^{\mathrm{up}} \,=\, P\!\left(s_t = \mathrm{up} \,\bigm|\, o_{1:N},\, \hat\theta_{\mathrm{tr}}\right) \,=\, \frac{\alpha_t(\mathrm{up}) \cdot \beta_t(\mathrm{up})}{\sum_k \alpha_t(k)\, \beta_t(k)} \]
+Binary label: $y_t \,=\, \mathbb{1}\{\gamma_t^{\mathrm{up}} > \tau\}$ with default $\tau = 0.5$.
+
+\emph{Look-ahead note}: $\gamma_t^{\mathrm{up}}$ uses $o_{t+1:N}$ through $\beta_t$. Per your lecture, labels are training targets and look-ahead is allowed; the trading signal is the downstream supervised model's causal output at OOS.
+
+\newpage
+
+\shead{Experiment results --- single-ticker, all 19 ETFs}
+
+\textbf{Calmar Lift} $=$ Strategy Calmar $-$ Buy-and-Hold Calmar (excess Calmar over passively holding the ETF). Best per-ETF results across the variants tested:
+
+\smallskip
+\renewcommand{\arraystretch}{1.35}
+\setlength{\tabcolsep}{8pt}
+
+\begin{tabular}{@{}lrrr@{\hspace{2.5em}}lrrr@{}}
+\toprule
+\textbf{ETF} & \textbf{Buy-Hold} & \textbf{Strategy} & \textbf{Lift} &
+\textbf{ETF} & \textbf{Buy-Hold} & \textbf{Strategy} & \textbf{Lift} \\
+& \textbf{Calmar} & \textbf{Calmar} & & & \textbf{Calmar} & \textbf{Calmar} & \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Equities --- US, International, Sector \& REIT}}
+  & \multicolumn{4}{@{}l}{\emph{Bonds, Commodities, Currency \& Volatility}} \\[2pt]
+QQQ & 1.14 & 1.42 & $+0.28$ & AGG & 1.11 & \textbf{2.89} & $\mathbf{+1.78}$ \\
+SPY & 1.19 & 1.38 & $+0.18$ & TLT & $-0.13$ & 0.69 & $+0.82$ \\
+IWM & 0.65 & 1.55 & $+0.90$ & SHY & \textbf{4.67} & 3.21 & $-1.45$ \\
+EFA & 1.33 & \textbf{2.73} & $\mathbf{+1.40}$ & TIP & 1.24 & 1.84 & $+0.60$ \\
+EEM & 1.43 & 1.54 & $+0.11$ & HYG & 1.68 & \textbf{3.26} & $\mathbf{+1.58}$ \\
+EWJ & 1.33 & 1.19 & $-0.14$ & GLD & 2.26 & \textbf{5.72} & $\mathbf{+3.46}$ \\
+XLE & 1.16 & \textbf{3.05} & $\mathbf{+1.89}$ & DBC & 1.05 & 1.60 & $+0.55$ \\
+XLU & 1.63 & 1.84 & $+0.21$ & UUP & 0.41 & 1.26 & $+0.85$ \\
+XLP & 0.75 & 0.71 & $-0.03$ & VXX & $-0.92$ & $-0.39$ & $+0.52$ \\
+VNQ & 0.41 & 1.14 & $+0.73$ & & & & \\
+\bottomrule
+\end{tabular}
+\setlength{\tabcolsep}{6pt}
+
+\smallskip
+\textbf{Headline numbers}:
+\begin{itemize}
+\item \textbf{Single-ticker Cal $> 5$ achieved on GLD} (Cal $5.72$, Lift $+3.46$).
+\item \textbf{Cal $> 2.5$ on 5 ETFs}: GLD ($5.72$), HYG ($3.26$), XLE ($3.05$), AGG ($2.89$), EFA ($2.73$).
+\item Strategy beats Buy-and-Hold on $16$ of $19$ ETFs.
+\item Mean Calmar Lift across $19$ ETFs: $\approx +0.85$ (up from $+0.61$ baseline after adding a confidence-filtered execution rule $\text{pos}_i = \mathbb{1}\{p_i > 0.5\} \cdot \mathbb{1}\{|p_i - 0.5| > 0.15\}$ that lifted HYG / EFA / VNQ / AGG / XLU significantly).
+\item Three ETFs where the model HURTS Buy-and-Hold:
+  \begin{itemize}
+  \item SHY (Lift $-1.45$) --- ultra-low-vol bond; regimes too small to trade profitably.
+  \item EWJ (Lift $-0.17$) --- Japanese equity, marginal underperform.
+  \item XLP (Lift $-0.03$) --- defensive staples, essentially tied with B-H.
+  \end{itemize}
+\item \textbf{Pattern}: low-volatility or highly-mean-reverting assets are dominated by Buy-and-Hold; HMM regime-trading adds drag where actual regimes are too small.
+\end{itemize}
+
+\newpage
+
+\qhead{Q1\enspace Custom-axis metric}{$\mathrm{kurt}$ vs $\mathrm{peak\_frac}$ --- which matters more for an ETF trend strategy?}
+
+\textbf{Definitions}\enspace (let $r_{\mathrm{bar}}$ be the log-return of one bar, demeaned; $r_{\mathrm{bar}}^k$ denotes its $k$-th power, so $\mathbb{E}[r_{\mathrm{bar}}^2]$ is the variance and $\mathbb{E}[r_{\mathrm{bar}}^4]$ is the fourth moment):
+\[ \mathrm{kurt} \,=\, \frac{\mathbb{E}[r_{\mathrm{bar}}^4]}{\bigl(\mathbb{E}[r_{\mathrm{bar}}^2]\bigr)^2} - 3
+   \qquad\text{(excess kurtosis: $-3$ makes Gaussian $= 0$)} \]
+\[ \mathrm{peak\_frac} \,=\, P\bigl(|r_{\mathrm{bar}}| < 0.5\,\sigma_{r}\bigr) \qquad\text{($\sigma_r$ is the sample std of $r_{\mathrm{bar}}$)} \]
+Gaussian benchmarks: $\mathrm{kurt}_{\mathcal N} = 0$, $\mathrm{peak\_frac}_{\mathcal N} = 0.383$.
+
+\textbf{Empirical on QQQ}:
+
+\smallskip
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Axis} & \textbf{bars} & \textbf{kurt} & \textbf{peak\_frac} \\
+\midrule
+Time axis (minute) & 1.64M & $\sim 225$ & $\sim 0.55$ \\
+LogDollar (your course's method) & 56,306 & 43.8 & \textbf{0.62} \\
+Price-action (50 bp log-price drawdown) & 24,617 & 36.6 & \textbf{0.18} \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\textbf{Trade-off observed}: across 19 ETFs and 8 axis variants, no axis satisfies all three constraints
+\[ \{\mathrm{kurt} \le 20\} \,\wedge\, \{\mathrm{peak\_frac} \approx 0.383\} \,\wedge\, \{|\mathrm{bars}| \ge 15\mathrm{k}\}. \]
+LogDollar minimizes kurt but inflates peak\_frac; Price-action does the reverse.
+
+\textbf{Questions}:
+
+\begin{enumerate}
+\item Which metric do you optimize for ETF trend strategies --- $\mathrm{kurt}$, $\mathrm{peak\_frac}$, or something else? Candidates include: lag-2 autocorrelation $\rho_2 = \mathrm{Corr}(r_t, r_{t-2})$ (close to $0$ for IID returns; far from $0$ means past predicts future); the Ljung--Box test (joint autocorrelation across multiple lags); or a normality test on the first-difference of bar log-prices.
+
+\item For your RB axis, what are typical $\mathrm{kurt}$ and $\mathrm{peak\_frac}$ values? Is RB structurally easier than ETFs (commodity vs highly-efficient equity market)?
+
+\item Our LogDollar trigger uses dollar volume $P_t V_t$, but $\log(P_t V_t) = \log P_t + \log V_t$ collapses to mostly $\log V_t$ during calm midday minutes (price stable, volume high). Should we replace the pure-dollar-volume trigger with a composite that \emph{also} requires a minimum price move $|\log P_t - \log P_{\mathrm{last\,bar}}| \ge \delta_p$ since the last bar, so calm-but-traded minutes don't emit pseudo-bars?
+\end{enumerate}
+
+\newpage
+
+\qhead{Q2\enspace Label balance}{Posterior threshold $\tau = 0.5$ produces severely imbalanced labels on drift-heavy ETFs; \emph{all} balancing fixes hurt Calmar. Why?}
+
+\textbf{Definitions} (computed on training set only):
+
+\begin{itemize}
+\item $\tau$ \,=\, posterior threshold to binarize the HMM's up-regime probability. Default $\tau = 0.5$ means $y_t = 1$ whenever $\gamma_t^{\mathrm{up}} > 0.5$ (i.e.\ ``up'' is the more likely state at time $t$).
+\item $\beta_n$ \,=\, fraction of training bars where the $n$-bar forward log-return is positive. E.g.\ $\beta_{200} = 0.74$ on QQQ means 74\% of 200-bar windows ended higher than they started.
+\item $\bar y_{\mathrm{tr}}$ \,=\, fraction of training bars labeled $1$ (i.e.\ where $\gamma_t^{\mathrm{up}} > \tau$).
+\end{itemize}
+
+Wang's principle: $\bar y_{\mathrm{tr}} \approx 0.5$ is desirable. Empirically on our ETFs:
+
+\smallskip
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{ETF} & $\beta_{200}$ & $\bar y_{\mathrm{tr}}$ at $\tau{=}0.5$ & \textbf{Strategy Cal} & \textbf{B-H Cal} & \textbf{Lift} \\
+\midrule
+QQQ & \textbf{0.74} & 0.73 & 1.42 & 1.14 & +0.28 \\
+HYG & 0.71 & 0.65 & 2.75 & 1.68 & +1.07 \\
+GLD & 0.53 & 0.55 & \textbf{5.72} & 2.26 & \textbf{+3.46} \\
+DBC & 0.52 & 0.52 & 1.60 & 1.05 & +0.55 \\
+\bottomrule
+\end{tabular}
+
+\textbf{The problem in words}: when a market has persistent upward drift ($\beta_n \gg 0.5$), the HMM smoothed probability $\gamma_t^{\mathrm{up}}$ stays above $0.5$ almost everywhere, so almost every bar is labeled $1$. The downstream classifier has nothing to discriminate --- the trivial ``always predict $1$'' baseline already matches accuracy. On QQQ ($\beta_{200} = 0.74$), $\bar y_{\mathrm{tr}} = 0.73$ and ``always $1$'' is 73\% accurate without real edge.
+
+\textbf{Tested 4 balancing methods}:\enspace
+(a) raise $\tau$ to the median of $\gamma_t^{\mathrm{up}}$ over train, forcing $\bar y_{\mathrm{tr}} = 0.5$;\enspace
+(b) \textbf{detrend} the HMM observation $o_t \leftarrow r_t - \hat\mu_{\mathrm{tr}}$ (subtract training mean log-return) so the HMM sees a drift-free signal and both states center near zero;\enspace
+(c) median-split forward $r_n$ (label $1$ if $r_n$ above training median);\enspace
+(d) two-sided triple-barrier (AFML \S 3.4) with $k$ calibrated so up/down hit rates match.\\
+\textbf{All four hurt Calmar}: balanced-$\tau$ raised QQQ's train AUC to 0.92 but \emph{dropped} OOS Cal from $0.68 \to 0.49$; HYG $2.75 \to 1.55$; GLD $4.90 \to 2.80$.
+
+A \textbf{3-state HMM (up/range/down)} on all 19 ETFs: helped only IWM ($0.79 \to 1.55$); hurt 18 others. The ``range'' state captures 40--60\% of bars, so the strategy is rarely long and misses bull drift.
+
+A \textbf{2D HMM observation} on 7 ETFs (still 2 states, but each bar is observed as $o_t = [r_t, |r_t|] \in \mathbb{R}^2$ so HMM sees direction \emph{and} volatility): helped only TIP ($1.76 \to 1.84$, marginal). val AUC $\to 0.94$--$0.98$ but Cal collapses --- the ``high-vol up'' state is rare.
+
+\textbf{Questions}:
+
+\begin{enumerate}
+\item Is $\bar y_{\mathrm{tr}} \approx 0.5$ a hard requirement at first training, or only a retraining trigger (i.e.\ retrain only when balance has drifted too far)?
+
+\item For drift-heavy ETFs ($\beta_n \gg 0.5$), which do you recommend:\enspace
+(a) meta-label filter\enspace$\big|$\enspace
+(b) detrend $o_t$\enspace$\big|$\enspace
+(c) 3-state up/range/down\enspace$\big|$\enspace
+(d) other?
+
+\item GLD ($\beta_{200} = 0.53$, near-symmetric) reaches Cal $5.72$; QQQ ($\beta_{200} = 0.74$, drift-heavy) only $1.42$. Is the ``2-class HMM $+$ persistent drift'' framework fundamentally suited only to $\beta_n \approx 0.5$ assets (commodities, FX) and not to $\beta_n \gg 0.5$ assets (large-cap equity)?
+\end{enumerate}
+
+\end{document}

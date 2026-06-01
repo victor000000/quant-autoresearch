@@ -1,0 +1,108 @@
+# ─────────────────────────────────────────────────────────────────────────
+# Large data / runtime directories — never commit
+# (LEAN engine venv = 23 GB; lean_binaries = 103 MB; data feeds = 268 MB)
+# ─────────────────────────────────────────────────────────────────────────
+lean_python/
+lean_binaries/
+lean_workspace/data/
+lean_workspace/storage/
+lean_workspace/*/backtests/
+lean_workspace/*/optimizations/
+lean_workspace/*/live/
+lean_workspace/*/objectstore/
+lean_workspace/*/storage/
+data/
+data_*/
+etf_bars/
+zipline_persistent/
+lean_native_results/
+lean_s002_results/
+lean_s002_parallel/
+qc_pipeline/algorithms/__pycache__/
+barter_workspace/
+qc_pipeline/__pycache__/
+
+# ─────────────────────────────────────────────────────────────────────────
+# Audio / video / books (transcribed text IS committed)
+# ─────────────────────────────────────────────────────────────────────────
+*.m4a
+*.mp4
+*.mp3
+*.wav
+*.pdf
+
+# ─────────────────────────────────────────────────────────────────────────
+# Bilibili / scraping intermediate artifacts (regeneratable)
+# ─────────────────────────────────────────────────────────────────────────
+uni_yt/bili_enum/
+uni_yt/*.json.tmp
+
+# ─────────────────────────────────────────────────────────────────────────
+# Python detritus
+# ─────────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# ─────────────────────────────────────────────────────────────────────────
+# IDE / editor state
+# ─────────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# ─────────────────────────────────────────────────────────────────────────
+# Runtime / log noise
+# ─────────────────────────────────────────────────────────────────────────
+*.log
+logs/
+.lumibot/
+nohup.out
+core.*
+
+# ─────────────────────────────────────────────────────────────────────────
+# Backtest / strategy run outputs (regeneratable, often large)
+# ─────────────────────────────────────────────────────────────────────────
+lean_workspace/momentum/scores.csv
+lean_workspace/momentum/backtests/
+
+# ─────────────────────────────────────────────────────────────────────────
+# Temporary extracts and scratch
+# ─────────────────────────────────────────────────────────────────────────
+_afml_p31_60.txt
+*.tmp
+*~
+
+# ─────────────────────────────────────────────────────────────────────────
+# Secrets — paranoia (real creds live in ~/.lean/, but in case of leaks)
+# ─────────────────────────────────────────────────────────────────────────
+**/credentials
+**/cookies.txt
+**/.creds.json
+*.pem
+*.key
+.env
+.env.*
+S003.db
+
+# ─────────────────────────────────────────────────────────────────────────
+# Archived experiments (moved aside during 2026-06 reconstruct; recoverable)
+# ─────────────────────────────────────────────────────────────────────────
+_archive/
+
+# ─────────────────────────────────────────────────────────────────────────
+# macOS AppleDouble / Finder junk
+# ─────────────────────────────────────────────────────────────────────────
+._*
+.DS_Store
+*.aux

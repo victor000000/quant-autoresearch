@@ -1,0 +1,102 @@
+{
+  "queue": [
+    {
+      "id": "t001",
+      "technique": "Triple-barrier labeling on vol bars",
+      "description": "Replace fixed-horizon labels with triple-barrier (profit-taking at +2σ, stop-loss at -1σ, time-out at 100 bars).",
+      "source": {"type": "pdf", "ref": "AFML.pdf Chapter 3", "url": null},
+      "hypothesis": "Vol bars create more IID returns so triple-barrier thresholds will be more stable.",
+      "priority": 5,
+      "applicable_assets": ["GLD", "XLE", "EEM"],
+      "status": "queued",
+      "tried_count": 0,
+      "created": "2026-05-31T00:00:00Z"
+    },
+    {
+      "id": "t002",
+      "technique": "Hurst-adaptive labeling on vol bars",
+      "description": "Compute rolling Hurst exponent. H > 0.6 → trend labels. H < 0.45 → MR labels. On vol bars.",
+      "source": {"type": "transcript", "ref": "Wang course: adaptive labels + Hurst", "url": null},
+      "hypothesis": "Adaptive switching prevents applying wrong label type to wrong regime.",
+      "priority": 5,
+      "applicable_assets": ["GLD", "GDX", "XLE", "TLT"],
+      "status": "queued",
+      "tried_count": 0,
+      "created": "2026-05-31T00:00:00Z"
+    },
+    {
+      "id": "t003",
+      "technique": "Multi-order combination labels",
+      "description": "Combine labels at multiple forward horizons (50, 100, 200) into consensus. Only trade when all agree.",
+      "source": {"type": "pdf", "ref": "wang_course_2026-06.pdf", "url": null},
+      "hypothesis": "Multi-horizon agreement filters noise.",
+      "priority": 4,
+      "applicable_assets": ["QQQ", "IWM", "GLD", "XLE"],
+      "status": "queued",
+      "tried_count": 0,
+      "created": "2026-05-31T00:00:00Z"
+    },
+    {
+      "id": "t004",
+      "technique": "Quantile tertile labels with skip-middle",
+      "description": "Top tertile = long, bottom = skip, middle = no-trade. Avoids noisy middle.",
+      "source": {"type": "pdf", "ref": "v386 pipeline", "url": null},
+      "hypothesis": "Skipping middle tertile increases signal purity.",
+      "priority": 4,
+      "applicable_assets": ["QQQ", "IWM", "HYG"],
+      "status": "queued",
+      "tried_count": 0,
+      "created": "2026-05-31T00:00:00Z"
+    },
+    {
+      "id": "t005",
+      "technique": "Meta-labeling with confidence gating",
+      "description": "Secondary XGBoost predicts whether primary prediction is correct. Only trade when both agree.",
+      "source": {"type": "pdf", "ref": "AFML.pdf §3.6", "url": null},
+      "hypothesis": "Meta-labeling filters false positives.",
+      "priority": 3,
+      "applicable_assets": ["GLD", "QQQ", "XLE", "IWM"],
+      "status": "queued",
+      "tried_count": 0,
+      "created": "2026-05-31T00:00:00Z"
+    },
+    {
+      "id": "t006",
+      "technique": "Change-point detection labels",
+      "description": "Use CUSUM or PELT on volatility/price for regime boundaries. Label post-change regimes by return.",
+      "source": {"type": "web", "ref": "ruptures library + Wang recommendation", "url": null},
+      "hypothesis": "Change-point detection explicitly models regime shifts.",
+      "priority": 3,
+      "applicable_assets": ["EEM", "TLT", "HYG"],
+      "status": "queued",
+      "tried_count": 0,
+      "created": "2026-05-31T00:00:00Z"
+    },
+    {
+      "id": "t007",
+      "technique": "Range bars for volatile ETFs",
+      "description": "Use range bars (price-move-based sampling) instead of vol/dollar/tick. Uniform price space.",
+      "source": {"type": "pdf", "ref": "De Prado — range bars", "url": null},
+      "hypothesis": "Range bars normalize price movement for volatile ETFs.",
+      "priority": 3,
+      "applicable_assets": ["EEM", "XLE", "IWM"],
+      "status": "queued",
+      "tried_count": 0,
+      "created": "2026-05-31T00:00:00Z"
+    },
+    {
+      "id": "t008",
+      "technique": "Ridge regression with isotonic calibration",
+      "description": "Replace XGBoost with Ridge + isotonic calibration. Less overfitting for linear signals.",
+      "source": {"type": "pdf", "ref": "v274 pipeline", "url": null},
+      "hypothesis": "Ridge + isotonic may beat XGBoost on assets with linear signal structure.",
+      "priority": 2,
+      "applicable_assets": ["TLT", "HYG"],
+      "status": "queued",
+      "tried_count": 0,
+      "created": "2026-05-31T00:00:00Z"
+    }
+  ],
+  "dead_ends": [],
+  "last_idea_search": "2026-05-31T00:00:00Z"
+}
