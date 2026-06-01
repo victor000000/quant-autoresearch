@@ -758,6 +758,20 @@
       "trades": 0,
       "round": 50,
       "note": "long-only degenerate - TLT short leg essential"
+    },
+    "TLT_logdollar_dc_reversal_ls_overlay_R51": {
+      "real_calmar": -0.1722,
+      "real_da": 81.5,
+      "trades": 1881,
+      "round": 51,
+      "note": "reversal-prediction too noisy; both DC labelers fail on TLT"
+    },
+    "TLT_logdollar_triple_barrier_ls_cdf_R51": {
+      "real_calmar": 0.6489,
+      "real_da": 5.45,
+      "trades": 342,
+      "round": 51,
+      "note": "ls_cdf (no overlay) 0.65 vs ls_overlay 0.77 -> overlay adds +0.12"
     }
   },
   "baselines": {
@@ -831,7 +845,8 @@
     "ROUND47: new axes (fracdiff/volumeimb) BREAK triple_barrier on TLT (-0.05/-0.21) - reconfirms f_axiscross (triple_barrier wants logdollar; magnitude-calibrated sigma-barriers mis-fire on memory/volume clocks). New axes help UNSUPERVISED bgm (R45/46), NOT supervised forward labelers - axis x labeler co-design holds. TLT supervised ceiling stays logdollar/triple_barrier/ls_overlay 0.7679.",
     "ROUND48: bgm/imbalance synergy does NOT universally generalize - degenerate (0 trades) on EEM. Asset-specific (TLT 0.59, IWM 0.88; EEM degenerate). bgm's vol-regime gate needs the asset's imbalance bars to form a balanced separable regime. EEM stays buy-hold 1.40.",
     "ROUND49: Directional-Change method FAILS on TLT - dc/dc_trend -0.03 (DA 87!), logdollar/dc_trend -0.11. dc_trend TREND-FOLLOWS; it whipsaws -> FINDING: TLT is MEAN-REVERTING around rate regimes (not trending), which is why barrier-based triple_barrier wins (reversal-shock) and trend-following loses. Implication: a DC-REVERSAL label (mean-reversion) is the right sign. Now broadening beyond \u2460\u2461 (user): explore long/short + other modules (\u2467 sizing, \u2466 ensemble).",
-    "ROUND50 (long/short, \u2467): TLT needs CONTINUOUS long+short. binary longshort 0.39 << continuous ls_overlay 0.77 (binary over-shoots, DA 34). long-only cdf_overlay@0.55 = 0 trades DEGENERATE -> the SHORT leg is essential (triple_barrier rarely predicts strong-up on mostly-down/two-sided TLT). Confirms ls_overlay (continuous L+S) is the right sizing for TLT."
+    "ROUND50 (long/short, \u2467): TLT needs CONTINUOUS long+short. binary longshort 0.39 << continuous ls_overlay 0.77 (binary over-shoots, DA 34). long-only cdf_overlay@0.55 = 0 trades DEGENERATE -> the SHORT leg is essential (triple_barrier rarely predicts strong-up on mostly-down/two-sided TLT). Confirms ls_overlay (continuous L+S) is the right sizing for TLT.",
+    "ROUND51: dc_reversal (mean-rev) -0.17 (over-trades 1881) - BOTH DC labelers fail on TLT (trend -0.03, reversal -0.17); DC framework doesn't fit TLT (barrier structure is uniquely right). Overlay isolation: ls_cdf 0.6489 vs ls_overlay 0.7679 -> vol-overlay adds +0.12. TLT single-asset EXHAUSTIVELY explored (every axis/labeler incl 2 DC + workflow regime_gmm/cusum / sizing / long-short) -> ceiling 0.7679. Last untried module = \u2466 ensemble."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -1431,6 +1446,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R50 (\u2467 long/short): TLT needs CONTINUOUS L+S - binary 0.39<<ls_overlay 0.77; long-only degenerate (short essential)"
+      },
+      {
+        "id": "r51",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R51: dc_reversal -0.17 (both DC labelers fail); ls_overlay adds +0.12 vs ls_cdf. TLT exhausted single-asset -> try \u2466 ensemble"
       }
     ],
     "edges": [
@@ -1913,6 +1934,11 @@
         "src": "f_tlt_meanrev",
         "dst": "r50",
         "label": "continuous L+S; short essential"
+      },
+      {
+        "src": "f_tlt_meanrev",
+        "dst": "r51",
+        "label": "DC fails both ways"
       }
     ],
     "running": []
