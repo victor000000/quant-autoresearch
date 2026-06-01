@@ -460,9 +460,49 @@ class FracDiffBarBuilder:
 
 
 # ----------------------------------------------------------------------------
+class DirectionalChangeBarBuilder:
+    """Directional-Change / intrinsic-time axis (Glattfelder-Olsen). Track the trend
+    extreme; when log-price reverses by >= delta from that extreme, CONFIRM a directional
+    change, flip the trend mode, and emit a bar. Samples the path at REVERSALS (intrinsic
+    time) — dense in volatile two-sided action, sparse in calm trends. Built for two-sided
+    assets (e.g. TLT's rate regimes) whose edge lives at turning points, not in magnitude.
+    delta fit on TRAIN; purely causal (past prices + delta).
+    """
+
+    def __init__(self, threshold):
+        self.delta = float(threshold)   # reversal threshold in log-price
+        self.mode = 1                   # +1 up-trend, -1 down-trend
+        self.ext = None                 # running extreme log-price
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.ext is None:
+            self.ext = lc
+            return None
+        if self.mode == 1:
+            if lc > self.ext:
+                self.ext = lc                       # extend up-trend
+            elif lc <= self.ext - self.delta:       # downward reversal confirmed
+                self.mode = -1
+                self.ext = lc
+                return {"ts_close": ts, "log_close": lc}
+        else:
+            if lc < self.ext:
+                self.ext = lc                       # extend down-trend
+            elif lc >= self.ext + self.delta:       # upward reversal confirmed
+                self.mode = 1
+                self.ext = lc
+                return {"ts_close": ts, "log_close": lc}
+        return None
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -474,6 +514,7 @@ AXES = {
     "tickimb": TickImbalanceBarBuilder,
     "volumeimb": VolumeImbalanceBarBuilder,
     "fracdiff": FracDiffBarBuilder,
+    "dc": DirectionalChangeBarBuilder,
 }
 
 
@@ -865,6 +906,23 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         if thresh is None or weights is None:
             return None
         return FracDiffBarBuilder(thresh, weights=weights)
+
+    if bar_type == "dc":
+        # Reversal threshold delta = TRAIN minute-return std * sqrt(minutes/bar):
+        # a delta-reversal recurs ~ every (delta/sigma)^2 minutes in a random walk,
+        # so this targets ~target_bars reversals. Fit on TRAIN only (causal).
+        c = np.asarray(close, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        trr = ret[tr & np.isfinite(ret)]
+        if len(trr) < 100:
+            return None
+        sigma = float(np.std(trr))
+        m = max(1.0, len(c) / max(1, int(target_bars)))
+        delta = sigma * math.sqrt(m)
+        if not np.isfinite(delta) or delta <= 0:
+            return None
+        return DirectionalChangeBarBuilder(delta)
 
     # Default / unknown -> volatility bar (Wang's workhorse axis).
     c = np.asarray(close, dtype=float)

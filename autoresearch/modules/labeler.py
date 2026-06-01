@@ -1062,8 +1062,46 @@ def generate_labels_triple_barrier_tight(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, 
         lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, U=1.5, L=1.5)
 
 
+def generate_labels_dc_trend(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
+    """Directional-Change TREND-STATE label — UNSUPERVISED and fully CAUSAL (no forward
+    returns). Run a delta-reversal directional-change process over the BAR log-prices and
+    label each bar with its current trend mode (1 = up-trend, 0 = down-trend). The mode at
+    bar t depends only on prices up to t. delta = TRAIN bar-return std * k, k chosen for a
+    balanced up/down split on TRAIN. Aimed at two-sided assets: long up-trends, short downs.
+    Returns (labels, cfg, None)."""
+    N = len(lc)
+    tr_idx = np.where(tr_m & fv)[0]
+    if len(tr_idx) < 50:
+        return None, "", None
+    sigma = float(np.nanstd(lr[tr_idx]))
+    if not np.isfinite(sigma) or sigma <= 0:
+        return None, "", None
+    for k in (3.0, 5.0, 8.0, 12.0):
+        delta = k * sigma
+        mode, ext = 1, float(lc[0])
+        y = np.full(N, -1, dtype=int)
+        for t in range(N):
+            p = float(lc[t])
+            if mode == 1:
+                if p > ext:
+                    ext = p
+                elif p <= ext - delta:
+                    mode, ext = -1, p
+            else:
+                if p < ext:
+                    ext = p
+                elif p >= ext + delta:
+                    mode, ext = 1, p
+            y[t] = 1 if mode == 1 else 0
+        bal = float(y[tr_idx].mean())
+        if 0.25 < bal < 0.75:
+            return y, f"dc_trend_k{k}", None
+    return None, "dc_trend_unbalanced", None
+
+
 LABELERS = {
     "kmeans2stage": generate_labels_kmeans_two_stage,
+    "dc_trend": generate_labels_dc_trend,
     "carry": generate_labels_carry_uniform,
     "tertile": generate_labels_tertile,
     "bgm": generate_labels_bgm,

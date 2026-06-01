@@ -83,10 +83,10 @@ HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
 RESULTS_DIR = os.path.join(AR, "results")
 ROUND_RESULTS_CSV = os.path.join(RESULTS_DIR, "round_results.csv")
 
-VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff"]
+VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc"]
 VALID_LABELERS = ["kmeans2stage", "carry", "tertile", "bgm", "agglomerative",
                   "triple_barrier", "triple_barrier_tight", "multi_horizon",
-                  "regime_gmm", "cusum_regime", "hmm", "always_long"]
+                  "regime_gmm", "cusum_regime", "dc_trend", "hmm", "always_long"]
 VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "longshort", "ls_cdf", "ls_overlay"]
 
 # 2-node pool params (reused from run_axis_label_parallel.py).
