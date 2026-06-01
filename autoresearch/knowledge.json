@@ -1809,6 +1809,18 @@
         "type": "decision",
         "phase": "IWM",
         "label": "DECISION: bottom cluster (XLE/IWM/QQQ) ceilinged -> modernize a high-headroom overlay-hold. Apply EEM's directional triple_barrier recipe to two-sided GLD (1.99)"
+      },
+      {
+        "id": "r77",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R77 GLD modernize fails: triple_barrier 1.65/1.54 < overlay-hold 1.99. Timing cuts gold DA (8.7 vs 17.4) but under-returns the strong trend"
+      },
+      {
+        "id": "f_timing_when",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: directional timing beats buy-hold ONLY when buy-hold is WEAK (choppy EEM 1.32->2.15). When the trend is STRONG (GLD 1.99, HYG 2.21), timing cuts drawdown but under-returns -> hold wins"
       }
     ],
     "edges": [
@@ -2596,6 +2608,26 @@
         "src": "f_eem_timing",
         "dst": "d_modernize_gld",
         "label": "extend EEM's timing win"
+      },
+      {
+        "src": "d_modernize_gld",
+        "dst": "r77",
+        "label": "apply EEM recipe to GLD"
+      },
+      {
+        "src": "r77",
+        "dst": "f_timing_when",
+        "label": "GLD strong trend rejects timing"
+      },
+      {
+        "src": "f_timing_when",
+        "dst": "f_eem_timing",
+        "label": "refines: weak-hold only"
+      },
+      {
+        "src": "f_timing_when",
+        "dst": "f_qqq_pure",
+        "label": "consistent: strong trenders hold"
       }
     ],
     "running": []
