@@ -3,8 +3,32 @@
   "metric": "REAL OOS Calmar",
   "axes": ["dollar", "tick", "vol", "range", "logdollar", "entropy"],
   "labelers": ["kmeans2stage", "carry", "tertile", "bgm", "agglomerative", "hmm", "triple_barrier", "multi_horizon"],
-  "cells": {},
-  "confirmed": [],
-  "dead_ends": [],
-  "notes": "clean slate 2026-06-01; prior results archived; HMM/GARCH re-opened for fair test"
+  "cells": {
+    "GLD_vol_carry": {"real_calmar": 1.6165, "real_da": 24.0211, "trades": 1, "round": 1},
+    "GLD_vol_kmeans2stage": {"real_calmar": 1.6165, "real_da": 24.0211, "trades": 1, "round": 1},
+    "GLD_vol_always_long": {"real_calmar": 1.6165, "real_da": 24.0211, "trades": 1, "round": 1},
+    "GLD_vol_hmm": {"real_calmar": 1.6165, "real_da": 24.0211, "trades": 1, "round": 1},
+    "GLD_dollar_always_long": {"real_calmar": 1.6200, "real_da": 23.9932, "trades": 1, "round": 1},
+    "QQQ_vol_carry": {"real_calmar": 1.1099, "real_da": 22.8298, "trades": 1, "round": 1},
+    "QQQ_vol_kmeans2stage": {"real_calmar": 1.1099, "real_da": 22.8298, "trades": 1, "round": 1},
+    "QQQ_vol_always_long": {"real_calmar": 1.1099, "real_da": 22.8298, "trades": 1, "round": 1},
+    "QQQ_vol_hmm": {"real_calmar": 1.1099, "real_da": 22.8298, "trades": 1, "round": 1},
+    "QQQ_dollar_always_long": {"real_calmar": 1.1094, "real_da": 22.8728, "trades": 1, "round": 1}
+  },
+  "baselines": {
+    "GLD_always_long": {"real_calmar": 1.62, "real_da": 24.0, "trades": 1, "note": "buy-and-hold; hmm ties it"},
+    "QQQ_always_long": {"real_calmar": 1.11, "real_da": 22.8, "trades": 1, "note": "buy-and-hold; hmm ties it"}
+  },
+  "confirmed": [
+    "ROUND1: on GLD and QQQ (both vol and dollar axes), EVERY labeler (carry, kmeans2stage, hmm) collapses to EXACTLY the always_long buy-and-hold result (1 trade, identical Calmar/DA). Replicated 2 tickers x 2 axes.",
+    "ROUND1: n_cells=5-9 per train run => featured labelers DID fit and save non-degenerate cells. The collapse is NOT a labeling failure.",
+    "ROUND1 ROOT CAUSE: the bottleneck is MODULE 8 (sizing/threshold), NOT axis or labeling. Infer rule w=min(1,(p-tau)*200) saturates to full-long when p>tau+0.005; isotonic-calibrated probs sit far above the low fixed tau (0.35 GLD / 0.15 QQQ) for the whole OOS window => pinned 100% long => 1 trade == buy-and-hold for every cell.",
+    "ROUND1: hmm baseline == always_long on both assets (no separation)."
+  ],
+  "dead_ends": [
+    "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates."
+  ],
+  "next_idea": "ROUND2: attack module 8 sizing. Either (a) replace min(1,(p-tau)*200) with a bounded de Prado CDF bet-size map w=2*Phi((p-0.5)/sqrt(p(1-p)))-1 so positions are partial/exit unless conviction is extreme, or (b) raise the entry threshold to an a-priori VAL-median of p (wide neutral dead-zone => binary trend-vs-stand-aside gate). Goal: trades>>1 AND DA < always_long DA. Target frontier: QQQ vol (most headroom), replicate on GLD vol.",
+  "frontier": "QQQ on vol axis is the most promising (asset, axis) for rounds 2+ (most bars, clear drift, lowest buy-hold Calmar => most drawdown-control headroom).",
+  "notes": "clean slate 2026-06-01; prior results archived; HMM/GARCH re-opened for fair test. Round 1 = landscape + baselines complete."
 }

@@ -1,3 +1,19 @@
 commit	calmar	trades	status	description
 axis_label	1.6165	1	completed	axislabel GLD vol/carry synth_cal=0.0000 val_auc=0.5000
 axis_label	1.6165	1	completed	axislabel GLD vol/always_long synth_cal=0.0000 val_auc=0.5000
+axis_label	1.6165	1	completed	axislabel GLD vol/carry synth_cal=0.0000 val_auc=0.5000
+axis_label	1.6165	1	completed	axislabel GLD vol/kmeans2stage synth_cal=0.0000 val_auc=0.5000
+axis_label	1.6165	1	completed	axislabel GLD vol/always_long synth_cal=0.0000 val_auc=0.5000
+axis_label	1.6165	1	completed	axislabel GLD vol/hmm synth_cal=0.0000 val_auc=0.5000
+axis_label	1.6200	1	completed	axislabel GLD dollar/carry synth_cal=0.0000 val_auc=0.5000
+axis_label	1.6200	1	completed	axislabel GLD dollar/kmeans2stage synth_cal=0.0000 val_auc=0.5000
+axis_label	1.6200	1	completed	axislabel GLD dollar/always_long synth_cal=0.0000 val_auc=0.5000
+axis_label	1.6200	1	completed	axislabel GLD dollar/hmm synth_cal=0.0000 val_auc=0.5000
+axis_label	1.1099	1	completed	axislabel QQQ vol/carry synth_cal=0.0000 val_auc=0.5000
+axis_label	1.1099	1	completed	axislabel QQQ vol/kmeans2stage synth_cal=0.0000 val_auc=0.5000
+axis_label	1.1099	1	completed	axislabel QQQ vol/always_long synth_cal=0.0000 val_auc=0.5000
+axis_label	1.1099	1	completed	axislabel QQQ vol/hmm synth_cal=0.0000 val_auc=0.5000
+axis_label	1.1094	1	completed	axislabel QQQ dollar/carry synth_cal=0.0000 val_auc=0.5000
+axis_label	1.1094	1	completed	axislabel QQQ dollar/kmeans2stage synth_cal=0.0000 val_auc=0.5000
+axis_label	1.1094	1	completed	axislabel QQQ dollar/always_long synth_cal=0.0000 val_auc=0.5000
+axis_label	1.1094	1	completed	axislabel QQQ dollar/hmm synth_cal=0.0000 val_auc=0.5000
