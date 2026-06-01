@@ -64,8 +64,15 @@ def run_pool(jobs):
                 bid = submit_backtest(code, label)          # upload→compile→create (serial, safe)
                 inflight[label] = (bid, time.time())
             except Exception as e:
-                results[label] = {"status": "crash", "error": str(e)}
-                print(f"[{_now()}]   {label} submit CRASH: {str(e)[:120]}")
+                msg = str(e)
+                # "no spare nodes" is TRANSIENT (a node is still busy) — re-queue and
+                # wait for one to free instead of permanently failing the job.
+                if "spare node" in msg.lower():
+                    pending.insert(0, (label, code))
+                    print(f"[{_now()}]   {label} no free node yet — re-queue + wait")
+                    break
+                results[label] = {"status": "crash", "error": msg}
+                print(f"[{_now()}]   {label} submit CRASH: {msg[:120]}")
         done = []
         for label, (bid, t0) in inflight.items():
             status, _, _ = read_backtest_status(bid)
@@ -80,7 +87,7 @@ def run_pool(jobs):
                 done.append(label)
         for label in done:
             del inflight[label]
-        if inflight:
+        if inflight or pending:   # sleep while work remains (incl. jobs waiting for a node)
             time.sleep(POLL)
     return results
 
