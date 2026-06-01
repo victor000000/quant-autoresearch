@@ -86,7 +86,7 @@ ROUND_RESULTS_CSV = os.path.join(RESULTS_DIR, "round_results.csv")
 VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy"]
 VALID_LABELERS = ["kmeans2stage", "carry", "tertile", "bgm", "agglomerative",
                   "triple_barrier", "multi_horizon", "hmm", "always_long"]
-VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "longshort", "ls_cdf"]
+VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "longshort", "ls_cdf", "ls_overlay"]
 
 # 2-node pool params (reused from run_axis_label_parallel.py).
 TIMEOUT = 300          # hard 5-min cap per backtest
