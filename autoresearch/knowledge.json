@@ -1827,6 +1827,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R78 EEM 2.15 CONFIRMED: bgm ensemble dilutes (1.39), thresh0.25=1.98. tb@0.30 robust optimum. Single clean signal -> ensemble hurts"
+      },
+      {
+        "id": "r79",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R79 TLT push fails: dc axis 0.43, logdollar -0.02 << range 1.52. RANGE axis uniquely right for TLT mean-reversion (f_axiscross). All 7 ETFs now at honest leak-free ceilings"
       }
     ],
     "edges": [
@@ -2649,6 +2655,16 @@
         "src": "r78",
         "dst": "f_bgm",
         "label": "ensemble dilutes single-dominant signal"
+      },
+      {
+        "src": "r78",
+        "dst": "r79",
+        "label": "push TLT"
+      },
+      {
+        "src": "r79",
+        "dst": "f_axiscross",
+        "label": "range uniquely right for TLT"
       }
     ],
     "running": []
