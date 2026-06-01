@@ -1,39 +1,78 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="30">
 <title>Autoresearch — reports</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
+.dash{max-width:1560px;margin:0 auto;padding:1.4rem 2.2rem 4rem}
+.dgrid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1.25fr);gap:1.5rem;align-items:start;margin-top:1.2rem}
+@media(max-width:1080px){.dgrid{grid-template-columns:1fr}}
+.dgrid .block{margin:0 0 1.4rem}
+.latest-banner{display:block;border:1px solid var(--accent-line);border-radius:12px;
+  background:linear-gradient(120deg,rgba(56,224,200,.10),rgba(56,224,200,.02));
+  padding:1rem 1.3rem;margin:1.1rem 0 .2rem;text-decoration:none;box-shadow:var(--glow);transition:transform .18s}
+.latest-banner:hover{transform:translateY(-2px)}
+.latest-banner.keepglow{border-color:var(--accent)}
+.lb-tag{display:inline-block;font:700 .76rem/1 "JetBrains Mono",monospace;letter-spacing:.08em;
+  color:var(--accent);background:rgba(56,224,200,.12);border:1px solid var(--accent-line);
+  border-radius:999px;padding:.25em .7em;margin-right:.7rem}
+.lb-title{font:700 1.12rem/1.3 "Space Grotesk",sans-serif;color:var(--ink)}
+.lb-title mark{background:rgba(56,224,200,.22);color:var(--ink);padding:.05em .25em;border-radius:4px}
+.lb-sum{display:block;margin-top:.5rem;color:var(--ink-2);font-size:.98rem;line-height:1.55}
 ol.rounds{list-style:none;padding:0;margin:0}
 ol.rounds li{border:1px solid var(--line);border-radius:9px;background:var(--card);margin:.5rem 0;
   padding:.85rem 1.1rem;transition:border-color .18s, transform .18s}
 ol.rounds li:hover{border-color:var(--accent-line);transform:translateX(3px)}
-.rmain{display:flex;align-items:center;gap:.7rem;justify-content:space-between}
-ol.rounds a{font:600 1.06rem/1.35 "Space Grotesk",sans-serif;color:var(--ink)}
+ol.rounds li.latest-item{border-color:var(--accent);background:linear-gradient(120deg,rgba(56,224,200,.07),var(--card));box-shadow:var(--glow)}
+.rmain{display:flex;align-items:center;gap:.6rem;justify-content:space-between;flex-wrap:wrap}
+ol.rounds a{font:600 1.04rem/1.35 "Space Grotesk",sans-serif;color:var(--ink)}
 ol.rounds a:hover{color:var(--accent)}
-.rsum{margin-top:.45rem;color:var(--ink-2);font-size:.97rem;line-height:1.55}
+.rsum{margin-top:.45rem;color:var(--ink-2);font-size:.95rem;line-height:1.55}
+.pill.latest{background:rgba(56,224,200,.16);color:var(--accent);border:1px solid var(--accent-line)}
+.hyps-row{margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem}
+.hchip{font:500 .8rem/1.3 "JetBrains Mono",monospace;color:var(--ink-2);background:var(--bg-2,#0d1219);
+  border:1px solid var(--line);border-radius:7px;padding:.28em .6em}
+tr.justimproved td{background:rgba(56,224,200,.10)}
+.hotdot{color:var(--accent);font-size:.8em}
+ol.insights{list-style:none;padding:0;margin:0}
+ol.insights li{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:9px;
+  background:var(--card);margin:.55rem 0;padding:.8rem 1.05rem}
+.ititle{font:600 1.02rem/1.4 "Space Grotesk",sans-serif;color:var(--ink);display:flex;align-items:baseline;gap:.55rem}
+.inum{font:700 .82rem/1 "JetBrains Mono",monospace;color:var(--accent);opacity:.85}
+.idetail{margin-top:.4rem;color:var(--ink-2);font-size:.94rem;line-height:1.55}
+.ev{font:500 .76rem/1 "JetBrains Mono",monospace;color:var(--mut);margin-left:auto;white-space:nowrap}
 section.running{border-color:var(--accent-line);box-shadow:var(--glow)}
-ul.hyps{list-style:none;padding:0;margin:.4rem 0 0} ul.hyps li{margin:.3rem 0}
+ul.hyps{list-style:none;padding:0;margin:.4rem 0 0} ul.hyps li{margin:.3rem 0;color:var(--ink-2)}
 .livedot{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--accent);
   box-shadow:0 0 8px var(--accent);animation:pulse 1.3s ease-in-out infinite}
 .idledot{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--mut)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-</style></head><body><div class="wrap">
-<div class="nav">autoresearch / reports</div>
+</style></head><body><div class="dash">
+<div class="nav">autoresearch / reports · <span style="color:var(--accent)">served by Flask</span></div>
 <div class="hero">
   <div class="eyebrow">Autoresearch · Quant Pipeline</div>
   <h1>Experiment reports</h1>
-  <p class="tldr">Per-round tech reports — each races two hypotheses on the weakest ETF, keeps the winner if it beats
-  that ETF's best (real OOS Calmar+DA), and updates the <a href="causal_graph.html">interactive causal graph</a>.</p>
+  <p class="tldr">Each round races two hypotheses on the weakest ETF, keeps the winner if it beats that ETF's
+  best (real OOS Calmar + DA). Full <a href="causal_graph.html">interactive causal graph</a>. Live; auto-refreshing.</p>
 </div>
-<section class="block running"><h2><span class="livedot"></span>Now running — round 59 · IWM</h2><p class="small">started 2026-06-01 22:24 · racing 2 hypotheses on the 2 QC nodes:</p><ul class="hyps"><li><code>imbalance/triple_barrier+bgm/cdf_overlay @thresh 0.45 (more selective)</code></li><li><code>imbalance/triple_barrier+bgm/cdf_plain @0.40 (more exposure, no vol-throttle)</code></li></ul></section>
-<section class="block"><h2>Leaderboard — best strategy Calmar vs buy-and-hold (real OOS)</h2>
-<table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
-<tbody><tr><td><b>IWM</b></td><td class="num pos">+1.0126</td><td class="num">1339</td><td class="num pos">+0.561</td><td class="num pos">+0.451</td><td><code>IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.40</code></td></tr><tr><td><b>QQQ</b></td><td class="num pos">+1.2953</td><td class="num">811</td><td class="num pos">+1.109</td><td class="num pos">+0.186</td><td><code>QQQ_logdollar_always_long_cdf_overlay_t0.15</code></td></tr><tr><td><b>EEM</b></td><td class="num pos">+1.4032</td><td class="num">556</td><td class="num pos">+1.254</td><td class="num pos">+0.149</td><td><code>EEM_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>TLT</b></td><td class="num pos">+1.5221</td><td class="num">333</td><td class="num neg">-0.057</td><td class="num pos">+1.579</td><td><code>TLT_range_triple_barrier_ls_overlay_t0.50</code></td></tr><tr><td><b>GLD</b></td><td class="num pos">+1.8021</td><td class="num">691</td><td class="num pos">+1.620</td><td class="num pos">+0.182</td><td><code>GLD_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>HYG</b></td><td class="num pos">+1.8880</td><td class="num">779</td><td class="num pos">+1.647</td><td class="num pos">+0.241</td><td><code>HYG_logdollar_always_long_cdf_overlay_t0.55</code></td></tr><tr><td><b>XLE</b></td><td class="num pos">+2.2619</td><td class="num">116</td><td class="num pos">+0.606</td><td class="num pos">+1.656</td><td><code>XLE_logdollar_multi_horizon_cdf_overlay_t0.45</code></td></tr></tbody></table>
-<p class="small">buy&amp;hold = pure 1-trade hold over the OOS window (2023-08 → 2026-06); edge = best − buy&amp;hold.</p></section>
-<section class="block"><h2>Rounds (58) — newest first</h2>
-<ol class="rounds">
+<a class="latest-banner" href="round_60.html"><span class="lb-tag">★ LATEST</span><span class="lb-title"><mark>Round 60 — IWM (DISCARD)</mark></span><span class="lb-sum">Per the long/short directive, tested adding SHORTS to IWM's winning ensemble, plus an even-tighter long-only variant. Both lost. Shorting IWM's pullbacks dragged Calmar 1.14 → 0.90 and more than doubled drawdown-area (1.94→4.34) — the up-drift punishes the sho…</span></a>
+<section class="block" id="nowrunning"><h2><span class="idledot"></span>Status</h2><p class="small">loading live status…</p></section>
+<div class="dgrid">
+  <div class="dcol">
+    <section class="block"><h2>Leaderboard — best Calmar vs buy-and-hold (real OOS)</h2>
+    <table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
+    <tbody><tr><td><b>IWM</b></td><td class="num pos">+1.1403</td><td class="num">1056</td><td class="num pos">+0.561</td><td class="num pos">+0.579</td><td><code>IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45</code></td></tr><tr><td><b>QQQ</b></td><td class="num pos">+1.2953</td><td class="num">811</td><td class="num pos">+1.109</td><td class="num pos">+0.186</td><td><code>QQQ_logdollar_always_long_cdf_overlay_t0.15</code></td></tr><tr><td><b>EEM</b></td><td class="num pos">+1.4032</td><td class="num">556</td><td class="num pos">+1.254</td><td class="num pos">+0.149</td><td><code>EEM_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>TLT</b></td><td class="num pos">+1.5221</td><td class="num">333</td><td class="num neg">-0.057</td><td class="num pos">+1.579</td><td><code>TLT_range_triple_barrier_ls_overlay_t0.50</code></td></tr><tr><td><b>GLD</b></td><td class="num pos">+1.8021</td><td class="num">691</td><td class="num pos">+1.620</td><td class="num pos">+0.182</td><td><code>GLD_logdollar_always_long_cdf_overlay_t0.45</code></td></tr><tr><td><b>HYG</b></td><td class="num pos">+1.8880</td><td class="num">779</td><td class="num pos">+1.647</td><td class="num pos">+0.241</td><td><code>HYG_logdollar_always_long_cdf_overlay_t0.55</code></td></tr><tr><td><b>XLE</b></td><td class="num pos">+2.2619</td><td class="num">116</td><td class="num pos">+0.606</td><td class="num pos">+1.656</td><td><code>XLE_logdollar_multi_horizon_cdf_overlay_t0.45</code></td></tr></tbody></table>
+    <p class="small">buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round.</p></section>
+    <section class="block"><h2>Top 5 insights</h2>
+    <ol class="insights"><li><div class="ititle"><span class="inum">01</span><span>Causal mean-reversion features unlock mean-reverting ETFs</span><span class="ev">TLT ③</span></div><div class="idetail">Adding causal RSI + Bollinger-%b oscillators (③) took TLT from 0.31 → 1.52 Calmar. Control (same axis/labeler, no features) stays at −0.14, so the lift is the features, not leakage.</div></li><li><div class="ititle"><span class="inum">02</span><span>Ensembling two comparable labelers lifts; one dominant signal dilutes</span><span class="ev">IWM R59</span></div><div class="idetail">Averaging calibrated triple_barrier + BGM predictions lifted IWM 0.93 → 1.14, but dilutes TLT (one signal already dominates). Ensemble only when two legs are individually strong.</div></li><li><div class="ititle"><span class="inum">03</span><span>No-lookahead invariant: never filter trading bars by a future label</span><span class="ev">leak audit</span></div><div class="idetail">Test/val predictions must cover EVERY causal bar; a future label may filter only the FIT set, never which OOS bars trade. Enforced + audited every round.</div></li><li><div class="ititle"><span class="inum">04</span><span>Selectivity beats exposure when directional accuracy is thin</span><span class="ev">IWM R59</span></div><div class="idetail">On IWM's ensemble a tighter entry threshold (0.45) beat a looser one (0.40, no vol-throttle): +1.14 vs +0.94. Trade less, trade better.</div></li><li><div class="ititle"><span class="inum">05</span><span>triple_barrier + ③-features recipe ports across mean-reverting ETFs</span><span class="ev">TLT,IWM</span></div><div class="idetail">The same labeler+features stack that unlocked TLT also lifted IWM — a transferable recipe, not a per-ETF fluke. Try it first on any mean-reverter.</div></li></ol></section>
+  </div>
+  <div class="dcol">
+    <section class="block"><h2>Rounds (60) — newest first</h2>
+    <ol class="rounds">
+<li class="latest-item"><div class="rmain"><a href="round_60.html">Round 60 — IWM (DISCARD)</a> <span class="pill latest">★ LATEST</span><span class="pill discard">DISCARD</span></div><div class="rsum">Per the long/short directive, tested adding SHORTS to IWM's winning ensemble, plus an even-tighter long-only variant. Both lost. Shorting IWM's pullbacks dragged Calmar 1.14 → 0.90 and more than doubled drawdown-area (1.94→4.34) — the up-drift punishes the sho…</div><div class="hyps-row"><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long/short, vol-targeted, entry 0.45.</span><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50.</span></div></li>
+<li><div class="rmain"><a href="round_59.html">Round 59 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">IWM ensemble fine-tune. A MORE SELECTIVE entry threshold (0.45) on the triple_barrier+BGM ensemble, kept under the inverse-vol overlay, lifted IWM 1.0126 → 1.1403 (DA 1.94, 1056 trades). The looser variant (0.40, no vol-throttle) traded as often but earned les…</div><div class="hyps-row"><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.45.</span><span class="hchip">Sample on signed-dollar imbalance (directional) bars; ensemble of triple-barrier (forward σ-barrier) labels + Bayesian-GMM regime labels; size long-only, entry 0.40.</span></div></li>
 <li><div class="rmain"><a href="round_58.html">Round 58 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Tuning the IWM ensemble doesn't beat 1.0126: the exposure tune (thresh 0.35) over-trades (0.86, 1490 tr), and the 3-way ensemble (+multi_horizon) DILUTES (0.87) — adding the weaker multi_horizon leg drags the comparable tb+bgm pair down. IWM's best stays the 2…</div></li>
 <li><div class="rmain"><a href="round_57.html">Round 57 — IWM (KEEP)</a> <span class="pill keep">KEEP</span></div><div class="rsum">The ⑦ ENSEMBLE finally pays off — on IWM's TWO COMPARABLE signals: imbalance/triple_barrier+bgm/cdf_overlay = 1.0126 (DA 3.53), beating both legs alone (tb 0.93, bgm 0.83). Averaging decorrelated comparable signals cut the joint drawdown and lifted Calmar past…</div></li>
 <li><div class="rmain"><a href="round_56.html">Round 56 — IWM (DISCARD)</a> <span class="pill discard">DISCARD</span></div><div class="rsum">Pushing IWM: range/triple_barrier = 0.38 (the range axis suits mean-reverting TLT, not trending IWM — it over-samples noise), and imbalance@thresh0.30 = 0.73 (lower entry bar over-trades, 1179 trades). IWM's best stays imbalance/triple_barrier/cdf_overlay@0.40…</div></li>
@@ -92,5 +131,34 @@ ul.hyps{list-style:none;padding:0;margin:.4rem 0 0} ul.hyps li{margin:.3rem 0}
 <li><div class="rmain"><a href="round_3.html">round_3</a> </div></li>
 <li><div class="rmain"><a href="round_2.html">round_2</a> </div></li>
 <li><div class="rmain"><a href="round_1.html">round_1</a> </div></li>
-</ol></section>
-</div></body></html>
+    </ol></section>
+  </div>
+</div>
+</div>
+<script>
+async function pollStatus(){
+  try{
+    const r = await fetch('status.json?_=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) return;
+    const s = await r.json();
+    const el = document.getElementById('nowrunning');
+    if(!el) return;
+    if(s.running){
+      const legs = (s.hypotheses||[]).map(h => '<li>▸ '+h+'</li>').join('');
+      el.className = 'block running';
+      el.innerHTML = '<h2><span class="livedot"></span>Now running'
+        + (s.round ? ' — round ' + s.round : '') + (s.etf ? ' \u00b7 ' + s.etf : '') + '</h2>'
+        + '<p class="small">phase: <b>' + (s.phase || '…') + '</b>'
+        + (s.since ? ' \u00b7 started ' + s.since : '')
+        + (s.legs ? ' \u00b7 ' + s.legs : '') + '</p>'
+        + '<ul class="hyps">' + legs + '</ul>';
+    } else {
+      el.className = 'block';
+      el.innerHTML = '<h2><span class="idledot"></span>Idle</h2><p class="small">last completed: <b>'
+        + (s.note || ('round ' + (s.round || '?'))) + '</b></p>';
+    }
+  } catch(e){}
+}
+pollStatus(); setInterval(pollStatus, 8000);
+</script>
+</body></html>

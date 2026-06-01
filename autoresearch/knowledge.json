@@ -983,18 +983,18 @@
       }
     },
     "IWM": {
-      "cell": "IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.40",
-      "real_calmar": 1.0126,
-      "real_da": 3.5283,
-      "trades": 1339,
+      "cell": "IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45",
+      "real_calmar": 1.1403,
+      "real_da": 1.9376,
+      "trades": 1056,
       "g2_pass": true,
-      "round": 18,
+      "round": 19,
       "source": "tournament",
       "config": {
         "ticker": "IWM",
         "axis": "imbalance",
         "labeler": "triple_barrier+bgm",
-        "thresh": 0.4,
+        "thresh": 0.45,
         "sizing": "cdf_overlay"
       }
     },
@@ -1080,7 +1080,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 18,
+  "last_round": 19,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1598,6 +1598,24 @@
         "type": "round",
         "phase": "IWM",
         "label": "R58 IWM ensemble tune: 3-way dilutes (0.87), thresh0.35 over-trades. 2-way tb+bgm@0.40 optimal (1.01)"
+      },
+      {
+        "id": "r59",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R59 IWM ensemble fine-tune: thresh0.45 (more selective) + vol-overlay on tb+bgm = 1.14 (DA 1.94). KEEP"
+      },
+      {
+        "id": "f_selectivity",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: when DA is thin, a TIGHTER entry (0.45) + inverse-vol overlay beats more exposure (0.40, no overlay). Selectivity > exposure"
+      },
+      {
+        "id": "r60",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R60 IWM long/short test: shorts DRAG up-drifter (0.90, DA 4.34); thresh0.50 over-restricts (0.80, 676tr). long-only@0.45 stays best (1.14)"
       }
     ],
     "edges": [
@@ -2130,6 +2148,36 @@
         "src": "r57",
         "dst": "r58",
         "label": "more legs/lower thresh dilute"
+      },
+      {
+        "src": "r58",
+        "dst": "r59",
+        "label": "fine-tune throttle"
+      },
+      {
+        "src": "f_bgm",
+        "dst": "r59",
+        "label": "ensemble leg"
+      },
+      {
+        "src": "r59",
+        "dst": "f_selectivity",
+        "label": "0.45 > 0.40"
+      },
+      {
+        "src": "r59",
+        "dst": "r60",
+        "label": "test shorts + tighter"
+      },
+      {
+        "src": "r60",
+        "dst": "f_character",
+        "label": "up-drifter rejects shorts"
+      },
+      {
+        "src": "r60",
+        "dst": "f_selectivity",
+        "label": "0.45 is the peak, 0.50 over-restricts"
       }
     ],
     "running": []
@@ -2163,5 +2211,32 @@
       "calmar": 1.6471,
       "da": 3.65
     }
-  }
+  },
+  "top_insights": [
+    {
+      "title": "Causal mean-reversion features unlock mean-reverting ETFs",
+      "detail": "Adding causal RSI + Bollinger-%b oscillators (\u2462) took TLT from 0.31 \u2192 1.52 Calmar. Control (same axis/labeler, no features) stays at \u22120.14, so the lift is the features, not leakage.",
+      "ev": "TLT \u2462"
+    },
+    {
+      "title": "Ensembling two comparable labelers lifts; one dominant signal dilutes",
+      "detail": "Averaging calibrated triple_barrier + BGM predictions lifted IWM 0.93 \u2192 1.14, but dilutes TLT (one signal already dominates). Ensemble only when two legs are individually strong.",
+      "ev": "IWM R59"
+    },
+    {
+      "title": "No-lookahead invariant: never filter trading bars by a future label",
+      "detail": "Test/val predictions must cover EVERY causal bar; a future label may filter only the FIT set, never which OOS bars trade. Enforced + audited every round.",
+      "ev": "leak audit"
+    },
+    {
+      "title": "Selectivity beats exposure when directional accuracy is thin",
+      "detail": "On IWM's ensemble a tighter entry threshold (0.45) beat a looser one (0.40, no vol-throttle): +1.14 vs +0.94. Trade less, trade better.",
+      "ev": "IWM R59"
+    },
+    {
+      "title": "triple_barrier + \u2462-features recipe ports across mean-reverting ETFs",
+      "detail": "The same labeler+features stack that unlocked TLT also lifted IWM \u2014 a transferable recipe, not a per-ETF fluke. Try it first on any mean-reverter.",
+      "ev": "TLT,IWM"
+    }
+  ]
 }

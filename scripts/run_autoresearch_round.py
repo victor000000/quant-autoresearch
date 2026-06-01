@@ -76,12 +76,32 @@ from harness.qc_client import (submit_backtest, read_backtest_status, read_backt
                                delete_backtest, is_done)
 from harness.orchestrator import render_train_config, render_infer_cell  # noqa: E402
 
+SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, SCRIPTS_DIR)
+from describe import describe_cfg  # noqa: E402  config -> plain-English hypothesis
+
 CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD"]
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
 RESULTS_DIR = os.path.join(AR, "results")
 ROUND_RESULTS_CSV = os.path.join(RESULTS_DIR, "round_results.csv")
+STATUS_JSON = os.path.join(AR, "reports", "status.json")
+
+
+def _write_status(**kw):
+    """Merge-update reports/status.json so the dashboard's live poller shows real
+    phase progress. Preserves keys set elsewhere (e.g. round#) and overlays kw."""
+    try:
+        cur = json.load(open(STATUS_JSON)) if os.path.exists(STATUS_JSON) else {}
+    except Exception:
+        cur = {}
+    cur.update(kw)
+    try:
+        json.dump(cur, open(STATUS_JSON, "w"))
+    except Exception:
+        pass
 
 VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc"]
 VALID_LABELERS = ["kmeans2stage", "carry", "tertile", "bgm", "agglomerative",
@@ -399,6 +419,11 @@ def run_round(argv):
     print(f"  Hypothesis A: {cfg_a}")
     print(f"  Hypothesis B: {cfg_b}")
 
+    _write_status(running=True, etf=target,
+                  since=datetime.now().strftime("%Y-%m-%d %H:%M"),
+                  phase="training — fitting 2 models on the 2 QC nodes", legs="train 0/2 · infer 0/2",
+                  hypotheses=[describe_cfg(cfg_a), describe_cfg(cfg_b)])
+
     # Render BOTH train scripts, then run them IN PARALLEL on the 2 nodes.
     train_jobs = []
     for nm, cfg in (("A", cfg_a), ("B", cfg_b)):
@@ -422,6 +447,8 @@ def run_round(argv):
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")
+    _write_status(phase="inferring — real OOS backtest of each trained cell",
+                  legs=f"train done · infer 0/{len(infer_jobs)}")
     print(f"\n[{_now()}] PHASE INFER: {len(infer_jobs)} cells in parallel")
     infer_res = run_pool(infer_jobs) if infer_jobs else {}
 
@@ -499,6 +526,15 @@ def run_round(argv):
     print(f"\n[{_now()}] logged 2 hypotheses -> {ROUND_RESULTS_CSV}")
     print(f"[{_now()}] knowledge.json per_etf_best {'UPDATED' if kept else 'unchanged'} for {target}")
     print("NOTE: HTML report + git commit are done by the human/opus per round (not here).")
+
+    # ---- Live status -> idle/done (dashboard poller reads this) ----
+    if winner is not None:
+        verdict = ("KEEP — new best %.4f" % winner["real_calmar"]) if kept else (
+            "DISCARD — winner %.4f did not beat %.4f" % (winner["real_calmar"], prev_cal))
+    else:
+        verdict = "no result (both hypotheses failed)"
+    _write_status(running=False, etf=target,
+                  note=f"{target}: {verdict}", phase="done")
     return {"weakest": target, "rows": rows, "winner": winner, "kept": kept}
 
 
