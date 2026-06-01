@@ -600,6 +600,20 @@
       "trades": 245,
       "round": 36,
       "note": "multi_horizon HURTS GLD (exits smooth trend at wrong times)"
+    },
+    "TLT_imbalance_bgm_ls_overlay_R37": {
+      "real_calmar": 0.593,
+      "real_da": 11.41,
+      "trades": 660,
+      "round": 37,
+      "note": "CUSTOM imbalance axis BOOSTS unsupervised bgm: 0.59 (best TLT bgm, vs 0.35 logdollar)"
+    },
+    "TLT_imbalance_triple_barrier_ls_overlay_R37": {
+      "real_calmar": -0.1157,
+      "real_da": 14.98,
+      "trades": 296,
+      "round": 37,
+      "note": "imbalance axis breaks triple_barrier's sigma-barriers (-0.12)"
     }
   },
   "baselines": {
@@ -657,7 +671,8 @@
     "ROUND33: TLT tighter triple_barrier (U=L=1.5) = 0.17 << default 2.0's 0.77 (over-trades 828 on noise). TLT's edge is in LARGER rate-shock moves; default barrier well-tuned. SINGLE-ASSET LEVERS EXHAUSTED for TLT (axis/labeler/sizing/floor/barrier all explored) -> ceiling ~0.768, within noise of IWM 0.779. Documented frontier = CROSS-ASSET (TLT = flight-to-quality, equity risk-off driven); SPY already loaded -> enable causal SPY-relative features.",
     "ROUND34: cross-asset SPY-relative features REGRESSED TLT (0.7679->0.677; multi_horizon leg 0.01). Not catastrophic crowd-out (445tr) but the features displaced useful price features and diluted the edge. CONFIRMS: TLT's cross-asset edge needs a 2-symbol PAIRS strategy (trade TLT-SPY spread), not SPY features in a single-asset model. REVERTED features.py + n_components 26->20. TLT single-asset ceiling = 0.7679, tied with IWM/GLD ~0.78. Frontier = pairs harness (sign-off-worthy).",
     "ROUND35: TLT agglomerative +0.01 / bgm +0.35 (both << triple_barrier 0.7679). Every labeler now tested on TLT's optimal logdollar/ls_overlay -> triple_barrier UNIQUELY best. TLT DEFINITIVELY exhausted single-asset at 0.7679, tied with IWM 0.7788 within noise. Only remaining lever = 2-symbol PAIRS harness (sign-off-worthy). Alt: modernize stale-best ETFs (GLD/QQQ/HYG/EEM = buy-hold-overlay) with multi_horizon/ls_overlay.",
-    "ROUND36 WIN: GLD 0.7792 -> +1.8021 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - an AXIS unlock, label-INDEPENDENT (always_long can't leak). The SAME vol-targeted buy-hold on logdollar vs dollar bars MORE THAN DOUBLED Calmar -> the axis sets how cdf_overlay times drawdowns. multi_horizon HURT GLD (0.47): timing labels hurt a smooth trend (f_trenddom). GENERALIZABLE: stale dollar_R5 bests (QQQ/HYG/EEM) are UNDER-TUNED ON AXIS -> logdollar+cdf_overlay likely lifts them too."
+    "ROUND36 WIN: GLD 0.7792 -> +1.8021 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - an AXIS unlock, label-INDEPENDENT (always_long can't leak). The SAME vol-targeted buy-hold on logdollar vs dollar bars MORE THAN DOUBLED Calmar -> the axis sets how cdf_overlay times drawdowns. multi_horizon HURT GLD (0.47): timing labels hurt a smooth trend (f_trenddom). GENERALIZABLE: stale dollar_R5 bests (QQQ/HYG/EEM) are UNDER-TUNED ON AXIS -> logdollar+cdf_overlay likely lifts them too.",
+    "ROUND37 (custom axis + unsupervised, per user): built de-Prado signed-dollar IMBALANCE axis (bars at directional runs). It BOOSTS unsupervised bgm on TLT: 0.21(logdollar/ls_cdf)->0.35(logdollar/ls_overlay)->0.59(imbalance/ls_overlay) - the directional clock aligns bgm's regime clusters with TLT's direction. But it HURTS triple_barrier (-0.12: sigma-barriers assume a magnitude clock). FINDING: custom axis & labeler must be CO-DESIGNED. Still < triple_barrier/logdollar ceiling 0.7679. Imbalance axis calibration works (296/660 trades)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -669,7 +684,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "USER redirect: explore CUSTOM AXIS (\u2460) + UNSUPERVISED LABELING (\u2461) for TLT (weakest 0.7679). Plan: add information-driven IMBALANCE bars (de Prado) to bar_builder - sample on cumulative signed-return imbalance, concentrating bars at directional rate-shocks where TLT's edge lives. Round 37: TLT imbalance-axis/triple_barrier/ls_overlay + an unsupervised-labeling leg. Separately: GLD axis unlock generalizes -> re-tune QQQ/HYG/EEM onto logdollar later.",
+  "next_idea": "Keep exploring custom-axis x unsupervised for TLT (user). Round 38: does imbalance axis boost OTHER labelers? imbalance/agglomerative/ls_overlay (was 0.01 logdollar) + imbalance/multi_horizon/ls_overlay (was 0.49). If the directional clock lifts them -> general 'imbalance boosts labelers' finding. bgm/imbalance 0.59 is the unsupervised TLT best so far (< triple_barrier/logdollar 0.7679).",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -1135,6 +1150,18 @@
         "type": "finding",
         "phase": "XLE",
         "label": "FINDING: the AXIS dramatically changes vol-targeted buy-hold (GLD dollar 0.78 -> logdollar 1.80, label-independent). Stale dollar_R5 bests are UNDER-TUNED ON AXIS -> re-tune QQQ/HYG/EEM onto logdollar"
+      },
+      {
+        "id": "r37",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R37 custom IMBALANCE axis: BOOSTS unsupervised bgm (0.35->0.59) but breaks triple_barrier (-0.12). Axis & labeler must be co-designed. <0.7679"
+      },
+      {
+        "id": "f_imbalance",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "FINDING: de-Prado IMBALANCE axis (bars at directional runs) BOOSTS unsupervised labelers (bgm 0.35->0.59 on TLT) but breaks magnitude-calibrated triple_barrier. Custom axis & labeler must be CO-DESIGNED"
       }
     ],
     "edges": [
@@ -1536,6 +1563,16 @@
       {
         "src": "r36",
         "dst": "f_axisbuyhold",
+        "label": ""
+      },
+      {
+        "src": "f_crossasset",
+        "dst": "r37",
+        "label": "user: explore custom axis + unsupervised"
+      },
+      {
+        "src": "r37",
+        "dst": "f_imbalance",
         "label": ""
       }
     ],
