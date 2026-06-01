@@ -1833,6 +1833,18 @@
         "type": "round",
         "phase": "IWM",
         "label": "R79 TLT push fails: dc axis 0.43, logdollar -0.02 << range 1.52. RANGE axis uniquely right for TLT mean-reversion (f_axiscross). All 7 ETFs now at honest leak-free ceilings"
+      },
+      {
+        "id": "r80",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R80 EEM novel axes: fracdiff 1.62, entropy 1.53 < logdollar 2.15. EEM optimized across axes+thresholds. PLATEAU: simple axis x labeler swaps exhausted on all 7 ETFs"
+      },
+      {
+        "id": "f_plateau",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "MILESTONE: post-leak-fix plateau. All 7 ETFs at honest ceilings via standard modules. Next frontier = regime-switching meta-strategy (operationalize f_timing_when) or defensive labelers, not more axis/labeler swaps"
       }
     ],
     "edges": [
@@ -2665,6 +2677,21 @@
         "src": "r79",
         "dst": "f_axiscross",
         "label": "range uniquely right for TLT"
+      },
+      {
+        "src": "r78",
+        "dst": "r80",
+        "label": "novel axes on EEM"
+      },
+      {
+        "src": "r80",
+        "dst": "f_axiscross",
+        "label": "logdollar best axis for EEM"
+      },
+      {
+        "src": "r80",
+        "dst": "f_plateau",
+        "label": "swaps exhausted"
       }
     ],
     "running": []
