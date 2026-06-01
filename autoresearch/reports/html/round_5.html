@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>round_5</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>
+ body{font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1b1f23;
+   max-width:900px;margin:2rem auto;padding:0 1.2rem;background:#fff}
+ h1,h2,h3{line-height:1.25;margin-top:1.6em} h1{border-bottom:2px solid #eaecef;padding-bottom:.3em}
+ h2{border-bottom:1px solid #eaecef;padding-bottom:.2em}
+ code{background:#f3f4f6;padding:.15em .35em;border-radius:4px;font-size:.88em;
+   font-family:SFMono-Regular,Consolas,monospace}
+ pre{background:#f6f8fa;padding:1em;border-radius:8px;overflow:auto} pre code{background:none;padding:0}
+ table{border-collapse:collapse;margin:1em 0;width:100%;font-size:.94em}
+ th,td{border:1px solid #d0d7de;padding:.45em .7em;text-align:left} th{background:#f6f8fa}
+ tr:nth-child(even) td{background:#fbfcfd}
+ blockquote{border-left:4px solid #d0d7de;color:#57606a;margin:1em 0;padding:.2em 1em;background:#f6f8fa}
+ hr{border:0;border-top:1px solid #eaecef;margin:1.6em 0}
+ a{color:#0969da;text-decoration:none} a:hover{text-decoration:underline}
+ .nav{font-size:.9em;color:#57606a;margin-bottom:1.5em}
+</style></head><body>
+<div class="nav"><a href="index.html">&larr; all reports</a></div>
+<h1>Autoresearch Round 5 — ① dollar axis × ② {kmeans2stage, carry, always_long}, 7 ETFs (2-node parallel)</h1>
+<table><thead><tr><th>field</th><th>value</th></tr></thead><tbody><tr><td>round</td><td>5</td></tr><tr><td>date</td><td>2026-06-01</td></tr><tr><td>ticker(s)</td><td>QQQ, IWM, EEM, XLE, HYG, TLT, GLD</td></tr><tr><td>under test</td><td>history hypothesis: dollar axis + kmeans2stage de-saturates equities and <strong>beats carry</strong></td></tr><tr><td>verdict</td><td><strong>history hypothesis NOT confirmed</strong> — labeler still washed out; but found WHY (the sizing overlay), + best active configs yet</td></tr></tbody></table>
+<h2>1. Hypothesis (from archived history, to *confirm* not accept)</h2>
+<p>Archive: dollar axis suits equities; <code>carry</code> fails on QQQ/IWM while <code>kmeans2stage</code> is the universal *active*</p>
+<p>winner. Predictions: (a) kmeans2stage on dollar trades &gt; 80 where vol+carry gave 1; (b) **kmeans2stage beats</p>
+<p>carry on QQQ/IWM**; (c) carry fine on commodity-like ETFs.</p>
+<h2>2. Method</h2>
+<p>Dollar axis (held constant) × {kmeans2stage, carry, always_long}, all 7 ETFs, current de-tuned sizing</p>
+<p><code>w = _cdf_bet(p,τ)·_invvol(g)</code> (floor 0.6). 2-node parallel driver. Splits as standard.</p>
+<h2>3. Results — REAL OOS</h2>
+<table><thead><tr><th>ETF</th><th>Calmar</th><th>DA</th><th>trades</th></tr></thead><tbody><tr><td>EEM</td><td><strong>1.328</strong></td><td>4.36</td><td>113</td></tr><tr><td>HYG</td><td><strong>1.263</strong></td><td>4.00</td><td>1310</td></tr><tr><td>QQQ</td><td>1.097</td><td>20.84</td><td>1619</td></tr><tr><td>GLD</td><td>0.779</td><td>10.42</td><td>541</td></tr><tr><td>XLE</td><td>0.719</td><td>39.27</td><td>866</td></tr><tr><td>IWM</td><td>0.132</td><td>22.42</td><td>854</td></tr><tr><td>TLT</td><td>−0.154</td><td>59.89</td><td>1215</td></tr></tbody></table>
+<p><strong>All seven ETFs: kmeans2stage = carry = always_long, identical to 4 dp</strong> (Calmar, DA, trades).</p>
+<h2>4. Verdict &amp; the real finding — <strong>it's the overlay, not the axis</strong></h2>
+<p>(a) is confirmed (dollar de-saturates: trades 113–1619, all clear G2). <strong>(b) is FALSE</strong> — kmeans2stage does</p>
+<p><strong>not</strong> beat carry; they're *identical*, and identical to constant-long. The mechanism, now clear:</p>
+<blockquote>The <strong>inverse-vol overlay <code>g = clip(σ_slow/σ_fast, 0.6, 1)</code> is label-independent</strong> and drives the entire rebalance path. On these (mostly up-trending) ETFs the calibrated model probability is usually high, so <code>_cdf_bet(p,τ) ≈ 1</code> for *every* labeler — even an AUC-0.88 model (IWM) maps to ≈ full long. Thus <code>w ≈ g</code>, the same path regardless of the label. <strong>The overlay washes the labeler out.</strong></blockquote>
+<p>So "labeler is irrelevant" (rounds 1–5) is an <strong>artifact of the sizing</strong>, not a property of labels or axes.</p>
+<p>The history hypothesis was never actually testable while the overlay dominates.</p>
+<p><strong>Silver lining:</strong> EEM (1.33, DA 4.4, 113 trades) and HYG (1.26, DA 4.0, 1310 trades) are the **best *active*</p>
+<p>(G2-passing) configs in the study so far** — dollar axis genuinely helps them vs vol. Still far from G1 (&gt;3.0).</p>
+<p>TLT −0.15 (negative control, as expected).</p>
+<h2>5. Next — Round 6 (running): turn the overlay OFF</h2>
+<p>To let the label finally express itself, <strong>disable the inverse-vol overlay</strong> (<code>VOL_FLOOR = 1.0</code> ⇒ <code>g ≡ 1</code>) so</p>
+<p><code>w = _cdf_bet(p,τ)</code> — i.e. the position responds to the *model's probability* and goes flat when <code>p ≤ τ</code>.</p>
+<p>Then <code>always_long</code> reverts to ~buy-hold (1 trade), and a real labeler (kmeans2stage) that sometimes predicts</p>
+<p>down should <strong>diverge</strong> from it. Same dollar axis (isolates the overlay on→off change). If kmeans2stage now</p>
+<p>≠ always_long and trades &gt; 80 with Calmar &gt; buy-hold, the label matters and the history hypothesis is finally</p>
+<p>testable. (Identical sizing in trainer VAL + infer OOS, per the audit-fixed parity.)</p>
+</body></html>

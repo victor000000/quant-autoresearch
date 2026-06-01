@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>round_4</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>
+ body{font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1b1f23;
+   max-width:900px;margin:2rem auto;padding:0 1.2rem;background:#fff}
+ h1,h2,h3{line-height:1.25;margin-top:1.6em} h1{border-bottom:2px solid #eaecef;padding-bottom:.3em}
+ h2{border-bottom:1px solid #eaecef;padding-bottom:.2em}
+ code{background:#f3f4f6;padding:.15em .35em;border-radius:4px;font-size:.88em;
+   font-family:SFMono-Regular,Consolas,monospace}
+ pre{background:#f6f8fa;padding:1em;border-radius:8px;overflow:auto} pre code{background:none;padding:0}
+ table{border-collapse:collapse;margin:1em 0;width:100%;font-size:.94em}
+ th,td{border:1px solid #d0d7de;padding:.45em .7em;text-align:left} th{background:#f6f8fa}
+ tr:nth-child(even) td{background:#fbfcfd}
+ blockquote{border-left:4px solid #d0d7de;color:#57606a;margin:1em 0;padding:.2em 1em;background:#f6f8fa}
+ hr{border:0;border-top:1px solid #eaecef;margin:1.6em 0}
+ a{color:#0969da;text-decoration:none} a:hover{text-decoration:underline}
+ .nav{font-size:.9em;color:#57606a;margin-bottom:1.5em}
+</style></head><body>
+<div class="nav"><a href="index.html">&larr; all reports</a></div>
+<h1>Autoresearch Round 4 — ⑧ de-tuned active sizing, vol axis, 7 ETFs</h1>
+<table><thead><tr><th>field</th><th>value</th></tr></thead><tbody><tr><td>round</td><td>4</td></tr><tr><td>date</td><td>2026-06-01</td></tr><tr><td>git commit</td><td><code>ffa1ff5</code> (sizing)</td></tr><tr><td>ticker(s)</td><td>QQQ, IWM, EEM, XLE, HYG (5/7 completed before pivot to R5)</td></tr><tr><td>module(s)</td><td>⑧ sizing — de Prado CDF (recentered on τ) × inverse-vol overlay, floor 0.6, trigger 10/60</td></tr><tr><td>verdict</td><td><strong>discard the vol-for-all design</strong> — active but all sub-buy-hold; pivot to history-informed R5</td></tr></tbody></table>
+<h2>1. Hypothesis</h2>
+<p>De-tuning R2's over-aggressive sizing (raise <code>VOL_FLOOR</code> 0.25→0.6, slower trigger, CDF recentered on τ)</p>
+<p>keeps it active (&gt;80 trades) while recovering CAGR, beating buy-hold on QQQ/vol.</p>
+<h2>2. Method</h2>
+<p>Same <code>_cdf_bet(p,τ)·_invvol(g)</code> in <code>trainer</code> (VAL) and <code>infer</code> (OOS); vol axis for all 7 ETFs; carry +</p>
+<p>always_long. (The R2 over-de-lever fix.) Splits train≤2021-08, val≤2023-08, test≤2026-06.</p>
+<h2>3. Results — REAL OOS (vol axis)</h2>
+<table><thead><tr><th>ETF</th><th>Calmar</th><th>DA</th><th>trades</th><th>G2</th></tr></thead><tbody><tr><td>QQQ</td><td>0.90</td><td>14.9</td><td>629</td><td>✓</td></tr><tr><td>IWM</td><td>0.65</td><td>22.6</td><td>544</td><td>✓</td></tr><tr><td>EEM</td><td>0.57</td><td>1.57</td><td>23</td><td>✗</td></tr><tr><td>XLE</td><td>0.11</td><td>70.3</td><td>398</td><td>✓</td></tr><tr><td>HYG</td><td>(pivoted before recording)</td><td></td><td></td><td></td></tr></tbody></table>
+<p>$$\text{Calmar}=\text{CAGR}/\text{MaxDD},\quad \text{DA}=\textstyle\sum_t(1-E_t/\max_{s\le t}E_s).$$</p>
+<p>The de-tune *did* recover QQQ Calmar (R2 0.54 → R4 0.90, 629 trades, DA 14.9 &lt; buy-hold 22.8) — best</p>
+<p>active config so far — but <strong>no ETF beats its buy-hold Calmar</strong>, XLE collapses (0.11), EEM under-trades</p>
+<p>(τ=0.45 → only 23, fails G2). <code>carry ≡ always_long</code> on every ETF (4th confirmation the overlay dominates).</p>
+<h2>4. Verdict &amp; the history-informed pivot — <strong>discard vol-for-all</strong></h2>
+<p>Three rounds of *sizing* tweaks (R2 continuous, R3 binary stop, R4 de-tuned) on the <strong>vol axis</strong> never beat</p>
+<p>buy-hold. Referencing the archived project history (<code>_archive/</code>) explains why — and gives a falsifiable</p>
+<p><strong>hypothesis to confirm, not accept</strong>:</p>
+<ul><li><strong>Per-ETF axis matters.</strong> Archive <code>axis_types</code>: dollar→QQQ/SMH/SOXX/DIA; tick→GLD/GDXJ/XLE; vol→gold</li></ul>
+<p>  complex. <strong>Vol is the wrong axis for the equities</strong> (QQQ/IWM) — we forced it on all 7.</p>
+<ul><li><strong><code>carry</code> FAILS on tech/equity.</strong> Archive: carry QQQ/IWM = Calmar 0, <strong>0 trades</strong> ("works on commodities,</li></ul>
+<p>  fails on tech/equity"). <strong>KMeans-2-stage is the universal winner</strong> (archive: QQQ 1.29, HYG 1.61, GLD 1.42)</p>
+<p>  and *actively trades*. So "labeler is irrelevant" (R1–R4) was <strong>conditional on the vol axis</strong> — on the</p>
+<p>  right axis the labeler should matter.</p>
+<p>So the bottleneck may <strong>not</strong> be ⑧ sizing at all; it was ① axis × ② labeler being wrong for the asset.</p>
+<h2>5. Audit fix applied</h2>
+<p>The sizing audit found the VAL <code>realistic_cstats</code> inverse-vol buffer was 1 bar fresher than <code>infer</code> (a mild</p>
+<p>VAL-only lookahead; REAL OOS was always causal/correct). Fixed (<code>append log_rets[i-1]</code> → exact train/infer</p>
+<p>parity) + unified the cost dead-band to 0.01. REAL round-4 numbers above are unaffected (they come from infer).</p>
+<h2>6. Next — Round 5 (running, 2-node parallel)</h2>
+<p><strong>Confirm the history hypothesis experimentally:</strong> dollar axis × {kmeans2stage, carry, always_long} on all 7</p>
+<p>ETFs. Predictions: (a) kmeans2stage on dollar de-saturates equities (active, trades&gt;80) where vol+carry</p>
+<p>collapsed; (b) kmeans2stage <strong>beats</strong> carry on QQQ/IWM (labeler matters on the right axis); (c) carry still</p>
+<p>fine on commodity-like ETFs. If confirmed → next test tick/vol per-ETF optimal axes. Run on both QC nodes.</p>
+</body></html>

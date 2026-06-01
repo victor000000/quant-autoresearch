@@ -41,8 +41,9 @@ Calmar/DA computation. That is *how you are scored* — keeping it fixed is what
 5. **Select on VAL**: choose the config that **minimizes val DA** subject to |AUC_train − AUC_val| < 0.05.
    (TRAIN gives only fit diagnostics: AUC, label balance.)
 6. **Score on TEST**: real Calmar + real DA (+ CAGR, MaxDD, trades).
-7. Write `reports/round_N.md` from `reports/TEMPLATE.md` — readable math + plain words — append `results.tsv`,
-   update `knowledge.json`. `git commit` the report.
+7. Write `reports/round_N.md` from `reports/TEMPLATE.md` — readable math + plain words — then run
+   `python3 scripts/reports_to_html.py` to regenerate the browsable HTML (`reports/html/`, MathJax-rendered).
+   Append `results.tsv`, update `knowledge.json`. `git commit` the report (md + html).
 8. **Keep** if OOS improved; otherwise `git reset --hard HEAD~1`.
 9. Repeat. Do not pause to ask the human. Run until interrupted.
 

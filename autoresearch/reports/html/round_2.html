@@ -1,0 +1,92 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>round_2</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>
+ body{font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1b1f23;
+   max-width:900px;margin:2rem auto;padding:0 1.2rem;background:#fff}
+ h1,h2,h3{line-height:1.25;margin-top:1.6em} h1{border-bottom:2px solid #eaecef;padding-bottom:.3em}
+ h2{border-bottom:1px solid #eaecef;padding-bottom:.2em}
+ code{background:#f3f4f6;padding:.15em .35em;border-radius:4px;font-size:.88em;
+   font-family:SFMono-Regular,Consolas,monospace}
+ pre{background:#f6f8fa;padding:1em;border-radius:8px;overflow:auto} pre code{background:none;padding:0}
+ table{border-collapse:collapse;margin:1em 0;width:100%;font-size:.94em}
+ th,td{border:1px solid #d0d7de;padding:.45em .7em;text-align:left} th{background:#f6f8fa}
+ tr:nth-child(even) td{background:#fbfcfd}
+ blockquote{border-left:4px solid #d0d7de;color:#57606a;margin:1em 0;padding:.2em 1em;background:#f6f8fa}
+ hr{border:0;border-top:1px solid #eaecef;margin:1.6em 0}
+ a{color:#0969da;text-decoration:none} a:hover{text-decoration:underline}
+ .nav{font-size:.9em;color:#57606a;margin-bottom:1.5em}
+</style></head><body>
+<div class="nav"><a href="index.html">&larr; all reports</a></div>
+<h1>Autoresearch Round 2 — ⑧ de Prado CDF bet-size × causal inverse-vol overlay on QQQ (vol axis)</h1>
+<table><thead><tr><th>field</th><th>value</th></tr></thead><tbody><tr><td>round</td><td>2</td></tr><tr><td>date</td><td>2026-06-01</td></tr><tr><td>git commit</td><td><code>d01dd12</code> (module edit, reverted post-round)</td></tr><tr><td>ticker(s)</td><td>QQQ (frontier from R1); GLD replication deferred</td></tr><tr><td>module(s) under test</td><td>⑧ Sizing/Risk (<code>trainer.realistic_cstats</code> + <code>templates/infer.py.tmpl</code>) — the R1-identified bottleneck</td></tr><tr><td>verdict</td><td><strong>discard</strong> (de-saturated + crushed DA, but over-de-levered → Calmar halved)</td></tr></tbody></table>
+<blockquote>Round 1 proved the bottleneck is ⑧ sizing, not ① axis or ② labels: <code>w=min(1,(p-τ)·200)</code> saturates to 100% long at <code>p&gt;τ+0.005</code>, so every cell = buy-and-hold (1 trade). Round 2 attacks exactly that rule. This is a <strong>featured</strong> ⑧ technique (catalog #4 vol-targeting × #7 de Prado CDF).</blockquote>
+<hr>
+<h2>1. Hypothesis</h2>
+<p>On QQQ (vol axis), replacing the saturating linear ramp with a <strong>bounded de Prado CDF bet-size</strong></p>
+<p>(gentle slope → partial positions) <strong>multiplied by a causal inverse-vol overlay</strong> (de-lever when</p>
+<p>short-term realized vol spikes above its slower baseline) will (a) <strong>de-saturate</strong> the position so the</p>
+<p>strategy trades actively (trades ≫ 1), and (b) <strong>cut Drawdown Area</strong> by withdrawing capital from the</p>
+<p>high-vol regimes where drawdowns cluster — raising REAL OOS Calmar above the buy-and-hold floor</p>
+<p>(QQQ 1.11) by shrinking MaxDD faster than CAGR.</p>
+<p>Falsifiable failure modes: (i) it still saturates (trades≈1) → overlay too weak; (ii) it de-levers so</p>
+<p>hard that CAGR falls faster than MaxDD → Calmar drops below buy-hold. <strong>Outcome: (ii).</strong></p>
+<h2>2. Method</h2>
+<p><strong>⑧ Sizing — shared by synth selection AND real infer (consistency enforced).</strong> Per bar, given</p>
+<p>calibrated prob $p$, per-ETF gate $\tau$, and a causal trailing buffer of bar log-returns:</p>
+<p>$$w_t=\underbrace{\big[\,2\,\Phi(z_t)-1\,\big]_{0}^{1}}_{\text{de Prado CDF bet}}\cdot\underbrace{\operatorname{clip}\!\Big(\frac{\sigma^{\text{slow}}_t}{\sigma^{\text{fast}}_t},\,0.25,\,1\Big)}_{\text{inverse-vol overlay}},\qquad z_t=\frac{p_t-0.5}{\sqrt{p_t(1-p_t)}},\quad w_t=0\ \text{if}\ p_t\le\tau.$$</p>
+<ul><li>$\Phi$ = standard-normal CDF (<code>0.5(1+\mathrm{erf}(z/\sqrt2))</code>). The map is <strong>centered at $p=0.5$</strong>, so</li></ul>
+<p>  it gives $w=0$ for $p\le0.5$, $0.08$ at $p=0.55$, $0.34$ at $0.70$, $0.67$ at $0.85$ — a *gentle*</p>
+<p>  slope, not the old <code>·200</code> cliff. (Note: because the CDF is centered at 0.5, the *effective* gate is</p>
+<p>  $p>0.5$, wider than the nominal $\tau=0.15$ — a built-in neutral dead-zone.)</p>
+<ul><li>$\sigma^{\text{fast}}_t=\operatorname{std}$ of the last <strong>20</strong> bar returns, $\sigma^{\text{slow}}_t$ of</li></ul>
+<p>  the last <strong>100</strong>. When short-vol exceeds its slower baseline the ratio $<1$ → de-lever; floor 0.25,</p>
+<p>  cap 1.0 (no leverage → fair Calmar vs buy-hold capital). <strong>All params fixed a priori; none swept.</strong></p>
+<ul><li><strong>Causality:</strong> the overlay uses only returns realized up to bar $t$ (buffer appended *after* sizing).</li></ul>
+<p>  No future leakage; identical math in <code>realistic_cstats</code> (VAL) and <code>infer.py.tmpl</code> (OOS).</p>
+<p><strong>①② held fixed</strong> at the R1 frontier: vol axis, carry + always_long, same FIXED downstream</p>
+<p>(StandardScaler → corr-filter 20 → XGBoost d3/η0.03/n200 → isotonic on VAL).</p>
+<p><strong>Splits.</strong> train ≤ 2021-08, val ≤ 2023-08, test ≤ 2026-06 (OOS).</p>
+<h2>3. Configuration</h2>
+<pre><code>QQQ × vol × {carry, always_long} | thresh=0.15 | VOL_FAST=20 VOL_SLOW=100 VOL_FLOOR=0.25 cap=1.0 | seeds=1
+1 train (n_cells=9) + 2 infer. Sizing params fixed a priori (NOT tuned on val/test).</code></pre>
+<h2>4. Results — REAL OOS (QC SetHoldings)</h2>
+<p>$$\text{Calmar}=\frac{\text{CAGR}}{\text{MaxDD}},\qquad \text{DA}=\sum_t\Big(1-\frac{E_t}{\max_{s\le t}E_s}\Big)\ (\text{lower better}).$$</p>
+<p><strong>TRAIN/VAL diagnostics (carry cell):</strong> train_auc 0.8002, val_auc 0.7676 (AUCdiv 0.0326 &lt; 0.05 — G4 pass);</p>
+<p><strong>synth_cal (VAL) = −0.3511</strong> — the new sizing's VAL metric now *correctly predicts* OOS underperformance</p>
+<p>(R1's synth_cal was a flat 0.0 that told us nothing).</p>
+<table><thead><tr><th>ticker</th><th>axis</th><th>label</th><th>REAL Calmar</th><th>DA (OOS)</th><th>trades</th><th>vs buy-hold</th></tr></thead><tbody><tr><td>QQQ</td><td>vol</td><td>carry</td><td><strong>0.5387</strong></td><td><strong>7.07</strong></td><td><strong>431</strong></td><td>Calmar −51%, DA −69%</td></tr><tr><td>QQQ</td><td>vol</td><td>always_long (vol-targeted long)</td><td>0.5387</td><td>7.07</td><td>431</td><td>identical to carry</td></tr><tr><td>QQQ</td><td>vol</td><td>*buy-and-hold (R1 locked)*</td><td>1.1099</td><td>22.83</td><td>1</td><td>baseline</td></tr></tbody></table>
+<p>Gate checks: <strong>G1 Calmar&gt;3.0 FAIL</strong> (0.54). <strong>G2 trades&gt;80 PASS</strong> (431 — bottleneck broken!). G3 lookahead</p>
+<p>0 (causal overlay, audited). <strong>G4 AUCdiv 0.033 PASS.</strong> DA gate (informal): <strong>7.07 ≪ 22.83 — strong PASS.</strong></p>
+<h2>5. Verdict &amp; interpretation — <strong>discard</strong> (for Calmar), but a decisive mechanistic result</h2>
+<p>The R1 bottleneck is <strong>broken</strong>: trades went <strong>1 → 431</strong> and DA <strong>22.83 → 7.07 (−69%)</strong>. The sizing now</p>
+<p>genuinely modulates exposure and the inverse-vol overlay slashes the underwater area exactly as intended.</p>
+<p>But REAL Calmar <strong>halved (1.11 → 0.54)</strong>: on a drift-heavy asset the edge *is* staying invested, and the</p>
+<p>combination of (i) the CDF's effective $p>0.5$ gate and (ii) aggressive inverse-vol de-levering cut CAGR</p>
+<p>faster than it cut MaxDD. <strong>MaxDD shrank, but CAGR shrank more → Calmar fell.</strong> Only the score matters, so</p>
+<p>this is a <strong>discard</strong> and the module is reverted.</p>
+<p>Two findings worth keeping:</p>
+<ol><li><strong>carry ≡ always_long to 4 dp (both 0.5387 / 7.07 / 431).</strong> The outcome is driven *entirely by the</li></ol>
+<p>   vol-targeting overlay*, independent of the labeler — independent confirmation of R1's thesis that the</p>
+<p>   labeler is not the lever here; <strong>⑧ is.</strong> A real (AUC 0.80) model and a constant-long signal produce the</p>
+<p>   identical exposure path once the overlay dominates.</p>
+<ol><li><strong>The new VAL synth_cal (−0.35) tracks the OOS sign</strong>, where R1's was an uninformative 0.0 — the</li></ol>
+<p>   train/infer sizing consistency restored a usable in-sample selection signal for future rounds.</p>
+<ul><li>Multiplicity: 2 cells, 1 run; the carry≡always_long identity is a within-run replication of the</li></ul>
+<p>  *mechanism* (not a Calmar win). GLD replication deferred — no point replicating a discard.</p>
+<ul><li>Negative control: TLT not run (still no Calmar-positive config to red-flag).</li></ul>
+<h2>6. Next (Round 3 idea)</h2>
+<p>The overlay is too aggressive for a drift asset. **De-tune the de-levering toward "stay invested by</p>
+<p>default", keeping the DA win but recovering CAGR** — all a-priori, low-DoF:</p>
+<ol><li><strong>Raise VOL_FLOOR 0.25 → 0.6 and widen the trigger</strong> (de-lever only on *large* vol spikes, e.g.</li></ol>
+<p>   <code>clip(slow/fast, 0.6, 1.0)</code> with fast=10/slow=60) so the strategy holds ~full exposure in normal</p>
+<p>   regimes and only cuts in genuine turbulence — this should lift CAGR back toward buy-hold while</p>
+<p>   retaining most of the −69% DA.</p>
+<ol><li><strong>Recenter the CDF gate on $\tau$, not 0.5</strong>: map conviction $c=(p-\tau)/(1-\tau)$ through the CDF so</li></ol>
+<p>   the low per-ETF $\tau$ (0.15) actually keeps the position long on drift assets instead of the implicit</p>
+<p>   $p>0.5$ gate flattening it half the time.</p>
+<p>Target: trades ≫ 1 AND DA &lt; buy-hold AND <strong>Calmar ≥ buy-hold</strong> on QQQ vol; then replicate on GLD vol and</p>
+<p>add TLT as the negative control. Advances catalog #4 (vol-target) + #7 (de Prado CDF), tuned for drift.</p>
+</body></html>
