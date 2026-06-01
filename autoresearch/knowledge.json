@@ -1785,6 +1785,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "R74 XLE 0.64->0.75: overlay-HOLD (always_long/cdf_overlay) beats all timing labels. KEEP. But DA 38.7 (energy crashes) caps Calmar -> long/short is the next lever"
+      },
+      {
+        "id": "r75",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R75 XLE long/short fails: triple_barrier ls -0.06 (shorts mistime), multi_horizon ls 0.54 (DA44.5). Neither beats 0.75 hold. XLE signal not predictive enough to short"
       }
     ],
     "edges": [
@@ -2542,6 +2548,16 @@
         "src": "r74",
         "dst": "f_character",
         "label": "XLE wants overlay-hold like GLD/HYG"
+      },
+      {
+        "src": "r74",
+        "dst": "r75",
+        "label": "try long/short to cut DA"
+      },
+      {
+        "src": "r75",
+        "dst": "f_signal",
+        "label": "shorting needs a predictive signal \u2014 XLE lacks it"
       }
     ],
     "running": []
