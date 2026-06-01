@@ -683,6 +683,13 @@
       "trades": 2753,
       "round": 43,
       "note": "CUSUM regime over-trades (flips too often), churns to neg"
+    },
+    "TLT_fracdiff_bgm_ls_overlay_R44": {
+      "real_calmar": -0.0129,
+      "real_da": 13.71,
+      "trades": 309,
+      "round": 44,
+      "note": "frac-diff axis: no bgm edge"
     }
   },
   "baselines": {
@@ -749,7 +756,8 @@
     "ROUND40 WIN: HYG 1.2625 -> +1.8880 (KEPT, DA 3.67) via always_long/LOGDOLLAR/cdf_overlay. Credit carry + causal vol-targeting on logdollar de-levers into risk-off drawdowns -> DA collapses, Calmar +0.63. Label-independent (axis-unlock, biggest after GLD). multi_horizon under-trades credit (43, G2 fail). Leaderboard: TLT 0.768, IWM 0.779, QQQ 1.295, EEM 1.328, GLD 1.802, HYG 1.888, XLE 2.262.",
     "ROUND41 WIN: EEM 1.3279 -> +1.4032 (KEPT) via always_long/LOGDOLLAR/cdf_overlay - completes the stale-best modernization sweep (GLD 0.78->1.80, HYG 1.26->1.89, QQQ 1.10->1.30, EEM 1.33->1.40), ALL label-independent axis-unlock wins. multi_horizon degenerate on ALL four stale bests -> the modernization lever is the AXIS, not the labeler. SINGLE-ASSET FRONTIER CONVERGED: weakest TLT 0.768/IWM 0.779 at proven ceilings; modernized leaderboard TLT 0.768, IWM 0.779, QQQ 1.295, EEM 1.403, GLD 1.802, HYG 1.888, XLE 2.262. Next frontier = cross-asset PAIRS (G1>3.0, sign-off-worthy).",
     "ROUND42: tickimb (sign-only imbalance) HURTS bgm (-0.02) vs dollar-imbalance (0.59) -> the DOLLAR WEIGHTING (magnitude/conviction), not just direction, drives the imbalance x bgm synergy. kmeans2stage degenerate on any axis. bgm/imbalance 0.59 stays best unsupervised TLT. (Driver retry fix recovered the transient QC 'Compile id not found' infer flake.)",
-    "ROUND43: workflow's NOVEL unsupervised labelers fail on TLT - regime_gmm (GMM on causal features) DEGENERATE (0 trades, feature-clusters don't separate forward direction; kmeans pattern); cusum_regime over-trades (2753 trades, DA 79, -0.23; change-points too sensitive). Both causal/leak-free but no edge. bgm/imbalance 0.59 stays best unsupervised TLT. Causal-feature clustering alone doesn't carry TLT's directional edge - bgm's vol-gated forward-return mixture does."
+    "ROUND43: workflow's NOVEL unsupervised labelers fail on TLT - regime_gmm (GMM on causal features) DEGENERATE (0 trades, feature-clusters don't separate forward direction; kmeans pattern); cusum_regime over-trades (2753 trades, DA 79, -0.23; change-points too sensitive). Both causal/leak-free but no edge. bgm/imbalance 0.59 stays best unsupervised TLT. Causal-feature clustering alone doesn't carry TLT's directional edge - bgm's vol-gated forward-return mixture does.",
+    "ROUND44: new axes don't help bgm on TLT - fracdiff/bgm -0.01 (memory axis, no edge), volumeimb/bgm transient QC build-cache crash (train OK; broadened retry). bgm axis sweep complete: dollar-imbalance 0.59 >> logdollar 0.35 >> fracdiff -0.01 ~ tickimb -0.02. The DOLLAR-WEIGHTED directional clock is uniquely good for bgm. Unsupervised labeling caps ~0.59 on TLT < supervised triple_barrier/logdollar 0.77."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -1301,6 +1309,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R43 novel unsupervised: regime_gmm degenerate (0tr), cusum_regime over-trades (-0.23). bgm/imbalance 0.59 stays best"
+      },
+      {
+        "id": "r44",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R44 new axes x bgm: fracdiff -0.01, volumeimb transient. bgm axis sweep done: dollar-imbalance 0.59 is unique; unsupervised caps <0.77"
       }
     ],
     "edges": [
@@ -1748,6 +1762,11 @@
         "src": "f_imbalance",
         "dst": "r43",
         "label": "novel labelers? no edge"
+      },
+      {
+        "src": "f_imbalance",
+        "dst": "r44",
+        "label": "other axes don't reproduce the synergy"
       }
     ],
     "running": []

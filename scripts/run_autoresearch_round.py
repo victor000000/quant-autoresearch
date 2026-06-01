@@ -146,7 +146,8 @@ def run_pool(jobs):
                 # TRANSIENT submit failures -> re-queue + wait (bounded). 'spare node'
                 # (no free node) and 'compile id not found' (QC compile-cache miss at
                 # create) are both flaky and clear on retry.
-                transient = ("spare node" in low) or ("compile id not found" in low)
+                transient = (("spare node" in low) or ("compile id not found" in low)
+                             or ("could not find a part of the path" in low))  # QC build-cache miss
                 if transient and retries.get(label, 0) < 4:
                     retries[label] = retries.get(label, 0) + 1
                     pending.insert(0, (label, code))
