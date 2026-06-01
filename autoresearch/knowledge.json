@@ -1723,6 +1723,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "R68 RE-VALIDATION: XLE 2.26 was LEAK-INFLATED -> 0.64 leak-fixed (~3.5x). Magnitude-axis leak was SEVERE not mild. logdollar leaderboard suspect; imbalance+range clean"
+      },
+      {
+        "id": "f_metric_unify",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "OOS-CONSISTENCY FIX (6-agent audit): val synth metric was a DIFFERENT estimator (x880 non-compounded, flat-tc) than real OOS (QC compounded CAGR/Drawdown). Unified synth->compounded Calmar + abs trade dead-band + fail-loud train mask + guarded dead leaky trainer. Verified: NO other leak, online rebuild NOT needed"
       }
     ],
     "edges": [
@@ -2400,6 +2406,16 @@
         "src": "r68",
         "dst": "f_barthresh_leak",
         "label": "leak severe: 2.26 -> 0.64"
+      },
+      {
+        "src": "f_barthresh_leak",
+        "dst": "f_metric_unify",
+        "label": "audit continued: metric parity"
+      },
+      {
+        "src": "f_metric_unify",
+        "dst": "d_revalidate",
+        "label": "re-validate under fixed+consistent pipeline"
       }
     ],
     "running": []

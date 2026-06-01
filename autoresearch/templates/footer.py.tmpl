@@ -101,7 +101,10 @@ def _cstats_sized(probs, lc_arr, log_rets, thresh, sizing, tc=0.0005):
     rbuf = []
     for i in range(n):
         target = _size(float(probs[i]), thresh, sizing, rbuf)
-        if (last_pos == 0 and target > 0) or (last_pos > 0 and target == 0) or abs(target - last_pos) > 0.01:
+        # Abs-delta dead-band — mirrors infer.py's rebalance band so val turnover/cost
+        # matches OOS for long/short sizings too (the old long-only-flavoured condition
+        # under-counted short flips).
+        if abs(target - last_pos) > 0.01:
             trades += 1
         positions[i] = target
         last_pos = target
@@ -113,14 +116,21 @@ def _cstats_sized(probs, lc_arr, log_rets, thresh, sizing, tc=0.0005):
     for i in range(1, n):
         if abs(positions[i] - positions[i - 1]) > 0.01:
             strat_rets[i] -= tc * abs(positions[i] - positions[i - 1])
-    cum = np.cumsum(strat_rets)
+    cum = np.cumsum(strat_rets)                       # cumulative log-return == log-equity
     peak = np.maximum.accumulate(cum)
-    dd = cum - peak
-    mdd = abs(float(np.min(dd))) + 1e-9
-    ann = float(np.mean(strat_rets)) * 880
-    da = float(np.sum(1.0 - np.exp(dd)))
-    cal = ann / mdd if mdd > 0.001 else 0
-    return cal, trades, float(np.sum(strat_rets)), mdd, ann, da
+    dd = cum - peak                                   # log drawdown (<= 0)
+    # COMPOUNDED metric, to match the REAL OOS estimator (QC 'Compounding Annual
+    # Return' / 'Drawdown'): val must use the SAME definition as the keep gate, else
+    # the synth selector reads systematically higher than OOS and is not a faithful
+    # preview. (The residual val<->OOS gap after this is honest realism: OOS holds
+    # continuously across minutes + overnight with real fees.)
+    mdd = 1.0 - float(np.exp(float(np.min(dd))))      # max drawdown as a fraction
+    if mdd < 1e-9:
+        mdd = 1e-9
+    cagr = float(np.exp(float(cum[-1]) * (880.0 / n))) - 1.0   # compounded annual return
+    da = float(np.sum(1.0 - np.exp(dd)))              # compounded underwater area
+    cal = cagr / mdd if mdd > 0.001 else 0
+    return cal, trades, float(np.sum(strat_rets)), mdd, cagr, da
 
 
 class AutoresearchPipeline(QCAlgorithm):

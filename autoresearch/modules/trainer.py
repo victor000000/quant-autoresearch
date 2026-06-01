@@ -128,8 +128,16 @@ def train_and_evaluate(feats, y, tr_m, va_m, te_m, lc, lr, bar_ts, fv,
 
     Sweeps: dim methods, ensemble sizes, calibration methods, MA periods, inversion.
     Returns best config by realistic_cstats Calmar.
+
+    DEAD CODE — DO NOT USE. This legacy path is LEAKY: it selects test bars by a future
+    label (ex = fv & ly & te_m) and calibrates on non-embargoed VAL. The live footer
+    (_run_cell) uses the embargoed, no-label-filter path instead. Guarded fail-loud so a
+    future caller can never silently reintroduce the leak.
     """
-    N = len(lc); ly = y >= 0
+    raise RuntimeError("trainer.train_and_evaluate is dead, LEAKY legacy code (selects OOS "
+                       "bars by future label + non-embargoed calibrator). Use the footer "
+                       "_run_cell path. Refusing to run.")
+    N = len(lc); ly = y >= 0  # noqa: unreachable — kept for reference
     tx = fv & ly & tr_m; vx = fv & ly & va_m; ex = fv & ly & te_m
     if tx.sum() < 200 or vx.sum() < 30 or ex.sum() < 30:
         return 0, "insufficient_data", None, None, 0, 0, 0

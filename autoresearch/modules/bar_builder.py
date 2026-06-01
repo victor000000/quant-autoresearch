@@ -528,22 +528,20 @@ def _safe_thresh(total, target_bars):
 
 
 def _train_minute_mask(ts_arr):
-    """Boolean mask of minutes strictly before TRAIN_END.
+    """Boolean mask of minutes strictly before TRAIN_END (the header global).
 
-    Uses the TRAIN_END global (a datetime) supplied by the header at runtime.
-    Falls back to "all minutes are TRAIN" if TRAIN_END is unavailable (e.g. a
-    bare unit harness) so the entropy axis still builds rather than crashing.
+    FAILS LOUD if TRAIN_END is unavailable. The old silent "all minutes are TRAIN"
+    fallback would fit bar thresholds on the FULL series (incl. OOS) — a look-ahead
+    leak. The G3 invariant requires bar thresholds be TRAIN-only, so we refuse to
+    proceed without TRAIN_END rather than silently leak.
     """
-    n = len(ts_arr)
     try:
         cutoff = np.datetime64(TRAIN_END)  # noqa: F821 — global from header
-    except Exception:
-        return np.ones(n, dtype=bool)
-    try:
-        ts64 = np.array([np.datetime64(str(t)) for t in ts_arr])
-        return ts64 < cutoff
-    except Exception:
-        return np.ones(n, dtype=bool)
+    except Exception as e:
+        raise RuntimeError("TRAIN_END unavailable in _train_minute_mask — refusing the "
+                           "full-series fallback (it would leak OOS into bar thresholds)") from e
+    ts64 = np.array([np.datetime64(str(t)) for t in ts_arr])
+    return ts64 < cutoff
 
 
 def _minute_log_returns(close):
