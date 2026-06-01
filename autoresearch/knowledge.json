@@ -1000,21 +1000,23 @@
       }
     },
     "EEM": {
-      "cell": "EEM_logdollar_always_long_cdf_overlay_t0.45",
-      "real_calmar": 1.4032,
-      "real_da": 25.4289,
-      "trades": 556,
+      "cell": "EEM_logdollar_triple_barrier_cdf_overlay_t0.30",
+      "real_calmar": 2.1526,
+      "real_cagr": 7.319,
+      "real_mdd": 3.4,
+      "real_da": 3.7851,
+      "trades": 308,
       "g2_pass": true,
-      "round": 14,
+      "round": 22,
       "source": "tournament",
       "config": {
         "ticker": "EEM",
         "axis": "logdollar",
-        "labeler": "always_long",
-        "thresh": 0.45,
+        "labeler": "triple_barrier",
+        "thresh": 0.3,
         "sizing": "cdf_overlay"
       },
-      "leak_pending": true
+      "leak_fixed": true
     },
     "XLE": {
       "cell": "XLE_logdollar_multi_horizon_cdf_overlay_t0.40",
@@ -1089,7 +1091,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 21,
+  "last_round": 22,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1745,6 +1747,18 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "R70 GLD re-validation: always_long 1.80->1.99 (leak-fixed bars helped overlay); multi_horizon timing 0.79 underperforms. KEEP"
+      },
+      {
+        "id": "r71",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R71 EEM MODERNIZED: logdollar/triple_barrier@0.30 = 2.15 (DA 3.8) beats always_long control 1.32. Directional timing helps two-sided EEM. 1.40->2.15 KEEP"
+      },
+      {
+        "id": "f_eem_timing",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING (revises f_eem_ceiling): under the leak-fixed pipeline EEM IS modernizable - a single directional triple_barrier label beats buy-hold. Two-sided assets reward timing; the earlier 'ceiling' used wrong configs (ensemble/multi_horizon)"
       }
     ],
     "edges": [
@@ -2452,6 +2466,21 @@
         "src": "r70",
         "dst": "f_twosided",
         "label": "timing underperforms overlay on GLD too"
+      },
+      {
+        "src": "r70",
+        "dst": "r71",
+        "label": "sweep: EEM"
+      },
+      {
+        "src": "r71",
+        "dst": "f_eem_timing",
+        "label": "tb beats always_long control"
+      },
+      {
+        "src": "f_eem_timing",
+        "dst": "f_eem_ceiling",
+        "label": "REVISES \u2014 not a ceiling"
       }
     ],
     "running": []
