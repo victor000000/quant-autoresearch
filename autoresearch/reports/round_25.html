@@ -1,17 +1,20 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Autoresearch - Causal Graph of all experiments</title>
-<style>body{font:16px/1.6 -apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:1200px;margin:2rem auto;padding:0 1.2rem;color:#1b1f23}
-h1{border-bottom:2px solid #eaecef;padding-bottom:.3em}table{border-collapse:collapse;margin:1em 0}th,td{border:1px solid #d0d7de;padding:.4em .7em}th{background:#f6f8fa}
-a{color:#0969da;text-decoration:none}.mermaid{margin:1.5em 0}code{background:#f3f4f6;padding:.1em .35em;border-radius:4px}</style></head><body>
-<p><a href="index.html">&larr; all reports</a></p>
-<h1>Causal graph - every autoresearch experiment</h1>
-<p>How each experiment's outcome <i>caused</i> the next hypothesis. Built from <code>knowledge.json.causal_graph</code>
-(the single source of truth) and regenerated every round. The yellow <b>FINDING</b> nodes are the mechanism hubs that drive
-design choices; the arc of each ETF reads top-to-bottom within its phase.</p>
-<h2>Leaderboard (current per-ETF best REAL OOS Calmar)</h2><table><tr><th>ETF</th><th>Calmar</th><th>trades</th><th>cell</th></tr><tr><td>TLT</td><td>+0.7537</td><td>292</td><td>TLT_logdollar_triple_barrier_ls_cdf_t0.50</td></tr><tr><td>GLD</td><td>+0.7792</td><td>541</td><td>GLD_dollar_R5</td></tr><tr><td>QQQ</td><td>+1.0965</td><td>1619</td><td>QQQ_dollar_R5</td></tr><tr><td>IWM</td><td>+1.1046</td><td>394</td><td>IWM_logdollar_bgm_cdf_overlay_t0.45</td></tr><tr><td>HYG</td><td>+1.2625</td><td>1310</td><td>HYG_dollar_R5</td></tr><tr><td>EEM</td><td>+1.3279</td><td>113</td><td>EEM_dollar_R5</td></tr><tr><td>XLE</td><td>+2.5030</td><td>92</td><td>XLE_logdollar_multi_horizon_cdf_overlay_t0.45</td></tr></table>
-<p style="font-size:.9em"><b>Legend:</b> <span style="background:#fff3cd;border:1px solid #e0a800;padding:.05em .4em;border-radius:3px">FINDING (mechanism hub)</span> <span style="background:#d4edda;border:1px solid #28a745;padding:.05em .4em;border-radius:3px">milestone / KEEP</span> <span style="background:#e2dcff;border:1px solid #6f42c1;padding:.05em .4em;border-radius:3px">decision / unlock</span> <span style="background:#eef1f6;border:1px solid #9aa5b1;padding:.05em .4em;border-radius:3px">experiment</span> <span style="border:1px dashed #9aa5b1;padding:.05em .4em;border-radius:3px">running</span>. Edges read cause &rarr; effect (the label is the mechanism). FINDING nodes are the hubs: each new hypothesis is reasoned from them.</p>
-<div class="mermaid">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Round 25 — TLT (DISCARD; untested axes fail, triple_barrier exhausted)</title>
+<style>body{font:16px/1.6 -apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:1100px;margin:2rem auto;padding:0 1.2rem;color:#1b1f23}h1{border-bottom:2px solid #eaecef;padding-bottom:.3em}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d0d7de;padding:.4em .6em}th{background:#f6f8fa}code{background:#f3f4f6;padding:.1em .3em}a{color:#0969da;text-decoration:none}b{color:#0a7}.mermaid{margin:1.2em 0}section.causalgraph{border-top:2px solid #eaecef;margin-top:2em;padding-top:.5em}</style></head><body>
+<p><a href="index.html">&larr; all reports</a> · <a href="causal_graph.html">full causal graph</a></p>
+<h1>Round 25 — TLT: untested dense axes fail; triple_barrier is logdollar-only (DISCARD)</h1>
+<p>Reasoned from <code>f_axiscross</code>+<code>f_density</code>+<code>f_logdollar</code>: test two untested dense axes
+(entropy, vol) that might concentrate at TLT's rate-shocks, with short ls_cdf (<code>f_character</code>).</p>
+<table><tr><th>H</th><th>config</th><th>Calmar</th><th>DA</th><th>trades</th><th>deployable</th></tr>
+<tr><td>A</td><td>entropy/triple_barrier/0.5/ls_cdf</td><td>+0.0532</td><td>9.5</td><td>189</td><td>✓ (≪0.75)</td></tr>
+<tr><td>B</td><td>vol/multi_horizon/0.5/ls_cdf</td><td>+0.2029</td><td>37.2</td><td>33</td><td>✗ (G2 fail)</td></tr></table>
+<p><b>DISCARD</b> — TLT stays +0.7537. Entropy is dense (189tr) but triple_barrier's edge <b>collapses off logdollar</b>
+(+0.05) — strongly reinforcing <code>f_axiscross</code>. <b>triple_barrier is now exhausted on TLT</b> (logdollar 0.75 ≫
+range 0.31 ≫ entropy 0.05 ≫ dollar −0.21). New finding <code>f_tlt_plateau</code>: TLT's deployable best plateaus ~0.75 on
+the two preferred axis×labeler pairs (logdollar/triple_barrier 0.7537, range/multi_horizon 0.7478); off-preferred axes collapse.</p>
+<p><b>Next (round 26):</b> the labeler with headroom is <b>multi_horizon</b> (generalizes). Explore only its untested dense
+axes. H1 {dollar,multi_horizon,0.5,ls_cdf} (densest); H2 {entropy,multi_horizon,0.5,ls_cdf}. Need &gt;0.7792 to overtake GLD.</p>
+<section class="causalgraph"><h2>Causal graph (as of round 25) — red ring = this round's new/changed nodes</h2><p style="font-size:.92em;color:#444"><b>This round's reasoning path:</b> f_axiscross+f_density+f_logdollar -> test untested dense axes (entropy, vol) -> both fail; entropy confirms triple_barrier is logdollar-only -> triple_barrier exhausted on TLT -> added f_tlt_plateau (multi_horizon has the remaining headroom).</p><p style="font-size:.9em"><b>Legend:</b> <span style="background:#fff3cd;border:1px solid #e0a800;padding:.05em .4em;border-radius:3px">FINDING (mechanism hub)</span> <span style="background:#d4edda;border:1px solid #28a745;padding:.05em .4em;border-radius:3px">milestone / KEEP</span> <span style="background:#e2dcff;border:1px solid #6f42c1;padding:.05em .4em;border-radius:3px">decision / unlock</span> <span style="background:#eef1f6;border:1px solid #9aa5b1;padding:.05em .4em;border-radius:3px">experiment</span> <span style="border:1px dashed #9aa5b1;padding:.05em .4em;border-radius:3px">running</span>. Edges read cause &rarr; effect (the label is the mechanism). FINDING nodes are the hubs: each new hypothesis is reasoned from them.</p><div class="mermaid">
 flowchart TB
   subgraph sg_Landscape["Phase A - Landscape / the 6-round null"]
     direction TB
@@ -130,13 +133,7 @@ flowchart TB
   classDef finding_run fill:#fff3cd,stroke:#e0a800,color:#5c4500,stroke-dasharray:5 4;
   classDef milestone_run fill:#d4edda,stroke:#28a745,color:#0b3d1a,stroke-dasharray:5 4;
   classDef decision_run fill:#e2dcff,stroke:#6f42c1,color:#2d1a5c,stroke-dasharray:5 4;
-</div>
-<script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';mermaid.initialize({startOnLoad:true,securityLevel:'loose',flowchart:{useMaxWidth:true,htmlLabels:true},maxTextSize:200000});</script>
-<h2>The four mechanism hubs in one line each</h2>
-<ul>
-<li><b>overlay washes the label</b> - inverse-vol sizing is label-independent (R2/R5).</li>
-<li><b>6-round null</b> - long-only single-asset ML can't beat buy-hold; a label must CHANGE exposure (R6).</li>
-<li><b>directional + short for two-sided assets; long-bias for trending</b> - asset character sets the sizing (R9/R19/R21).</li>
-<li><b>edge needs a DENSE axis</b> to clear G2&gt;80 trades - tick has edge but under-trades; range/logdollar are dense (R13/R15/R20).</li>
-</ul>
+  style r25 stroke:#d62728,stroke-width:4px;
+  style f_tlt_plateau stroke:#d62728,stroke-width:4px;
+</div><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';mermaid.initialize({startOnLoad:true,securityLevel:'loose',flowchart:{useMaxWidth:true,htmlLabels:true},maxTextSize:200000});</script></section>
 </body></html>
