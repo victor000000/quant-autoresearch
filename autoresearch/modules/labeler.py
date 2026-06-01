@@ -1062,6 +1062,55 @@ def generate_labels_triple_barrier_tight(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, 
         lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, U=1.5, L=1.5)
 
 
+def generate_labels_dc_reversal(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
+    """Directional-Change REVERSAL label — MEAN-REVERSION target. Run the delta-reversal
+    directional-change process; label each bar with the direction of the NEXT confirmed
+    directional change (1 = next reversal is UP / near a bottom, 0 = next reversal is DOWN
+    / near a top). Uses the forward DC as the TARGET (allowed — labels may use the future);
+    the model predicts the coming turning point from CAUSAL features. Motivated by the
+    finding that TLT is mean-reverting (trend-following dc_trend whipsawed). delta = TRAIN
+    bar-return std * k. Returns (labels, cfg, None)."""
+    N = len(lc)
+    tr_idx = np.where(tr_m & fv)[0]
+    if len(tr_idx) < 50:
+        return None, "", None
+    sigma = float(np.nanstd(lr[tr_idx]))
+    if not np.isfinite(sigma) or sigma <= 0:
+        return None, "", None
+    for k in (3.0, 5.0, 8.0):
+        delta = k * sigma
+        mode, ext = 1, float(lc[0])
+        ev_idx, ev_dir = [], []
+        for t in range(N):
+            p = float(lc[t])
+            if mode == 1:
+                if p > ext:
+                    ext = p
+                elif p <= ext - delta:
+                    mode, ext = -1, p
+                    ev_idx.append(t); ev_dir.append(-1)   # downward reversal
+            else:
+                if p < ext:
+                    ext = p
+                elif p >= ext + delta:
+                    mode, ext = 1, p
+                    ev_idx.append(t); ev_dir.append(1)    # upward reversal
+        if len(ev_idx) < 20:
+            continue
+        y = np.full(N, -1, dtype=int)
+        j = 0
+        for t in range(N):
+            while j < len(ev_idx) and ev_idx[j] <= t:
+                j += 1
+            if j < len(ev_idx):
+                y[t] = 1 if ev_dir[j] == 1 else 0          # direction of the NEXT reversal
+        sel = y[tr_idx][y[tr_idx] >= 0]
+        bal = float(sel.mean()) if len(sel) else 0.5
+        if 0.25 < bal < 0.75:
+            return y, f"dc_reversal_k{k}", None
+    return None, "dc_reversal_unbalanced", None
+
+
 def generate_labels_dc_trend(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
     """Directional-Change TREND-STATE label — UNSUPERVISED and fully CAUSAL (no forward
     returns). Run a delta-reversal directional-change process over the BAR log-prices and
@@ -1102,6 +1151,7 @@ def generate_labels_dc_trend(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
 LABELERS = {
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
+    "dc_reversal": generate_labels_dc_reversal,
     "carry": generate_labels_carry_uniform,
     "tertile": generate_labels_tertile,
     "bgm": generate_labels_bgm,
