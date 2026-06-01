@@ -14,7 +14,7 @@ The scorer, the splits, and real execution are LOCKED. Everything else — inclu
 3. race: `run_autoresearch_round.py '<A>' '<B>'` — one ETF, 2 nodes.
 4. score real OOS Calmar + DA. deployable = both legs done, trades>80.
 5. keep iff deployable and beats the ETF's best (after the leak-check). else discard. log both.
-6. record: `render_round.py` → report; update `knowledge.json.causal_graph`; `render_causal_graph.py --inject`; commit.
+6. record: `render_round.py` → report; update `knowledge.json.causal_graph`; `render_causal_graph.py --inject`; `render_index.py`; commit.
 7. re-rank → next weakest. never stop.
 
 ## rules
