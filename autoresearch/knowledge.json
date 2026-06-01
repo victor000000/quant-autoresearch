@@ -980,7 +980,8 @@
         "labeler": "always_long",
         "thresh": 0.15,
         "sizing": "cdf_overlay"
-      }
+      },
+      "leak_pending": true
     },
     "IWM": {
       "cell": "IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45",
@@ -1012,21 +1013,23 @@
         "labeler": "always_long",
         "thresh": 0.45,
         "sizing": "cdf_overlay"
-      }
+      },
+      "leak_pending": true
     },
     "XLE": {
-      "cell": "XLE_logdollar_multi_horizon_cdf_overlay_t0.45",
-      "real_calmar": 2.2619,
-      "real_da": 5.9863,
-      "trades": 116,
+      "cell": "XLE_logdollar_multi_horizon_cdf_overlay_t0.40",
+      "real_calmar": 0.64,
+      "real_da": 37.66,
+      "trades": 748,
       "g2_pass": true,
-      "round": 11,
-      "source": "tournament",
+      "round": 68,
+      "source": "revalidation",
+      "leak_fixed": true,
       "config": {
         "ticker": "XLE",
         "axis": "logdollar",
         "labeler": "multi_horizon",
-        "thresh": 0.45,
+        "thresh": 0.4,
         "sizing": "cdf_overlay"
       }
     },
@@ -1044,7 +1047,8 @@
         "labeler": "always_long",
         "thresh": 0.55,
         "sizing": "cdf_overlay"
-      }
+      },
+      "leak_pending": true
     },
     "TLT": {
       "cell": "TLT_range_triple_barrier_ls_overlay_t0.50",
@@ -1076,7 +1080,8 @@
         "labeler": "always_long",
         "thresh": 0.45,
         "sizing": "cdf_overlay"
-      }
+      },
+      "leak_pending": true
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -1712,6 +1717,12 @@
         "type": "decision",
         "phase": "IWM",
         "label": "DECISION: re-validate the 5 logdollar-axis bests (XLE/HYG/GLD/EEM/QQQ) under leak-fixed bars. IWM(imbalance)+TLT(range) already clean"
+      },
+      {
+        "id": "r68",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R68 RE-VALIDATION: XLE 2.26 was LEAK-INFLATED -> 0.64 leak-fixed (~3.5x). Magnitude-axis leak was SEVERE not mild. logdollar leaderboard suspect; imbalance+range clean"
       }
     ],
     "edges": [
@@ -2379,6 +2390,16 @@
         "src": "f_barthresh_leak",
         "dst": "d_revalidate",
         "label": "logdollar bests need re-check"
+      },
+      {
+        "src": "d_revalidate",
+        "dst": "r68",
+        "label": "re-validate XLE first"
+      },
+      {
+        "src": "r68",
+        "dst": "f_barthresh_leak",
+        "label": "leak severe: 2.26 -> 0.64"
       }
     ],
     "running": []

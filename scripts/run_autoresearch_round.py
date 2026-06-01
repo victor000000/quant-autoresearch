@@ -135,6 +135,14 @@ def _calmar_from_stats(st):
     return round(cagr / mdd, 4) if abs(mdd) > 0.01 else 0.0
 
 
+def _cagr_from_stats(st):
+    return round(_f(st.get("Compounding Annual Return", "0%")), 4)
+
+
+def _mdd_from_stats(st):
+    return round(_f(st.get("Drawdown", "0%")), 4)
+
+
 def _trades_from_stats(st):
     raw = str(st.get("Total Orders", "0")).strip()
     try:
@@ -328,6 +336,8 @@ def _extract_result(name, train_bt, infer_bt, cfg):
     infer_status = "completed" if str(infer_bt.get("status", "")).startswith("Completed") else infer_bt.get("status", "?")
 
     real_calmar = _calmar_from_stats(st) if st else 0.0
+    real_cagr = _cagr_from_stats(st) if st else 0.0      # Compounding Annual Return (%)
+    real_mdd = _mdd_from_stats(st) if st else 0.0        # Max Drawdown (%)
     trades = _trades_from_stats(st) if st else 0
     # REAL OOS DA: infer echoes da_oos as a runtime stat (fallback val_da).
     real_da = _f(rt_i.get("da_oos", rt_i.get("val_da", 0.0)))
@@ -341,6 +351,8 @@ def _extract_result(name, train_bt, infer_bt, cfg):
         "thresh": cfg["thresh"],
         "sizing": cfg["sizing"],
         "real_calmar": real_calmar,
+        "real_cagr": real_cagr,
+        "real_mdd": real_mdd,
         "real_da": real_da,
         "da_present": da_present,
         "trades": trades,
@@ -507,6 +519,8 @@ def run_round(argv):
         per_etf_best[target] = {
             "cell": cell_key,
             "real_calmar": round(winner["real_calmar"], 4),
+            "real_cagr": round(winner.get("real_cagr", 0.0), 4),
+            "real_mdd": round(winner.get("real_mdd", 0.0), 4),
             "real_da": round(winner["real_da"], 4),
             "trades": winner["trades"],
             "g2_pass": True,

@@ -8,10 +8,15 @@ string — called LIVE by the Flask app (scripts/app.py) on every request, and b
 Tabs: OVERVIEW (default — overall results: live status, latest improvement, leaderboard,
 top-5 insights) · ROUNDS (all rounds newest-first, plain-English hypotheses) · CAUSAL
 GRAPH (embedded) · PROGRAM.MD (embedded). Smallest text is 18px; tables never clip."""
-import os, re, json, glob
+import os, re, json, glob, sys
+import html as _htmllib
+
+sys.path.insert(0, os.path.dirname(__file__))
+from render_causal_graph import net_html, vis_data, LEGEND   # embed the graph INLINE (no iframe)
 
 R = os.path.join(os.path.dirname(__file__), "..", "autoresearch", "reports")
 KJ = os.path.join(R, "..", "knowledge.json")
+PROG = os.path.join(R, "..", "program.md")
 TICKERS = ["TLT", "IWM", "QQQ", "EEM", "GLD", "HYG", "XLE"]
 
 
@@ -77,6 +82,10 @@ def build_html():
     lb_rows = ""
     for k, v in lb:
         best = v.get("real_calmar", 0.0)
+        cagr = v.get("real_cagr")
+        mdd = v.get("real_mdd")
+        cagr_cell = f'<td class="num {_cls(cagr)}">{cagr:+.1f}%</td>' if isinstance(cagr, (int, float)) else '<td class="num">—</td>'
+        mdd_cell = f'<td class="num">{mdd:.1f}%</td>' if isinstance(mdd, (int, float)) else '<td class="num">—</td>'
         da = v.get("real_da")
         da_cell = f'<td class="num">{da:.2f}</td>' if isinstance(da, (int, float)) else '<td class="num">—</td>'
         b = bh.get(k, {})
@@ -86,12 +95,18 @@ def build_html():
         edge_cell = (f'<td class="num {_cls(edge)}">{edge:+.3f}</td>' if edge is not None else '<td class="num">—</td>')
         hot = ' class="justimproved"' if (latest_keep and k == latest_etf) else ""
         star = ' <span class="hotdot" title="improved this round">▲</span>' if (latest_keep and k == latest_etf) else ""
+        if v.get("leak_pending"):
+            flag = ' <span class="leakwarn" title="pre-leak-fix number — pending re-validation under TRAIN-only bar thresholds">⚠ pre-fix</span>'
+        elif v.get("leak_fixed"):
+            flag = ' <span class="leakok" title="re-validated under leak-fixed bars">✓ leak-fixed</span>'
+        else:
+            flag = ' <span class="leakok" title="clean axis (imbalance/range) — unaffected by the threshold leak">✓ clean</span>'
         lb_rows += (f'<tr{hot}><td><b>{k}</b>{star}</td>'
                     f'<td class="num {_cls(best)}">{best:+.4f}</td>'
-                    f'{da_cell}'
+                    f'{cagr_cell}{mdd_cell}{da_cell}'
                     f'<td class="num">{v.get("trades","")}</td>'
                     f'{bh_cell}{edge_cell}'
-                    f'<td><code>{v.get("cell","")}</code></td></tr>')
+                    f'<td><code>{v.get("cell","")}</code>{flag}</td></tr>')
 
     status_html = ('<section class="block" id="nowrunning"><h2><span class="idledot"></span>Status</h2>'
                    '<p>loading live status…</p></section>')
@@ -127,6 +142,18 @@ def build_html():
         return f'<li{klass}><div class="rmain"><a href="{base}">{title}</a> {lt}{tag}</div>{summ}{hyp}</li>'
 
     items = "\n".join(li(b, t, s, h, is_latest=(i == 0)) for i, (_, b, t, s, h) in enumerate(rounds))
+
+    # Inline causal graph (reuse vis-network renderer — NO iframe) and inline program.md.
+    cg = K.get("causal_graph", {})
+    try:
+        g_nodes, g_edges = vis_data(cg)
+        graph_inline = LEGEND + net_html("cgtab", g_nodes, g_edges, cg.get("phases", []), height=660)
+    except Exception:
+        graph_inline = '<p>(causal graph unavailable)</p>'
+    try:
+        prog_inline = '<pre class="mdblock">' + _htmllib.escape(open(PROG).read()) + '</pre>'
+    except Exception:
+        prog_inline = '<p>(program.md not found)</p>'
 
     kpis = ""
     if pe:
@@ -213,6 +240,11 @@ ul.hyps{{list-style:none;padding:0;margin:.5rem 0 0}} ul.hyps li{{margin:.35rem 
 @keyframes pulse{{0%,100%{{opacity:1}}50%{{opacity:.3}}}}
 .grid2{{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.4rem;align-items:start}}
 @media(max-width:1000px){{.grid2{{grid-template-columns:1fr}}}}
+.mdblock{{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:1.5rem 1.8rem;
+  font:500 1rem/1.78 "JetBrains Mono",monospace;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}}
+.leakwarn{{color:var(--amber);font:600 1rem/1 "JetBrains Mono",monospace;white-space:nowrap;margin-left:.4em}}
+.leakok{{color:var(--mut);font:600 1rem/1 "JetBrains Mono",monospace;white-space:nowrap;margin-left:.4em}}
+.tabpanel .causalgraph,.tabpanel .block button{{margin-top:.6rem}}
 </style></head><body><div class="dash">
 <div class="nav">autoresearch / reports · <span style="color:var(--accent)">Flask</span></div>
 <div class="hero">
@@ -235,9 +267,9 @@ ul.hyps{{list-style:none;padding:0;margin:.5rem 0 0}} ul.hyps li{{margin:.35rem 
   {status_html}
   {banner}
   <section class="block"><h2>Leaderboard — best strategy vs buy-and-hold (real OOS)</h2>
-  <div class="tablewrap"><table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">DA</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
+  <div class="tablewrap"><table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">DA</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
   <tbody>{lb_rows}</tbody></table></div>
-  <p class="small">Calmar = CAGR/MaxDD (higher better); <b>DA = drawdown area</b> = Σ(1−equity/peak) (lower better). buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round.</p></section>
+  <p class="small"><b>Calmar</b> = CAGR/MaxDD (higher better); <b>CAGR</b> = compounding annual return; <b>MDD</b> = max drawdown; <b>DA</b> = drawdown area = Σ(1−equity/peak) (all three: lower MDD/DA better). buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round. CAGR/MDD show “—” until an ETF is (re)validated under the leak-fixed bars.</p></section>
 </section>
 
 <section class="tabpanel" id="tab-insights" data-panel="insights">
@@ -253,15 +285,15 @@ ul.hyps{{list-style:none;padding:0;margin:.5rem 0 0}} ul.hyps li{{margin:.35rem 
 </section>
 
 <section class="tabpanel" id="tab-graph" data-panel="graph">
-  <section class="block"><h2>Causal graph — every experiment & finding</h2>
-  <p class="small">Open full page: <a href="causal_graph.html">causal_graph.html</a></p>
-  <iframe class="report" src="causal_graph.html" title="causal graph" loading="lazy"></iframe></section>
+  <section class="block"><h2>Causal graph — every experiment &amp; finding</h2>
+  <p class="small">How each outcome <i>caused</i> the next hypothesis. Drag / scroll-zoom / hover for full text; double-click a phase cluster to expand. Full page: <a href="causal_graph.html">causal_graph.html</a></p>
+  {graph_inline}</section>
 </section>
 
 <section class="tabpanel" id="tab-program" data-panel="program">
   <section class="block"><h2>program.md — the loop</h2>
-  <p class="small">Open full page: <a href="program.md">program.md</a></p>
-  <iframe class="report" src="program.md" title="program.md" loading="lazy"></iframe></section>
+  <p class="small">The Karpathy-minimal spec the research follows each round. Raw: <a href="program.md">program.md</a></p>
+  {prog_inline}</section>
 </section>
 </div>
 <script>
@@ -270,7 +302,12 @@ function showTab(name){{
   var found=false;
   panels.forEach(function(p){{var on=p.dataset.panel===name;p.classList.toggle('active',on);if(on)found=true;}});
   tabs.forEach(function(t){{t.classList.toggle('active',t.dataset.tab===name);}});
-  if(!found){{showTab('overview');}}
+  if(!found){{showTab('overview');return;}}
+  // vis-network renders at 0px while its tab is hidden — resize/fit on activation.
+  if(name==='graph' && window['cgtab_net']){{
+    var n=window['cgtab_net'];
+    setTimeout(function(){{try{{n.setSize('100%','660px');n.redraw();n.fit();}}catch(e){{}}}},60);
+  }}
 }}
 function curTab(){{return (location.hash||'#overview').replace('#','');}}
 window.addEventListener('hashchange',function(){{showTab(curTab());}});
