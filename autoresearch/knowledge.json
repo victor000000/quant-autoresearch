@@ -565,6 +565,13 @@
       "trades": 828,
       "round": 33,
       "note": "tighter barriers (1.5s) label noise -> over-trade, edge dilutes; default 2.0s far better"
+    },
+    "TLT_logdollar_triple_barrier_ls_overlay_XASSET_R34": {
+      "real_calmar": 0.677,
+      "real_da": 5.67,
+      "trades": 445,
+      "round": 34,
+      "note": "WITH SPY-relative feats: REGRESSED 0.7679->0.677 -> reverted"
     }
   },
   "baselines": {
@@ -619,7 +626,8 @@
     "ROUND30 WIN: IWM 0.7146 -> +0.7788 (KEPT). multi_horizon GENERALIZES to IWM (trending-up): beats bgm control 0.7146 in clean A/B (only labeler differs) and HALVES DA (11.97->5.73). Confirms f_multihorizon beyond XLE - multi_horizon is a strong CAUSAL trend-target on any trending-up asset. Bottom cluster now tight: TLT 0.7654, IWM 0.7788, GLD 0.7792.",
     "ROUND31: TLT DISCARD (stays 0.7654). (1) honest tertile -0.02 (DA 31) -> tertile's old 'wins' (R12/R13) were the look-ahead leak; honest it has little edge. (2) ls_overlay does NOT rescue the range axis (range/tb/ls_overlay 0.33 << logdollar/tb/ls_overlay 0.77) -> f_axiscross: axis+labeler is the locked recipe, sizing is a multiplier. TLT config-exhausted at 0.7654.",
     "ROUND32: TLT ls_overlay floor 0.6->0.45 = +0.003 (NOISE; 0.7654->0.7679). The de-lever floor rarely binds for TLT (fast vol seldom >> slow vol). TLT at honest single-asset ceiling ~0.768, still < IWM 0.7788. Floor lever exhausted -> next = \u2460\u2461 labeling module (triple_barrier barrier WIDTH).",
-    "ROUND33: TLT tighter triple_barrier (U=L=1.5) = 0.17 << default 2.0's 0.77 (over-trades 828 on noise). TLT's edge is in LARGER rate-shock moves; default barrier well-tuned. SINGLE-ASSET LEVERS EXHAUSTED for TLT (axis/labeler/sizing/floor/barrier all explored) -> ceiling ~0.768, within noise of IWM 0.779. Documented frontier = CROSS-ASSET (TLT = flight-to-quality, equity risk-off driven); SPY already loaded -> enable causal SPY-relative features."
+    "ROUND33: TLT tighter triple_barrier (U=L=1.5) = 0.17 << default 2.0's 0.77 (over-trades 828 on noise). TLT's edge is in LARGER rate-shock moves; default barrier well-tuned. SINGLE-ASSET LEVERS EXHAUSTED for TLT (axis/labeler/sizing/floor/barrier all explored) -> ceiling ~0.768, within noise of IWM 0.779. Documented frontier = CROSS-ASSET (TLT = flight-to-quality, equity risk-off driven); SPY already loaded -> enable causal SPY-relative features.",
+    "ROUND34: cross-asset SPY-relative features REGRESSED TLT (0.7679->0.677; multi_horizon leg 0.01). Not catastrophic crowd-out (445tr) but the features displaced useful price features and diluted the edge. CONFIRMS: TLT's cross-asset edge needs a 2-symbol PAIRS strategy (trade TLT-SPY spread), not SPY features in a single-asset model. REVERTED features.py + n_components 26->20. TLT single-asset ceiling = 0.7679, tied with IWM/GLD ~0.78. Frontier = pairs harness (sign-off-worthy)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -631,7 +639,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "CROSS-ASSET features for TLT (\u2462). Add causal SPY-relative feats to build_feats (relative momentum k=5/20/60, rolling 60-bar TLT-SPY return corr) guarded on valid spy; bump reduce_dims n_components 20->26 to avoid the known crowd-out (prior naive add collapsed QQQ/EEM to 1 trade). Round 34: TLT logdollar/triple_barrier/ls_overlay WITH cross-asset feats (vs recorded 0.7679 without) + multi_horizon leg. WATCH trades>80; revert if regress.",
+  "next_idea": "TLT at single-asset ceiling 0.7679, TIED with IWM 0.7788/GLD 0.7792 (within noise). Single-asset levers + simple cross-asset feats exhausted. Genuine next step = 2-symbol PAIRS harness (frontier, sign-off-worthy). Until then, loop can apply the modern toolkit (multi_horizon/ls_overlay) to the STALE-best assets (GLD/QQQ/HYG/EEM are dollar_R5 = buy-hold-overlay, never modernized) to raise the whole frontier.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -1065,7 +1073,13 @@
         "id": "f_crossasset",
         "type": "finding",
         "phase": "TLT",
-        "label": "FRONTIER: TLT single-asset exhausted ~0.768; its real edge is CROSS-ASSET (flight-to-quality vs equity risk-off). SPY scaffolded -> add causal SPY-relative features (\u2462)"
+        "label": "FRONTIER: TLT single-asset exhausted ~0.768. SPY-relative FEATURES regressed it (R34: 0.677) -> the cross-asset edge needs a 2-SYMBOL PAIRS strategy (trade TLT-SPY spread), not SPY feats in a single-asset model. Needs harness extension + sign-off"
+      },
+      {
+        "id": "r34",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R34 TLT: SPY-relative features REGRESSED 0.7679->0.677 (reverted). Cross-asset edge needs PAIRS, not single-asset SPY feats"
       }
     ],
     "edges": [
@@ -1438,6 +1452,16 @@
         "src": "f_tlt_plateau",
         "dst": "f_crossasset",
         "label": ""
+      },
+      {
+        "src": "f_crossasset",
+        "dst": "r34",
+        "label": "test SPY feats"
+      },
+      {
+        "src": "r34",
+        "dst": "f_crossasset",
+        "label": "feats fail -> need pairs harness"
       }
     ],
     "running": []
