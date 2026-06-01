@@ -83,7 +83,7 @@ HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
 RESULTS_DIR = os.path.join(AR, "results")
 ROUND_RESULTS_CSV = os.path.join(RESULTS_DIR, "round_results.csv")
 
-VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance"]
+VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb"]
 VALID_LABELERS = ["kmeans2stage", "carry", "tertile", "bgm", "agglomerative",
                   "triple_barrier", "triple_barrier_tight", "multi_horizon", "hmm", "always_long"]
 VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "longshort", "ls_cdf", "ls_overlay"]

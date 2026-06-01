@@ -288,7 +288,43 @@ class DollarImbalanceBarBuilder:
         return None
 
 
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance"]
+class TickImbalanceBarBuilder:
+    """Custom axis (2b): TICK-imbalance bars (sign-only, de Prado). Accumulate the
+    tick-rule sign b_t (+1 up / -1 down / carry-forward on flat); emit when the net
+    directional run |Σ b| >= threshold, then reset. A PURER directional clock than
+    dollar-imbalance — it ignores notional magnitude, firing purely on persistent
+    directional RUNS. Threshold ~ sqrt(minutes_per_bar) (±1 random-walk scaling);
+    no fitted distribution, so trivially causal.
+    """
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.theta = 0.0
+        self.last_lc = None
+        self.last_sign = 1.0
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None
+            return None
+        lc = math.log(close)
+        if self.last_lc is not None:
+            d = lc - self.last_lc
+            if d > 0:
+                self.last_sign = 1.0
+            elif d < 0:
+                self.last_sign = -1.0
+        self.last_lc = lc
+        self.close_lc = lc
+        self.theta += self.last_sign
+        if abs(self.theta) >= self.thresh:
+            self.theta = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -297,6 +333,7 @@ AXES = {
     "logdollar": LogDollarBarBuilder,
     "entropy": EntropyBarBuilder,
     "imbalance": DollarImbalanceBarBuilder,
+    "tickimb": TickImbalanceBarBuilder,
 }
 
 
@@ -498,6 +535,12 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         if not np.isfinite(thresh) or thresh <= 0:
             return None
         return DollarImbalanceBarBuilder(thresh)
+
+    if bar_type == "tickimb":
+        # ±1 random-walk scaling: |Σ b| ~ sqrt(k), so a count threshold sqrt(m)
+        # crosses roughly every m minutes. Pure counts -> no fit, causal.
+        m = max(1.0, len(close) / max(1, int(target_bars)))
+        return TickImbalanceBarBuilder(max(2.0, math.sqrt(m)))
 
     # Default / unknown -> volatility bar (Wang's workhorse axis).
     c = np.asarray(close, dtype=float)
