@@ -1821,6 +1821,12 @@
         "type": "finding",
         "phase": "IWM",
         "label": "FINDING: directional timing beats buy-hold ONLY when buy-hold is WEAK (choppy EEM 1.32->2.15). When the trend is STRONG (GLD 1.99, HYG 2.21), timing cuts drawdown but under-returns -> hold wins"
+      },
+      {
+        "id": "r78",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R78 EEM 2.15 CONFIRMED: bgm ensemble dilutes (1.39), thresh0.25=1.98. tb@0.30 robust optimum. Single clean signal -> ensemble hurts"
       }
     ],
     "edges": [
@@ -2628,6 +2634,21 @@
         "src": "f_timing_when",
         "dst": "f_qqq_pure",
         "label": "consistent: strong trenders hold"
+      },
+      {
+        "src": "r71",
+        "dst": "r78",
+        "label": "push/confirm EEM"
+      },
+      {
+        "src": "r78",
+        "dst": "f_eem_timing",
+        "label": "2.15 confirmed robust"
+      },
+      {
+        "src": "r78",
+        "dst": "f_bgm",
+        "label": "ensemble dilutes single-dominant signal"
       }
     ],
     "running": []
