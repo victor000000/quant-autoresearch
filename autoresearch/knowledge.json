@@ -1863,6 +1863,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R82 XLE tertile optimized at 0.91 (thresh0.40=0.89, long/short=0.15 DA25). Shorts fail 3rd time (f_signal). XLE long-side directional edge only"
+      },
+      {
+        "id": "r83",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R83 tertile does NOT generalize to IWM: 0.85/0.51 < tb+bgm ensemble 1.14. tertile is XLE/noisy-asset specific; cleaner IWM wants the ensemble"
       }
     ],
     "edges": [
@@ -2735,6 +2741,16 @@
         "src": "r82",
         "dst": "f_signal",
         "label": "XLE shorts fail again"
+      },
+      {
+        "src": "r81",
+        "dst": "r83",
+        "label": "test f_tertile on IWM"
+      },
+      {
+        "src": "r83",
+        "dst": "f_tertile",
+        "label": "refines: noisiest-asset-specific, not universal"
       }
     ],
     "running": []
