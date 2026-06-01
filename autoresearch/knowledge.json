@@ -1658,6 +1658,30 @@
         "type": "round",
         "phase": "IWM",
         "label": "R64 QQQ modernize #1: multi_horizon@0.45 = 0 trades (threshold mismatch); tb+bgm ensemble over-trades (2067) -> 0.29 << 1.30. QQQ resists timing"
+      },
+      {
+        "id": "r65",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R65 QQQ modernize #2: multi_horizon degenerate at 0.15/0.30/0.45 (single-class label, 0 trades). QQQ always_long (1.30) is the ceiling"
+      },
+      {
+        "id": "f_qqq_pure",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: QQQ is a near-PURE trender - resists the whole ML toolkit. Directional ensemble over-trades (0.29); trend labels go degenerate (0 trades). always_long/cdf_overlay (1.30) is the ceiling"
+      },
+      {
+        "id": "f_twosided",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: trend/directional labels need TWO-SIDED moves. multi_horizon goes degenerate (single-class, 0 trades) on near-pure trenders; works on volatile two-sided assets (XLE 2.26)"
+      },
+      {
+        "id": "d_eem",
+        "type": "decision",
+        "phase": "IWM",
+        "label": "DECISION: QQQ ceilinged -> modernize EEM (1.40, two-sided emerging markets) - a genuine long/short candidate"
       }
     ],
     "edges": [
@@ -2270,6 +2294,26 @@
         "src": "r64",
         "dst": "f_trenddom",
         "label": "directional ensemble over-trades strong trender"
+      },
+      {
+        "src": "r64",
+        "dst": "r65",
+        "label": "lower threshold \u2014 still 0 trades"
+      },
+      {
+        "src": "r65",
+        "dst": "f_qqq_pure",
+        "label": "pure trend resists toolkit"
+      },
+      {
+        "src": "r65",
+        "dst": "f_twosided",
+        "label": "label degenerate without two-sided moves"
+      },
+      {
+        "src": "f_qqq_pure",
+        "dst": "d_eem",
+        "label": "modernize a two-sided ETF instead"
       }
     ],
     "running": []
