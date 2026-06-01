@@ -823,7 +823,18 @@ def _fit_fracdiff_axis(close, vol, ts_arr, target_bars):
 def _make_builder(bar_type, close, vol, ts_arr, target_bars):
     """Instantiate the right Builder with an auto-calibrated threshold."""
     if bar_type == "dollar":
-        total = float(np.sum(np.asarray(close, dtype=float) * np.asarray(vol, dtype=float)))
+        # Threshold = TRAIN average per-minute notional x full length / target_bars.
+        # Fit the rate on TRAIN minutes only (causal) and scale by the (benign) full
+        # minute count so we still target ~target_bars bars. Using the full-series
+        # SUM here would leak OOS notional into the OOS bar boundaries.
+        c = np.asarray(close, dtype=float)
+        v = np.asarray(vol, dtype=float)
+        tr = _train_minute_mask(ts_arr)
+        dvm = c * v
+        keep = tr & np.isfinite(dvm) & (dvm > 0)
+        if not np.any(keep):
+            return None
+        total = float(np.mean(dvm[keep])) * len(c)        # TRAIN rate x full length
         return DollarBarBuilder(_safe_thresh(total, target_bars))
 
     if bar_type == "tick":
@@ -835,11 +846,17 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         return RangeBarBuilder(thresh)
 
     if bar_type == "logdollar":
+        # TRAIN average per-minute log-notional x full valid count / target_bars.
+        # Rate fit on TRAIN only (causal); a full-series SUM would leak OOS notional.
         c = np.asarray(close, dtype=float)
         v = np.asarray(vol, dtype=float)
         dv = c * v
         valid = (c > 0) & (v > 0)
-        total = float(np.sum(np.log1p(dv[valid]))) if np.any(valid) else 0.0
+        tr = _train_minute_mask(ts_arr)
+        keep = tr & valid
+        if not np.any(keep):
+            return None
+        total = float(np.mean(np.log1p(dv[keep]))) * int(np.sum(valid))
         return LogDollarBarBuilder(_safe_thresh(total, target_bars))
 
     if bar_type == "entropy":
@@ -925,9 +942,13 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         return DirectionalChangeBarBuilder(delta)
 
     # Default / unknown -> volatility bar (Wang's workhorse axis).
+    # Threshold = TRAIN average per-minute vol term x full count / target_bars.
+    # The per-minute realized-vol term is averaged over TRAIN minutes only (causal);
+    # summing it over the full series would leak OOS volatility into bar boundaries.
     c = np.asarray(close, dtype=float)
     v = np.asarray(vol, dtype=float)
-    total = 0.0
+    tr = _train_minute_mask(ts_arr)
+    terms = np.full(len(c), np.nan)
     last_lc = None
     for i in range(len(c)):
         if c[i] <= 0 or v[i] <= 0:
@@ -935,8 +956,12 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
             continue
         lc_val = math.log(c[i])
         if last_lc is not None:
-            total += (lc_val - last_lc) ** 2 * math.sqrt(v[i])
+            terms[i] = (lc_val - last_lc) ** 2 * math.sqrt(v[i])
         last_lc = lc_val
+    keep = tr & np.isfinite(terms)
+    if not np.any(keep):
+        return None
+    total = float(np.mean(terms[keep])) * len(c)       # TRAIN rate x full length
     return VolBarBuilder(_safe_thresh(total, target_bars))
 
 

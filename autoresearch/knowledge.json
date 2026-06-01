@@ -1688,6 +1688,30 @@
         "type": "round",
         "phase": "IWM",
         "label": "R66 EEM modernize #1: reversal ensemble misreads EEM - long/short loses (-0.33, DA 53), long-only 0 trades (leans bearish). Try trend label next"
+      },
+      {
+        "id": "r67",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R67 EEM modernize #2: multi_horizon@0.45 degenerate (0 trades); @0.30 trades but 0.75 << 1.40. EEM resists toolkit"
+      },
+      {
+        "id": "f_eem_ceiling",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: EEM resists the ML toolkit (reversal ensemble misreads, trend label under-returns). always_long/cdf_overlay (1.40) is the ceiling - like QQQ"
+      },
+      {
+        "id": "f_barthresh_leak",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "AUDIT+FIX (G3): OOS bars are batch-built, NOT online; magnitude axes (dollar/logdollar/vol) set bar thresholds from a FULL-series sum incl OOS = mild look-ahead in bar PLACEMENT. FIXED -> TRAIN-only rate x full length. 4-agent audit, severity medium"
+      },
+      {
+        "id": "d_revalidate",
+        "type": "decision",
+        "phase": "IWM",
+        "label": "DECISION: re-validate the 5 logdollar-axis bests (XLE/HYG/GLD/EEM/QQQ) under leak-fixed bars. IWM(imbalance)+TLT(range) already clean"
       }
     ],
     "edges": [
@@ -2330,6 +2354,31 @@
         "src": "r66",
         "dst": "f_signal",
         "label": "long/short loses when the signal is wrong"
+      },
+      {
+        "src": "r66",
+        "dst": "r67",
+        "label": "trend label too"
+      },
+      {
+        "src": "r67",
+        "dst": "f_eem_ceiling",
+        "label": "both recipes lose"
+      },
+      {
+        "src": "r67",
+        "dst": "f_barthresh_leak",
+        "label": "user asked: online bars in OOS?"
+      },
+      {
+        "src": "f_lookahead",
+        "dst": "f_barthresh_leak",
+        "label": "same G3 no-lookahead family"
+      },
+      {
+        "src": "f_barthresh_leak",
+        "dst": "d_revalidate",
+        "label": "logdollar bests need re-check"
       }
     ],
     "running": []
@@ -2377,8 +2426,8 @@
     },
     {
       "title": "No-lookahead invariant: never filter trading bars by a future label",
-      "detail": "Test/val predictions must cover EVERY causal bar; a future label may filter only the FIT set, never which OOS bars trade. Enforced + audited every round.",
-      "ev": "leak audit"
+      "detail": "Two enforced rules: (1) test/val predictions cover EVERY causal bar \u2014 a future label may filter only the FIT set, never which OOS bars trade; (2) bar thresholds fit on TRAIN minutes, not the full series (a magnitude-axis full-series threshold leaked OOS into bar placement \u2014 found + fixed).",
+      "ev": "G3 audits"
     },
     {
       "title": "Selectivity beats exposure when directional accuracy is thin",

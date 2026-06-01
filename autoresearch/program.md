@@ -22,8 +22,8 @@ Scorer, splits, and real execution are LOCKED. Train/val metrics are just knobs 
 ## rules
 - only real OOS Calmar+DA crown a winner. buy-and-hold (1 trade) is a ceiling, not a result.
 - no lookahead: features past-only; fit on TRAIN (calibrator on VAL, last ~200 bars embargoed).
-  the future label filters only FIT bars, never which OOS bars trade. a too-good KEEP must beat
-  an `always_long` control. check this every round.
+  the future label filters only FIT bars, never which OOS bars trade. **bar thresholds fit on TRAIN
+  minutes, not the full series.** a too-good KEEP must beat an `always_long` control. check this every round.
 - long/short is allowed on EVERY ETF — try it even on up-drifters. simpler is better. confirm on ≥2 runs.
 
 ## setup

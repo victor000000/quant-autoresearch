@@ -77,6 +77,8 @@ def build_html():
     lb_rows = ""
     for k, v in lb:
         best = v.get("real_calmar", 0.0)
+        da = v.get("real_da")
+        da_cell = f'<td class="num">{da:.2f}</td>' if isinstance(da, (int, float)) else '<td class="num">—</td>'
         b = bh.get(k, {})
         bc = b.get("calmar")
         bh_cell = f'<td class="num {_cls(bc)}">{bc:+.3f}</td>' if isinstance(bc, (int, float)) else '<td class="num">—</td>'
@@ -86,6 +88,7 @@ def build_html():
         star = ' <span class="hotdot" title="improved this round">▲</span>' if (latest_keep and k == latest_etf) else ""
         lb_rows += (f'<tr{hot}><td><b>{k}</b>{star}</td>'
                     f'<td class="num {_cls(best)}">{best:+.4f}</td>'
+                    f'{da_cell}'
                     f'<td class="num">{v.get("trades","")}</td>'
                     f'{bh_cell}{edge_cell}'
                     f'<td><code>{v.get("cell","")}</code></td></tr>')
@@ -223,6 +226,7 @@ ul.hyps{{list-style:none;padding:0;margin:.5rem 0 0}} ul.hyps li{{margin:.35rem 
 <nav class="tabbar" role="tablist">
   <a class="tab" href="#overview" data-tab="overview">▸ Overview</a>
   <a class="tab" href="#rounds" data-tab="rounds">Rounds ({len(rounds)})</a>
+  <a class="tab" href="#insights" data-tab="insights">Insights</a>
   <a class="tab" href="#graph" data-tab="graph">Causal graph</a>
   <a class="tab" href="#program" data-tab="program">program.md</a>
 </nav>
@@ -230,11 +234,14 @@ ul.hyps{{list-style:none;padding:0;margin:.5rem 0 0}} ul.hyps li{{margin:.35rem 
 <section class="tabpanel" id="tab-overview" data-panel="overview">
   {status_html}
   {banner}
-  <section class="block"><h2>Leaderboard — best Calmar vs buy-and-hold (real OOS)</h2>
-  <div class="tablewrap"><table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
+  <section class="block"><h2>Leaderboard — best strategy vs buy-and-hold (real OOS)</h2>
+  <div class="tablewrap"><table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">DA</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
   <tbody>{lb_rows}</tbody></table></div>
-  <p class="small">buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round.</p></section>
-  <section class="block"><h2>Top {len(ins)} insights</h2>
+  <p class="small">Calmar = CAGR/MaxDD (higher better); <b>DA = drawdown area</b> = Σ(1−equity/peak) (lower better). buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round.</p></section>
+</section>
+
+<section class="tabpanel" id="tab-insights" data-panel="insights">
+  <section class="block"><h2>Top {len(ins)} insights — what the research has learned</h2>
   <ol class="insights">{ins_html}</ol></section>
 </section>
 
