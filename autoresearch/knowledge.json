@@ -1791,6 +1791,24 @@
         "type": "round",
         "phase": "IWM",
         "label": "R75 XLE long/short fails: triple_barrier ls -0.06 (shorts mistime), multi_horizon ls 0.54 (DA44.5). Neither beats 0.75 hold. XLE signal not predictive enough to short"
+      },
+      {
+        "id": "r76",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R76 XLE final angles fail: vol-overlay 0.61, TLT recipe 0.53. XLE CEILINGED at 0.75 (overlay-hold). Energy drawdown-bound; all module families tried"
+      },
+      {
+        "id": "f_xle_ceiling",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "FINDING: XLE ceilinged at 0.75 (logdollar/always_long/cdf_overlay). Energy's 18% MDD caps Calmar; timing/ensemble/long-short/mean-revert/axis all lose to the overlay-hold. The leaky 2.26 was bar-placement look-ahead"
+      },
+      {
+        "id": "d_modernize_gld",
+        "type": "decision",
+        "phase": "IWM",
+        "label": "DECISION: bottom cluster (XLE/IWM/QQQ) ceilinged -> modernize a high-headroom overlay-hold. Apply EEM's directional triple_barrier recipe to two-sided GLD (1.99)"
       }
     ],
     "edges": [
@@ -2558,6 +2576,26 @@
         "src": "r75",
         "dst": "f_signal",
         "label": "shorting needs a predictive signal \u2014 XLE lacks it"
+      },
+      {
+        "src": "r74",
+        "dst": "r76",
+        "label": "axis/recipe variation"
+      },
+      {
+        "src": "r76",
+        "dst": "f_xle_ceiling",
+        "label": "all levers exhausted"
+      },
+      {
+        "src": "f_xle_ceiling",
+        "dst": "d_modernize_gld",
+        "label": "stop grinding -> modernize GLD"
+      },
+      {
+        "src": "f_eem_timing",
+        "dst": "d_modernize_gld",
+        "label": "extend EEM's timing win"
       }
     ],
     "running": []
