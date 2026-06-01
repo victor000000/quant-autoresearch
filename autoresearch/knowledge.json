@@ -1857,6 +1857,12 @@
         "type": "finding",
         "phase": "IWM",
         "label": "FINDING: tertile (forward-tercile) is a strong UNDER-USED directional label - coarser/more robust than triple_barrier on noisy assets. Beat XLE's hold (0.91>0.75) where other directional labels lost. Test on other assets"
+      },
+      {
+        "id": "r82",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R82 XLE tertile optimized at 0.91 (thresh0.40=0.89, long/short=0.15 DA25). Shorts fail 3rd time (f_signal). XLE long-side directional edge only"
       }
     ],
     "edges": [
@@ -2719,6 +2725,16 @@
         "src": "f_tertile",
         "dst": "f_xle_ceiling",
         "label": "REVISES \u2014 XLE not fully ceilinged"
+      },
+      {
+        "src": "r81",
+        "dst": "r82",
+        "label": "push tertile"
+      },
+      {
+        "src": "r82",
+        "dst": "f_signal",
+        "label": "XLE shorts fail again"
       }
     ],
     "running": []
