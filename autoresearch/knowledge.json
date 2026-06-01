@@ -1875,6 +1875,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R84 carry labeler still runtime-errors on QC (deeper than None-return; script compiles+has fallback). Deprioritized from rotation. XLE stays 0.91"
+      },
+      {
+        "id": "r85",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R85 tertile on EEM under-trades (56tr, G2 fail) at 1.9 < triple_barrier 2.15. f_tertile CONFIRMED XLE/noisiest-asset specific. EEM stays 2.15"
       }
     ],
     "edges": [
@@ -2767,6 +2773,16 @@
         "src": "r83",
         "dst": "r84",
         "label": "carry broken -> deprioritize"
+      },
+      {
+        "src": "r83",
+        "dst": "r85",
+        "label": "test tertile on EEM"
+      },
+      {
+        "src": "r85",
+        "dst": "f_tertile",
+        "label": "confirmed: noisiest-asset only"
       }
     ],
     "running": []
