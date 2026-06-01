@@ -143,3 +143,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-01T23:19:42,EEM,1.4032,EEM_logdollar_always_long_cdf_overlay_t0.45,B,EEM,logdollar,multi_horizon,0.3,cdf_overlay,0.7455,1.7328,124,True,True,-0.3406,0.7625,0.4407,True,False,completed,completed
 2026-06-01T23:25:13,XLE,2.2619,XLE_logdollar_multi_horizon_cdf_overlay_t0.45,A,XLE,logdollar,multi_horizon,0.45,cdf_overlay,0.5741,41.7771,704,True,True,0.9307,0.9523,0.6493,False,False,completed,completed
 2026-06-01T23:25:13,XLE,2.2619,XLE_logdollar_multi_horizon_cdf_overlay_t0.45,B,XLE,logdollar,multi_horizon,0.4,cdf_overlay,0.64,37.6601,748,True,True,0.9493,0.9523,0.6493,True,False,completed,completed
+2026-06-01T23:56:45,HYG,1.888,HYG_logdollar_always_long_cdf_overlay_t0.55,A,HYG,logdollar,always_long,0.55,cdf_overlay,2.2122,3.3684,752,True,True,-0.1857,0.5,0.5,True,True,completed,completed
+2026-06-01T23:56:45,HYG,1.888,HYG_logdollar_always_long_cdf_overlay_t0.55,B,HYG,logdollar,always_long,0.45,cdf_overlay,2.2122,3.3684,752,True,True,-0.1857,0.5,0.5,False,False,completed,completed

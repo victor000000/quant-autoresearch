@@ -1035,11 +1035,13 @@
     },
     "HYG": {
       "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
-      "real_calmar": 1.888,
-      "real_da": 3.6684,
-      "trades": 779,
+      "real_calmar": 2.2122,
+      "real_cagr": 8.185,
+      "real_mdd": 3.7,
+      "real_da": 3.3684,
+      "trades": 752,
       "g2_pass": true,
-      "round": 13,
+      "round": 20,
       "source": "tournament",
       "config": {
         "ticker": "HYG",
@@ -1048,7 +1050,7 @@
         "thresh": 0.55,
         "sizing": "cdf_overlay"
       },
-      "leak_pending": true
+      "leak_fixed": true
     },
     "TLT": {
       "cell": "TLT_range_triple_barrier_ls_overlay_t0.50",
@@ -1085,7 +1087,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 19,
+  "last_round": 20,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1729,6 +1731,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "OOS-CONSISTENCY FIX (6-agent audit): val synth metric was a DIFFERENT estimator (x880 non-compounded, flat-tc) than real OOS (QC compounded CAGR/Drawdown). Unified synth->compounded Calmar + abs trade dead-band + fail-loud train mask + guarded dead leaky trainer. Verified: NO other leak, online rebuild NOT needed"
+      },
+      {
+        "id": "r69",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R69 HYG re-validation: 1.89 -> 2.21 under leak-fixed bars (leak HELPED HYG's overlay, opposite of XLE). KEEP. Leak impact is asset-dependent"
       }
     ],
     "edges": [
@@ -2416,6 +2424,16 @@
         "src": "f_metric_unify",
         "dst": "d_revalidate",
         "label": "re-validate under fixed+consistent pipeline"
+      },
+      {
+        "src": "f_metric_unify",
+        "dst": "r69",
+        "label": "re-validate HYG"
+      },
+      {
+        "src": "r68",
+        "dst": "r69",
+        "label": "sweep continues"
       }
     ],
     "running": []
