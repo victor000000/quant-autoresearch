@@ -46,7 +46,7 @@ double-click to expand. Drag, zoom, and hover for full text.</p>
     });
   }
   function expand(){ net.body.nodeIndices.slice().forEach(function(id){ if(net.isCluster(id)) net.openCluster(id); }); }
-  window['cgmain_collapse']=collapse; window['cgmain_expand']=expand;
+  window['cgmain_collapse']=collapse; window['cgmain_expand']=expand; window['cgmain_net']=net;
   net.on('doubleClick',function(p){ if(p.nodes.length&&net.isCluster(p.nodes[0])) net.openCluster(p.nodes[0]); });
   net.once('stabilizationIterationsDone',function(){ net.setOptions({physics:false}); collapse(); });
 })();

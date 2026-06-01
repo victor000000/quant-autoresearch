@@ -99,7 +99,7 @@ def net_html(cid, nodes, edges, phases, height=620):
     }});
   }}
   function expand(){{ net.body.nodeIndices.slice().forEach(function(id){{ if(net.isCluster(id)) net.openCluster(id); }}); }}
-  window['{cid}_collapse']=collapse; window['{cid}_expand']=expand;
+  window['{cid}_collapse']=collapse; window['{cid}_expand']=expand; window['{cid}_net']=net;
   net.on('doubleClick',function(p){{ if(p.nodes.length&&net.isCluster(p.nodes[0])) net.openCluster(p.nodes[0]); }});
   net.once('stabilizationIterationsDone',function(){{ net.setOptions({{physics:false}}); collapse(); }});
 }})();
@@ -125,9 +125,17 @@ def leaderboard(d):
 
 
 def section(cid, nodes, edges, phases, title, note=""):
-    cap = (f'<p style="font-size:.92em;color:#444"><b>This round\'s reasoning path:</b> {note}</p>' if note else "")
-    return (f'<section class="causalgraph"><h2>{title}</h2>{cap}{LEGEND}'
-            f'{net_html(cid, nodes, edges, phases)}</section>')
+    # Per-round reports keep the result front-and-centre: the readable reasoning-path
+    # summary stays visible; the heavy interactive graph collapses behind a click
+    # (resize-on-open since vis-network can't size itself while hidden).
+    cap = (f'<p class="cg-note"><b>This round\'s reasoning path:</b> {note}</p>' if note else "")
+    body = f'{LEGEND}{net_html(cid, nodes, edges, phases)}'
+    toggle = (f"if(this.open&&window['{cid}_net']){{var n=window['{cid}_net'];"
+              f"n.setSize('100%','620px');n.redraw();n.fit();}}")
+    return (f'<section class="causalgraph"><h2>{title}</h2>{cap}'
+            f'<details class="cg-details" ontoggle="{toggle}">'
+            f'<summary>Show the interactive causal graph &nbsp;<span class="cg-count">{len(nodes)} nodes</span></summary>'
+            f'<div class="cg-body">{body}</div></details></section>')
 
 
 def standalone(d, cg):

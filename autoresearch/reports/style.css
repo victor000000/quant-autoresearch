@@ -364,3 +364,26 @@ mjx-container{color:var(--ink)}
   th,td{padding:.6em .65em}
   .stat .v{font-size:1.8rem}
 }
+
+/* ----------------------------------------------- collapsible causal graph -- */
+/* Per-round reports stay focused: reasoning-path summary visible; graph 1 click away. */
+.cg-note{
+  background:var(--paper-2);border:1px solid var(--line-2);border-left:3px solid var(--accent);
+  border-radius:var(--r-sm);padding:.8em 1.1em;margin:.2em 0 1em;color:var(--ink-2);
+  font-size:.97rem;line-height:1.6;max-width:74ch;
+}
+details.cg-details{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper-2);overflow:hidden}
+details.cg-details>summary{
+  cursor:pointer;list-style:none;user-select:none;
+  font:600 .82rem/1 "Bricolage Grotesque", sans-serif;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--mut);padding:.85em 1.1em;display:flex;align-items:center;gap:.5em;
+  transition:color .18s ease, background .18s ease;
+}
+details.cg-details>summary::-webkit-details-marker{display:none}
+details.cg-details>summary::before{
+  content:"▸";color:var(--accent);font-size:1.1em;transition:transform .2s ease;display:inline-block;
+}
+details.cg-details[open]>summary::before{transform:rotate(90deg)}
+details.cg-details>summary:hover{color:var(--accent-deep);background:#fbf4f1}
+.cg-count{font:500 .78rem/1 "IBM Plex Mono",monospace;color:var(--faint);text-transform:none;letter-spacing:0}
+details.cg-details .cg-body{padding:0 1.1em 1.1em;background:var(--card);border-top:1px solid var(--line-2)}
