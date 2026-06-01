@@ -106,12 +106,15 @@ def net_html(cid, nodes, edges, phases, height=620):
 </script>"""
 
 
-LEGEND = ('<p style="font-size:.9em"><b>Legend:</b> '
-          '<span style="background:#fff3cd;border:1px solid #e0a800;padding:.05em .4em;border-radius:3px">FINDING (mechanism hub)</span> '
-          '<span style="background:#d4edda;border:1px solid #28a745;padding:.05em .4em;border-radius:3px">milestone / KEEP</span> '
-          '<span style="background:#e2dcff;border:1px solid #6f42c1;padding:.05em .4em;border-radius:3px">decision / unlock</span> '
-          '<span style="background:#eef1f6;border:1px solid #9aa5b1;padding:.05em .4em;border-radius:3px">• experiment (collapsed)</span> '
-          '<span style="border:1px dashed #d62728;padding:.05em .4em;border-radius:3px;color:#d62728">this round\'s new nodes</span>. '
+# NOTE: chips MUST set an explicit dark text color — they sit on light pastel
+# backgrounds inside a DARK report (body text is light), else they'd be invisible.
+_CHIP = "padding:.12em .5em;border-radius:5px;font-weight:600"
+LEGEND = ('<p style="font-size:.95em;color:#aab6c8"><b style="color:#e6edf6">Legend:</b> '
+          f'<span style="background:#fff3cd;color:#5c4500;border:1px solid #e0a800;{_CHIP}">FINDING (mechanism hub)</span> '
+          f'<span style="background:#d4edda;color:#0b3d1a;border:1px solid #28a745;{_CHIP}">milestone / KEEP</span> '
+          f'<span style="background:#e2dcff;color:#2d1a5c;border:1px solid #6f42c1;{_CHIP}">decision / unlock</span> '
+          f'<span style="background:#eef1f6;color:#1b2230;border:1px solid #9aa5b1;{_CHIP}">• experiment (collapsed)</span> '
+          f'<span style="border:1px dashed #ff6b6b;color:#ff6b6b;{_CHIP}">this round\'s new nodes</span>. '
           'Each new hypothesis is reasoned from a FINDING node.</p>')
 
 

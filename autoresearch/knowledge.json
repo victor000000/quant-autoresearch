@@ -732,6 +732,12 @@
       "trades": 501,
       "round": 47,
       "note": "volume clock worse for triple_barrier"
+    },
+    "EEM_imbalance_bgm_R48": {
+      "real_calmar": 0.0,
+      "trades": 0,
+      "round": 48,
+      "note": "bgm/imbalance degenerate on EEM - synergy asset-specific"
     }
   },
   "baselines": {
@@ -802,7 +808,8 @@
     "ROUND44: new axes don't help bgm on TLT - fracdiff/bgm -0.01 (memory axis, no edge), volumeimb/bgm transient QC build-cache crash (train OK; broadened retry). bgm axis sweep complete: dollar-imbalance 0.59 >> logdollar 0.35 >> fracdiff -0.01 ~ tickimb -0.02. The DOLLAR-WEIGHTED directional clock is uniquely good for bgm. Unsupervised labeling caps ~0.59 on TLT < supervised triple_barrier/logdollar 0.77.",
     "ROUND45: dollar-imbalance x bgm synergy GENERALIZES to IWM - imbalance/bgm/cdf_overlay 0.7476 (vs bgm/logdollar 0.71), DA 1.92 (exceptional). Just under IWM multi_horizon best 0.7788. imbalance HURTS multi_horizon (0.54 vs logdollar 0.78) -> axis x labeler co-design: imbalance suits UNSUPERVISED bgm, not forward labelers. bgm/imbalance is a general low-DA unsupervised combo (TLT 0.59, IWM 0.7476); the tiny DA means it's UNDER-LEVERED -> sizing headroom.",
     "ROUND46 WIN: IWM 0.7788 -> +0.8831 (KEPT) via imbalance/bgm/cdf_overlay@thresh0.40 - an UNSUPERVISED labeler (bgm) on the custom dollar-imbalance axis BEATS the supervised multi_horizon. Key: bgm/imbalance is a low-DA regime-timer that was UNDER-LEVERED (R45 DA 1.92); lowering the entry threshold 0.45->0.40 raised exposure -> Calmar 0.88, DA still 3.78. cdf_plain@0.45 also beat (0.79, DA 2.0). The \u2460\u2461 exploration (custom axis + unsupervised labeling + exposure) delivers a real win. Leak-clean (beats always_long control 0.57). New leaderboard: TLT 0.768 (sole weakest), IWM 0.883, QQQ 1.30, EEM 1.40, GLD 1.80, HYG 1.89, XLE 2.26.",
-    "ROUND47: new axes (fracdiff/volumeimb) BREAK triple_barrier on TLT (-0.05/-0.21) - reconfirms f_axiscross (triple_barrier wants logdollar; magnitude-calibrated sigma-barriers mis-fire on memory/volume clocks). New axes help UNSUPERVISED bgm (R45/46), NOT supervised forward labelers - axis x labeler co-design holds. TLT supervised ceiling stays logdollar/triple_barrier/ls_overlay 0.7679."
+    "ROUND47: new axes (fracdiff/volumeimb) BREAK triple_barrier on TLT (-0.05/-0.21) - reconfirms f_axiscross (triple_barrier wants logdollar; magnitude-calibrated sigma-barriers mis-fire on memory/volume clocks). New axes help UNSUPERVISED bgm (R45/46), NOT supervised forward labelers - axis x labeler co-design holds. TLT supervised ceiling stays logdollar/triple_barrier/ls_overlay 0.7679.",
+    "ROUND48: bgm/imbalance synergy does NOT universally generalize - degenerate (0 trades) on EEM. Asset-specific (TLT 0.59, IWM 0.88; EEM degenerate). bgm's vol-regime gate needs the asset's imbalance bars to form a balanced separable regime. EEM stays buy-hold 1.40."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -1378,6 +1385,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R47 new axes x triple_barrier: fracdiff -0.05, volumeimb -0.21. New axes help unsupervised bgm, not supervised tb (logdollar wins)"
+      },
+      {
+        "id": "r48",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R48 bgm/imbalance degenerate on EEM (0tr) - synergy is asset-specific, not universal"
       }
     ],
     "edges": [
@@ -1845,6 +1858,11 @@
         "src": "f_axiscross",
         "dst": "r47",
         "label": "new clocks break tb too"
+      },
+      {
+        "src": "f_imbalance",
+        "dst": "r48",
+        "label": "doesn't generalize to EEM"
       }
     ],
     "running": []

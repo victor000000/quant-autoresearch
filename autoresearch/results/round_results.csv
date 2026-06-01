@@ -99,3 +99,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-01T21:03:49,IWM,0.7788,IWM_logdollar_multi_horizon_cdf_overlay_t0.45,B,IWM,imbalance,bgm,0.4,cdf_overlay,0.8831,3.7775,588,True,True,0.8125,0.8015,0.5967,True,True,completed,completed
 2026-06-01T21:12:09,TLT,0.7679,TLT_logdollar_triple_barrier_ls_overlay_t0.50,A,TLT,fracdiff,triple_barrier,0.5,ls_overlay,-0.0498,8.6404,843,True,True,0.3912,0.7902,0.5264,True,False,completed,completed
 2026-06-01T21:12:09,TLT,0.7679,TLT_logdollar_triple_barrier_ls_overlay_t0.50,B,TLT,volumeimb,triple_barrier,0.5,ls_overlay,-0.205,28.5754,501,True,True,1.081,0.6373,0.4918,False,False,completed,completed
+2026-06-01T21:20:47,EEM,1.4032,EEM_logdollar_always_long_cdf_overlay_t0.45,A,EEM,imbalance,bgm,0.4,cdf_overlay,0.0,0.0,0,False,False,0.0,0.895,0.6374,True,False,completed,completed
+2026-06-01T21:20:47,EEM,1.4032,EEM_logdollar_always_long_cdf_overlay_t0.45,B,EEM,imbalance,bgm,0.45,cdf_plain,0.0,0.0,0,False,False,0.0,0.895,0.6374,False,False,completed,completed

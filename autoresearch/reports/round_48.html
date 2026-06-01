@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Round 41 — EEM (KEEP)</title>
+<title>Round 48 — EEM (DISCARD)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,23 +11,23 @@
 <div class="nav"><a href="index.html">← all rounds</a><span class="sep">·</span><a href="causal_graph.html">interactive causal graph</a></div>
 
 <div class="hero">
-  <div class="eyebrow">Autoresearch · Round 41</div>
-  <h1><span class="chip">EEM</span> <span class="pill keep">KEEP</span></h1>
-  <p class="tldr"><b>TL;DR.</b> EEM completes the modernization sweep: <code>always_long/logdollar/cdf_overlay</code> = <b>1.4032</b> (was dollar 1.3279), a modest +0.08 (emerging markets are choppier, so the axis helps less than for GLD/HYG). multi_horizon degenerate again. All four stale bests modernized via the label-independent axis-unlock.</p>
+  <div class="eyebrow">Autoresearch · Round 48</div>
+  <h1><span class="chip">EEM</span> <span class="pill discard">DISCARD</span></h1>
+  <p class="tldr"><b>TL;DR.</b> The bgm/imbalance synergy does NOT universally generalize: on EEM both legs are degenerate (0 trades) — bgm's vol-regime gate finds no tradeable, separable regime on EEM's imbalance bars. The synergy is asset-specific (TLT 0.59, IWM 0.88-win; EEM degenerate). EEM stays buy-hold 1.40.</p>
 </div>
 
-<div class="stats"><div class="stat"><div class="k">Winner Calmar</div><div class="v pos">+1.4032</div><div class="sub">real OOS</div></div><div class="stat"><div class="k">Drawdown area</div><div class="v ">25.43</div><div class="sub">lower = better</div></div><div class="stat"><div class="k">OOS trades</div><div class="v ">556</div><div class="sub">G2 needs >80</div></div><div class="stat"><div class="k">EEM axis modernize</div><div class="v ">1.33→1.40</div><div class="sub">sweep complete</div></div></div>
+<div class="stats"><div class="stat"><div class="k">Winner Calmar</div><div class="v ">0.0000</div><div class="sub">real OOS</div></div><div class="stat"><div class="k">Drawdown area</div><div class="v ">0</div><div class="sub">lower = better</div></div><div class="stat"><div class="k">OOS trades</div><div class="v ">0</div><div class="sub">G2 needs >80</div></div><div class="stat"><div class="k">bgm/imbalance</div><div class="v ">degenerate</div><div class="sub">asset-specific</div></div></div>
 
 <section class="block"><h2>Results — real OOS</h2>
 <table><thead><tr><th>config</th><th class="num">Calmar</th><th class="num">DA</th><th class="num">trades</th><th>note</th></tr></thead>
-<tbody><tr class="win"><td><code>logdollar/always_long/cdf_overlay</code></td><td class="num pos">+1.4032</td><td class="num pos">25.43</td><td class='num'>556</td><td class='small'>axis modernize — KEPT (was dollar 1.3279)</td></tr><tr><td><code>logdollar/multi_horizon/cdf_overlay</code></td><td class="num ">0.0000</td><td class="num ">0</td><td class='num'>0</td><td class='small'>degenerate again (no timing edge on EM here)</td></tr></tbody></table></section>
+<tbody><tr class="win"><td><code>imbalance/bgm/cdf_overlay (thresh 0.40)</code></td><td class="num ">0.0000</td><td class="num ">0</td><td class='num'>0</td><td class='small'>degenerate — no regime crosses entry</td></tr><tr><td><code>imbalance/bgm/cdf_plain (thresh 0.45)</code></td><td class="num ">0.0000</td><td class="num ">0</td><td class='num'>0</td><td class='small'>degenerate</td></tr></tbody></table></section>
 
-<section class="block"><h2>Why</h2><p>EEM (emerging markets) is more two-sided/choppy than GLD/HYG, so logdollar's vol-targeting cuts less drawdown → +0.08 (vs GLD's +1.0). Still a clean, label-independent axis win. multi_horizon degenerate yet again — across all four stale bests it adds nothing, confirming the modernization lever is the AXIS (logdollar+cdf_overlay), not the labeler. multi_horizon's real edge is reserved for assets with a genuine timing signal (XLE +2.26).</p></section>
-<section class="block"><h2>Reasoning path (from the causal graph)</h2><p>Complete the stale-best modernization (f_axisbuyhold). Sweep: GLD 0.78→1.80, HYG 1.26→1.89, QQQ 1.10→1.30, EEM 1.33→1.40 — all axis-unlock wins.</p></section>
-<section class="block"><h2>Next</h2><div class="next-box">Leaderboard fully modernized + audited leak-free. Single-asset frontier has CONVERGED: the weakest (TLT 0.768 / IWM 0.779) are at proven single-asset ceilings, and the documented path to the >3.0 (G1) gate is the cross-asset PAIRS harness — a decision point for the user.</div></section>
-<section class="causalgraph"><h2>Causal graph (as of round 41) — interactive: collapse/expand, drag, hover</h2><details class="cg-details" ontoggle="if(this.open&&window['cground41_net']){var n=window['cground41_net'];n.setSize('100%','620px');n.redraw();n.fit();}"><summary>Show the interactive causal graph &nbsp;<span class="cg-count">73 nodes</span></summary><div class="cg-body"><p style="font-size:.95em;color:#aab6c8"><b style="color:#e6edf6">Legend:</b> <span style="background:#fff3cd;color:#5c4500;border:1px solid #e0a800;padding:.12em .5em;border-radius:5px;font-weight:600">FINDING (mechanism hub)</span> <span style="background:#d4edda;color:#0b3d1a;border:1px solid #28a745;padding:.12em .5em;border-radius:5px;font-weight:600">milestone / KEEP</span> <span style="background:#e2dcff;color:#2d1a5c;border:1px solid #6f42c1;padding:.12em .5em;border-radius:5px;font-weight:600">decision / unlock</span> <span style="background:#eef1f6;color:#1b2230;border:1px solid #9aa5b1;padding:.12em .5em;border-radius:5px;font-weight:600">• experiment (collapsed)</span> <span style="border:1px dashed #ff6b6b;color:#ff6b6b;padding:.12em .5em;border-radius:5px;font-weight:600">this round's new nodes</span>. Each new hypothesis is reasoned from a FINDING node.</p><div id="cground41" style="height:620px;border:1px solid #222b3a;border-radius:9px;background:#070a10"></div>
-<div style="margin:.4em 0"><button onclick="cground41_collapse()">⊟ Collapse experiments by phase</button>
-<button onclick="cground41_expand()">⊞ Expand all</button>
+<section class="block"><h2>Why</h2><p>bgm gates on a low-vol regime + posterior-thresholded up-cluster. On EEM's imbalance-sampled bars that gate yields a calibrated p that never crosses the entry threshold (0 trades, the kmeans degeneracy). So bgm/imbalance isn't a universal regime-timer — it needs the asset's imbalance bars to form a balanced, separable regime (TLT/IWM do; EEM doesn't). EEM's buy-hold-overlay (1.40) stands.</p></section>
+<section class="block"><h2>Reasoning path (from the causal graph)</h2><p>Generalize the IWM ①② win to EEM → degenerate. The synergy is asset-specific, not universal.</p></section>
+<section class="block"><h2>Next</h2><div class="next-box">Stop generalizing bgm/imbalance; INNOVATE. Implement the Directional-Change (intrinsic-time) axis + causal trend-state labeler — purpose-built for the stuck two-sided TLT.</div></section>
+<section class="causalgraph"><h2>Causal graph (as of round 48) — interactive: collapse/expand, drag, hover</h2><details class="cg-details" ontoggle="if(this.open&&window['cground48_net']){var n=window['cground48_net'];n.setSize('100%','620px');n.redraw();n.fit();}"><summary>Show the interactive causal graph &nbsp;<span class="cg-count">73 nodes</span></summary><div class="cg-body"><p style="font-size:.95em;color:#aab6c8"><b style="color:#e6edf6">Legend:</b> <span style="background:#fff3cd;color:#5c4500;border:1px solid #e0a800;padding:.12em .5em;border-radius:5px;font-weight:600">FINDING (mechanism hub)</span> <span style="background:#d4edda;color:#0b3d1a;border:1px solid #28a745;padding:.12em .5em;border-radius:5px;font-weight:600">milestone / KEEP</span> <span style="background:#e2dcff;color:#2d1a5c;border:1px solid #6f42c1;padding:.12em .5em;border-radius:5px;font-weight:600">decision / unlock</span> <span style="background:#eef1f6;color:#1b2230;border:1px solid #9aa5b1;padding:.12em .5em;border-radius:5px;font-weight:600">• experiment (collapsed)</span> <span style="border:1px dashed #ff6b6b;color:#ff6b6b;padding:.12em .5em;border-radius:5px;font-weight:600">this round's new nodes</span>. Each new hypothesis is reasoned from a FINDING node.</p><div id="cground48" style="height:620px;border:1px solid #222b3a;border-radius:9px;background:#070a10"></div>
+<div style="margin:.4em 0"><button onclick="cground48_collapse()">⊟ Collapse experiments by phase</button>
+<button onclick="cground48_expand()">⊞ Expand all</button>
 <span style="color:#666;font-size:.85em"> · double-click a phase cluster to expand · drag / scroll-zoom · hover a node for full text</span></div>
 <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
 <script>
@@ -48,7 +48,7 @@
     interaction:{hover:true,tooltipDelay:120,navigationButtons:true,keyboard:false,zoomView:true,dragView:true},
     layout:{improvedLayout:true}
   };
-  var net=new vis.Network(document.getElementById('cground41'),{nodes:nodes,edges:edges},opts);
+  var net=new vis.Network(document.getElementById('cground48'),{nodes:nodes,edges:edges},opts);
   function collapse(){
     phases.forEach(function(p){
       net.cluster({
@@ -60,7 +60,7 @@
     });
   }
   function expand(){ net.body.nodeIndices.slice().forEach(function(id){ if(net.isCluster(id)) net.openCluster(id); }); }
-  window['cground41_collapse']=collapse; window['cground41_expand']=expand; window['cground41_net']=net;
+  window['cground48_collapse']=collapse; window['cground48_expand']=expand; window['cground48_net']=net;
   net.on('doubleClick',function(p){ if(p.nodes.length&&net.isCluster(p.nodes[0])) net.openCluster(p.nodes[0]); });
   net.once('stabilizationIterationsDone',function(){ net.setOptions({physics:false}); collapse(); });
 })();
