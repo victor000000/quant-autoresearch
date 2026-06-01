@@ -738,6 +738,13 @@
       "trades": 0,
       "round": 48,
       "note": "bgm/imbalance degenerate on EEM - synergy asset-specific"
+    },
+    "TLT_dc_dc_trend_ls_overlay_R49": {
+      "real_calmar": -0.0298,
+      "real_da": 86.9,
+      "trades": 527,
+      "round": 49,
+      "note": "DC trend-state trend-follows -> whipsaws TLT (mean-reverting)"
     }
   },
   "baselines": {
@@ -809,7 +816,8 @@
     "ROUND45: dollar-imbalance x bgm synergy GENERALIZES to IWM - imbalance/bgm/cdf_overlay 0.7476 (vs bgm/logdollar 0.71), DA 1.92 (exceptional). Just under IWM multi_horizon best 0.7788. imbalance HURTS multi_horizon (0.54 vs logdollar 0.78) -> axis x labeler co-design: imbalance suits UNSUPERVISED bgm, not forward labelers. bgm/imbalance is a general low-DA unsupervised combo (TLT 0.59, IWM 0.7476); the tiny DA means it's UNDER-LEVERED -> sizing headroom.",
     "ROUND46 WIN: IWM 0.7788 -> +0.8831 (KEPT) via imbalance/bgm/cdf_overlay@thresh0.40 - an UNSUPERVISED labeler (bgm) on the custom dollar-imbalance axis BEATS the supervised multi_horizon. Key: bgm/imbalance is a low-DA regime-timer that was UNDER-LEVERED (R45 DA 1.92); lowering the entry threshold 0.45->0.40 raised exposure -> Calmar 0.88, DA still 3.78. cdf_plain@0.45 also beat (0.79, DA 2.0). The \u2460\u2461 exploration (custom axis + unsupervised labeling + exposure) delivers a real win. Leak-clean (beats always_long control 0.57). New leaderboard: TLT 0.768 (sole weakest), IWM 0.883, QQQ 1.30, EEM 1.40, GLD 1.80, HYG 1.89, XLE 2.26.",
     "ROUND47: new axes (fracdiff/volumeimb) BREAK triple_barrier on TLT (-0.05/-0.21) - reconfirms f_axiscross (triple_barrier wants logdollar; magnitude-calibrated sigma-barriers mis-fire on memory/volume clocks). New axes help UNSUPERVISED bgm (R45/46), NOT supervised forward labelers - axis x labeler co-design holds. TLT supervised ceiling stays logdollar/triple_barrier/ls_overlay 0.7679.",
-    "ROUND48: bgm/imbalance synergy does NOT universally generalize - degenerate (0 trades) on EEM. Asset-specific (TLT 0.59, IWM 0.88; EEM degenerate). bgm's vol-regime gate needs the asset's imbalance bars to form a balanced separable regime. EEM stays buy-hold 1.40."
+    "ROUND48: bgm/imbalance synergy does NOT universally generalize - degenerate (0 trades) on EEM. Asset-specific (TLT 0.59, IWM 0.88; EEM degenerate). bgm's vol-regime gate needs the asset's imbalance bars to form a balanced separable regime. EEM stays buy-hold 1.40.",
+    "ROUND49: Directional-Change method FAILS on TLT - dc/dc_trend -0.03 (DA 87!), logdollar/dc_trend -0.11. dc_trend TREND-FOLLOWS; it whipsaws -> FINDING: TLT is MEAN-REVERTING around rate regimes (not trending), which is why barrier-based triple_barrier wins (reversal-shock) and trend-following loses. Implication: a DC-REVERSAL label (mean-reversion) is the right sign. Now broadening beyond \u2460\u2461 (user): explore long/short + other modules (\u2467 sizing, \u2466 ensemble)."
   ],
   "dead_ends": [
     "ROUND1: sweeping axis (vol vs dollar) and labeler (carry/kmeans2stage/hmm) with the CURRENT sizing is futile -- all 16 cells tie buy-and-hold. Do NOT keep iterating on axis/label choice until module 8 sizing de-saturates.",
@@ -821,7 +829,7 @@
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "IWM 0.88 (unsupervised bgm/imbalance win). TLT sole weakest 0.7679. Round 47: new axes x TLT's best SUPERVISED labeler - fracdiff/triple_barrier/ls_overlay + volumeimb/triple_barrier/ls_overlay - does a memory/volume clock beat logdollar 0.7679? Also: the IWM exposure-tune lever (lower thresh on cdf_overlay) could be tried on the trending bests.",
+  "next_idea": "Broaden TLT beyond \u2460\u2461 (user). Round 50: logdollar/triple_barrier (best signal) x sizing/direction - longshort@0.55 (binary L/S) vs cdf_overlay (long-only) - characterize+try long/short. Then \u2466 ensemble (logdollar/triple_barrier + range/multi_horizon).",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -1391,6 +1399,18 @@
         "type": "round",
         "phase": "IWM",
         "label": "R48 bgm/imbalance degenerate on EEM (0tr) - synergy is asset-specific, not universal"
+      },
+      {
+        "id": "r49",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R49 Directional-Change FAILS on TLT (dc_trend trend-follows, DA 87) -> TLT is MEAN-REVERTING; triple_barrier (reversal) is right"
+      },
+      {
+        "id": "f_tlt_meanrev",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "FINDING: TLT is MEAN-REVERTING around rate regimes - trend-following (dc_trend) whipsaws (DA 87); barrier/reversal labels (triple_barrier) win. Broaden beyond \u2460\u2461: try long/short + \u2466ensemble/\u2467sizing"
       }
     ],
     "edges": [
@@ -1863,6 +1883,11 @@
         "src": "f_imbalance",
         "dst": "r48",
         "label": "doesn't generalize to EEM"
+      },
+      {
+        "src": "r49",
+        "dst": "f_tlt_meanrev",
+        "label": "trend-follow fails -> mean-reverting"
       }
     ],
     "running": []
