@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autoresearch Round 9 — TLT long-short (shorting unlocked)</title>
+<script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>body{font:16px/1.6 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1b1f23;max-width:900px;margin:2rem auto;padding:0 1.2rem}
+h1,h2{margin-top:1.5em}h1{border-bottom:2px solid #eaecef;padding-bottom:.3em}h2{border-bottom:1px solid #eaecef}
+table{border-collapse:collapse;margin:1em 0;width:100%;font-size:.94em}th,td{border:1px solid #d0d7de;padding:.45em .7em}th{background:#f6f8fa}
+code{background:#f3f4f6;padding:.1em .35em;border-radius:4px}.nav{font-size:.9em;color:#57606a;margin-bottom:1.5em}a{color:#0969da;text-decoration:none}blockquote{border-left:4px solid #d0d7de;color:#57606a;padding:.2em 1em;background:#f6f8fa}</style></head><body>
+<div class="nav"><a href="index.html">&larr; all reports</a></div>
+<h1>Round 9 — TLT long-short (shorting unlocked)</h1>
+<table><tr><th>round</th><td>9 (rounds 7–9 all targeted TLT)</td></tr><tr><th>verdict</th><td><b>DISCARD — TLT exhausted; move loop to IWM</b></td></tr></table>
+<h2>1. Hypotheses</h2>
+<p>Long-only failed on declining TLT (R7 −0.14, R8 −0.29), so shorting was unlocked. Both legs can go negative:
+H1 <code>vol/carry/0.55/ls_cdf</code> (continuous symmetric: short when $p<0.5$); H2 <code>dollar/kmeans2stage/0.55/longshort</code> (binary +1/−1).</p>
+<h2>2. Results — REAL OOS</h2>
+<table><tr><th>H</th><th>config</th><th>Calmar</th><th>DA</th><th>trades</th><th>deployable</th></tr>
+<tr><td>A</td><td>vol/carry/0.55/ls_cdf</td><td>−0.2929</td><td>56.79</td><td>60</td><td>✗ (&lt;80)</td></tr>
+<tr><td>B</td><td>dollar/kmeans2stage/0.55/longshort</td><td>0.000</td><td>0.00</td><td>0</td><td>✗ (no trades)</td></tr></table>
+<h2>3. Verdict — the bottleneck is the SIGNAL, not the sizing</h2>
+<p>Shorting made A <em>worse</em> (−0.29): <code>ls_cdf</code> longs when $p>0.5$, but TLT's carry/kmeans models don't
+track TLT's direction — so longing/shorting on a non-predictive signal loses either way. kmeans2stage on TLT/dollar
+is degenerate (0 trades in rounds 5, 7, 8, 9). Across <strong>3 tournaments / 6 hypotheses</strong> spanning
+axis × labeler × {binary, cdf_plain, ls_cdf, longshort}, nothing beat −0.1543.</p>
+<blockquote><b>TLT has no directional edge at bar granularity with these features.</b> Marked exhausted in
+knowledge.json. A real TLT edge would need a relative/cross-asset leg (pairs) — out of single-asset scope.</blockquote>
+<h2>4. Next</h2>
+<p>Loop drops to the next-weakest ETF: <strong>IWM</strong> (current best 0.65, vol/cdf_overlay). Round 10 attacks IWM.</p>
+</body></html>
