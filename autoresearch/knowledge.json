@@ -2254,6 +2254,12 @@
         "type": "finding",
         "phase": "DBC",
         "label": "R119 DBC: proven recipes fail (trend_scan 0.28, imbalance/bgm 0.49 vs 0.858). DBC is a CHOPPY commodity BASKET, not a clean trender (GLD) or macro instrument (UUP) \u2014 recipe transfer is character-matched. Try coarse tertile + DC reversal-clock next"
+      },
+      {
+        "id": "r120",
+        "type": "finding",
+        "phase": "DBC",
+        "label": "R120 DBC CEILINGED 0.858: 4 diverse labels (trend_scan/imbalance-bgm/tertile/dc-tb) all fail with big DAs. Commodity BASKET = no timeable structure; ML timing churns. Role is decorrelation (R111), not alpha. Advance to next weakest XLE"
       }
     ],
     "edges": [
@@ -3606,6 +3612,16 @@
         "src": "r119",
         "dst": "f_trendscan",
         "label": "trend_scan needs clean trends, not choppy baskets"
+      },
+      {
+        "src": "r119",
+        "dst": "r120",
+        "label": "more DBC attempts"
+      },
+      {
+        "src": "r120",
+        "dst": "f_drift_ceiling",
+        "label": "DBC basket ceilinged too"
       }
     ],
     "running": []
