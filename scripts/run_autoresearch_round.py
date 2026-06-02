@@ -83,7 +83,8 @@ from describe import describe_cfg  # noqa: E402  config -> plain-English hypothe
 
 CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "EFA",   # universe expansion: developed-intl equity (correlated w/ equity sleeve — excluded from book, R109)
-          "DBC"]   # broad commodities — genuinely DECORRELATED from the equity-heavy book (R109 decorrelation test)
+          "DBC",   # broad commodities — DECORRELATED; improved the book 3.60->4.22 (R111)
+          "UUP"]   # US dollar — NEGATIVELY correlated w/ risk assets (risk-off hedge); decorrelation candidate
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
