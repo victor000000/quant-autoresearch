@@ -199,7 +199,7 @@ class AutoresearchPipeline(QCAlgorithm):
         Xt_raw = sc.fit_transform(feats[tx])
         Xv_raw = sc.transform(feats[vx])
         Xe_raw = sc.transform(feats[ex])
-        Xt, Xv, Xe, nk, dim_name = reduce_dims(
+        Xt, Xv, Xe, nk, dim_name, kept_idx = reduce_dims(
             Xt_raw, Xv_raw, Xe_raw, method="correlation", n_components=20)
 
         vi = np.where(vx)[0]
