@@ -130,6 +130,20 @@ class AutoresearchInfer(QCAlgorithm):
             if peak and peak > 0:
                 da += 1.0 - v / peak
         self.set_runtime_statistic("da_oos", str(round(da, 4)))
+        # OOS daily Sharpe + higher moments + N — the inputs for PSR / Deflated-Sharpe
+        # trials-adjustment (selection-bias control). Computed from daily equity.
+        eq = np.array(self._eq, dtype=float)
+        if len(eq) > 4:
+            rets = np.diff(eq) / np.where(eq[:-1] == 0, np.nan, eq[:-1])
+            rets = rets[np.isfinite(rets)]
+            sd = float(np.std(rets, ddof=1)) if len(rets) > 3 else 0.0
+            if len(rets) > 3 and sd > 1e-12:
+                mu = float(np.mean(rets))
+                z = (rets - mu) / sd
+                self.set_runtime_statistic("sharpe_oos", str(round(mu / sd * (252.0 ** 0.5), 4)))
+                self.set_runtime_statistic("skew_oos", str(round(float(np.mean(z ** 3)), 4)))
+                self.set_runtime_statistic("kurt_oos", str(round(float(np.mean(z ** 4)), 4)))
+                self.set_runtime_statistic("n_days", str(int(len(rets))))
         # Echo the per-cell train/val metrics so the round runner has them.
         for k in ("synth_cal", "val_da", "train_auc", "val_auc"):
             if self.meta.get(k) is not None:

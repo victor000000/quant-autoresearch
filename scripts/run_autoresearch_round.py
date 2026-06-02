@@ -342,6 +342,11 @@ def _extract_result(name, train_bt, infer_bt, cfg):
     # REAL OOS DA: infer echoes da_oos as a runtime stat (fallback val_da).
     real_da = _f(rt_i.get("da_oos", rt_i.get("val_da", 0.0)))
     da_present = ("da_oos" in rt_i) or ("val_da" in rt_i)
+    # OOS daily Sharpe + higher moments (for PSR / Deflated-Sharpe trials-adjustment).
+    real_sharpe = _f(rt_i.get("sharpe_oos", 0.0))
+    real_skew = _f(rt_i.get("skew_oos", 0.0))
+    real_kurt = _f(rt_i.get("kurt_oos", 0.0))
+    n_days = int(_f(rt_i.get("n_days", 0.0)))
 
     return {
         "name": name,
@@ -354,6 +359,10 @@ def _extract_result(name, train_bt, infer_bt, cfg):
         "real_cagr": real_cagr,
         "real_mdd": real_mdd,
         "real_da": real_da,
+        "real_sharpe": real_sharpe,
+        "real_skew": real_skew,
+        "real_kurt": real_kurt,
+        "n_days": n_days,
         "da_present": da_present,
         "trades": trades,
         "g2_pass": trades > G2_MIN_TRADES,
