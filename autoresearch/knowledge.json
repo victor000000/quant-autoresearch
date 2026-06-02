@@ -2071,6 +2071,12 @@
         "type": "finding",
         "phase": "ALL",
         "label": "PORTFOLIO of 7 decorrelated champions = tiny MaxDD (3.6%) + high Sharpe (2.35), Calmar>3. The deployable production endpoint. Equal-weight dilutes EEM's CAR; conviction-weighting is the lever"
+      },
+      {
+        "id": "r103",
+        "type": "milestone",
+        "phase": "PORTFOLIO",
+        "label": "R103 conviction-weighting (\u221dCalmar) BEATS equal: Calmar 3.27->3.36, MaxDD 3.6->3.4%, Sharpe 2.35->2.55, win 70%. Tilt to low-DD proven edges cuts book MaxDD. Deployable champion = conviction-weighted book"
       }
     ],
     "edges": [
@@ -3243,6 +3249,16 @@
         "src": "r102",
         "dst": "f_portfolio",
         "label": "diversification crushes drawdown"
+      },
+      {
+        "src": "r102",
+        "dst": "r103",
+        "label": "weight by conviction (Wang math-thinking)"
+      },
+      {
+        "src": "r103",
+        "dst": "f_portfolio",
+        "label": "conviction beats equal on every risk metric"
       }
     ],
     "running": []
@@ -3318,6 +3334,18 @@
       "win_pct": 68,
       "n": 7,
       "ndays": 710
-    }
+    },
+    "conviction_weight": {
+      "calmar": 3.3615,
+      "car_pct": 11.429,
+      "mdd_pct": 3.4,
+      "sharpe": 2.547,
+      "da": 2.7522,
+      "win_pct": 70,
+      "n": 7,
+      "ndays": 710,
+      "scheme": "capital \u221d Calmar"
+    },
+    "champion": "conviction_weight"
   }
 }

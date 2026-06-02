@@ -52,6 +52,8 @@ Scorer, splits, execution are LOCKED. Train/val metrics are only knobs to pick w
   secondary; byte-exact 0.0). LONG-ONLY-specific (hurt TLT's long/short); needs a STRONG primary (failed IWM's
   weak one). Single-config swaps had converged; new METHODS from Wang's course are the lever. (cross-asset SPY
   feats failed — needs pairs.)
+- **PORTFOLIO (Wang endpoint ⑨⑩):** the 7 champions combined, conviction-weighted (∝Calmar), give a deployable
+  book at real OOS **Calmar 3.36, MaxDD 3.4%, Sharpe 2.55** — diversification crushes drawdown.
 - Verified leak-free (6-agent audit); OOS replay byte-identical to a fully-online rebuild — incl. the EEM
   meta champion (primary+secondary+gate online, max_pred_diff 0.0). Every champion is live-equivalent.
 
