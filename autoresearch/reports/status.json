@@ -1,1 +1,1 @@
-{"running": false, "round": 94, "etf": "EEM", "since": "2026-06-02 12:49", "phase": "done", "hypotheses": ["Sample on log-dollar bars; triple_barrier_meta; size long-only, vol-targeted, entry 0.35.", "Sample on log-dollar bars; triple_barrier_meta; size long-only, vol-targeted, entry 0.30."], "legs": "train done \u00b7 infer 0/2", "note": "EEM: DISCARD \u2014 winner 1.9441 did not beat 2.4257"}
+{"running": false, "round": 94, "etf": "EEM", "last": "R94 BREAKTHROUGH \u2014 meta-labeling lifts EEM 2.43->4.03 (Calmar>3, trials-significant). First new-method edge."}

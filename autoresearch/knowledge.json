@@ -1012,25 +1012,25 @@
       "significant": false
     },
     "EEM": {
-      "cell": "EEM_logdollar_triple_barrier_cdf_overlay_t0.35",
-      "real_calmar": 2.4257,
-      "real_cagr": 5.579,
-      "real_mdd": 2.3,
-      "real_da": 2.5307,
-      "real_sharpe": 2.032,
-      "trades": 275,
+      "cell": "EEM_logdollar_triple_barrier_meta_cdf_overlay_t0.30",
+      "real_calmar": 4.0265,
+      "real_cagr": 6.845,
+      "real_mdd": 1.7,
+      "real_da": 1.2011,
+      "real_sharpe": 2.287,
+      "trades": 215,
       "g2_pass": true,
-      "round": 25,
+      "round": 26,
       "source": "tournament",
-      "psr": 0.9998,
-      "n_trials": 18,
+      "psr": 1.0,
+      "n_trials": 24,
       "significant": true,
       "leak_fixed": true,
       "config": {
         "ticker": "EEM",
         "axis": "logdollar",
-        "labeler": "triple_barrier",
-        "thresh": 0.35,
+        "labeler": "triple_barrier_meta",
+        "thresh": 0.3,
         "sizing": "cdf_overlay"
       }
     },
@@ -1127,7 +1127,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 25,
+  "last_round": 26,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1999,6 +1999,18 @@
         "type": "finding",
         "phase": "TLT",
         "label": "R93 NEW METHOD refuted: sample-uniqueness weights hurt TLT 1.52->-0.14 (trades ->895), even harder than EEM. Hurts BOTH trend (EEM) and mean-revert (TLT). Overlap=directional signal these edges ride. REVERTED + cells restored | RESTORE VERIFIED: EEM 2.42 / TLT 1.52 reproduced byte-faithfully post-revert."
+      },
+      {
+        "id": "r94",
+        "type": "milestone",
+        "phase": "EEM",
+        "label": "R94 BREAKTHROUGH: meta-labeling (Wang 2nd decision model) EEM 2.43->4.03, Calmar>3, trials-significant (PSR 1.0). Secondary vetoes bars where primary unreliable: trades 275->215, DA 3.4->1.2. First NEW-METHOD edge. Combine matters: soft-shrink=1.94 (anti-filter), hard GATE=4.03"
+      },
+      {
+        "id": "f_meta",
+        "type": "finding",
+        "phase": "ALL",
+        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias"
       }
     ],
     "edges": [
@@ -3051,6 +3063,31 @@
         "src": "r93",
         "dst": "f_uniqueness",
         "label": "refuted on both edges -> revert"
+      },
+      {
+        "src": "f_frontier",
+        "dst": "r94",
+        "label": "new METHOD breaks the converged frontier"
+      },
+      {
+        "src": "r94",
+        "dst": "f_meta",
+        "label": "meta-labeling validated"
+      },
+      {
+        "src": "f_uniqueness",
+        "dst": "f_meta",
+        "label": "weighting failed, a 2nd decision model succeeds"
+      },
+      {
+        "src": "r88",
+        "dst": "r94",
+        "label": "push the EEM edge further"
+      },
+      {
+        "src": "r94",
+        "dst": "f_eem_timing",
+        "label": "EEM timing now Calmar>3"
       }
     ],
     "running": []
@@ -3086,6 +3123,10 @@
     }
   },
   "top_insights": [
+    {
+      "title": "Meta-labeling crosses Calmar>3",
+      "body": "A secondary 'is-the-primary-right' decision model (Wang's first-public technique) lifts EEM 2.43->4.03 \u2014 the first edge from a new method, trials-significant, clearing Wang's flagship Calmar>3 bar."
+    },
     {
       "title": "Causal mean-reversion features unlock mean-reverting ETFs",
       "detail": "Adding causal RSI + Bollinger-%b oscillators (\u2462) took TLT from 0.31 \u2192 1.52 Calmar. Control (same axis/labeler, no features) stays at \u22120.14, so the lift is the features, not leakage.",
