@@ -1,1 +1,1 @@
-{"running": false, "round": 99, "etf": "EEM", "last": "R99 EEM DISCARD \u2014 2.0\u03c3 labels optimal (1.5\u03c3=1.64<4.03). EEM 4.03 robust on threshold+density. Next: crash-veto secondary on drift ETFs."}
+{"running": false, "round": 100, "etf": "HYG", "last": "R100 crash-veto DISCARD \u2014 no OOS crash skill (1.65<2.21) + fails G2. Drift unbeatable. Edge map complete: EEM 4.03 flagship."}

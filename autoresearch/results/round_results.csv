@@ -207,3 +207,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T13:27:40,HYG,2.2122,HYG_logdollar_always_long_cdf_overlay_t0.55,B,HYG,logdollar,triple_barrier_meta,0.4,cdf_overlay,0.3117,1.3629,679,True,True,-0.2175,0.6709,0.5494,False,False,completed,completed
 2026-06-02T13:36:56,EEM,4.0265,EEM_logdollar_triple_barrier_meta_cdf_overlay_t0.30,A,EEM,logdollar,triple_barrier_tight_meta,0.3,cdf_overlay,1.2994,3.8089,415,True,True,-0.1903,0.6833,0.5591,False,False,completed,completed
 2026-06-02T13:36:56,EEM,4.0265,EEM_logdollar_triple_barrier_meta_cdf_overlay_t0.30,B,EEM,logdollar,triple_barrier_tight_meta,0.35,cdf_overlay,1.6359,2.8228,370,True,True,-0.119,0.6833,0.5591,True,False,completed,completed
+2026-06-02T13:43:00,HYG,2.2122,HYG_logdollar_always_long_cdf_overlay_t0.55,A,HYG,logdollar,crash_ahead,0.4,crashveto,1.4977,4.346,21,False,False,-0.176,0.8947,0.7963,False,False,completed,completed
+2026-06-02T13:43:00,HYG,2.2122,HYG_logdollar_always_long_cdf_overlay_t0.55,B,HYG,logdollar,crash_ahead,0.55,crashveto,1.6469,3.6496,1,False,False,0.0,0.8947,0.7963,True,False,completed,completed

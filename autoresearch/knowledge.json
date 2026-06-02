@@ -2041,6 +2041,18 @@
         "type": "finding",
         "phase": "EEM",
         "label": "R99 EEM: 1.5\u03c3 tight labels HURT meta (1.64 vs 4.03). 2.0\u03c3 confirmed optimal label density. EEM 4.03 robust on BOTH threshold (R97) and density (R99). Flagship well-characterised; EEM grinding exhausted"
+      },
+      {
+        "id": "r100",
+        "type": "finding",
+        "phase": "HYG",
+        "label": "R100 crash-veto FAILS: no OOS crash-prediction skill (1.65<2.21), and rare-trading overlay fails G2>80. DRIFT edges unbeatable \u2014 not by timing (R90/R98) nor tail-filtering (R100). Buy-and-hold optimal for HYG/GLD/QQQ. Edge map complete"
+      },
+      {
+        "id": "f_drift_ceiling",
+        "type": "finding",
+        "phase": "ALL",
+        "label": "DRIFT CEILING: HYG/GLD/QQQ buy-and-hold is optimal \u2014 timing forfeits carry (R90/R98), crash-veto has no OOS skill + fails G2 (R100). Their edge IS the carry; can't be improved in this framework"
       }
     ],
     "edges": [
@@ -3168,6 +3180,26 @@
         "src": "r99",
         "dst": "f_meta",
         "label": "2.0\u03c3 optimal; EEM robust"
+      },
+      {
+        "src": "r98",
+        "dst": "r100",
+        "label": "try tail-filtering instead of timing"
+      },
+      {
+        "src": "r100",
+        "dst": "f_drift_ceiling",
+        "label": "crash-veto fails too"
+      },
+      {
+        "src": "r90",
+        "dst": "f_drift_ceiling",
+        "label": "timing<drift"
+      },
+      {
+        "src": "f_drift_ceiling",
+        "dst": "f_frontier",
+        "label": "drift ETFs at ceiling"
       }
     ],
     "running": []
