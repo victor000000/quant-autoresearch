@@ -41,12 +41,15 @@ lucky over a short window decays as the window extends. Re-validate before you t
   bypassed val_auc) persist; two-sided timing models with val_auc≈0.5 decay. Don't deploy a Calmar you can't reproduce today.
 
 ## best so far · keep pushing
-Re-validated 2026-06-02 over the current window: **8 of 11 hold** — GLD 2.16, HYG 1.83, EFA 1.29, QQQ 1.24,
-TIP 1.15, UUP 1.08, DBC 0.91, XLE 0.86 (drift/long-biased, robust). **3 timing edges COLLAPSED** — EEM
-4.03→−0.02, TLT 1.52→−0.00, IWM 1.14→0 (val_auc≈0.5, window artifacts). The old "EEM 4.03 / book 4.22"
-were stale. Rebuild the book from the holders + robust replacements; re-measure honestly.
-Priorities: **new custom axes** + **new unsupervised labels** (trend-scanning, change-point, clustering — NOT
-HMM), favoring **durable** edges. Also: richer features, learned dim-reduce, multi-scale stacking, decorrelated ETFs.
+Re-validated 2026-06-02 (the old "EEM 4.03 / book 4.22" were STALE window artifacts). Honest current state:
+durable single-asset ML alpha is SCARCE — only **GLD trend_scan 2.16** + **UUP imbalance_bgm 1.08** beat
+buy-hold; EEM/TLT/IWM/DBC timing all collapse to ≤buy-hold (every re-attempt failed). Everything else is best
+held PASSIVELY. **Honest deployable book = DECORRELATED CORE (GLD/UUP/TIP/DBC/HYG), Calmar 3.32, MaxDD 2.13%,
+Sharpe 1.96** — decorrelation (not member-count) is the lever; dropping correlated high-MDD equities ~doubled
+Calmar (1.78→3.32).
+Priorities now: (1) squeeze the 2 genuine edges (GLD/UUP); (2) find a NEW durable, DECORRELATED edge (new axis/
+unsupervised label — trend/change-point/clustering, NOT HMM) that can JOIN the core; (3) book dials (weights,
+leverage). Don't grind ceilinged buy-hold names. A keep needs Calmar>0, >buy-hold, AND val_auc>0.52.
 
 ## setup
 QC project 31338454, creds `qc/.creds.json`. Hypothesis = `{ticker, axis, labeler, thresh, sizing}`.
