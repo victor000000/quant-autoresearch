@@ -262,6 +262,8 @@ class AutoresearchPipeline(QCAlgorithm):
                            "scaler_scale": [float(x) for x in sc.scale_],
                            "kept_idx": [int(i) for i in kept_idx],
                            "booster": m.get_booster().save_raw("json").decode("utf-8"),
+                           "best_iter": int(getattr(m, "best_iteration", 0) or 0),
+                           "n_features": int(len(sc.mean_)),
                            "cal_x": (_cx.tolist() if _cx is not None else []),
                            "cal_y": (_cy.tolist() if _cy is not None else []),
                            "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}

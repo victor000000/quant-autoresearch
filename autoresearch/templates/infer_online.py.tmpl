@@ -48,6 +48,8 @@ class OnlineInferXCheck(QCAlgorithm):
             self.kept = np.array(mb["kept_idx"], dtype=int)
             self.cal_x = np.array(mb.get("cal_x", []), dtype=float)
             self.cal_y = np.array(mb.get("cal_y", []), dtype=float)
+            self.best_iter = int(mb.get("best_iter", 0) or 0)
+            self.nfeat = int(mb.get("n_features", 0) or 0)
             self.booster = xgb.Booster()
             self.booster.load_model(bytearray(mb["booster"], "utf-8"))
         # saved predictions keyed by bar timestamp (for the cross-check)
@@ -90,13 +92,23 @@ class OnlineInferXCheck(QCAlgorithm):
         row = feats[-1]
         if np.isnan(row).any():
             return
+        if self.nfeat and len(row) != self.nfeat:
+            self.set_runtime_statistic("featlen_mismatch", str(len(row)) + "vs" + str(self.nfeat))
         x = ((row - self.mean) / self.scale)[self.kept]
-        praw = float(self.booster.predict(xgb.DMatrix(x.reshape(1, -1)))[0])
+        dm = xgb.DMatrix(x.reshape(1, -1))
+        if self.best_iter > 0:
+            praw = float(self.booster.predict(dm, iteration_range=(0, self.best_iter + 1))[0])
+        else:
+            praw = float(self.booster.predict(dm)[0])
         plive = self._calibrate(praw)
         psaved = self.saved.get(norm)
         if psaved is not None:
-            self.diffs.append(abs(plive - psaved))
+            d = abs(plive - psaved)
+            self.diffs.append(d)
             self.n_live += 1
+            if len(self.diffs) <= 1:                 # sample the first matched pair
+                self.set_runtime_statistic("sample_live", str(round(plive, 5)))
+                self.set_runtime_statistic("sample_saved", str(round(psaved, 5)))
 
     def on_end_of_algorithm(self):
         if not self.ok:
