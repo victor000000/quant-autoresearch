@@ -2023,6 +2023,12 @@
         "type": "finding",
         "phase": "IWM",
         "label": "R96 IWM: meta-labeling needs a STRONG primary. IWM single imbalance/triple_barrier is weak (champion=+bgm ensemble), meta=0.20/0.23 vs 1.14 (DA 5.7-9.4). Meta REFINES a strong long-only edge (EEM 2.43->4.03), doesn't create one. IWM 1.14 stands"
+      },
+      {
+        "id": "r97",
+        "type": "finding",
+        "phase": "EEM",
+        "label": "R97 EEM meta threshold OPTIMUM confirmed at 0.30: unimodal 0.20=3.57, 0.25=3.78, 0.30=4.03(peak), 0.35=3.72. 4.03 champion is the verified peak. Meta lever exhausted: one big win (EEM), bounded elsewhere"
       }
     ],
     "edges": [
@@ -3120,6 +3126,11 @@
         "src": "r96",
         "dst": "f_meta",
         "label": "meta needs a strong primary"
+      },
+      {
+        "src": "r94",
+        "dst": "r97",
+        "label": "optimise the meta primary threshold"
       }
     ],
     "running": []
