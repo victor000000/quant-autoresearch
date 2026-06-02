@@ -1193,10 +1193,33 @@
         "thresh": 0.4,
         "sizing": "cdf_overlay"
       }
+    },
+    "TIP": {
+      "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
+      "real_calmar": 1.1463,
+      "real_cagr": 4.356,
+      "real_mdd": 3.8,
+      "real_da": 6.8033,
+      "real_sharpe": 0.94,
+      "trades": 772,
+      "g2_pass": true,
+      "round": 32,
+      "source": "tournament",
+      "psr": 0.9457,
+      "n_trials": 2,
+      "significant": false,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "TIP",
+        "axis": "logdollar",
+        "labeler": "always_long",
+        "thresh": 0.45,
+        "sizing": "cdf_overlay"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 31,
+  "last_round": 32,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2290,6 +2313,12 @@
         "type": "finding",
         "phase": "ALL",
         "label": "BOOK OBJECTIVE != STANDALONE CALMAR: a portfolio member's job is RETURN+decorrelation (diversification handles its drawdown). Timing a drifter raises its standalone Calmar but cuts the return the book needs -> hurts the book. Pick each member to max BOOK Calmar: drift->buy-hold, timing(EEM/TLT)->directional. Improve the book via timing edges + decorrelated members, not by timing drifters"
+      },
+      {
+        "id": "r125",
+        "type": "finding",
+        "phase": "TIP",
+        "label": "R125 TIP added: always_long 1.15 (timing 0.89 underperforms \u2014 drift bond, buy-hold per R124). Decorrelated book-member candidate (inflation/real-rate). Book test next: does it lift 4.22 like DBC (R111)?"
       }
     ],
     "edges": [
@@ -3707,6 +3736,16 @@
         "src": "f_drift_ceiling",
         "dst": "f_book_objective",
         "label": "drift buy-hold is book-OPTIMAL, not a failure"
+      },
+      {
+        "src": "r124",
+        "dst": "r125",
+        "label": "improve book via decorrelated member"
+      },
+      {
+        "src": "f_book_objective",
+        "dst": "r125",
+        "label": "add decorrelated member (TIP)"
       }
     ],
     "running": []

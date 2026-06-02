@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Round 125 — TIP (KEEP — TIP champion (drift bond, buy-hold))</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script></head>
+<body><div class="wrap"><!--HYPS_NL:Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. ||| Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels; size long-only, vol-targeted, entry 0.30.-->
+<div class="nav"><a href="index.html">← all rounds</a><span class="sep">·</span><a href="causal_graph.html">interactive causal graph</a></div>
+
+<div class="hero">
+  <div class="eyebrow">Autoresearch · Round 125</div>
+  <h1><span class="chip">TIP</span> <span class="pill keep">KEEP — TIP champion (drift bond, buy-hold)</span></h1>
+  <p class="tldr"><b>TL;DR.</b> TIP (inflation-linked bonds) joins at always_long 1.15 (timing underperforms 0.89 — confirms a drift bond, buy-hold-optimal per R124). Modest standalone, but its value is as a DECORRELATED book member (real-rate/inflation exposure absent from the equity/credit/nominal-rates/gold/commodity sleeve). Testing whether it lifts the book past 4.22 the way DBC did (R111) — the R124-aligned performance lever.</p>
+  <div class="hyps-nl"><span class="hyps-lbl">Hypotheses tested</span><ol><li>Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45.</li><li>Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels; size long-only, vol-targeted, entry 0.30.</li></ol></div>
+</div>
+
+<div class="stats"><div class="stat"><div class="k">Winner Calmar</div><div class="v pos">+1.1463</div><div class="sub">real OOS</div></div><div class="stat"><div class="k">Drawdown area</div><div class="v ">6.803</div><div class="sub">lower = better</div></div><div class="stat"><div class="k">OOS trades</div><div class="v ">772</div><div class="sub">G2 needs >80</div></div><div class="stat"><div class="k">TIP (new, drift)</div><div class="v pos">+1.1463</div><div class="sub">always_long buy-hold; decorrelated book candidate</div></div></div>
+
+<section class="block"><h2>Results — real OOS</h2>
+<table><thead><tr><th>config</th><th class="num">Calmar</th><th class="num">DA</th><th class="num">trades</th><th>note</th></tr></thead>
+<tbody><tr class="win"><td><code>logdollar/always_long/cdf_overlay @0.45</code><div class="cfg-nl">Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45.</div></td><td class="num pos">+1.1463</td><td class="num pos">6.803</td><td class='num'>772</td><td class='small'>buy-hold inflation bonds; book-optimal cell (max return)</td></tr><tr><td><code>logdollar/triple_barrier/cdf_overlay @0.30</code><div class="cfg-nl">Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels; size long-only, vol-targeted, entry 0.30.</div></td><td class="num pos">+0.8917</td><td class="num pos">1.989</td><td class='num'>796</td><td class='small'>timing underperforms — TIP is drift, like other bonds-as-carry</td></tr></tbody></table></section>
+
+<section class="block"><h2>Why</h2><p>Per R124, a drift bond's book-optimal cell is max-return buy-hold (always_long), and its book value is decorrelation. TIP adds real-rate/inflation exposure not present elsewhere in the book, so it may lower the book's MaxDD (diversification) and raise Calmar even at a modest 1.15 standalone — the same mechanism that made weak-but-decorrelated DBC help (R111). The book test (next) uses always_long GLD (R124) and adds always_long TIP.</p></section>
+<section class="block"><h2>Reasoning path (from the causal graph)</h2><p>Establishes TIP's buy-hold champion; sets up the decorrelated-member book test.</p></section>
+<section class="block"><h2>Next</h2><div class="next-box">Book test: 8-ETF (always_long GLD, 4.22) vs +TIP — does TIP's decorrelation lift it?</div></section>
+</div></body></html>
