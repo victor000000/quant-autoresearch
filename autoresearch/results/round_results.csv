@@ -243,3 +243,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T17:00:27,IWM,1.1403,IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45,B,IWM,imbalance,crash_ahead,0.4,crashveto,0.5575,40.4438,1,False,False,0.0,0.8908,0.5123,False,False,completed,completed
 2026-06-02T17:06:38,TLT,1.5221,TLT_range_triple_barrier_ls_overlay_t0.50,A,TLT,range,triple_barrier,0.5,ls_overlay,-0.0014,5.9393,163,True,True,0.245,0.5299,0.4896,True,False,completed,completed
 2026-06-02T17:06:38,TLT,1.5221,TLT_range_triple_barrier_ls_overlay_t0.50,B,TLT,range,triple_barrier,0.55,ls_overlay,-0.0014,5.9393,163,True,True,0.245,0.5299,0.4896,False,False,completed,completed
+2026-06-02T17:17:54,TLT,1.5221,TLT_range_triple_barrier_ls_overlay_t0.50,A,TLT,range,triple_barrier,0.5,ls_overlay,-0.0014,5.9393,163,True,True,0.245,0.5299,0.4896,True,False,completed,completed
+2026-06-02T17:17:54,TLT,1.5221,TLT_range_triple_barrier_ls_overlay_t0.50,B,TLT,range,triple_barrier,0.45,ls_overlay,-0.0014,5.9393,163,True,True,0.245,0.5299,0.4896,False,False,completed,completed

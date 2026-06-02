@@ -637,5 +637,11 @@ class AutoresearchPipeline(QCAlgorithm):
         self.set_runtime_statistic("val_auc", str(round(float(best_vauc), 4)))
         self.set_runtime_statistic("n_cells", str(len(cells)))
         self.set_runtime_statistic("bar_type", str(best_axis))
+        try:
+            import xgboost as _xgbv, sklearn as _skv
+            self.set_runtime_statistic("xgb_version", str(_xgbv.__version__))
+            self.set_runtime_statistic("skl_version", str(_skv.__version__))
+        except Exception:
+            pass
         self.log(f"SWEEP done: n_cells={len(cells)} best_da={round(float(best_da),4)} "
                  f"best_cal={round(float(best_cal),4)} best_axis={best_axis}")
