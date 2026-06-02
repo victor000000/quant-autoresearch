@@ -2200,6 +2200,12 @@
         "type": "finding",
         "phase": "UUP",
         "label": "R112 UUP (dollar) added: weakest champion (always_long 0.34, flat 2023-26). Risk-off hedge candidate (negatively correlated). Conviction weight tiny (~2%). 7+DBC+UUP book test next"
+      },
+      {
+        "id": "r113",
+        "type": "finding",
+        "phase": "PORTFOLIO",
+        "label": "R113 UUP NEUTRAL: genuine hedge (MaxDD 2.74->2.67%, Sharpe 2.52->2.55) but flat Calmar (return drag offsets at ~2% weight). Decorrelation NECESSARY not SUFFICIENT \u2014 needs MaxDD cut > return drag (DBC yes, UUP no). Book finalised 7+DBC 4.22. Universe converged"
       }
     ],
     "edges": [
@@ -3467,6 +3473,16 @@
         "src": "r111",
         "dst": "r112",
         "label": "add a negatively-correlated hedge (dollar)"
+      },
+      {
+        "src": "r112",
+        "dst": "r113",
+        "label": "test UUP hedge in the book"
+      },
+      {
+        "src": "r113",
+        "dst": "f_portfolio",
+        "label": "decorrelation necessary not sufficient; book = 7+DBC"
       }
     ],
     "running": []
@@ -3622,6 +3638,13 @@
       "win_pct": 70,
       "scheme": "conviction-weighted (\u221dCalmar), 8 ETFs incl DBC commodities",
       "metric": "daily-equity (QC dict flaky)"
+    },
+    "with_UUP_9": {
+      "calmar": 4.2169,
+      "cagr": 11.27,
+      "mdd": 2.67,
+      "sharpe": 2.552,
+      "note": "UUP neutral \u2014 genuine hedge (MaxDD 2.74->2.67%, Sharpe up) but flat Calmar (return drag offsets at conviction weight). Excluded from book."
     }
   }
 }
