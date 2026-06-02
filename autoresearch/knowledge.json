@@ -2010,7 +2010,7 @@
         "id": "f_meta",
         "type": "finding",
         "phase": "ALL",
-        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias | SCOPE: helps LONG-ONLY triple_barrier (EEM 4.03), HURTS long/short (TLT 1.52->0.59). | needs a STRONG primary (failed IWM's weak single triple_barrier 1.14)."
+        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias | SCOPE: helps LONG-ONLY triple_barrier (EEM 4.03), HURTS long/short (TLT 1.52->0.59). | needs a STRONG primary (failed IWM's weak single triple_barrier 1.14). | EEM meta champion PROVEN live-equivalent: infer_online carries the secondary + gate, byte-exact (max_pred_diff 0.0)."
       },
       {
         "id": "r95",

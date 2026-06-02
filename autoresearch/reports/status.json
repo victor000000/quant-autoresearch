@@ -1,1 +1,1 @@
-{"running": false, "round": 96, "etf": "IWM", "last": "R96 IWM DISCARD \u2014 meta needs a strong primary (IWM single triple_barrier weak; 0.23 vs 1.14). Next: make EEM 4.03 champion live-equivalent."}
+{"running": false, "round": 96, "etf": "EEM", "last": "EEM 4.03 meta champion PROVEN live-equivalent (infer_online + secondary, byte-exact 0.0). Wang's production line complete: autonomous train -> Calmar>3 -> deployable."}

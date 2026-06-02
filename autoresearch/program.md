@@ -48,10 +48,12 @@ Scorer, splits, execution are LOCKED. Train/val metrics are only knobs to pick w
 - Leaderboard: **EEM 4.03** (timing + meta-labeling, Calmar>3, significant), HYG 2.21 / GLD 1.99 / QQQ 1.24
   (drift), TLT 1.52 (timing, significant), IWM 1.14 (axis-bound), XLE 0.91 (ceiling).
 - **Meta-labeling WON** (Wang's trading-decision 2nd model, `triple_barrier_meta`): a secondary 'is-the-primary-
-  right?' model GATES the signal → EEM 2.43→4.03 (Calmar>3). LONG-ONLY-specific (hurt TLT's long/short). Sweep
-  it on the other long-only ETFs (IWM/XLE) next; extend the online bundle to carry the secondary. Single-config
-  swaps had converged; new METHODS from Wang's course are the lever. (cross-asset SPY feats failed — needs pairs.)
-- Verified leak-free (6-agent audit); OOS replay byte-identical (2.3e-8) to a fully-online run — live-equivalent.
+  right?' model GATES the signal → EEM 2.43→4.03 (Calmar>3), PROVEN live-equivalent (infer_online carries the
+  secondary; byte-exact 0.0). LONG-ONLY-specific (hurt TLT's long/short); needs a STRONG primary (failed IWM's
+  weak one). Single-config swaps had converged; new METHODS from Wang's course are the lever. (cross-asset SPY
+  feats failed — needs pairs.)
+- Verified leak-free (6-agent audit); OOS replay byte-identical to a fully-online rebuild — incl. the EEM
+  meta champion (primary+secondary+gate online, max_pred_diff 0.0). Every champion is live-equivalent.
 
 ## setup
 QC project 31338454, creds `qc/.creds.json`. py3.11 / pandas 2.3.3 / sklearn 1.6 / xgboost 3.
