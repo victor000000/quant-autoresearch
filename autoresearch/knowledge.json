@@ -1258,41 +1258,29 @@
    "status": "CEILINGED \u2014 5 method-families (trend_scan/KER/bgm/cusum_regime/tertile) all < buy-hold 0.91; commodity up-drifter, timing misses upside. Buy-hold 0.91 deployable champion."
   },
   "UUP": {
-   "cell": "UUP_imbalance_bgm_cdf_overlay_t0.40",
-   "real_calmar": 1.0831,
-   "real_cagr": 3.899,
-   "real_mdd": 3.6,
-   "real_da": 4.6244,
-   "real_sharpe": 1.056,
-   "trades": 129,
+   "cell": "UUP_imbalance_bgm+ker_cdf_overlay_t0.45",
+   "real_calmar": 1.1818,
+   "real_cagr": 2.6,
+   "real_mdd": 2.2,
+   "real_da": 2.9741,
+   "real_sharpe": 1.051,
+   "trades": 146,
    "g2_pass": true,
-   "round": 31,
+   "round": 38,
    "source": "tournament",
    "psr": 0.9589,
-   "n_trials": 6,
+   "n_trials": 10,
    "significant": false,
    "leak_fixed": true,
    "config": {
     "ticker": "UUP",
     "axis": "imbalance",
-    "labeler": "bgm",
-    "thresh": 0.4,
+    "labeler": "bgm+ker",
+    "thresh": 0.45,
     "sizing": "cdf_overlay"
    },
-   "stale_calmar_prior": 1.0831,
-   "revalidated": "2026-06-02",
-   "revalidated_trades": 129,
-   "val_auc_reval": "0.9802",
-   "deflated_calmar_benchmark": 0.5375,
-   "deflation_margin": 0.5456,
-   "survives_deflation": true,
-   "deflation_metric": "Calmar",
-   "deflated_benchmark": 0.5375,
-   "sharpe": 1.0556,
-   "n_days": 710,
-   "real_skew": -0.4605,
-   "real_kurt": 7.5678,
-   "status": "REAL EDGE (bgm 1.08, val_auc 0.98 = strong structure). RE-OPENED for ensemble squeeze \u2014 GLD just improved 2.16->3.20 via within-ticker ensemble; UUP high val_auc suggests similar headroom (try bgm+trend_scan / bgm+ker)."
+   "val_auc_reval": 0.876,
+   "status": "REAL EDGE, IMPROVED \u2014 bgm+ker ensemble 1.18 beats bgm 1.08 (val_auc 0.876, survives deflation 0.68). The new KER method complements bgm (regime+efficiency-trend); bgm+trend_scan diluted (0.84). Leak-free by construction (avg of two causal signals). Single-ticker."
   },
   "TIP": {
    "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1330,7 +1318,7 @@
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
- "last_round": 37,
+ "last_round": 38,
  "causal_graph": {
   "phases": [
    "Landscape",
@@ -2653,6 +2641,12 @@
     "type": "milestone",
     "phase": "GLD",
     "label": "R149 GLD KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +3.2026 (prev best +2.8904). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r150",
+    "type": "milestone",
+    "phase": "UUP",
+    "label": "R150 UUP KEEP: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +1.1818 (prev best +1.0831). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4324,6 +4318,11 @@
    {
     "src": "r148",
     "dst": "r149",
+    "label": "new best"
+   },
+   {
+    "src": "r149",
+    "dst": "r150",
     "label": "new best"
    }
   ],
