@@ -294,6 +294,23 @@ def _scoreboard_html(sb):
             '<div class="kpi"><div class="k">best edge</div><div class="v acc">' + str(sb.get("best_edge", "—")) + '</div></div>')
 
 
+def _portfolio_html(K):
+    pf = K.get("portfolio") or {}
+    champ = pf.get(pf.get("champion", "conviction_weight")) or pf.get("conviction_weight") or {}
+    if not champ:
+        return '<p class="small">(portfolio pending)</p>'
+    def k(name, val, cls=""):
+        return f'<div class="kpi"><div class="k">{name}</div><div class="v {cls}">{val}</div></div>'
+    kpis = (k("Calmar", champ.get("calmar", "—"), "acc") + k("Max DD", f'{champ.get("mdd_pct","—")}%', "pos")
+            + k("Sharpe", champ.get("sharpe", "—")) + k("Win", f'{champ.get("win_pct","—")}%')
+            + k("CAGR", f'{champ.get("car_pct","—")}%') + k("Names", champ.get("n", "—")))
+    return ('<div class="scoreboard">' + kpis + '</div>'
+            f'<p class="small">{champ.get("scheme","conviction-weighted (∝Calmar)")} · all {champ.get("n","7")} '
+            'champions, gross≤1 (no leverage) · diversification beats concentration (R104: full-7 &gt; '
+            'significant-only). Wang production endpoint ⑨ model-combination + ⑩ live. Single-asset flagship: '
+            '<b>EEM Calmar 4.03</b> — triple_barrier + meta-labeling, Calmar&gt;3, byte-exact live-equivalent.</p>')
+
+
 def build_html():
     K = _load(KJ, {})
     data = build_data(K)
@@ -316,7 +333,7 @@ def build_html():
             '<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
             '<link rel="stylesheet" href="style.css"></head><body>')
     nav = ('<div class="commandbar"><span class="prompt">autoresearch / research-console</span>'
-           '<span class="chapnav"><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
+           '<span class="chapnav"><a href="#portfolio">book</a><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
            '<a href="#story">story</a><a href="#insights">insights</a><a href="#graph">graph</a>'
            '<a href="#rounds">rounds</a><a href="program.md">program.md</a></span>'
            f'<span class="stale" id="stale">{stale}</span><span class="clock" id="clock"></span></div>')
@@ -324,6 +341,8 @@ def build_html():
             'Status</h2><p class="small">loading…</p></div>'
             '<div class="block scoreboard" id="scoreboard">' + _scoreboard_html(data["scoreboard"]) + '</div></section>'
             '<div class="verdict" id="verdict">' + data["verdict"] + '</div>')
+    pf_sec = (f'<section class="block" id="portfolio"><h2>Production book — deployable portfolio (Wang endpoint)</h2>'
+              f'{_portfolio_html(K)}</section>')
     lb = (f'<section class="block" id="leaderboard"><h2>Leaderboard — real OOS, leak-free</h2>'
           f'<div class="tablewrap">{_leaderboard_html(rows)}</div>'
           '<p class="small">Calmar=CAGR/MaxDD (higher better) · CAGR=compounding annual return · MDD=max drawdown · '
@@ -345,7 +364,7 @@ def build_html():
               '<button class="fchip" data-f="discard">DISCARD</button></div>'
               f'{_ledger_html(rounds)}'
               '<button class="showall" id="showall">show all rounds</button></section>')
-    return (head + '<div class="dash">' + nav + hero + lb + cmap + story + insights + graph_sec + ledger
+    return (head + '<div class="dash">' + nav + hero + pf_sec + lb + cmap + story + insights + graph_sec + ledger
             + '</div><script>' + CONSOLE_JS + '</script></body></html>')
 
 
