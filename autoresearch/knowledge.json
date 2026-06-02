@@ -2001,7 +2001,7 @@
         "id": "f_online_verified",
         "type": "milestone",
         "phase": "IWM",
-        "label": "VERIFIED on QC: online == batch OOS bars, byte-identical. Rebuilt OOS bars ONLINE from the frozen TRAIN threshold (logdollar/imbalance/range): bars_match=1, max_lc_diff=0.0 for all 3. Batch-build is causally equivalent to online (warm-up from origin required)"
+        "label": "VERIFIED on QC: online == batch OOS bars, byte-identical. Rebuilt OOS bars ONLINE from the frozen TRAIN threshold (logdollar/imbalance/range): bars_match=1, max_lc_diff=0.0 for all 3. Batch-build is causally equivalent to online (warm-up from origin required) | new GLD trend_scan champion also byte-exact online (max_pred_diff 2.1e-8) \u2014 label-agnostic inference confirmed."
       },
       {
         "id": "f_selbias",
