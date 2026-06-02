@@ -125,6 +125,10 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0):
         pctb = (slc2 - ma) / (2.0 * sd + 1e-12)       # Bollinger %b (centered): >0 above band mid
         feats.append(pctb.astype(np.float32).to_numpy())
 
+    # NOTE: variance-ratio trend-persistence features were tested (2026-06-03) and HURT GLD
+    # (3.20 -> 2.60) by crowding the correlation-select — same failure mode as the FFD features.
+    # Reverted. The optimized edges are FEATURE-OPTIMAL with the existing 80 features.
+
     # NOTE: SPY-relative cross-asset features were tested (round 34) and REGRESSED
     # TLT (0.7679 -> 0.677); a real cross-asset edge needs a 2-symbol PAIRS strategy,
     # not SPY features in a single-asset model. Reverted; left disabled. See f_crossasset.
