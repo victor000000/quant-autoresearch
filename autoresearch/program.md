@@ -32,6 +32,8 @@ lucky over a short window decays as the window extends. Re-validate before you t
 
 ## rules
 - only real OOS Calmar crowns a winner; a too-good keep must beat an `always_long` control.
+- **deployable requires Calmar > 0.** A negative Calmar loses money — never "keep" it as deployable even if it
+  beats a worse (also-negative) control. If every method on an ETF is negative, it has no edge — leave it OUT of the book.
 - features past-only; the unsupervised label may use the future (it's the target) but must only filter FIT bars,
   never which OOS bars trade. bar thresholds on TRAIN minutes. calibrator on embargoed VAL.
 - trust = trials-adjusted (PSR vs Bonferroni-by-N_trials). A/B every new method vs the champion; revert if it loses.
