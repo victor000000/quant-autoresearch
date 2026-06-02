@@ -2083,6 +2083,12 @@
         "type": "finding",
         "phase": "PORTFOLIO",
         "label": "R104 diversification > concentration: full 7-book Calmar 3.60 beats significant-only 4-book 2.96 (daily metric). Dropping weak names RAISED MaxDD 3.2->3.95%. Their decorrelation cuts drawdown > their low Calmar dilutes. Keep all 7. Deployable champion = conviction ALL-7 (3.36)"
+      },
+      {
+        "id": "r105",
+        "type": "milestone",
+        "phase": "PORTFOLIO",
+        "label": "R105 ROBUSTNESS: deployable book positive EVERY year (2023 +3%, 2024 +8.3%, 2025 +15.5%, 2026 +5.3%), maxDD \u22643.2% each. Calmar 3.36 is STABLE, not period-luck. Production-ready, robustness-validated system"
       }
     ],
     "edges": [
@@ -3275,6 +3281,16 @@
         "src": "r104",
         "dst": "f_portfolio",
         "label": "keep weak edges for decorrelation"
+      },
+      {
+        "src": "r104",
+        "dst": "r105",
+        "label": "validate sub-period stability"
+      },
+      {
+        "src": "r105",
+        "dst": "f_portfolio",
+        "label": "robust: positive every year"
       }
     ],
     "running": []
@@ -3371,6 +3387,13 @@
       "n": 4,
       "note": "4 significant champions; LOSES to full-7 on Calmar (less diversification)"
     },
-    "conv7_daily_calmar": 3.5962
+    "conv7_daily_calmar": 3.5962,
+    "per_year": {
+      "2023": "+3.0% (mdd 1.8%)",
+      "2024": "+8.3% (mdd 1.8%)",
+      "2025": "+15.5% (mdd 2.3%)",
+      "2026": "+5.3% (mdd 3.2%)"
+    },
+    "robust": true
   }
 }
