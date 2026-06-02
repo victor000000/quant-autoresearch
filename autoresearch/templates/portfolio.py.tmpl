@@ -83,6 +83,7 @@ class AutoresearchPortfolio(QCAlgorithm):
                                "w": max(0.0, float(wraw)) / tot_w}   # normalised capital allocation (gross<=1)
         self.set_runtime_statistic("n_loaded", str(loaded))
         self._eq = []
+        self._eqy = []        # calendar year of each daily equity sample (per-year robustness)
         self._last_day = None
 
     def on_data(self, slice):
@@ -90,6 +91,7 @@ class AutoresearchPortfolio(QCAlgorithm):
         if now != self._last_day:
             self._last_day = now
             self._eq.append(float(self.portfolio.total_portfolio_value))
+            self._eqy.append(now.year)
         for sym, bk in self.books.items():
             if bk["idx"] >= len(bk["preds"]) or sym not in slice.bars:
                 continue
@@ -140,4 +142,17 @@ class AutoresearchPortfolio(QCAlgorithm):
                 self.set_runtime_statistic("port_sharpe",
                                            str(round(float(np.mean(rets) / np.std(rets) * np.sqrt(252)), 3)))
                 self.set_runtime_statistic("port_ndays", str(len(rets)))
+        # Per-year STABILITY (robustness): return + maxDD per calendar year — is the
+        # Calmar consistent, or driven by one lucky period?
+        for yr in sorted(set(self._eqy)):
+            seg = [self._eq[i] for i in range(len(self._eq)) if self._eqy[i] == yr]
+            if len(seg) < 5 or seg[0] <= 0:
+                continue
+            r = seg[-1] / seg[0] - 1.0
+            pk, ymdd = None, 0.0
+            for v in seg:
+                pk = v if (pk is None or v > pk) else pk
+                if pk and pk > 0 and (1.0 - v / pk) > ymdd:
+                    ymdd = 1.0 - v / pk
+            self.set_runtime_statistic("y" + str(yr), "ret=" + str(round(100 * r, 1)) + "% mdd=" + str(round(100 * ymdd, 1)) + "%")
         self.quit("portfolio replay done")
