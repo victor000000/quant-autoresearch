@@ -1998,7 +1998,7 @@
         "id": "r93",
         "type": "finding",
         "phase": "TLT",
-        "label": "R93 NEW METHOD refuted: sample-uniqueness weights hurt TLT 1.52->-0.14 (trades ->895), even harder than EEM. Hurts BOTH trend (EEM) and mean-revert (TLT). Overlap=directional signal these edges ride. REVERTED + cells restored"
+        "label": "R93 NEW METHOD refuted: sample-uniqueness weights hurt TLT 1.52->-0.14 (trades ->895), even harder than EEM. Hurts BOTH trend (EEM) and mean-revert (TLT). Overlap=directional signal these edges ride. REVERTED + cells restored | RESTORE VERIFIED: EEM 2.42 / TLT 1.52 reproduced byte-faithfully post-revert."
       }
     ],
     "edges": [
