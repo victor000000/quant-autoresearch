@@ -1012,27 +1012,27 @@
       "significant": false
     },
     "EEM": {
-      "cell": "EEM_logdollar_triple_barrier_cdf_overlay_t0.30",
-      "real_calmar": 2.1526,
-      "real_cagr": 7.319,
-      "real_mdd": 3.4,
-      "real_da": 3.7851,
-      "trades": 308,
+      "cell": "EEM_logdollar_triple_barrier_cdf_overlay_t0.35",
+      "real_calmar": 2.4257,
+      "real_cagr": 5.579,
+      "real_mdd": 2.3,
+      "real_da": 2.5307,
+      "real_sharpe": 2.032,
+      "trades": 275,
       "g2_pass": true,
-      "round": 22,
+      "round": 25,
       "source": "tournament",
+      "psr": 0.9998,
+      "n_trials": 18,
+      "significant": true,
+      "leak_fixed": true,
       "config": {
         "ticker": "EEM",
         "axis": "logdollar",
         "labeler": "triple_barrier",
-        "thresh": 0.3,
+        "thresh": 0.35,
         "sizing": "cdf_overlay"
-      },
-      "leak_fixed": true,
-      "sharpe": 1.945,
-      "psr": 0.9997,
-      "n_trials": 16,
-      "significant": true
+      }
     },
     "XLE": {
       "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
@@ -1127,7 +1127,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 24,
+  "last_round": 25,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -1951,6 +1951,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R87 XLE tertile variants: tertile+bgm dilutes (0.86), imbalance axis worse (0.82) < logdollar/tertile 0.91. XLE ceiling re-confirmed; single-config space exhausted"
+      },
+      {
+        "id": "r88",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "R88 EEM 2.15->2.43: more selective triple_barrier (0.35) cuts DA, lifts Calmar. Trials-significant (PSR 0.9998). Long/short drags (0.10). First KEEP under the trials-adjusted gate. EEM = top edge"
       }
     ],
     "edges": [
@@ -2913,6 +2919,21 @@
         "src": "r87",
         "dst": "f_xle_ceiling",
         "label": "0.91 re-confirmed"
+      },
+      {
+        "src": "r87",
+        "dst": "r88",
+        "label": "push the top significant edge"
+      },
+      {
+        "src": "r88",
+        "dst": "f_selbias",
+        "label": "KEEP passes trials-adjustment"
+      },
+      {
+        "src": "r88",
+        "dst": "f_eem_timing",
+        "label": "selectivity lifts EEM further"
       }
     ],
     "running": []
