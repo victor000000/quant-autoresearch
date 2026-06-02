@@ -2236,6 +2236,12 @@
         "type": "finding",
         "phase": "ALL",
         "label": "TREND-SCANNING beats drift buy-hold where triple_barrier couldn't: it labels the dominant forward TREND (rides up, flips down) instead of exiting at barriers, so it keeps the carry AND cuts drawdown. Overturns f_drift_ceiling. The LABEL was the missing piece, not the asset"
+      },
+      {
+        "id": "r117",
+        "type": "finding",
+        "phase": "HYG",
+        "label": "R117 trend-scan does NOT generalize to HYG (0.05 vs 2.21): steady low-vol credit carry churns the trend label. Trend-scan beats drift only with genuine two-sided trends (GLD), not steady-carry (HYG). Asset-character-specific"
       }
     ],
     "edges": [
@@ -3558,6 +3564,16 @@
         "src": "f_trenddom",
         "dst": "f_trendscan",
         "label": "triple_barrier under-returns; trend-scan doesn't"
+      },
+      {
+        "src": "r116",
+        "dst": "r117",
+        "label": "sweep trend-scan to HYG"
+      },
+      {
+        "src": "r117",
+        "dst": "f_trendscan",
+        "label": "trend-scan needs real trends, not steady carry"
       }
     ],
     "running": []
