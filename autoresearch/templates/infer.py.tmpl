@@ -72,6 +72,7 @@ class AutoresearchInfer(QCAlgorithm):
         self._rbuf = []        # trailing bar log-returns (causal, for inverse-vol)
         self._last_close = None
         self._cur_w = 0.0      # current target weight (rebalance dead-band)
+        self._returns_key = None  # set after the cell key resolves; additive OOS-returns store
         try:
             if CELL == ("__" "CELL__"):   # split literal so render's .replace can't clobber this guard
                 ptr = json.loads(self.object_store.read(f"autoresearch/{TICKER}/latest_key.json"))
@@ -86,6 +87,7 @@ class AutoresearchInfer(QCAlgorithm):
                 self.sizing = str(data["sizing"])
             self.meta = {k: data.get(k) for k in
                          ("synth_cal", "val_da", "train_auc", "val_auc", "cfg")}
+            self._returns_key = key.replace("/cell_", "/returns_")  # mirror cell key; for decay/PBO
         except Exception:
             self.preds = []
 
@@ -138,6 +140,12 @@ class AutoresearchInfer(QCAlgorithm):
         if len(eq) > 4:
             rets = np.diff(eq) / np.where(eq[:-1] == 0, np.nan, eq[:-1])
             rets = rets[np.isfinite(rets)]
+            if self._returns_key:   # ADDITIVE: persist OOS daily returns for decay-monitor / PBO (no effect on metric)
+                try:
+                    self.object_store.save(self._returns_key,
+                                           json.dumps([round(float(x), 8) for x in rets.tolist()[:6000]]))
+                except Exception:
+                    pass
             sd = float(np.std(rets, ddof=1)) if len(rets) > 3 else 0.0
             if len(rets) > 3 and sd > 1e-12:
                 mu = float(np.mean(rets))
@@ -146,6 +154,13 @@ class AutoresearchInfer(QCAlgorithm):
                 self.set_runtime_statistic("skew_oos", str(round(float(np.mean(z ** 3)), 4)))
                 self.set_runtime_statistic("kurt_oos", str(round(float(np.mean(z ** 4)), 4)))
                 self.set_runtime_statistic("n_days", str(int(len(rets))))
+                # Decay read (cheap staleness signal): early-half vs late-half OOS Sharpe.
+                h = len(rets) // 2
+                if h > 3:
+                    for nm, seg in (("sharpe_early", rets[:h]), ("sharpe_late", rets[h:])):
+                        ssd = float(np.std(seg, ddof=1))
+                        self.set_runtime_statistic(
+                            nm, str(round(float(np.mean(seg)) / ssd * (252.0 ** 0.5), 4)) if ssd > 1e-12 else "0.0")
         # Echo the per-cell train/val metrics so the round runner has them.
         for k in ("synth_cal", "val_da", "train_auc", "val_auc"):
             if self.meta.get(k) is not None:
