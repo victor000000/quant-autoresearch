@@ -994,8 +994,8 @@
    "val_auc_reval": "0.5"
   },
   "IWM": {
-   "cell": "IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45",
-   "real_calmar": 0.0,
+   "cell": "IWM_logdollar_always_long_always_long_t0.50",
+   "real_calmar": 0.5496,
    "real_da": 1.9376,
    "trades": 1056,
    "g2_pass": true,
@@ -1003,10 +1003,10 @@
    "source": "tournament",
    "config": {
     "ticker": "IWM",
-    "axis": "imbalance",
-    "labeler": "triple_barrier+bgm",
-    "thresh": 0.45,
-    "sizing": "cdf_overlay"
+    "axis": "logdollar",
+    "labeler": "always_long",
+    "thresh": 0.5,
+    "sizing": "always_long"
    },
    "real_cagr": 3.649,
    "real_mdd": 3.2,
@@ -1018,11 +1018,11 @@
    "revalidated": "2026-06-02",
    "revalidated_trades": 0,
    "val_auc_reval": "0.5807",
-   "status": "COLLAPSED_needs_replacement"
+   "status": "replaced_always_long"
   },
   "EEM": {
-   "cell": "EEM_logdollar_triple_barrier_meta_cdf_overlay_t0.30",
-   "real_calmar": -0.017,
+   "cell": "EEM_logdollar_always_long_always_long_t0.50",
+   "real_calmar": 1.293,
    "real_cagr": 6.845,
    "real_mdd": 1.7,
    "real_da": 1.2011,
@@ -1038,15 +1038,15 @@
    "config": {
     "ticker": "EEM",
     "axis": "logdollar",
-    "labeler": "triple_barrier_meta",
-    "thresh": 0.3,
-    "sizing": "cdf_overlay"
+    "labeler": "always_long",
+    "thresh": 0.5,
+    "sizing": "always_long"
    },
    "stale_calmar_prior": 4.0265,
    "revalidated": "2026-06-02",
    "revalidated_trades": 470,
    "val_auc_reval": "0.4962",
-   "status": "COLLAPSED_needs_replacement"
+   "status": "replaced_always_long"
   },
   "XLE": {
    "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
@@ -1104,7 +1104,7 @@
   },
   "TLT": {
    "cell": "TLT_range_triple_barrier_ls_overlay_t0.50",
-   "real_calmar": -0.0014,
+   "real_calmar": -0.0567,
    "real_da": 3.8386,
    "trades": 333,
    "g2_pass": true,
@@ -1127,7 +1127,7 @@
    "revalidated": "2026-06-02",
    "revalidated_trades": 163,
    "val_auc_reval": "0.4896",
-   "status": "COLLAPSED_needs_replacement"
+   "status": "no_deployable_edge (timing collapsed, buy-hold -0.057)"
   },
   "GLD": {
    "cell": "GLD_logdollar_trend_scan_cdf_overlay_t0.45",
@@ -3981,7 +3981,7 @@
    "ndays": 710,
    "scheme": "capital \u221d Calmar"
   },
-  "champion": "conviction_8_with_DBC",
+  "champion": "honest_2026_06_02",
   "significant_only": {
    "calmar_daily": 2.9637,
    "mdd_pct": 3.95,
@@ -4070,6 +4070,66 @@
    "cagr": 10.86,
    "mdd": 2.59,
    "note": "TIP neutral (decorrelated, MaxDD 2.74->2.59% but CAGR drag) \u2014 Calmar-flat; excluded. Decorrelated-member lever exhausted: DBC won, EFA hurt, UUP/TIP neutral."
+  },
+  "honest_2026_06_02": {
+   "calmar": 1.7791,
+   "cagr_pct": 11.7,
+   "mdd_pct": 6.58,
+   "sharpe": 1.692,
+   "da": 6.1482,
+   "n": 10,
+   "ndays": 710,
+   "scheme": "conviction \u221d honest re-validated Calmar, gross\u22641, no leverage",
+   "members": [
+    [
+     "GLD",
+     2.1631
+    ],
+    [
+     "HYG",
+     1.8276
+    ],
+    [
+     "EEM",
+     1.293
+    ],
+    [
+     "EFA",
+     1.2856
+    ],
+    [
+     "QQQ",
+     1.2355
+    ],
+    [
+     "TIP",
+     1.1463
+    ],
+    [
+     "UUP",
+     1.0831
+    ],
+    [
+     "DBC",
+     0.9119
+    ],
+    [
+     "XLE",
+     0.8588
+    ],
+    [
+     "IWM",
+     0.5496
+    ]
+   ],
+   "per_year": {
+    "2023": "+1.9% (mdd 4.4%)",
+    "2024": "+7.2% (mdd 3.9%)",
+    "2025": "+13.0% (mdd 6.6%)",
+    "2026": "+10.8% (mdd 2.9%)"
+   },
+   "vs_passive_buyhold": "1.78 vs 1.61 \u2014 still beats passive via diversification + drawdown reduction",
+   "note": "Stale '4.22/3.36' book was inflated by EEM's stale 4.03 timing cell (now buy-hold 1.29). TLT dropped (no positive edge). Genuine durable ML alpha is narrow: GLD trend_scan + UUP imbalance_bgm; rest is diversified buy-hold."
   }
  }
 }
