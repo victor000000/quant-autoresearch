@@ -15,6 +15,8 @@ _VOL_SLOW = 60
 
 
 def _size(p, thresh, sizing, rbuf):
+    if sizing == "crashveto":          # tail-risk veto: full long unless a crash is predicted (p_crash > thresh) -> flat
+        return 0.0 if p > thresh else 1.0
     if sizing == "longshort":
         return 1.0 if p > thresh else (-1.0 if p < 1.0 - thresh else 0.0)
     if sizing in ("ls_cdf", "ls_overlay"):

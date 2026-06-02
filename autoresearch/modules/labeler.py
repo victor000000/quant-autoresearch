@@ -1185,6 +1185,46 @@ def generate_labels_dc_trend(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
     return None, "dc_trend_unbalanced", None
 
 
+def generate_labels_crash_ahead(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                horizons=[50, 100, 200]):
+    """TAIL-RISK label: y=1 if the forward return over horizon H is a CRASH (< -k*sigma_H),
+    else 0. A model predicts imminent drawdowns from CAUSAL features; paired with the
+    'crashveto' sizing the strategy stays FULLY LONG (capturing carry) and flattens ONLY the
+    predicted-crash bars -> aims to beat buy-and-hold on a DRIFT asset by cutting MaxDD while
+    keeping CAGR (directional timing instead forfeits the carry, R90/R98). sigma of forward
+    returns is fit on TRAIN only; k is swept for a learnable crash base-rate (~5-35%, prefer
+    ~15%). Forward returns define the TARGET (allowed). Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    best = None
+    for H in horizons:
+        fr = fwd_ret[H]
+        fvd = np.isfinite(fr)
+        tr_fr = fr[tr_m & fvd & fv]
+        if len(tr_fr) < 200:
+            continue
+        sd = float(np.std(tr_fr))
+        if not np.isfinite(sd) or sd <= 0:
+            continue
+        for k in (1.0, 1.25, 1.5):
+            thr = -k * sd
+            y = np.full(N, -1, dtype=int)
+            valid = fv & fvd
+            y[valid] = 0
+            y[valid & (fr < thr)] = 1                  # crash ahead within H bars
+            tx = fv & (y >= 0) & tr_m
+            vx = fv & (y >= 0) & va_m
+            if tx.sum() < 200 or vx.sum() < 30:
+                continue
+            base = float(y[tx].mean())
+            if 0.05 < base < 0.35:                     # learnable: not too rare, not too common
+                score = -abs(base - 0.15)              # prefer ~15% crash rate
+                if best is None or score > best[0]:
+                    best = (score, y, f"crash_H{H}_k{k}", H)
+    if best is None:
+        return None, "crash_unbalanced", None
+    return best[1], best[2], best[3]
+
+
 LABELERS = {
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
@@ -1198,6 +1238,7 @@ LABELERS = {
     "triple_barrier_meta": generate_labels_triple_barrier_meta,   # same labels; footer adds the meta secondary model
     "triple_barrier_tight_meta": generate_labels_triple_barrier_tight_meta,  # 1.5σ labels + meta secondary
     "multi_horizon": generate_labels_multi_horizon,
+    "crash_ahead": generate_labels_crash_ahead,       # tail-risk target; pair with 'crashveto' sizing.
     "regime_gmm": generate_labels_regime_gmm,         # causal-feature GMM regimes.
     "cusum_regime": generate_labels_cusum_regime,     # CUSUM change-point regimes.
     "hmm": generate_labels_hmm,                       # BASELINE comparator only.
