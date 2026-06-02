@@ -2059,6 +2059,18 @@
         "type": "finding",
         "phase": "EEM",
         "label": "R101 EEM meta edge is logdollar-SPECIFIC: vol=0.07, range=0.66 vs logdollar 4.03. EEM 4.03 optimal on ALL dims (axis/threshold/density/labeler). Single-asset technique search COMPLETE. Next: deployable portfolio (Wang endpoint)"
+      },
+      {
+        "id": "r102",
+        "type": "milestone",
+        "phase": "PORTFOLIO",
+        "label": "R102 PORTFOLIO (Wang endpoint): 7 champions equal-capital -> Calmar 3.27, MaxDD 3.6%, Sharpe 2.35, win 68%. Diversification crushes drawdown. Deployable combined system. Next: conviction-weight to lift CAR"
+      },
+      {
+        "id": "f_portfolio",
+        "type": "finding",
+        "phase": "ALL",
+        "label": "PORTFOLIO of 7 decorrelated champions = tiny MaxDD (3.6%) + high Sharpe (2.35), Calmar>3. The deployable production endpoint. Equal-weight dilutes EEM's CAR; conviction-weighting is the lever"
       }
     ],
     "edges": [
@@ -3216,6 +3228,21 @@
         "src": "r101",
         "dst": "f_frontier",
         "label": "EEM exhaustively characterised \u2014 search complete"
+      },
+      {
+        "src": "r101",
+        "dst": "r102",
+        "label": "pivot single-asset -> portfolio"
+      },
+      {
+        "src": "r94",
+        "dst": "r102",
+        "label": "EEM 4.03 anchors the book"
+      },
+      {
+        "src": "r102",
+        "dst": "f_portfolio",
+        "label": "diversification crushes drawdown"
       }
     ],
     "running": []
@@ -3280,5 +3307,17 @@
       "detail": "The same labeler+features stack that unlocked TLT also lifted IWM \u2014 a transferable recipe, not a per-ETF fluke. Try it first on any mean-reverter.",
       "ev": "TLT,IWM"
     }
-  ]
+  ],
+  "portfolio": {
+    "equal_weight": {
+      "calmar": 3.2719,
+      "car_pct": 11.779,
+      "mdd_pct": 3.6,
+      "sharpe": 2.346,
+      "da": 2.9198,
+      "win_pct": 68,
+      "n": 7,
+      "ndays": 710
+    }
+  }
 }
