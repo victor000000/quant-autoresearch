@@ -1957,6 +1957,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "R88 EEM 2.15->2.43: more selective triple_barrier (0.35) cuts DA, lifts Calmar. Trials-significant (PSR 0.9998). Long/short drags (0.10). First KEEP under the trials-adjusted gate. EEM = top edge"
+      },
+      {
+        "id": "r89",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "R89 IWM: EEM recipe (logdollar/triple_barrier+selectivity) does NOT transfer \u2014 0.19 long, -0.27 L/S vs 1.14. Timing recipes ASSET-SPECIFIC; IWM needs its imbalance axis. Long/short now 0-for-2 (drags EEM+IWM)"
       }
     ],
     "edges": [
@@ -2934,6 +2940,21 @@
         "src": "r88",
         "dst": "f_eem_timing",
         "label": "selectivity lifts EEM further"
+      },
+      {
+        "src": "r88",
+        "dst": "r89",
+        "label": "test if the EEM recipe transfers"
+      },
+      {
+        "src": "r89",
+        "dst": "f_signal",
+        "label": "long/short drags a 2nd ETF"
+      },
+      {
+        "src": "r89",
+        "dst": "f_eem_timing",
+        "label": "EEM edge is asset-specific"
       }
     ],
     "running": []
