@@ -255,16 +255,26 @@ class AutoresearchPipeline(QCAlgorithm):
                            "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
             else:
                 _cal = locals().get("cal")
+                _cx = getattr(_cal, "X_thresholds_", None)
+                _cy = getattr(_cal, "y_thresholds_", None)
                 _bundle = {"constant_long": False, "thresh": float(thresh), "sizing": sizing,
                            "scaler_mean": [float(x) for x in sc.mean_],
                            "scaler_scale": [float(x) for x in sc.scale_],
                            "kept_idx": [int(i) for i in kept_idx],
                            "booster": m.get_booster().save_raw("json").decode("utf-8"),
-                           "cal_x": [float(x) for x in (getattr(_cal, "X_thresholds_", None) or [])],
-                           "cal_y": [float(x) for x in (getattr(_cal, "y_thresholds_", None) or [])],
+                           "cal_x": (_cx.tolist() if _cx is not None else []),
+                           "cal_y": (_cy.tolist() if _cy is not None else []),
                            "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
-        except Exception:
+        except Exception as _be:
             _bundle = None
+            try:
+                self.set_runtime_statistic("hb_bundle_err", str(_be)[:80])
+            except Exception:
+                pass
+        try:
+            self.set_runtime_statistic("hb_bundle", "built" if _bundle is not None else "none")
+        except Exception:
+            pass
 
         # VAL "middle" metrics over ALL causal val bars (honest OOS preview), at the
         # SAME thresh+sizing infer executes with (no train/infer mismatch).
@@ -461,8 +471,15 @@ class AutoresearchPipeline(QCAlgorithm):
                             _bundle["bar_thresh"] = float(_bthr)
                             _bundle["target_bars"] = int(TARGET_BARS)
                             self.object_store.save(key.replace("/cell_", "/model_"), json.dumps(_bundle))
-                except Exception:
-                    pass
+                            try:
+                                self.set_runtime_statistic("hb_model_saved", "1")
+                            except Exception:
+                                pass
+                except Exception as _se:
+                    try:
+                        self.set_runtime_statistic("hb_save_err", str(_se)[:80])
+                    except Exception:
+                        pass
                 cells.append({
                     "key": key,
                     "axis": axis,
