@@ -1,1 +1,1 @@
-{"running": false, "round": 92, "etf": "EEM", "last": "R92 EEM DISCARD \u2014 AFML sample-uniqueness weights HURT the trend edge (2.43->1.77). Test TLT (mean-revert) next, then revert if it doesn't help."}
+{"running": false, "round": 93, "etf": "TLT", "last": "R93 TLT DISCARD \u2014 sample-uniqueness weights refuted on both edges (TLT 1.52->-0.14). Reverting + restoring champion cells."}

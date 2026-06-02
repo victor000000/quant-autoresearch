@@ -1992,7 +1992,13 @@
         "id": "f_uniqueness",
         "type": "finding",
         "phase": "ALL",
-        "label": "AFML sample-uniqueness weighting is target-dependent: hurts TREND edges (overlap=signal). Pending: mean-revert (TLT) test before keep/revert. Built scoped to triple_barrier; reversible"
+        "label": "AFML sample-uniqueness weighting REFUTED here: hurts BOTH trend (EEM 2.43->1.77) and mean-revert (TLT 1.52->-0.14) triple_barrier edges. Overlap IS the directional-persistence signal, not redundancy. Reverted to proven unweighted pipeline. Lesson recorded"
+      },
+      {
+        "id": "r93",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "R93 NEW METHOD refuted: sample-uniqueness weights hurt TLT 1.52->-0.14 (trades ->895), even harder than EEM. Hurts BOTH trend (EEM) and mean-revert (TLT). Overlap=directional signal these edges ride. REVERTED + cells restored"
       }
     ],
     "edges": [
@@ -3035,6 +3041,16 @@
         "src": "r88",
         "dst": "r92",
         "label": "weighting tested on the EEM champion"
+      },
+      {
+        "src": "r92",
+        "dst": "r93",
+        "label": "test the mean-revert hypothesis"
+      },
+      {
+        "src": "r93",
+        "dst": "f_uniqueness",
+        "label": "refuted on both edges -> revert"
       }
     ],
     "running": []
