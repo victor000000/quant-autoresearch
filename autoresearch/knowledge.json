@@ -2349,6 +2349,12 @@
         "type": "finding",
         "phase": "IWM",
         "label": "R130 IWM crash_ahead G2-fail (1 trade, no crash skill \u2014 like HYG R100). Workflow top-3 ALL fail (meta-ens 0.31, volumeimb degenerate, crash_ahead). IWM conclusively ceilinged 1.14; book role optimal (R128). Weak-ETF space (DBC/XLE/IWM) EXHAUSTED; book verified-optimal 4.22. Next: FFD features (Wang-canon gap, new-featuring priority)"
+      },
+      {
+        "id": "r131",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "R131 FFD features REFUTED: destroy TLT 1.52->-0.001 (crowd out the mean-rev edge in correlation-select; R34 crowding, even bounded-variance). 'New featuring' via FFD hurts; tuned 80-feat panel better intact. Reverted+restored. Joins refuted methods (sample-uniqueness, autoencoder)"
       }
     ],
     "edges": [
@@ -3831,6 +3837,16 @@
         "src": "r100",
         "dst": "r130",
         "label": "crash_ahead no skill (IWM like HYG)"
+      },
+      {
+        "src": "r130",
+        "dst": "r131",
+        "label": "new-featuring lever (FFD)"
+      },
+      {
+        "src": "r131",
+        "dst": "f_meanrev_feat",
+        "label": "FFD crowds out TLT's mean-rev features"
       }
     ],
     "running": []
