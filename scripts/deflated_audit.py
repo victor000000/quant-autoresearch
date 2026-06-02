@@ -20,21 +20,9 @@ so it carries no selection bias and is reported as N/A. (3) True per-trial-Sharp
 PBO/CSCV need per-trial OOS return series (logged going forward).
 """
 import os, sys, json, csv, collections, math
-from statistics import NormalDist
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import run_autoresearch_round as R
-
-GAMMA = 0.5772156649015329
-ND = NormalDist()
-
-
-def expected_max_of_N(var, N):
-    """E[max] of N iid N(0, var) — the best-of-N-noise benchmark (Bailey-LdP)."""
-    if N < 2 or var <= 0:
-        return 0.0
-    z1 = ND.inv_cdf(1.0 - 1.0 / N)
-    z2 = ND.inv_cdf(1.0 - 1.0 / (N * math.e))
-    return math.sqrt(var) * ((1.0 - GAMMA) * z1 + GAMMA * z2)
+from stats_rigor import expected_max_sharpe as expected_max_of_N  # shared rigor lib (Bailey-LdP)
 
 
 # per-asset trial Calmars + (when logged) Sharpes from the round log
