@@ -1164,40 +1164,30 @@
    "exhausted_out": true
   },
   "GLD": {
-   "cell": "GLD_logdollar_trend_scan_cdf_overlay_t0.45",
-   "real_calmar": 2.1631,
-   "real_cagr": 9.085,
-   "real_mdd": 4.2,
-   "real_da": 2.8969,
-   "real_sharpe": 1.433,
-   "trades": 558,
+   "cell": "GLD_logdollar_ker_cdf_overlay_t0.45",
+   "real_calmar": 2.4103,
+   "real_cagr": 8.195,
+   "real_mdd": 3.4,
+   "real_da": 3.4926,
+   "real_sharpe": 2.498,
+   "trades": 181,
    "g2_pass": true,
-   "round": 30,
+   "round": 35,
    "source": "tournament",
-   "psr": 0.9963,
-   "n_trials": 12,
+   "psr": 1.0,
+   "n_trials": 14,
    "significant": true,
    "leak_fixed": true,
    "config": {
     "ticker": "GLD",
     "axis": "logdollar",
-    "labeler": "trend_scan",
+    "labeler": "ker",
     "thresh": 0.45,
     "sizing": "cdf_overlay"
    },
-   "stale_calmar_prior": 2.1631,
-   "revalidated": "2026-06-02",
-   "revalidated_trades": 558,
-   "val_auc_reval": "0.5432",
-   "deflated_calmar_benchmark": 0.8919,
-   "deflation_margin": 1.2446,
-   "survives_deflation": true,
-   "deflation_metric": "Calmar",
-   "deflated_benchmark": 0.9185,
-   "sharpe": 1.433,
-   "n_days": 710,
-   "real_skew": 3.1607,
-   "real_kurt": 46.6909
+   "online_verified": true,
+   "val_auc_reval": 0.644,
+   "status": "REAL EDGE IMPROVED \u2014 KER (Kaufman efficiency-ratio, NEW method) 2.41 beats trend_scan 2.16; val_auc 0.644, survives deflation (floor 0.998), online-equivalent (preds_match=1, max_pred_diff 8e-9). First new-method edge since meta-labeling."
   },
   "EFA": {
    "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1341,7 +1331,7 @@
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
- "last_round": 34,
+ "last_round": 35,
  "causal_graph": {
   "phases": [
    "Landscape",
@@ -2646,6 +2636,12 @@
     "type": "round",
     "phase": "HYG",
     "label": "R146 HYG DISCARD: Sample on log-dollar bars; CUSUM change-point regime labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.9129 (prev best +1.8276). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r147",
+    "type": "milestone",
+    "phase": "GLD",
+    "label": "R147 GLD KEEP: Sample on log-dollar bars; ker; size long-only, vol-targeted, entry 0.45. -> Calmar +2.4103 (prev best +2.1631). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4303,6 +4299,11 @@
     "src": "r145",
     "dst": "r146",
     "label": "no improvement"
+   },
+   {
+    "src": "r146",
+    "dst": "r147",
+    "label": "new best"
    }
   ],
   "running": []
