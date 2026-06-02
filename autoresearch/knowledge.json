@@ -1124,10 +1124,33 @@
       "psr": 0.9979,
       "n_trials": 6,
       "significant": true
+    },
+    "EFA": {
+      "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
+      "real_calmar": 1.2617,
+      "real_cagr": 16.276,
+      "real_mdd": 12.9,
+      "real_da": 17.1737,
+      "real_sharpe": 1.171,
+      "trades": 632,
+      "g2_pass": true,
+      "round": 27,
+      "source": "tournament",
+      "psr": 0.9741,
+      "n_trials": 2,
+      "significant": false,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "EFA",
+        "axis": "logdollar",
+        "labeler": "always_long",
+        "thresh": 0.45,
+        "sizing": "cdf_overlay"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 26,
+  "last_round": 27,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2101,6 +2124,12 @@
         "type": "milestone",
         "phase": "PORTFOLIO",
         "label": "R107 LEVERAGE: low-DD book under-levered. 2x -> CAGR 25%/MaxDD 6.2%/Calmar 4.01 DOMINATES passive (17.9%/11.2%); 3x -> 39.8%/9.3%/Calmar 4.26 (still < passive DD). Calmar rises w/ leverage. Resolves alpha gap. 2x prudent, 3x Calmar-max"
+      },
+      {
+        "id": "r108",
+        "type": "milestone",
+        "phase": "EFA",
+        "label": "R108 UNIVERSE EXPANSION: EFA (developed-intl equity) added. Drift asset \u2014 always_long 1.26 beats timing+meta -0.004 (4th drift confirmation). Joins as buy-hold champion; value = portfolio diversification. Universe now 8 ETFs"
       }
     ],
     "edges": [
@@ -3323,6 +3352,16 @@
         "src": "r107",
         "dst": "f_portfolio",
         "label": "2x dominates passive both axes"
+      },
+      {
+        "src": "r107",
+        "dst": "r108",
+        "label": "expand the universe"
+      },
+      {
+        "src": "r108",
+        "dst": "f_drift_ceiling",
+        "label": "EFA drift \u2014 timing rejected (4th)"
       }
     ],
     "running": []
