@@ -1279,7 +1279,7 @@
     "thresh": 0.5,
     "sizing": "cdf_overlay"
    },
-   "status": "REAL EDGE, OPTIMIZED 1.30 (bgm+ker @0.50). Best pairing confirmed: bgm+ker WON; bgm+trend_scan 0.84, bgm+dc_trend 0.34, bgm+tertile 1.51 G2-FAIL. KER is the only additive partner for bgm.",
+   "status": "REAL EDGE 1.30 (imbalance bgm+ker). accel tested: bgm+accel 1.07 / accel+ker 0.15 < 1.30. accel valid but not better than ker.",
    "ceilinged": true
   },
   "TIP": {
@@ -2683,6 +2683,12 @@
     "type": "round",
     "phase": "GLD",
     "label": "R156 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +2.7512 (prev best +3.2026). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r157",
+    "type": "round",
+    "phase": "UUP",
+    "label": "R157 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + accel; size long-only, vol-targeted, entry 0.50. -> Calmar +1.0700 (prev best +1.2958). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4389,6 +4395,11 @@
    {
     "src": "r155",
     "dst": "r156",
+    "label": "no improvement"
+   },
+   {
+    "src": "r156",
+    "dst": "r157",
     "label": "no improvement"
    }
   ],
