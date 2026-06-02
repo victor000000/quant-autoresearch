@@ -133,10 +133,10 @@ def build_data(K=None):
     sig_txt = f' · {n_sig}/{n_assessed} survive trials-adjustment (PSR/Bonferroni)' if n_assessed else ''
     return {
         "status": st, "scoreboard": sb, "rows": rows,
-        "verdict": (f'Converged @ r{sb["rounds"]} · {sb["etfs"]}/{sb["etfs"]} leak-free · '
+        "verdict": (f'Single-ticker research · r{sb["rounds"]} rounds · {sb["etfs"]}/{sb["etfs"]} leak-free · '
                     f'G1 Calmar>{G1_CALMAR:g}: {sb["g1_pass"]}/{sb["g1_total"]} PASS' + sig_txt +
-                    f' — frontier ~{(rows[0]["calmar"] if rows and rows[0]["calmar"] else 0):.2f}; '
-                    f'>{G1_CALMAR:g} needs cross-asset pairs'),
+                    f' — best single-ticker edge ~{(rows[0]["calmar"] if rows and rows[0]["calmar"] else 0):.2f}; '
+                    f'durable single-ticker alpha is scarce (GLD/UUP only)'),
     }
 
 
@@ -427,22 +427,20 @@ def _portfolio_html(K):
 def _intro_html(K):
     """Plain-English lead for a human landing cold: what this is, the bottom line (live numbers),
     and how to read the jargon. No stale hardcoded claims — pulls from the live champion book."""
-    pf = K.get("portfolio") or {}
-    champ = pf.get(pf.get("champion", "")) or pf.get("conviction_weight") or {}
-    cal = champ.get("calmar", "—"); cagr = champ.get("car_pct", champ.get("cagr_pct", "—"))
-    mdd = champ.get("mdd_pct", "—"); n = champ.get("n", "—")
-    bottom = (f'a deployable <b>{n}-asset book</b> that earns about <b>{cagr}%/yr</b> with a worst drawdown of only '
-              f'<b>~{mdd}%</b> (Calmar <b>{cal}</b>), positive every year 2023–26 — beating a passive hold of the same assets.'
-              if champ else 'pending (no book yet).')
+    pe = K.get("per_etf_best") or {}
+    gld = (pe.get("GLD") or {}).get("real_calmar"); uup = (pe.get("UUP") or {}).get("real_calmar")
+    edges = (f'<b>GLD</b> (gold trend-following, Calmar ~{gld}) and <b>UUP</b> (US-dollar regime, ~{uup})'
+             if (gld and uup) else 'a small handful of assets')
     return (
         '<section class="block intro" id="intro"><h2>What this is</h2>'
-        '<p>An <b>autonomous research loop</b> that invents and back-tests ETF trading strategies on real market '
-        'data (QuantConnect), and keeps only the ones that survive strict out-of-sample <i>and</i> multiple-testing '
-        'checks. The AI proposes and runs the experiments; a human steers the direction.</p>'
-        f'<p><b>Bottom line today —</b> {bottom} Its returns come from <b>two genuine machine-learned edges</b> — '
-        'gold trend-following (GLD) and a US-dollar regime model (UUP) — plus <b>decorrelated diversifiers</b> '
-        '(inflation bonds, commodities, credit) that cut the drawdown. The backtest is verified <b>leak-free and '
-        'fully online</b>, using only models trained in the cloud (see <a href="deployment.md">deploy</a>).</p>'
+        '<p>An <b>autonomous research loop</b> that invents and back-tests <b>single-ticker</b> ETF trading '
+        'strategies on real market data (QuantConnect), and keeps only the ones that beat buy-and-hold <i>and</i> '
+        'survive strict out-of-sample + multiple-testing checks. The AI proposes and runs the experiments; a human steers.</p>'
+        f'<p><b>Bottom line today —</b> durable single-ticker alpha is <b>scarce</b>: only {edges} beat buy-and-hold in a '
+        'way that survives the deflation (multiple-testing) gate — every other ETF is best held passively. Each round the '
+        'loop attacks the <b>weakest-Calmar ticker</b> with two competing hypotheses and keeps a winner only if it clears '
+        'every honest gate. The backtest is verified <b>leak-free and fully online</b>, using only models trained in the '
+        'cloud (see <a href="deployment.md">deploy</a>).</p>'
         '<details class="glossary"><summary>How to read the numbers</summary>'
         '<ul><li><b>Calmar</b> = annual return ÷ worst drawdown (higher is better; above 3 is strong).</li>'
         '<li><b>MaxDD (MDD)</b> = the deepest peak-to-trough loss along the way.</li>'
@@ -494,7 +492,7 @@ def build_html():
             '<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
             '<link rel="stylesheet" href="style.css"></head><body>')
     nav = ('<div class="commandbar"><span class="prompt">autoresearch / research-console</span>'
-           '<span class="chapnav"><a href="#portfolio">book</a><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
+           '<span class="chapnav"><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
            '<a href="#story">story</a><a href="#insights">insights</a><a href="#graph">graph</a>'
            '<a href="#rounds">rounds</a><a href="program.md">program.md</a><a href="deployment.md">deploy</a></span>'
            f'<span class="stale" id="stale">{stale}</span><span class="clock" id="clock"></span></div>')
@@ -503,10 +501,6 @@ def build_html():
             '<div class="block scoreboard" id="scoreboard">' + _scoreboard_html(data["scoreboard"]) + '</div></section>'
             '<div class="verdict" id="verdict">' + data["verdict"] + '</div>'
             + _latest_callout(csv_rounds))
-    pf_sec = (f'<section class="block" id="portfolio"><h2>Production book — deployable portfolio (Wang endpoint)</h2>'
-              '<p class="small">The actual money-on portfolio: a small basket of decorrelated holdings, '
-              'weighted to maximise risk-adjusted return (Calmar). These are the live numbers.</p>'
-              f'{_portfolio_html(K)}</section>')
     lb = (f'<section class="block" id="leaderboard"><h2>Leaderboard — real OOS, leak-free</h2>'
           f'<div class="tablewrap">{_leaderboard_html(rows)}</div>'
           '<p class="small">Calmar=CAGR/MaxDD (higher better) · CAGR=compounding annual return · MDD=max drawdown · '
@@ -541,7 +535,7 @@ def build_html():
               '<button class="fchip" data-f="discard">DISCARD</button></div>'
               f'{ledger_body}'
               '<button class="showall" id="showall">show all rounds</button></section>')
-    return (head + '<div class="dash">' + nav + _intro_html(K) + hero + pf_sec + lb + cmap + story + insights + graph_sec + ledger
+    return (head + '<div class="dash">' + nav + _intro_html(K) + hero + lb + cmap + story + insights + graph_sec + ledger
             + '</div><script>' + CONSOLE_JS + '</script></body></html>')
 
 
