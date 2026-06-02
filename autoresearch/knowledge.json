@@ -2089,6 +2089,12 @@
         "type": "milestone",
         "phase": "PORTFOLIO",
         "label": "R105 ROBUSTNESS: deployable book positive EVERY year (2023 +3%, 2024 +8.3%, 2025 +15.5%, 2026 +5.3%), maxDD \u22643.2% each. Calmar 3.36 is STABLE, not period-luck. Production-ready, robustness-validated system"
+      },
+      {
+        "id": "r106",
+        "type": "milestone",
+        "phase": "PORTFOLIO",
+        "label": "R106 ALPHA vs buy-hold: strategy book Calmar 3.60 vs passive 1.61, MaxDD 3.2% vs 11.2%, Sharpe 2.55 vs 1.51 (gives up CAGR 11.5% vs 17.9% in this bull). Alpha = RISK REDUCTION, not raw return. Honest deployment framing"
       }
     ],
     "edges": [
@@ -3291,6 +3297,16 @@
         "src": "r105",
         "dst": "f_portfolio",
         "label": "robust: positive every year"
+      },
+      {
+        "src": "r105",
+        "dst": "r106",
+        "label": "benchmark vs passive beta"
+      },
+      {
+        "src": "r106",
+        "dst": "f_portfolio",
+        "label": "alpha is risk-reduction (2.2x Calmar)"
       }
     ],
     "running": []
@@ -3394,6 +3410,15 @@
       "2025": "+15.5% (mdd 2.3%)",
       "2026": "+5.3% (mdd 3.2%)"
     },
-    "robust": true
+    "robust": true,
+    "benchmark_buyhold7": {
+      "calmar": 1.6063,
+      "car_pct": 17.94,
+      "mdd_pct": 11.17,
+      "sharpe": 1.511,
+      "da": 11.804,
+      "note": "passive equal-weight buy-hold of the 7 ETFs; strategy book beats it 3.60 vs 1.61 Calmar via drawdown reduction"
+    },
+    "alpha": "risk-reduction: strategy 3.60 Calmar / 3.2% MaxDD / 2.55 Sharpe vs buy-hold 1.61 / 11.2% / 1.51 (gives up raw CAGR 11.5% vs 17.9% in this bull)"
   }
 }
