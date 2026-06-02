@@ -178,6 +178,14 @@ def render_portfolio(champions):
     return code.replace("__CHAMPIONS__", json.dumps(champions))
 
 
+def render_benchmark(tickers):
+    """Render the PASSIVE buy-and-hold equal-weight benchmark for the given ETFs (the beta
+    the strategy portfolio must beat). Self-contained template."""
+    with open(os.path.join(TEMPLATES_DIR, "benchmark.py.tmpl")) as f:
+        code = f.read()
+    return code.replace("__TICKERS__", json.dumps(list(tickers)))
+
+
 def render_infer_cell(ticker, cell):
     """Render the INFER script bound to one cell key '{axis}_{labeler}'.
 

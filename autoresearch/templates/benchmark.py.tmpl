@@ -1,0 +1,67 @@
+from AlgorithmImports import *
+import numpy as np
+
+# PASSIVE BENCHMARK: buy-and-hold an equal-weight basket of the same 7 ETFs over the OOS
+# window, fully invested (1/N each, set once and held). Its Calmar/MaxDD/per-year is the
+# beta the strategy portfolio must beat — the difference is the autoresearch ALPHA.
+# Same daily-equity metrics as portfolio.py.tmpl, for an apples-to-apples comparison.
+TICKERS = __TICKERS__
+
+
+class BuyHoldBenchmark(QCAlgorithm):
+    def initialize(self):
+        self.set_start_date(2023, 8, 1)
+        self.set_end_date(2026, 6, 1)
+        self.set_cash(100000)
+        self.syms = [self.add_equity(t, Resolution.MINUTE).symbol for t in TICKERS]
+        self._eq = []
+        self._eqy = []
+        self._last_day = None
+        self._invested = False
+
+    def on_data(self, slice):
+        now = self.time.date()
+        if now != self._last_day:
+            self._last_day = now
+            self._eq.append(float(self.portfolio.total_portfolio_value))
+            self._eqy.append(now.year)
+        if not self._invested and all(s in slice.bars for s in self.syms):
+            w = 1.0 / len(self.syms)
+            for s in self.syms:
+                self.set_holdings(s, w)
+            self._invested = True
+
+    def on_end_of_algorithm(self):
+        da, peak, mdd = 0.0, None, 0.0
+        for v in self._eq:
+            peak = v if (peak is None or v > peak) else peak
+            if peak and peak > 0:
+                dd = 1.0 - v / peak
+                da += dd
+                if dd > mdd:
+                    mdd = dd
+        self.set_runtime_statistic("bh_da", str(round(da, 4)))
+        self.set_runtime_statistic("bh_mdd", str(round(mdd, 4)))
+        eq = np.array(self._eq, dtype=float)
+        n = len(eq)
+        if n > 4 and eq[0] > 0:
+            cagr = float((eq[-1] / eq[0]) ** (252.0 / n) - 1.0)
+            self.set_runtime_statistic("bh_cagr", str(round(cagr, 4)))
+            if mdd > 1e-9:
+                self.set_runtime_statistic("bh_calmar", str(round(cagr / mdd, 4)))
+            rets = np.diff(eq) / np.where(eq[:-1] == 0, np.nan, eq[:-1])
+            rets = rets[np.isfinite(rets)]
+            if len(rets) > 4 and np.std(rets) > 0:
+                self.set_runtime_statistic("bh_sharpe", str(round(float(np.mean(rets) / np.std(rets) * np.sqrt(252)), 3)))
+        for yr in sorted(set(self._eqy)):
+            seg = [self._eq[i] for i in range(len(self._eq)) if self._eqy[i] == yr]
+            if len(seg) < 5 or seg[0] <= 0:
+                continue
+            r = seg[-1] / seg[0] - 1.0
+            pk, ymdd = None, 0.0
+            for v in seg:
+                pk = v if (pk is None or v > pk) else pk
+                if pk and pk > 0 and (1.0 - v / pk) > ymdd:
+                    ymdd = 1.0 - v / pk
+            self.set_runtime_statistic("y" + str(yr), "ret=" + str(round(100 * r, 1)) + "% mdd=" + str(round(100 * ymdd, 1)) + "%")
+        self.quit("benchmark done")
