@@ -246,6 +246,8 @@ class AutoresearchPipeline(QCAlgorithm):
             except Exception:
                 pv_cal, pe_cal = pv_raw, pe_raw
 
+        _meta_booster_json = None      # set when the meta secondary is built -> carried in the online bundle
+        _meta_gate = None
         # META-LABELING (Wang's "trading-decision secondary model" / AFML Ch.3): a
         # SECONDARY model predicts whether the PRIMARY's directional call is correct,
         # and shrinks the primary signal toward neutral where the secondary distrusts
@@ -300,6 +302,8 @@ class AutoresearchPipeline(QCAlgorithm):
                     _gate = 0.5 if str(sizing).startswith("ls") else 0.0
                     pv_cal = np.where(pmeta_v >= 0.5, np.asarray(pv_cal), _gate)
                     pe_cal = np.where(pmeta_e >= 0.5, np.asarray(pe_cal), _gate)
+                    _meta_booster_json = ms.get_booster().save_raw("json").decode("utf-8")
+                    _meta_gate = float(_gate)
                     self.log(f"META {label_cfg}: oos={int(ok.sum())} meta_acc={float(meta_y.mean()):.3f} "
                              f"kept_test={float(np.mean(pmeta_e >= 0.5)):.3f}")
             except Exception as _me:
@@ -312,8 +316,8 @@ class AutoresearchPipeline(QCAlgorithm):
         # (not replay predictions). Bar params (axis/threshold) added by the caller.
         # Guarded; constant_long cells (always_long) carry no model. (online OOS redesign)
         try:
-            if meta:
-                _bundle = None        # meta cell: a primary-only bundle would be incomplete; the A/B uses prediction-replay infer
+            if meta and _meta_booster_json is None:
+                _bundle = None        # meta requested but the secondary couldn't be built -> no online bundle
             elif n_pos == 0 or n_neg == 0:
                 _bundle = {"constant_long": True, "thresh": float(thresh), "sizing": sizing,
                            "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
@@ -331,6 +335,12 @@ class AutoresearchPipeline(QCAlgorithm):
                            "cal_x": (_cx.tolist() if _cx is not None else []),
                            "cal_y": (_cy.tolist() if _cy is not None else []),
                            "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
+                if meta and _meta_booster_json is not None:
+                    # META champion: carry the SECONDARY model + gate so infer_online can
+                    # reproduce the gated signal live (same scaler/kept_idx feed both models).
+                    _bundle["meta"] = True
+                    _bundle["meta_booster"] = _meta_booster_json
+                    _bundle["meta_gate"] = float(_meta_gate)
         except Exception as _be:
             _bundle = None
             try:

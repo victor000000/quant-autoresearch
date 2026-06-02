@@ -52,6 +52,13 @@ class OnlineInferXCheck(QCAlgorithm):
             self.nfeat = int(mb.get("n_features", 0) or 0)
             self.booster = xgb.Booster()
             self.booster.load_model(bytearray(mb["booster"], "utf-8"))
+            # META-LABELING champion: a SECONDARY model on the SAME feature row gates the
+            # primary signal (flatten where p_meta < 0.5). Reproduced online below.
+            self.is_meta = bool(mb.get("meta"))
+            if self.is_meta:
+                self.meta_booster = xgb.Booster()
+                self.meta_booster.load_model(bytearray(mb["meta_booster"], "utf-8"))
+                self.meta_gate = float(mb.get("meta_gate", 0.0))
         # saved predictions keyed by bar timestamp (for the cross-check)
         self.saved = {}
         for p in cell.get("predictions", []):
@@ -102,6 +109,10 @@ class OnlineInferXCheck(QCAlgorithm):
         else:
             praw = float(self.booster.predict(dm)[0])
         plive = self._calibrate(praw)
+        if getattr(self, "is_meta", False):          # meta GATE: flatten where the secondary distrusts the primary
+            pmeta = float(self.meta_booster.predict(dm)[0])
+            if pmeta < 0.5:
+                plive = self.meta_gate
         psaved = self.saved.get(norm)
         if psaved is not None:
             d = abs(plive - psaved)
