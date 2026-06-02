@@ -2260,6 +2260,12 @@
         "type": "finding",
         "phase": "DBC",
         "label": "R120 DBC CEILINGED 0.858: 4 diverse labels (trend_scan/imbalance-bgm/tertile/dc-tb) all fail with big DAs. Commodity BASKET = no timeable structure; ML timing churns. Role is decorrelation (R111), not alpha. Advance to next weakest XLE"
+      },
+      {
+        "id": "r121",
+        "type": "finding",
+        "phase": "XLE",
+        "label": "R121 trend_scan is GLD-SPECIFIC: fails XLE (0.02/-0.38, DA 134 shorting energy rallies). Won GLD (clean trend), failed HYG/DBC/XLE. XLE ceilinged 0.905. Labels exhausted on weak ETFs -> pivot to NEW custom AXIS (Wang's standardized-cumsum CUSUM clock)"
       }
     ],
     "edges": [
@@ -3622,6 +3628,21 @@
         "src": "r120",
         "dst": "f_drift_ceiling",
         "label": "DBC basket ceilinged too"
+      },
+      {
+        "src": "r120",
+        "dst": "r121",
+        "label": "next weakest XLE"
+      },
+      {
+        "src": "r121",
+        "dst": "f_trendscan",
+        "label": "trend_scan bounded to clean trends (GLD)"
+      },
+      {
+        "src": "r121",
+        "dst": "f_xle_ceiling",
+        "label": "XLE ceiling holds vs trend_scan"
       }
     ],
     "running": []

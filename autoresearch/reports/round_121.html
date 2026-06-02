@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Round 121 — XLE (DISCARD — trend_scan is GLD-specific; XLE ceilinged)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script></head>
+<body><div class="wrap"><!--HYPS_NL:Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45. ||| Sample on log-dollar bars; trend_scan; size long/short, vol-targeted, entry 0.45.-->
+<div class="nav"><a href="index.html">← all rounds</a><span class="sep">·</span><a href="causal_graph.html">interactive causal graph</a></div>
+
+<div class="hero">
+  <div class="eyebrow">Autoresearch · Round 121</div>
+  <h1><span class="chip">XLE</span> <span class="pill discard">DISCARD — trend_scan is GLD-specific; XLE ceilinged</span></h1>
+  <p class="tldr"><b>TL;DR.</b> trend_scan FAILS on XLE: 0.02 (long) / −0.38 (long/short, DA 134 — shorting energy's violent rallies is ruinous) vs 0.905. So trend_scan is GLD-SPECIFIC: won gold's clean persistent trend (1.99→2.16), failed HYG (steady carry), DBC (choppy basket), XLE (violent two-sided energy). XLE stays ceilinged at 0.905 — its 18% energy drawdowns cap Calmar regardless of label. The two weakest (DBC 0.858, XLE 0.905) are both label-ceilinged; the under-explored lever now is a NEW custom AXIS (Wang's priority).</p>
+  <div class="hyps-nl"><span class="hyps-lbl">Hypotheses tested</span><ol><li>Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45.</li><li>Sample on log-dollar bars; trend_scan; size long/short, vol-targeted, entry 0.45.</li></ol></div>
+</div>
+
+<div class="stats"><div class="stat"><div class="k">Winner Calmar</div><div class="v pos">+0.0157</div><div class="sub">real OOS</div></div><div class="stat"><div class="k">Drawdown area</div><div class="v ">24.301</div><div class="sub">lower = better</div></div><div class="stat"><div class="k">OOS trades</div><div class="v ">369</div><div class="sub">G2 needs >80</div></div><div class="stat"><div class="k">XLE (ceilinged 0.905)</div><div class="v ">trend_scan fails</div><div class="sub">0.02 / −0.38 — trend_scan is GLD-specific</div></div></div>
+
+<section class="block"><h2>Results — real OOS</h2>
+<table><thead><tr><th>config</th><th class="num">Calmar</th><th class="num">DA</th><th class="num">trades</th><th>note</th></tr></thead>
+<tbody><tr class="win"><td><code>logdollar/trend_scan/cdf_overlay @0.45</code><div class="cfg-nl">Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45.</div></td><td class="num pos">+0.0157</td><td class="num pos">24.301</td><td class='num'>369</td><td class='small'>energy trends not cleanly timeable by trend_scan</td></tr><tr><td><code>logdollar/trend_scan/ls_overlay @0.45</code><div class="cfg-nl">Sample on log-dollar bars; trend_scan; size long/short, vol-targeted, entry 0.45.</div></td><td class="num ">−0.3829</td><td class="num pos">133.931</td><td class='num'>564</td><td class='small'>shorting energy rallies = catastrophic drawdown (DA 134)</td></tr></tbody></table></section>
+
+<section class="block"><h2>Why</h2><p>trend_scan needs a clean, persistent, moderate-vol trend (gold). Energy (XLE) trends violently and reverses hard, so the trend label mis-times and the short leg gets run over. Labels are now exhausted on both DBC and XLE. Per the directive to work ALL modules — especially the under-explored CUSTOM AXIS — the next lever is a new bar clock. The Wang Q&A's LogDollar is a standardized-cumsum CUSUM event clock (z-normalise the driver, cumulative-sum, emit on a symmetric ±T crossing) — genuinely different from the current count/threshold bars and the axis that achieved Calmar 5+ in his materials. Build + test it.</p></section>
+<section class="block"><h2>Reasoning path (from the causal graph)</h2><p>trend_scan bounded to GLD; labels exhausted on the weak ETFs; pivot to a NEW custom axis (Wang priority).</p></section>
+<section class="block"><h2>Next</h2><div class="next-box">Build a new custom axis (Wang standardized-cumsum CUSUM) + test on the weakest ETF.</div></section>
+</div></body></html>
