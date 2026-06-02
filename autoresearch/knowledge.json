@@ -2010,7 +2010,7 @@
         "id": "f_meta",
         "type": "finding",
         "phase": "ALL",
-        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias | SCOPE: helps LONG-ONLY triple_barrier (EEM 4.03), HURTS long/short (TLT 1.52->0.59). | needs a STRONG primary (failed IWM's weak single triple_barrier 1.14). | EEM meta champion PROVEN live-equivalent: infer_online carries the secondary + gate, byte-exact (max_pred_diff 0.0)."
+        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias | SCOPE: helps LONG-ONLY triple_barrier (EEM 4.03), HURTS long/short (TLT 1.52->0.59). | needs a STRONG primary (failed IWM's weak single triple_barrier 1.14). | EEM meta champion PROVEN live-equivalent: infer_online carries the secondary + gate, byte-exact (max_pred_diff 0.0). | does NOT beat drift (HYG 0.66 vs 2.21 \u2014 gate cuts DA but timing loses the carry)."
       },
       {
         "id": "r95",
@@ -2029,6 +2029,12 @@
         "type": "finding",
         "phase": "EEM",
         "label": "R97 EEM meta threshold OPTIMUM confirmed at 0.30: unimodal 0.20=3.57, 0.25=3.78, 0.30=4.03(peak), 0.35=3.72. 4.03 champion is the verified peak. Meta lever exhausted: one big win (EEM), bounded elsewhere"
+      },
+      {
+        "id": "r98",
+        "type": "finding",
+        "phase": "HYG",
+        "label": "R98 HYG: meta-labeling can't beat DRIFT. Gate cut DA (1.56) but timing primary lost the carry -> Calmar 0.66 vs always_long 2.21. Confirms R90. Meta map complete: helps strong long-only timing (EEM), fails long/short (TLT), weak primary (IWM), drift (HYG/QQQ)"
       }
     ],
     "edges": [
@@ -3131,6 +3137,21 @@
         "src": "r94",
         "dst": "r97",
         "label": "optimise the meta primary threshold"
+      },
+      {
+        "src": "r96",
+        "dst": "r98",
+        "label": "try meta on a drift edge"
+      },
+      {
+        "src": "r98",
+        "dst": "f_meta",
+        "label": "meta can't beat drift"
+      },
+      {
+        "src": "r90",
+        "dst": "r98",
+        "label": "drift beats timing \u2014 confirmed with meta"
       }
     ],
     "running": []
