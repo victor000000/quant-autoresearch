@@ -1187,7 +1187,8 @@
     "sizing": "cdf_overlay"
    },
    "val_auc_reval": 0.594,
-   "status": "REAL EDGE, OPTIMIZED 3.20 (logdollar ker+trend_scan @0.40). 2nd new label 'accel' tested: ker+accel 2.75 / accel+trend_scan 2.36 < 3.20 -> accel valid but not a better partner than ker+trend_scan. Optimal across labels/ensembles/thresholds/axes."
+   "status": "REAL EDGE 3.20 (logdollar ker+trend_scan @0.40). Squeezed: ker WON (2.16->3.20); accel 2.75, meta 1.72 (deployable but weaker), ensemble-axes all lose. KER is the optimum. OPTIMAL across labels/ensembles/axes/methods.",
+   "ceilinged": true
   },
   "EFA": {
    "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -2713,6 +2714,12 @@
     "type": "round",
     "phase": "UUP",
     "label": "R161 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; triple_barrier_tight_meta; size long-only, vol-targeted, entry 0.50. -> Calmar +0.1875 (prev best +1.2958). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r162",
+    "type": "round",
+    "phase": "GLD",
+    "label": "R162 GLD DISCARD: Sample on log-dollar bars; triple_barrier_meta; size long-only, vol-targeted, entry 0.50. -> Calmar +1.7200 (prev best +3.2026). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4444,6 +4451,11 @@
    {
     "src": "r160",
     "dst": "r161",
+    "label": "no improvement"
+   },
+   {
+    "src": "r161",
+    "dst": "r162",
     "label": "no improvement"
    }
   ],
