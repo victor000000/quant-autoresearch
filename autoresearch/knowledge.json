@@ -1899,6 +1899,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "AUDIT v2 (6-agent, all stages): pipeline VERIFIED leak-free. Bar-threshold + G3 fixes confirmed; features/fit/embargo/infer/ObjectStore all clean. Only finding: dead triple_barrier sigma_floor full-series fallback -> fixed to epsilon (defense-in-depth)"
+      },
+      {
+        "id": "f_online_verified",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "VERIFIED on QC: online == batch OOS bars, byte-identical. Rebuilt OOS bars ONLINE from the frozen TRAIN threshold (logdollar/imbalance/range): bars_match=1, max_lc_diff=0.0 for all 3. Batch-build is causally equivalent to online (warm-up from origin required)"
       }
     ],
     "edges": [
@@ -2821,6 +2827,16 @@
         "src": "f_metric_unify",
         "dst": "f_audit2",
         "label": "verified leak-free"
+      },
+      {
+        "src": "f_barthresh_leak",
+        "dst": "f_online_verified",
+        "label": "empirical proof on QC"
+      },
+      {
+        "src": "f_audit2",
+        "dst": "f_online_verified",
+        "label": "online==batch confirmed live"
       }
     ],
     "running": []
