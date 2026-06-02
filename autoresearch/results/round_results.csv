@@ -185,3 +185,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T11:44:10,EEM,2.1526,EEM_logdollar_triple_barrier_cdf_overlay_t0.30,B,EEM,logdollar,triple_barrier,0.35,cdf_overlay,2.4257,2.5307,275,True,True,-0.0246,0.6699,0.5589,True,True,completed,completed
 2026-06-02T11:51:06,IWM,1.1403,IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45,A,IWM,logdollar,triple_barrier,0.4,cdf_overlay,0.1875,11.4798,577,True,True,0.142,0.7297,0.5241,True,False,completed,completed
 2026-06-02T11:51:06,IWM,1.1403,IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45,B,IWM,logdollar,triple_barrier,0.4,ls_overlay,-0.2651,14.9391,459,True,True,0.2029,0.7297,0.5241,False,False,completed,completed
+2026-06-02T11:58:45,QQQ,1.2431,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,logdollar,triple_barrier,0.4,cdf_overlay,0.6723,2.4495,307,True,True,2.038,0.7308,0.5758,True,False,completed,completed
+2026-06-02T11:58:45,QQQ,1.2431,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,logdollar,regime_gmm,0.4,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,False,False,completed,completed

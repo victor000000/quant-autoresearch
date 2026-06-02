@@ -1963,6 +1963,18 @@
         "type": "finding",
         "phase": "IWM",
         "label": "R89 IWM: EEM recipe (logdollar/triple_barrier+selectivity) does NOT transfer \u2014 0.19 long, -0.27 L/S vs 1.14. Timing recipes ASSET-SPECIFIC; IWM needs its imbalance axis. Long/short now 0-for-2 (drags EEM+IWM)"
+      },
+      {
+        "id": "r90",
+        "type": "finding",
+        "phase": "QQQ",
+        "label": "R90 QQQ: timing can't beat buy-and-hold (0.67 vs always_long 1.24). DA 2.45 cleanest ever but too little drift captured. regime_gmm degenerate (0 trades). QQQ DRIFT-DOMINATED. Frontier mapped: EEM/TLT=timing, QQQ/GLD/HYG=drift, IWM=axis-bound, XLE=ceiling"
+      },
+      {
+        "id": "f_frontier",
+        "type": "finding",
+        "phase": "ALL",
+        "label": "FRONTIER MAPPED: single-config swaps converged (3 straight DISCARDs R87/R89/R90). Edge types are asset-intrinsic \u2014 timing (EEM/TLT), drift (QQQ/GLD/HYG), axis-bound (IWM), ceiling (XLE). New edges need new METHODS, not swaps"
       }
     ],
     "edges": [
@@ -2955,6 +2967,31 @@
         "src": "r89",
         "dst": "f_eem_timing",
         "label": "EEM edge is asset-specific"
+      },
+      {
+        "src": "r89",
+        "dst": "r90",
+        "label": "close the last untested drifter"
+      },
+      {
+        "src": "r90",
+        "dst": "f_frontier",
+        "label": "drift-dominated confirmed"
+      },
+      {
+        "src": "r87",
+        "dst": "f_frontier",
+        "label": "XLE ceiling"
+      },
+      {
+        "src": "r89",
+        "dst": "f_frontier",
+        "label": "IWM axis-bound"
+      },
+      {
+        "src": "r88",
+        "dst": "f_frontier",
+        "label": "EEM timing real"
       }
     ],
     "running": []
