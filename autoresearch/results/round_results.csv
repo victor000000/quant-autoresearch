@@ -257,3 +257,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T19:16:56,UUP,1.0831,UUP_imbalance_bgm_cdf_overlay_t0.40,B,UUP,logdollar,trend_scan,0.45,ls_overlay,0.7316,3.0689,226,True,True,0.7178,0.6448,0.504,,,,,True,False,completed,completed
 2026-06-02T19:25:56,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,A,TLT,logdollar,dc_reversal,0.45,ls_overlay,-0.081,68.1414,1868,True,True,-0.1143,0.9587,0.9418,,,,,True,False,completed,completed
 2026-06-02T19:25:56,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,B,TLT,logdollar,dc_trend,0.45,ls_overlay,-0.1565,62.458,1889,True,True,-0.4606,0.9587,0.9428,,,,,False,False,completed,completed
+2026-06-02T20:53:13,GLD,2.1631,GLD_logdollar_trend_scan_cdf_overlay_t0.45,A,GLD,logdollar,trend_scan+cusum_regime,0.45,cdf_overlay,2.0429,11.4985,945,True,True,0.0,0.865,0.7694,1.5703,0.1006,8.0853,710,True,False,completed,completed
+2026-06-02T20:53:13,GLD,2.1631,GLD_logdollar_trend_scan_cdf_overlay_t0.45,B,GLD,logdollar,trend_scan+bgm,0.45,cdf_overlay,1.7978,1.5774,487,True,True,0.0,0.7427,0.533,1.1425,4.741,66.2281,710,False,False,completed,completed
