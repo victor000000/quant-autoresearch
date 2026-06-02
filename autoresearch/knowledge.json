@@ -2010,7 +2010,13 @@
         "id": "f_meta",
         "type": "finding",
         "phase": "ALL",
-        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias"
+        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias | SCOPE: helps LONG-ONLY triple_barrier (EEM 4.03), HURTS long/short (TLT 1.52->0.59)."
+      },
+      {
+        "id": "r95",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "R95 TLT: meta-labeling is LONG-ONLY-specific. Helped EEM (+66%) but HURT TLT long/short 1.52->0.59 (gate flattens directional calls to neutral, kills short profit, adds turnover 333->449). Meta = a long-only-edge tool. TLT 1.52 stands"
       }
     ],
     "edges": [
@@ -3088,6 +3094,16 @@
         "src": "r94",
         "dst": "f_eem_timing",
         "label": "EEM timing now Calmar>3"
+      },
+      {
+        "src": "r94",
+        "dst": "r95",
+        "label": "replicate meta on the long/short edge"
+      },
+      {
+        "src": "r95",
+        "dst": "f_meta",
+        "label": "meta is long-only-specific"
       }
     ],
     "running": []

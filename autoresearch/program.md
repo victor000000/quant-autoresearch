@@ -45,11 +45,12 @@ Scorer, splits, execution are LOCKED. Train/val metrics are only knobs to pick w
 - long/short allowed on every ETF; confirm on ≥2 runs (it's TLT's champion, but drags EEM/IWM).
 
 ## state (2026-06)
-- Leaderboard: EEM 2.43 & TLT 1.52 (timing, significant), HYG 2.21 / GLD 1.99 / QQQ 1.24 (drift),
-  IWM 1.14 (axis-bound), XLE 0.91 (ceiling). Edge type is asset-intrinsic.
-- Single-config tournament CONVERGED. New edge now needs a new METHOD = Wang's still-untried first-public
-  techniques: **meta-labeling** (trading-decision 2nd model) next; then nonlinear/autoencoder dim-reduce.
-  (cross-asset SPY features already failed in a single-asset model — needs pairs; left disabled.)
+- Leaderboard: **EEM 4.03** (timing + meta-labeling, Calmar>3, significant), HYG 2.21 / GLD 1.99 / QQQ 1.24
+  (drift), TLT 1.52 (timing, significant), IWM 1.14 (axis-bound), XLE 0.91 (ceiling).
+- **Meta-labeling WON** (Wang's trading-decision 2nd model, `triple_barrier_meta`): a secondary 'is-the-primary-
+  right?' model GATES the signal → EEM 2.43→4.03 (Calmar>3). LONG-ONLY-specific (hurt TLT's long/short). Sweep
+  it on the other long-only ETFs (IWM/XLE) next; extend the online bundle to carry the secondary. Single-config
+  swaps had converged; new METHODS from Wang's course are the lever. (cross-asset SPY feats failed — needs pairs.)
 - Verified leak-free (6-agent audit); OOS replay byte-identical (2.3e-8) to a fully-online run — live-equivalent.
 
 ## setup

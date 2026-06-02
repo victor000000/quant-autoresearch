@@ -197,3 +197,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T12:52:12,EEM,2.4257,EEM_logdollar_triple_barrier_cdf_overlay_t0.35,B,EEM,logdollar,triple_barrier_meta,0.3,cdf_overlay,1.7418,4.9332,533,True,True,-0.1715,0.6699,0.5589,False,False,completed,completed
 2026-06-02T12:56:19,EEM,2.4257,EEM_logdollar_triple_barrier_cdf_overlay_t0.35,A,EEM,logdollar,triple_barrier_meta,0.35,cdf_overlay,3.7193,0.7994,204,True,True,-0.2693,0.6699,0.5589,False,False,completed,completed
 2026-06-02T12:56:19,EEM,2.4257,EEM_logdollar_triple_barrier_cdf_overlay_t0.35,B,EEM,logdollar,triple_barrier_meta,0.3,cdf_overlay,4.0265,1.2011,215,True,True,-0.3177,0.6699,0.5589,True,True,completed,completed
+2026-06-02T13:00:01,TLT,1.5221,TLT_range_triple_barrier_ls_overlay_t0.50,A,TLT,range,triple_barrier_meta,0.5,ls_overlay,0.5883,3.0612,449,True,True,-0.0779,0.578,0.513,True,False,completed,completed
+2026-06-02T13:00:01,TLT,1.5221,TLT_range_triple_barrier_ls_overlay_t0.50,B,TLT,range,triple_barrier_meta,0.45,ls_overlay,0.5883,3.0612,449,True,True,-0.0779,0.578,0.513,False,False,completed,completed
