@@ -1172,31 +1172,31 @@
       }
     },
     "UUP": {
-      "cell": "UUP_logdollar_always_long_cdf_overlay_t0.45",
-      "real_calmar": 0.3432,
-      "real_cagr": 3.329,
-      "real_mdd": 9.7,
-      "real_da": 24.235,
-      "real_sharpe": 0.556,
-      "trades": 532,
+      "cell": "UUP_imbalance_bgm_cdf_overlay_t0.40",
+      "real_calmar": 1.0831,
+      "real_cagr": 3.899,
+      "real_mdd": 3.6,
+      "real_da": 4.6244,
+      "real_sharpe": 1.056,
+      "trades": 129,
       "g2_pass": true,
-      "round": 29,
+      "round": 31,
       "source": "tournament",
-      "psr": 0.8219,
-      "n_trials": 2,
+      "psr": 0.9589,
+      "n_trials": 4,
       "significant": false,
       "leak_fixed": true,
       "config": {
         "ticker": "UUP",
-        "axis": "logdollar",
-        "labeler": "always_long",
-        "thresh": 0.45,
+        "axis": "imbalance",
+        "labeler": "bgm",
+        "thresh": 0.4,
         "sizing": "cdf_overlay"
       }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 30,
+  "last_round": 31,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2242,6 +2242,12 @@
         "type": "finding",
         "phase": "HYG",
         "label": "R117 trend-scan does NOT generalize to HYG (0.05 vs 2.21): steady low-vol credit carry churns the trend label. Trend-scan beats drift only with genuine two-sided trends (GLD), not steady-carry (HYG). Asset-character-specific"
+      },
+      {
+        "id": "r118",
+        "type": "milestone",
+        "phase": "UUP",
+        "label": "R118 UUP 0.34->1.08 (3.2x) via Ultracode workflow's rank-2: port IWM imbalance/bgm/cdf_overlay (unsupervised regime-timer on dollar-FLOW axis). TLT range/tb port failed (0.09) - character-matched transfer. Workflow fan-out beat the single top guess. Not yet trials-sig (PSR 0.96, N=4)"
       }
     ],
     "edges": [
@@ -3574,6 +3580,16 @@
         "src": "r117",
         "dst": "f_trendscan",
         "label": "trend-scan needs real trends, not steady carry"
+      },
+      {
+        "src": "f_imbalance",
+        "dst": "r118",
+        "label": "imbalance/bgm extends to UUP"
+      },
+      {
+        "src": "r118",
+        "dst": "f_trendscan",
+        "label": "character-matched recipe transfer"
       }
     ],
     "running": []
