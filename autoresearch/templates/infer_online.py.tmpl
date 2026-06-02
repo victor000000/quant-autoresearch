@@ -1,0 +1,111 @@
+TICKER = "__TICKER__"
+CELL = "__CELL__"
+_WARMUP = 900           # >= max feature window (800) + margin; trailing-window recompute
+_TRAIL = 1000           # bars of trailing history fed to build_feats (>= _WARMUP)
+
+
+class OnlineInferXCheck(QCAlgorithm):
+    """Frozen-model ONLINE OOS replica + cross-check. Replays the 2009->2026 feed,
+    builds bars ONLINE from the saved frozen threshold, computes features on a trailing
+    window (identical last-row to the full-history build), runs the FROZEN booster +
+    isotonic online, and asserts p_live == p_saved (the train's saved predictions) to
+    prove the online path reproduces the batch one. NOTHING is refit here."""
+
+    def initialize(self):
+        self.set_start_date(2009, 8, 1)
+        self.set_end_date(2026, 6, 1)
+        self.set_cash(100000)
+        self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol
+        self.cll = []
+        self.vll = []
+        self.tsl = []
+        self.blc = []        # per-bar log-close (online)
+        self.diffs = []      # |p_live - p_saved| over matched OOS bars
+        self.n_live = 0
+        self.ok = True
+        try:
+            mb = json.loads(self.object_store.read("autoresearch/" + TICKER + "/model_" + CELL + ".json"))
+            cell = json.loads(self.object_store.read("autoresearch/" + TICKER + "/cell_" + CELL + ".json"))
+        except Exception as e:
+            self.set_runtime_statistic("xerr", "load:" + str(e)[:60])
+            self.ok = False
+            return
+        self.mb = mb
+        self.constant_long = bool(mb.get("constant_long"))
+        self.vend = np.datetime64(mb.get("val_end"))
+        self.tend = np.datetime64(mb.get("test_end"))
+        bt = mb.get("bar_type")
+        cls = BUILDER_CLASSES.get(bt) if not self.constant_long else None
+        if not self.constant_long and cls is None:
+            self.set_runtime_statistic("xerr", "no_builder:" + str(bt))
+            self.ok = False
+            return
+        self.builder = cls(float(mb["bar_thresh"])) if cls is not None else None
+        if not self.constant_long:
+            self.mean = np.array(mb["scaler_mean"], dtype=float)
+            self.scale = np.array(mb["scaler_scale"], dtype=float)
+            self.kept = np.array(mb["kept_idx"], dtype=int)
+            self.cal_x = np.array(mb.get("cal_x", []), dtype=float)
+            self.cal_y = np.array(mb.get("cal_y", []), dtype=float)
+            self.booster = xgb.Booster()
+            self.booster.load_model(bytearray(mb["booster"], "utf-8"))
+        # saved predictions keyed by bar timestamp (for the cross-check)
+        self.saved = {}
+        for p in cell.get("predictions", []):
+            self.saved[str(p.get("time"))[:19].replace(" ", "T")] = float(p.get("pred"))
+
+    def _calibrate(self, p):
+        if len(self.cal_x) >= 2:
+            return float(np.interp(p, self.cal_x, self.cal_y))
+        return float(p)
+
+    def on_data(self, slice):
+        if not self.ok or self.constant_long or self.sym not in slice.bars:
+            return
+        b = slice.bars[self.sym]
+        self.cll.append(float(b.close))
+        self.vll.append(float(b.volume))
+        self.tsl.append(b.end_time)
+        bar = self.builder.update(b.end_time, float(b.close), float(b.volume))
+        if bar is None:
+            return
+        self.blc.append(float(bar["log_close"]))
+        norm = str(b.end_time)[:19].replace(" ", "T")
+        t64 = np.datetime64(norm)
+        if not (self.vend <= t64 < self.tend):     # OOS-window emission only
+            return
+        if len(self.blc) < _WARMUP:
+            return
+        lc = np.array(self.blc[-_TRAIL:], dtype=float)
+        lr = np.zeros_like(lc)
+        lr[1:] = lc[1:] - lc[:-1]
+        try:
+            feats = build_feats(lc, lr)
+        except Exception:
+            return
+        row = feats[-1]
+        if np.isnan(row).any():
+            return
+        x = ((row - self.mean) / self.scale)[self.kept]
+        praw = float(self.booster.predict(xgb.DMatrix(x.reshape(1, -1)))[0])
+        plive = self._calibrate(praw)
+        psaved = self.saved.get(norm)
+        if psaved is not None:
+            self.diffs.append(abs(plive - psaved))
+            self.n_live += 1
+
+    def on_end_of_algorithm(self):
+        if not self.ok:
+            return
+        if self.constant_long:
+            self.set_runtime_statistic("constant_long", "1")
+            self.quit("constant_long cell — no model to cross-check")
+            return
+        n = len(self.diffs)
+        maxd = max(self.diffs) if self.diffs else -1.0
+        match = 1 if (n > 0 and maxd <= 1e-6) else 0
+        self.set_runtime_statistic("preds_match", str(match))
+        self.set_runtime_statistic("n_matched", str(n))
+        self.set_runtime_statistic("n_saved", str(len(self.saved)))
+        self.set_runtime_statistic("max_pred_diff", str(round(maxd, 9)))
+        self.quit("online-infer cross-check done")

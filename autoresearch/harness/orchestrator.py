@@ -154,6 +154,21 @@ def render_verify(ticker, axis):
     return code.replace("__TICKER__", str(ticker)).replace("__AXIS__", str(axis))
 
 
+def render_infer_online(ticker, cell):
+    """Render the FROZEN-MODEL ONLINE infer + cross-check for one cell: bar_builder +
+    features modules + the infer_online template. Loads the model bundle, rebuilds
+    bars+features+model ONLINE from origin, asserts p_live == p_saved."""
+    bb = read_module("bar_builder.py")
+    ff = read_module("features.py")
+    with open(os.path.join(TEMPLATES_DIR, "infer_online.py.tmpl")) as f:
+        it = f.read()
+    code = ("from AlgorithmImports import *\nimport json\nimport math\nimport numpy as np\n"
+            "import pandas as pd\nimport xgboost as xgb\n\n"
+            "# === bar_builder.py ===\n" + bb + "\n\n# === features.py ===\n" + ff
+            + "\n\n# === infer_online ===\n" + it)
+    return code.replace("__TICKER__", str(ticker)).replace("__CELL__", str(cell))
+
+
 def render_infer_cell(ticker, cell):
     """Render the INFER script bound to one cell key '{axis}_{labeler}'.
 
