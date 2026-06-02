@@ -1050,12 +1050,13 @@
    "revalidated": "2026-06-02",
    "revalidated_trades": 470,
    "val_auc_reval": "0.4962",
-   "status": "replaced_always_long",
+   "status": "CEILINGED \u2014 meta collapsed (window artifact); trend_scan/cusum_regime ls_overlay both NEGATIVE (shorting hurt, EM net-up). Buy-hold 1.29 deployable champion.",
    "deflation": "N/A_buyhold",
    "sharpe": 1.2049,
    "n_days": 710,
    "real_skew": -0.1107,
-   "real_kurt": 6.702
+   "real_kurt": 6.702,
+   "ceilinged": true
   },
   "XLE": {
    "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
@@ -2631,6 +2632,12 @@
     "type": "round",
     "phase": "EFA",
     "label": "R144 EFA DISCARD: Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45. -> Calmar +1.3850 (prev best +1.2856). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r145",
+    "type": "round",
+    "phase": "EEM",
+    "label": "R145 EEM DISCARD: Sample on signed-dollar imbalance (directional) bars; CUSUM change-point regime labels; size long/short, vol-targeted, entry 0.45. -> Calmar -0.0739 (prev best +1.2930). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4277,6 +4284,11 @@
    {
     "src": "r143",
     "dst": "r144",
+    "label": "no improvement"
+   },
+   {
+    "src": "r144",
+    "dst": "r145",
     "label": "no improvement"
    }
   ],
