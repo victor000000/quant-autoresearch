@@ -1975,6 +1975,12 @@
         "type": "finding",
         "phase": "ALL",
         "label": "FRONTIER MAPPED: single-config swaps converged (3 straight DISCARDs R87/R89/R90). Edge types are asset-intrinsic \u2014 timing (EEM/TLT), drift (QQQ/GLD/HYG), axis-bound (IWM), ceiling (XLE). New edges need new METHODS, not swaps"
+      },
+      {
+        "id": "r91",
+        "type": "finding",
+        "phase": "TLT",
+        "label": "R91 TLT: selectivity is EEM-specific \u2014 0.55 & 0.60 give IDENTICAL 1.5174 (signal mass below 0.55), both < 0.50 champion 1.5221. TLT converged at 1.52. 4 straight config-swap DISCARDs => tournament converged"
       }
     ],
     "edges": [
@@ -2992,6 +2998,16 @@
         "src": "r88",
         "dst": "f_frontier",
         "label": "EEM timing real"
+      },
+      {
+        "src": "r88",
+        "dst": "r91",
+        "label": "test selectivity transfer to TLT"
+      },
+      {
+        "src": "r91",
+        "dst": "f_frontier",
+        "label": "TLT converged \u2014 4th straight DISCARD"
       }
     ],
     "running": []
