@@ -1,0 +1,132 @@
+from AlgorithmImports import *
+import json
+import math
+import numpy as np
+from datetime import datetime
+
+# Wang's production-line ENDPOINT (⑨ model combination + ⑩ live): replay all 7
+# verified single-ETF CHAMPIONS simultaneously and combine them into ONE portfolio.
+# Each champion is replayed exactly as its solo infer does (saved predictions ->
+# _size at its own thresh+sizing), then scaled by an equal-capital weight 1/N so the
+# gross book stays <= 1 (no leverage). QC computes the real OOS portfolio equity ->
+# Compounding Annual Return / Drawdown -> portfolio Calmar. Diversification across
+# decorrelated ETF strategies should beat any single name on risk-adjusted return.
+# __CHAMPIONS__ = [[ticker, objectstore_cell_key], ...] injected at render time.
+_VOL_FAST = 10
+_VOL_SLOW = 60
+
+
+def _size(p, thresh, sizing, rbuf):
+    if sizing == "crashveto":          # tail-risk veto: full long unless a crash is predicted (p_crash > thresh) -> flat
+        return 0.0 if p > thresh else 1.0
+    if sizing == "longshort":
+        return 1.0 if p > thresh else (-1.0 if p < 1.0 - thresh else 0.0)
+    if sizing in ("ls_cdf", "ls_overlay"):
+        pp = min(max(p, 1e-6), 1.0 - 1e-6)
+        zc = (pp - 0.5) / math.sqrt(pp * (1.0 - pp))
+        w = float(min(1.0, max(-1.0, 2.0 * 0.5 * (1.0 + math.erf(zc / math.sqrt(2.0))) - 1.0)))
+        if sizing == "ls_overlay":
+            m = len(rbuf)
+            if m >= _VOL_FAST + 2:
+                fast = float(np.std(rbuf[-_VOL_FAST:]))
+                slow = float(np.std(rbuf[-min(m, _VOL_SLOW):]))
+                if fast > 1e-9:
+                    w *= float(min(1.0, max(0.45, slow / fast)))
+        return w
+    if sizing == "binary":
+        return 1.0 if p > thresh else 0.0
+    if sizing == "ramp":
+        return float(min(1.0, (p - thresh) * 200.0)) if p > thresh else 0.0
+    if p <= thresh:
+        return 0.0
+    pp = min(max(p, 1e-6), 1 - 1e-6)
+    z = (pp - thresh) / math.sqrt(pp * (1.0 - pp))
+    b = 2.0 * 0.5 * (1.0 + math.erf(z / math.sqrt(2.0))) - 1.0
+    b = float(min(1.0, max(0.0, b)))
+    if sizing == "cdf_overlay":
+        m = len(rbuf)
+        if m >= _VOL_FAST + 2:
+            fast = float(np.std(rbuf[-_VOL_FAST:]))
+            slow = float(np.std(rbuf[-min(m, _VOL_SLOW):]))
+            if fast > 1e-9:
+                b *= float(min(1.0, max(0.6, slow / fast)))
+    return b
+
+
+CHAMPIONS = __CHAMPIONS__       # [[ticker, cell_key], ...]
+
+
+class AutoresearchPortfolio(QCAlgorithm):
+    def initialize(self):
+        self.set_start_date(2023, 8, 1)     # OOS window (matches every solo infer)
+        self.set_end_date(2026, 6, 1)
+        self.set_cash(100000)
+        self.books = {}
+        loaded = 0
+        for tk, key in CHAMPIONS:
+            sym = self.add_equity(tk, Resolution.MINUTE).symbol
+            preds, thresh, sizing = [], 0.45, "cdf_overlay"
+            try:
+                data = json.loads(self.object_store.read("autoresearch/" + tk + "/" + key))
+                preds = data.get("predictions", [])
+                if data.get("thresh") is not None:
+                    thresh = float(data["thresh"])
+                if data.get("sizing"):
+                    sizing = str(data["sizing"])
+                if preds:
+                    loaded += 1
+            except Exception as e:
+                self.set_runtime_statistic("load_" + tk, str(e)[:40])
+            self.books[sym] = {"tk": tk, "preds": preds, "idx": 0, "thresh": thresh,
+                               "sizing": sizing, "rbuf": [], "last_close": None, "cur_w": 0.0}
+        self.w_each = 1.0 / max(1, len(CHAMPIONS))   # equal capital per champion
+        self.set_runtime_statistic("n_loaded", str(loaded))
+        self._eq = []
+        self._last_day = None
+
+    def on_data(self, slice):
+        now = self.time.date()
+        if now != self._last_day:
+            self._last_day = now
+            self._eq.append(float(self.portfolio.total_portfolio_value))
+        for sym, bk in self.books.items():
+            if bk["idx"] >= len(bk["preds"]) or sym not in slice.bars:
+                continue
+            b = slice.bars[sym]
+            p = bk["preds"][bk["idx"]]
+            try:
+                pt = datetime.strptime(p["time"][:19], "%Y-%m-%dT%H:%M:%S")
+            except Exception:
+                pt = b.end_time
+            if b.end_time >= pt:
+                bk["idx"] += 1
+                w = self.w_each * _size(float(p["pred"]), bk["thresh"], bk["sizing"], bk["rbuf"])
+                if abs(w - bk["cur_w"]) > 0.005:        # per-champion rebalance dead-band
+                    if abs(w) < 0.003:
+                        self.liquidate(sym)
+                        bk["cur_w"] = 0.0
+                    else:
+                        self.set_holdings(sym, w)
+                        bk["cur_w"] = w
+                c = float(b.close)
+                if bk["last_close"] is not None and bk["last_close"] > 0:
+                    bk["rbuf"].append(math.log(c / bk["last_close"]))
+                bk["last_close"] = c
+
+    def on_end_of_algorithm(self):
+        # Portfolio DA + Sharpe from daily equity (Calmar comes from QC's CAR/Drawdown).
+        da, peak = 0.0, None
+        for v in self._eq:
+            peak = v if (peak is None or v > peak) else peak
+            if peak and peak > 0:
+                da += 1.0 - v / peak
+        self.set_runtime_statistic("port_da", str(round(da, 4)))
+        eq = np.array(self._eq, dtype=float)
+        if len(eq) > 4:
+            rets = np.diff(eq) / np.where(eq[:-1] == 0, np.nan, eq[:-1])
+            rets = rets[np.isfinite(rets)]
+            if len(rets) > 4 and np.std(rets) > 0:
+                self.set_runtime_statistic("port_sharpe",
+                                           str(round(float(np.mean(rets) / np.std(rets) * np.sqrt(252)), 3)))
+                self.set_runtime_statistic("port_ndays", str(len(rets)))
+        self.quit("portfolio replay done")

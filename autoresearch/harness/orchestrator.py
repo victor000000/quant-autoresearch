@@ -169,6 +169,15 @@ def render_infer_online(ticker, cell):
     return code.replace("__TICKER__", str(ticker)).replace("__CELL__", str(cell))
 
 
+def render_portfolio(champions):
+    """Render the 7-champion PORTFOLIO replay (Wang's endpoint ⑨⑩). champions =
+    [[ticker, objectstore_cell_key], ...]; each is replayed via its saved predictions
+    at its own thresh+sizing, equal-capital weighted 1/N. Self-contained template."""
+    with open(os.path.join(TEMPLATES_DIR, "portfolio.py.tmpl")) as f:
+        code = f.read()
+    return code.replace("__CHAMPIONS__", json.dumps(champions))
+
+
 def render_infer_cell(ticker, cell):
     """Render the INFER script bound to one cell key '{axis}_{labeler}'.
 
