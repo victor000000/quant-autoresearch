@@ -78,9 +78,12 @@ def derive(K):
         edge = (cal - bc) if (cal is not None and bc is not None) else None
         lt, ltc, lttip = leak_trust(etf, v)
         cfg = v.get("config", {}) or {}
+        sig = v.get("significant")
         rows.append({
             "etf": etf, "calmar": cal, "cagr": _f(v.get("real_cagr")), "mdd": _f(v.get("real_mdd")),
             "da": _f(v.get("real_da")), "trades": v.get("trades"), "buyhold": bc, "edge": edge,
+            "sharpe": _f(v.get("sharpe")), "psr": _f(v.get("psr")), "n_trials": v.get("n_trials"),
+            "significant": sig,
             "g1": (cal is not None and cal > G1_CALMAR), "g2": (v.get("trades") or 0) > G2_TRADES,
             "leak": lt, "leak_cls": ltc, "leak_tip": lttip, "cell": v.get("cell", ""),
             "character": CHARACTER.get(etf, ""),
@@ -116,11 +119,14 @@ def build_data(K=None):
     maxe = max([abs(r["edge"]) for r in rows if r["edge"] is not None] or [1.0]) or 1.0
     for r in rows:
         r["edge_w"] = (abs(r["edge"]) / maxe * 100.0) if r["edge"] is not None else 0.0
+    n_sig = sum(1 for r in rows if r.get("significant") is True)
+    n_assessed = sum(1 for r in rows if r.get("significant") is not None)
+    sig_txt = f' · {n_sig}/{n_assessed} survive trials-adjustment (PSR/Bonferroni)' if n_assessed else ''
     return {
         "status": st, "scoreboard": sb, "rows": rows,
         "verdict": (f'Converged @ r{sb["rounds"]} · {sb["etfs"]}/{sb["etfs"]} leak-free · '
-                    f'G1 Calmar>{G1_CALMAR:g}: {sb["g1_pass"]}/{sb["g1_total"]} PASS — '
-                    f'single-asset frontier ~{(rows[0]["calmar"] if rows and rows[0]["calmar"] else 0):.2f}; '
+                    f'G1 Calmar>{G1_CALMAR:g}: {sb["g1_pass"]}/{sb["g1_total"]} PASS' + sig_txt +
+                    f' — frontier ~{(rows[0]["calmar"] if rows and rows[0]["calmar"] else 0):.2f}; '
                     f'>{G1_CALMAR:g} needs cross-asset pairs'),
     }
 
@@ -192,6 +198,13 @@ def _leaderboard_html(rows):
         gates = (f'<span class="gatechip {"pass" if r["g1"] else "fail"}">G1</span>'
                  f'<span class="gatechip {"pass" if r["g2"] else "fail"}">G2</span>')
         leak = f'<span class="leakbadge {r["leak_cls"]}" title="{r["leak_tip"]}">{r["leak"]}</span>'
+        sig = r.get("significant")
+        if sig is True:
+            sigb = f'<span class="leakbadge" title="PSR {r.get("psr")} clears Bonferroni 1-0.05/{r.get("n_trials")}">✓ sig</span>'
+        elif sig is False:
+            sigb = f'<span class="leakbadge untrusted" title="PSR {r.get("psr")} below Bonferroni 1-0.05/{r.get("n_trials")} trials — selection bias">⚠ not sig</span>'
+        else:
+            sigb = ""
         cal = r["calmar"]
         calcell = f'<td class="num metric {"pos" if (cal or 0) > 0 else "neg"}">{cal:+.4f}</td>' if cal is not None else '<td class="num">—</td>'
         body += (
@@ -200,9 +213,9 @@ def _leaderboard_html(rows):
             f'{calcell}'
             f'{_edgebar(r["edge"], r["edge_w"])}'
             f'<td class="num spk">{_spark(r["series"])}</td>'
-            f'{_num(r["cagr"], ".1f", "%")}{_num(r["mdd"], ".1f", "%")}{_num(r["da"], ".2f")}'
+            f'{_num(r["cagr"], ".1f", "%")}{_num(r["mdd"], ".1f", "%")}{_num(r["da"], ".2f")}{_num(r["sharpe"], ".2f")}'
             f'<td class="num">{r["trades"] if r["trades"] is not None else "—"}</td>'
-            f'<td>{gates}</td><td>{leak}</td>'
+            f'<td>{gates}</td><td>{leak}<br>{sigb}</td>'
             f'<td class="recipe"><code>{r["cell"]}</code><div class="rgloss">{r["recipe"]}</div></td>'
             f'</tr>')
     return (
@@ -214,8 +227,9 @@ def _leaderboard_html(rows):
         '<th data-k="cagr" data-t="n" class="num">CAGR</th>'
         '<th data-k="mdd" data-t="n" class="num">MDD</th>'
         '<th data-k="da" data-t="n" class="num">DA</th>'
+        '<th data-k="sharpe" data-t="n" class="num">Sharpe</th>'
         '<th data-k="trades" data-t="n" class="num">trades</th>'
-        '<th class="num">gates</th><th>trust</th><th>recipe (cell · plain English)</th>'
+        '<th class="num">gates</th><th>trust / significance</th><th>recipe (cell · plain English)</th>'
         '</tr></thead><tbody>' + body + '</tbody></table>')
 
 

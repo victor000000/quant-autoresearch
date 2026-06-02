@@ -983,7 +983,11 @@
         "sizing": "cdf_overlay"
       },
       "real_cagr": 24.117,
-      "real_mdd": 19.4
+      "real_mdd": 19.4,
+      "sharpe": 1.319,
+      "psr": 0.9858,
+      "n_trials": 8,
+      "significant": false
     },
     "IWM": {
       "cell": "IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45",
@@ -1001,7 +1005,11 @@
         "sizing": "cdf_overlay"
       },
       "real_cagr": 3.649,
-      "real_mdd": 3.2
+      "real_mdd": 3.2,
+      "sharpe": 0.87,
+      "psr": 0.9406,
+      "n_trials": 36,
+      "significant": false
     },
     "EEM": {
       "cell": "EEM_logdollar_triple_barrier_cdf_overlay_t0.30",
@@ -1020,7 +1028,11 @@
         "thresh": 0.3,
         "sizing": "cdf_overlay"
       },
-      "leak_fixed": true
+      "leak_fixed": true,
+      "sharpe": 1.945,
+      "psr": 0.9997,
+      "n_trials": 16,
+      "significant": true
     },
     "XLE": {
       "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
@@ -1039,7 +1051,11 @@
         "thresh": 0.3,
         "sizing": "cdf_overlay"
       },
-      "leak_fixed": true
+      "leak_fixed": true,
+      "sharpe": 0.899,
+      "psr": 0.9322,
+      "n_trials": 28,
+      "significant": false
     },
     "HYG": {
       "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
@@ -1058,7 +1074,11 @@
         "thresh": 0.55,
         "sizing": "cdf_overlay"
       },
-      "leak_fixed": true
+      "leak_fixed": true,
+      "sharpe": 1.643,
+      "psr": 0.9974,
+      "n_trials": 4,
+      "significant": true
     },
     "TLT": {
       "cell": "TLT_range_triple_barrier_ls_overlay_t0.50",
@@ -1076,7 +1096,11 @@
         "sizing": "ls_overlay"
       },
       "real_cagr": 2.892,
-      "real_mdd": 1.9
+      "real_mdd": 1.9,
+      "sharpe": 1.223,
+      "psr": 0.9995,
+      "n_trials": 82,
+      "significant": true
     },
     "GLD": {
       "cell": "GLD_logdollar_always_long_cdf_overlay_t0.45",
@@ -1095,7 +1119,11 @@
         "thresh": 0.45,
         "sizing": "cdf_overlay"
       },
-      "leak_fixed": true
+      "leak_fixed": true,
+      "sharpe": 1.774,
+      "psr": 0.9979,
+      "n_trials": 6,
+      "significant": true
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -1905,6 +1933,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "VERIFIED on QC: online == batch OOS bars, byte-identical. Rebuilt OOS bars ONLINE from the frozen TRAIN threshold (logdollar/imbalance/range): bars_match=1, max_lc_diff=0.0 for all 3. Batch-build is causally equivalent to online (warm-up from origin required)"
+      },
+      {
+        "id": "f_selbias",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "SELECTION-BIAS ASSESSMENT (Wang #1): PSR + Bonferroni-by-N_trials. 4/7 champions SIGNIFICANT (EEM/GLD/HYG/TLT); QQQ/IWM/XLE NOT significant (modest Sharpe ~0.9-1.3 don't clear, esp. heavily-ground IWM/XLE). Honest trials-adjusted verdict"
       }
     ],
     "edges": [
@@ -2837,6 +2871,16 @@
         "src": "f_audit2",
         "dst": "f_online_verified",
         "label": "online==batch confirmed live"
+      },
+      {
+        "src": "f_metric_unify",
+        "dst": "f_selbias",
+        "label": "add trials-adjustment"
+      },
+      {
+        "src": "f_plateau",
+        "dst": "f_selbias",
+        "label": "which edges are real?"
       }
     ],
     "running": []
