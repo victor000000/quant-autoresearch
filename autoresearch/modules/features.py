@@ -129,4 +129,31 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0):
     # TLT (0.7679 -> 0.677); a real cross-asset edge needs a 2-symbol PAIRS strategy,
     # not SPY features in a single-asset model. Reverted; left disabled. See f_crossasset.
 
+    # Fractional-difference (FFD) features (③, Wang-canon, memory-preserving): for a few
+    # orders d, a CAUSAL fractional difference of log-close (binomial weights, truncated at
+    # |w|<1e-4, width<=200). Appended as BOUNDED-VARIANCE transforms — first-difference + a
+    # trailing z-score — so the near-non-stationary FFD level cannot crowd the correlation-
+    # select (R34 crowding). All trailing/causal (no .shift(-N)) -> byte-identical online
+    # (the causal conv + rolling-100 fit inside the infer trailing window). F: 80 -> 86.
+    def _ffd_w(d, thresh=1e-4, max_w=200):
+        w = [1.0]
+        k = 1
+        while k < max_w:
+            wk = -w[-1] * (d - k + 1) / k
+            if abs(wk) < thresh:
+                break
+            w.append(wk)
+            k += 1
+        return np.array(w, dtype=float)
+    for d in [0.3, 0.5, 0.7]:
+        w = _ffd_w(d)
+        L = len(w)
+        fd = np.convolve(lc, w)[:N]            # causal FFD: fd[i] = sum_k w[k]*lc[i-k]
+        fd[:L - 1] = np.nan                     # warm-up (incomplete window)
+        sfd = pd.Series(fd)
+        feats.append(sfd.diff().astype(np.float32).to_numpy())                          # FFD first-difference
+        m = sfd.rolling(100, min_periods=100).mean()
+        s = sfd.rolling(100, min_periods=100).std()
+        feats.append(((sfd - m) / (s + 1e-12)).astype(np.float32).to_numpy())           # FFD trailing z-score
+
     return np.column_stack(feats).astype(np.float32)
