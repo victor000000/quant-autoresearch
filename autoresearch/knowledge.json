@@ -1147,10 +1147,33 @@
         "thresh": 0.45,
         "sizing": "cdf_overlay"
       }
+    },
+    "DBC": {
+      "cell": "DBC_logdollar_always_long_cdf_overlay_t0.45",
+      "real_calmar": 0.858,
+      "real_cagr": 10.983,
+      "real_mdd": 12.8,
+      "real_da": 36.1031,
+      "real_sharpe": 0.734,
+      "trades": 566,
+      "g2_pass": true,
+      "round": 28,
+      "source": "tournament",
+      "psr": 0.8883,
+      "n_trials": 2,
+      "significant": false,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "DBC",
+        "axis": "logdollar",
+        "labeler": "always_long",
+        "thresh": 0.45,
+        "sizing": "cdf_overlay"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 27,
+  "last_round": 28,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2136,6 +2159,12 @@
         "type": "finding",
         "phase": "PORTFOLIO",
         "label": "R109 EFA HURTS the book (3.60->3.31, MaxDD 3.2->3.58%): correlated equity beta adds drawdown, not decorrelation. Diversification = DECORRELATION not name-count. Deployable book stays 7-ETF; extend only with a decorrelated class (commodities/REITs)"
+      },
+      {
+        "id": "r110",
+        "type": "finding",
+        "phase": "DBC",
+        "label": "R110 DBC (commodities) added: weakest champion (always_long 0.86, huge DA 36 \u2014 brutal 2023-26 commodities). Decorrelated from equity book. R109 test: does decorrelation help the book despite DBC's weakness? -> 7+DBC test"
       }
     ],
     "edges": [
@@ -3378,6 +3407,11 @@
         "src": "r109",
         "dst": "f_portfolio",
         "label": "decorrelation>name-count; keep 7"
+      },
+      {
+        "src": "r109",
+        "dst": "r110",
+        "label": "add a DECORRELATED class (commodities)"
       }
     ],
     "running": []
