@@ -1,1 +1,1 @@
-{"running": false, "round": 91, "etf": "TLT", "last": "R91 TLT DISCARD \u2014 selectivity EEM-specific (0.55/0.60 identical 1.5174 < 1.5221). Tournament converged; pivoting to new methods."}
+{"running": false, "round": 92, "etf": "EEM", "last": "R92 EEM DISCARD \u2014 AFML sample-uniqueness weights HURT the trend edge (2.43->1.77). Test TLT (mean-revert) next, then revert if it doesn't help."}

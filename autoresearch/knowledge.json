@@ -1981,6 +1981,18 @@
         "type": "finding",
         "phase": "TLT",
         "label": "R91 TLT: selectivity is EEM-specific \u2014 0.55 & 0.60 give IDENTICAL 1.5174 (signal mass below 0.55), both < 0.50 champion 1.5221. TLT converged at 1.52. 4 straight config-swap DISCARDs => tournament converged"
+      },
+      {
+        "id": "r92",
+        "type": "finding",
+        "phase": "EEM",
+        "label": "R92 NEW METHOD: AFML sample-uniqueness weights HURT EEM 2.43->1.77 (trades 275->657). Dense triple_barrier overlap IS the trend signal; 1/concurrency down-weighting strips it. For a TREND edge overlap=signal, not redundancy. Test TLT (mean-revert) next"
+      },
+      {
+        "id": "f_uniqueness",
+        "type": "finding",
+        "phase": "ALL",
+        "label": "AFML sample-uniqueness weighting is target-dependent: hurts TREND edges (overlap=signal). Pending: mean-revert (TLT) test before keep/revert. Built scoped to triple_barrier; reversible"
       }
     ],
     "edges": [
@@ -3008,6 +3020,21 @@
         "src": "r91",
         "dst": "f_frontier",
         "label": "TLT converged \u2014 4th straight DISCARD"
+      },
+      {
+        "src": "f_frontier",
+        "dst": "r92",
+        "label": "try a new METHOD, not a swap"
+      },
+      {
+        "src": "r92",
+        "dst": "f_uniqueness",
+        "label": "overlap is signal for trends"
+      },
+      {
+        "src": "r88",
+        "dst": "r92",
+        "label": "weighting tested on the EEM champion"
       }
     ],
     "running": []
