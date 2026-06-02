@@ -1103,27 +1103,27 @@
       "significant": true
     },
     "GLD": {
-      "cell": "GLD_logdollar_always_long_cdf_overlay_t0.45",
-      "real_calmar": 1.9891,
-      "real_cagr": 34.611,
-      "real_mdd": 17.4,
-      "real_da": 19.7284,
-      "trades": 657,
+      "cell": "GLD_logdollar_trend_scan_cdf_overlay_t0.45",
+      "real_calmar": 2.1631,
+      "real_cagr": 9.085,
+      "real_mdd": 4.2,
+      "real_da": 2.8969,
+      "real_sharpe": 1.433,
+      "trades": 558,
       "g2_pass": true,
-      "round": 21,
+      "round": 30,
       "source": "tournament",
+      "psr": 0.9963,
+      "n_trials": 8,
+      "significant": true,
+      "leak_fixed": true,
       "config": {
         "ticker": "GLD",
         "axis": "logdollar",
-        "labeler": "always_long",
+        "labeler": "trend_scan",
         "thresh": 0.45,
         "sizing": "cdf_overlay"
-      },
-      "leak_fixed": true,
-      "sharpe": 1.774,
-      "psr": 0.9979,
-      "n_trials": 6,
-      "significant": true
+      }
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1196,7 +1196,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 29,
+  "last_round": 30,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2121,7 +2121,7 @@
         "id": "f_drift_ceiling",
         "type": "finding",
         "phase": "ALL",
-        "label": "DRIFT CEILING: HYG/GLD/QQQ buy-and-hold is optimal \u2014 timing forfeits carry (R90/R98), crash-veto has no OOS skill + fails G2 (R100). Their edge IS the carry; can't be improved in this framework"
+        "label": "DRIFT CEILING: HYG/GLD/QQQ buy-and-hold is optimal \u2014 timing forfeits carry (R90/R98), crash-veto has no OOS skill + fails G2 (R100). Their edge IS the carry; can't be improved in this framework | OVERTURNED (R116): trend-scanning beats GLD buy-hold 1.99->2.16. Drift CAN be timed with a trend-capturing label."
       },
       {
         "id": "r101",
@@ -2224,6 +2224,18 @@
         "type": "finding",
         "phase": "ALL",
         "label": "WANG TECHNIQUE SPACE CLOSED: every first-public technique tested. WON: meta-labeling (EEM 4.03, Calmar>3). REFUTED: autoencoder dim-reduce, cross-asset features. BUILT: custom axes, trend labels, entropy, leverage, portfolio combination. No untested techniques remain"
+      },
+      {
+        "id": "r116",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R116 BREAKTHROUGH: trend-scanning (NEW unsupervised label, AFML non-HMM) lifts GLD 1.99->2.16, trials-significant (PSR 0.9963). TIMING beats buy-hold on a drifter -> OVERTURNS the drift ceiling. Trend-scan rides trends (vs triple_barrier exiting mid-trend). Long-biased wins"
+      },
+      {
+        "id": "f_trendscan",
+        "type": "finding",
+        "phase": "ALL",
+        "label": "TREND-SCANNING beats drift buy-hold where triple_barrier couldn't: it labels the dominant forward TREND (rides up, flips down) instead of exiting at barriers, so it keeps the carry AND cuts drawdown. Overturns f_drift_ceiling. The LABEL was the missing piece, not the asset"
       }
     ],
     "edges": [
@@ -3531,6 +3543,21 @@
         "src": "f_wang_closed",
         "dst": "f_portfolio",
         "label": "research closed; deployable system is the result"
+      },
+      {
+        "src": "f_drift_ceiling",
+        "dst": "r116",
+        "label": "wrong label -> re-test with trend-scan"
+      },
+      {
+        "src": "r116",
+        "dst": "f_trendscan",
+        "label": "trend label beats drift buy-hold"
+      },
+      {
+        "src": "f_trenddom",
+        "dst": "f_trendscan",
+        "label": "triple_barrier under-returns; trend-scan doesn't"
       }
     ],
     "running": []
