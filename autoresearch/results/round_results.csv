@@ -313,3 +313,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T00:39:19,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,B,UUP,imbalance,accel+ker,0.5,cdf_overlay,0.1547,5.9091,106,True,True,0.0,0.8497,0.664,0.2715,-1.5656,21.6473,710,False,False,completed,completed
 2026-06-03T00:44:47,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,A,TLT,logdollar,ker,0.4,ls_overlay,-0.0749,27.1094,551,True,True,0.5228,0.6927,0.4769,-0.121,-1.1016,14.8105,710,False,False,completed,completed
 2026-06-03T00:44:47,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,B,TLT,logdollar,ker+trend_scan,0.4,ls_overlay,-0.072,28.4445,660,True,True,0.0,0.7094,0.5445,-0.1214,-0.2881,7.0215,710,True,False,completed,completed
+2026-06-03T00:51:08,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,A,TLT,zcusum,bgm,0.4,ls_overlay,-0.2534,36.1359,1792,True,True,-0.0202,0.5969,0.57,-0.9294,-1.8332,25.5653,710,False,False,completed,completed
+2026-06-03T00:51:08,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,B,TLT,zcusum,ker,0.4,ls_overlay,-0.2337,25.8166,1828,True,True,-0.0081,0.6283,0.528,-0.6703,0.9816,50.8722,710,True,False,completed,completed
