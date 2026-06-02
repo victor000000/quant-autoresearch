@@ -120,8 +120,12 @@ class OnlineInferXCheck(QCAlgorithm):
         n = len(self.diffs)
         maxd = max(self.diffs) if self.diffs else -1.0
         match = 1 if (n > 0 and maxd <= 1e-6) else 0
+        n_big = sum(1 for d in self.diffs if d > 0.01)
+        meand = (sum(self.diffs) / n) if n else -1.0
         self.set_runtime_statistic("preds_match", str(match))
         self.set_runtime_statistic("n_matched", str(n))
+        self.set_runtime_statistic("n_big_gt01", str(n_big))
+        self.set_runtime_statistic("mean_diff", str(round(meand, 6)))
         self.set_runtime_statistic("n_saved", str(len(self.saved)))
         self.set_runtime_statistic("max_pred_diff", str(round(maxd, 9)))
         self.quit("online-infer cross-check done")
