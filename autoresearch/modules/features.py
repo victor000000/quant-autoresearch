@@ -33,7 +33,7 @@ def sample_entropy(x, m=2, r_factor=0.2, max_comp=40):
     return -math.log((A / tA) / (B / tB)) if tA > 0 and tB > 0 else 0.0
 
 
-def build_feats(lc, lr, spy_lc=None, spy_lr=None):
+def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0):
     """Build feature matrix from log-close and log-return arrays.
 
     Args:
@@ -88,18 +88,24 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None):
     # Sample entropy features
     lr_arr = np.diff(lc, prepend=lc[0])
     lr_abs = np.abs(lr_arr)
+    # Entropy is sampled on a stride grid anchored at the FULL-series index (abs_start
+    # = absolute index of lc[0]). With abs_start=0 (train, full series) this is exactly
+    # range(W, N, stride). Online infer passes abs_start so a TRAILING window reproduces
+    # the SAME grid points -> byte-identical entropy as the full-series build.
     for W in [50, 100, 200]:
         for r_f in [0.1, 0.2]:
             se = np.full(N, np.nan, dtype=np.float32)
             stride = max(1, W // 5)
-            for i in range(W, N, stride):
-                se[i] = sample_entropy(lc[i - W:i], m=2, r_factor=r_f)
+            for i in range(W, N):
+                if (abs_start + i - W) % stride == 0:
+                    se[i] = sample_entropy(lc[i - W:i], m=2, r_factor=r_f)
             feats.append(pd.Series(se).ffill().fillna(0.0).astype(np.float32).to_numpy())
     for W in [50, 100]:
         se = np.full(N, np.nan, dtype=np.float32)
         stride = max(1, W // 5)
-        for i in range(W, N, stride):
-            se[i] = sample_entropy(lr_abs[i - W:i], m=2, r_factor=0.2)
+        for i in range(W, N):
+            if (abs_start + i - W) % stride == 0:
+                se[i] = sample_entropy(lr_abs[i - W:i], m=2, r_factor=0.2)
         feats.append(pd.Series(se).ffill().fillna(0.0).astype(np.float32).to_numpy())
 
     # Mean-reversion oscillators (③, causal) — for assets whose edge is in reversals

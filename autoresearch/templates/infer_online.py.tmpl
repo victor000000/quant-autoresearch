@@ -85,8 +85,9 @@ class OnlineInferXCheck(QCAlgorithm):
         lc = np.array(self.blc[-_TRAIL:], dtype=float)
         lr = np.zeros_like(lc)
         lr[1:] = lc[1:] - lc[:-1]
+        abs_start = len(self.blc) - len(lc)        # absolute index of lc[0] -> anchored entropy grid
         try:
-            feats = build_feats(lc, lr)
+            feats = build_feats(lc, lr, abs_start=abs_start)
         except Exception:
             return
         row = feats[-1]
