@@ -237,3 +237,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T16:16:18,XLE,0.9052,XLE_logdollar_tertile_cdf_overlay_t0.30,B,XLE,zcusum,triple_barrier,0.45,cdf_overlay,0.3645,8.0283,2395,True,True,0.1681,0.5677,0.5209,True,False,completed,completed
 2026-06-02T16:30:38,TIP,0.0,,A,TIP,logdollar,always_long,0.45,cdf_overlay,1.1463,6.8033,772,True,True,-0.2498,0.5,0.5,True,True,completed,completed
 2026-06-02T16:30:38,TIP,0.0,,B,TIP,logdollar,triple_barrier,0.3,cdf_overlay,0.8917,1.9886,796,True,True,-0.1933,0.6972,0.556,False,False,completed,completed
+2026-06-02T16:56:49,IWM,1.1403,IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45,A,IWM,imbalance,triple_barrier_meta+bgm,0.45,cdf_overlay,0.3126,3.2792,733,True,True,0.0,0.751,0.5807,True,False,completed,completed
+2026-06-02T16:56:49,IWM,1.1403,IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45,B,IWM,volumeimb,triple_barrier+bgm,0.45,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,False,False,completed,completed

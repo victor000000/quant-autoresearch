@@ -2337,6 +2337,12 @@
         "type": "milestone",
         "phase": "PORTFOLIO",
         "label": "R128 R124 sweep COMPLETE: IWM/TLT keep timing cells (always_long hurts 3.34/2.92 vs 4.22 \u2014 their DD-reduction is book-needed). Only clean drifter GLD wanted buy-hold. Book verified book-optimal at 4.22 across members/cells/weighting/leverage"
+      },
+      {
+        "id": "r129",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "R129 IWM workflow top-2 fail: meta-on-ENSEMBLE 0.31 (gate HURTS the blend \u2014 meta needs a strong primary, IWM's tb leg isn't one even in the ensemble; R96 holds at ensemble level). volumeimb degenerate (0tr). IWM ceiling 1.14 holds; book role already optimal (R128). Try crash_ahead next"
       }
     ],
     "edges": [
@@ -3794,6 +3800,16 @@
         "src": "r128",
         "dst": "f_book_objective",
         "label": "sweep complete: volatile members keep timing, clean drifters buy-hold"
+      },
+      {
+        "src": "f_iwm_ceiling",
+        "dst": "r129",
+        "label": "workflow novel ideas vs the ceiling"
+      },
+      {
+        "src": "r129",
+        "dst": "f_meta",
+        "label": "meta needs a strong primary \u2014 IWM lacks one even in the ensemble"
       }
     ],
     "running": []
