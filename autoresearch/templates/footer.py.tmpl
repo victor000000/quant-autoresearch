@@ -246,6 +246,26 @@ class AutoresearchPipeline(QCAlgorithm):
             except Exception:
                 pv_cal, pe_cal = pv_raw, pe_raw
 
+        # MODEL BUNDLE — frozen artifacts so the OOS backtest can run the model ONLINE
+        # (not replay predictions). Bar params (axis/threshold) added by the caller.
+        # Guarded; constant_long cells (always_long) carry no model. (online OOS redesign)
+        try:
+            if n_pos == 0 or n_neg == 0:
+                _bundle = {"constant_long": True, "thresh": float(thresh), "sizing": sizing,
+                           "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
+            else:
+                _cal = locals().get("cal")
+                _bundle = {"constant_long": False, "thresh": float(thresh), "sizing": sizing,
+                           "scaler_mean": [float(x) for x in sc.mean_],
+                           "scaler_scale": [float(x) for x in sc.scale_],
+                           "kept_idx": [int(i) for i in kept_idx],
+                           "booster": m.get_booster().save_raw("json").decode("utf-8"),
+                           "cal_x": [float(x) for x in (getattr(_cal, "X_thresholds_", None) or [])],
+                           "cal_y": [float(x) for x in (getattr(_cal, "y_thresholds_", None) or [])],
+                           "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
+        except Exception:
+            _bundle = None
+
         # VAL "middle" metrics over ALL causal val bars (honest OOS preview), at the
         # SAME thresh+sizing infer executes with (no train/infer mismatch).
         synth_cal, n_trades, _, _, _, val_da = _cstats_sized(
@@ -265,7 +285,7 @@ class AutoresearchPipeline(QCAlgorithm):
             pass
         cfg = f"{label_cfg}_corr{nk}_xgbd3_iso"
         return (float(synth_cal), cfg, train_auc, val_auc, int(n_trades),
-                test_preds, float(val_da))
+                test_preds, float(val_da), _bundle)
 
     def on_end_of_algorithm(self):
         close = np.array(self.cll)
@@ -401,7 +421,7 @@ class AutoresearchPipeline(QCAlgorithm):
                     res = None                  # a failing leg must not crash the whole train
                 if res is None:
                     continue
-                synth_cal, cfg, train_auc, val_auc, n_trades, test_preds, val_da = res
+                synth_cal, cfg, train_auc, val_auc, n_trades, test_preds, val_da, _bundle = res
                 if test_preds is None or len(test_preds) == 0:
                     continue
                 if ens_parts is not None:           # collect for averaging, don't save per-leg
@@ -429,6 +449,20 @@ class AutoresearchPipeline(QCAlgorithm):
                     "n_trades": n_trades,
                     "predictions": test_preds,
                 }))
+                # MODEL BUNDLE (online OOS backtest): frozen model + bar params, saved
+                # next to the cell as model_*.json. Scalar-threshold single-labeler axes
+                # only (infer v1 scope). Guarded — never breaks the cell save above.
+                try:
+                    if _bundle is not None and axis in BUILDER_CLASSES:
+                        _mb = _make_builder(axis, close, vol, ts_arr, TARGET_BARS)
+                        _bthr = builder_threshold(_mb) if _mb is not None else None
+                        if _bthr is not None:
+                            _bundle["bar_type"] = axis
+                            _bundle["bar_thresh"] = float(_bthr)
+                            _bundle["target_bars"] = int(TARGET_BARS)
+                            self.object_store.save(key.replace("/cell_", "/model_"), json.dumps(_bundle))
+                except Exception:
+                    pass
                 cells.append({
                     "key": key,
                     "axis": axis,
