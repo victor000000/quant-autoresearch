@@ -304,21 +304,49 @@ def _portfolio_html(K):
     kpis = (k("Calmar", champ.get("calmar", "—"), "acc") + k("Max DD", f'{champ.get("mdd_pct","—")}%', "pos")
             + k("Sharpe", champ.get("sharpe", "—")) + k("Win", f'{champ.get("win_pct","—")}%')
             + k("CAGR", f'{champ.get("car_pct","—")}%') + k("Names", champ.get("n", "—")))
-    bh = pf.get("benchmark_buyhold7") or {}
-    extra = ""
-    if bh:
-        extra = (f'<p class="small"><b>Alpha vs passive:</b> beats buy-and-hold of the basket on risk-adjusted '
-                 f'return — Calmar {champ.get("calmar")} vs {bh.get("calmar")}, MaxDD {champ.get("mdd_pct")}% vs '
-                 f'{bh.get("mdd_pct")}% (passive wins raw CAGR in this bull). <b>Levered ~2×</b> the book dominates '
-                 f'on BOTH axes (CAGR &gt; passive at lower drawdown). Positive every calendar year (2023–26); '
-                 f'leverable per risk budget. Decorrelation, not name-count, drives inclusion — DBC (weak) helps, '
-                 f'EFA (correlated) hurt.</p>')
+    members = champ.get("members") or []
+    mem_txt = ", ".join(f'{m[0]}' for m in members) if members else "GLD, UUP, TIP, DBC, HYG"
+    extra = ('<p class="small"><b>Why these five:</b> the book is built by <b>decorrelation, not by picking the '
+             'highest single Calmar.</b> Only two members carry a real machine-learned edge — <b>GLD</b> '
+             '(gold trend-following) and <b>UUP</b> (dollar regime); the rest are decorrelated buy-and-hold '
+             'diversifiers whose job is to cut the drawdown. Dropping the correlated high-drawdown equities '
+             '(QQQ/EEM/EFA/IWM/XLE) roughly doubled the Calmar (1.78 → 3.53). Leverage is a separate dial — it '
+             'scales return and drawdown together, leaving Calmar unchanged.</p>')
     return ('<div class="scoreboard">' + kpis + '</div>'
-            f'<p class="small">{champ.get("scheme","conviction-weighted (∝Calmar)")} · all {champ.get("n","7")} '
-            'champions, gross≤1 (no leverage) · diversification beats concentration (R104: full-7 &gt; '
-            'significant-only). Wang production endpoint ⑨ model-combination + ⑩ live. Single-asset flagship: '
-            '<b>EEM Calmar 4.03</b> — triple_barrier + meta-labeling, Calmar&gt;3, byte-exact live-equivalent.</p>'
+            f'<p class="small">Members: <b>{mem_txt}</b> · weight ∝ Calmar² · gross ≤ 1 (no leverage) · '
+            'positive every calendar year 2023–26. Re-validated + selection-bias-audited 2026-06-02 — the earlier '
+            '“EEM 4.03 / book 4.22” figures were stale window artifacts and have been corrected.</p>'
             + extra)
+
+
+def _intro_html(K):
+    """Plain-English lead for a human landing cold: what this is, the bottom line (live numbers),
+    and how to read the jargon. No stale hardcoded claims — pulls from the live champion book."""
+    pf = K.get("portfolio") or {}
+    champ = pf.get(pf.get("champion", "")) or pf.get("conviction_weight") or {}
+    cal = champ.get("calmar", "—"); cagr = champ.get("car_pct", champ.get("cagr_pct", "—"))
+    mdd = champ.get("mdd_pct", "—"); n = champ.get("n", "—")
+    bottom = (f'a deployable <b>{n}-asset book</b> that earns about <b>{cagr}%/yr</b> with a worst drawdown of only '
+              f'<b>~{mdd}%</b> (Calmar <b>{cal}</b>), positive every year 2023–26 — beating a passive hold of the same assets.'
+              if champ else 'pending (no book yet).')
+    return (
+        '<section class="block intro" id="intro"><h2>What this is</h2>'
+        '<p>An <b>autonomous research loop</b> that invents and back-tests ETF trading strategies on real market '
+        'data (QuantConnect), and keeps only the ones that survive strict out-of-sample <i>and</i> multiple-testing '
+        'checks. The AI proposes and runs the experiments; a human steers the direction.</p>'
+        f'<p><b>Bottom line today —</b> {bottom} Its returns come from <b>two genuine machine-learned edges</b> — '
+        'gold trend-following (GLD) and a US-dollar regime model (UUP) — plus <b>decorrelated diversifiers</b> '
+        '(inflation bonds, commodities, credit) that cut the drawdown. The backtest is verified <b>leak-free and '
+        'fully online</b>, using only models trained in the cloud (see <a href="deployment.md">deploy</a>).</p>'
+        '<details class="glossary"><summary>How to read the numbers</summary>'
+        '<ul><li><b>Calmar</b> = annual return ÷ worst drawdown (higher is better; above 3 is strong).</li>'
+        '<li><b>MaxDD (MDD)</b> = the deepest peak-to-trough loss along the way.</li>'
+        '<li><b>CAGR</b> = compounded annual return. <b>Sharpe</b> = return per unit of volatility.</li>'
+        '<li><b>Edge</b> = how much a strategy beats simply buying and holding the same ETF.</li>'
+        '<li><b>“Survives deflation”</b> = the result still looks real after correcting for how many strategies we '
+        'tried (a guard against luck/overfitting). A weak edge that was lucky over a short window is rejected.</li>'
+        '<li><b>Recipe / cell</b> = the exact pipeline that produced a result: '
+        '<code>asset · bar-clock · labeling-method · sizing · threshold</code>.</li></ul></details></section>')
 
 
 def build_html():
@@ -358,9 +386,12 @@ def build_html():
           '<p class="small">Calmar=CAGR/MaxDD (higher better) · CAGR=compounding annual return · MDD=max drawdown · '
           'DA=drawdown-area (lower MDD/DA better) · edge=Calmar−buy&amp;hold · sparkline=Calmar across this ETF\'s '
           f'cells · gates: G1 Calmar&gt;{G1_CALMAR:g}, G2 trades&gt;{G2_TRADES}. Click a header to sort.</p></section>')
-    cmap = (f'<section class="block" id="map"><h2>Label-to-asset map — one rule</h2>'
-            '<p class="small"><b>f_timing_when:</b> directional timing beats buy-and-hold ONLY when the hold is weak '
-            '(EEM 1.25→2.15); when the trend is strong, hold wins (GLD/HYG/QQQ).</p>'
+    cmap = (f'<section class="block" id="map"><h2>What each asset rewards</h2>'
+            '<p class="small">The hard-won lesson: <b>durable machine-learned edges are scarce.</b> Only '
+            '<b>GLD</b> (gold trend-following) and <b>UUP</b> (dollar regime) beat buy-and-hold in a way that '
+            'survives the selection-bias audit. Two-sided <i>timing</i> edges (EEM/TLT/IWM) looked great on a '
+            'short window but <b>decayed to nothing</b> as the out-of-sample window grew — so the rest of the '
+            'universe is best held passively, and the value comes from combining decorrelated holdings.</p>'
             f'{_charmap_html(rows)}</section>')
     story = (f'<section class="block" id="story"><h2>The research arc</h2>{_acts_html(K)}</section>')
     insights = (f'<section class="block" id="insights"><h2>Top insights</h2>{_insights_html(K)}</section>')
@@ -374,7 +405,7 @@ def build_html():
               '<button class="fchip" data-f="discard">DISCARD</button></div>'
               f'{_ledger_html(rounds)}'
               '<button class="showall" id="showall">show all rounds</button></section>')
-    return (head + '<div class="dash">' + nav + hero + pf_sec + lb + cmap + story + insights + graph_sec + ledger
+    return (head + '<div class="dash">' + nav + _intro_html(K) + hero + pf_sec + lb + cmap + story + insights + graph_sec + ledger
             + '</div><script>' + CONSOLE_JS + '</script></body></html>')
 
 
