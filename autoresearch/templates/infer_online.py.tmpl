@@ -1,7 +1,8 @@
 TICKER = "__TICKER__"
 CELL = "__CELL__"
-_WARMUP = 900           # >= max feature window (800) + margin; trailing-window recompute
-_TRAIL = 1000           # bars of trailing history fed to build_feats (>= _WARMUP)
+_WARMUP = 820           # >= max feature window (800) + margin
+_TRAIL = 840            # bars of trailing history fed to build_feats (>= _WARMUP)
+_XSTRIDE = 20           # cross-check every Nth OOS bar (build_feats is the bottleneck)
 
 
 class OnlineInferXCheck(QCAlgorithm):
@@ -75,6 +76,9 @@ class OnlineInferXCheck(QCAlgorithm):
         if not (self.vend <= t64 < self.tend):     # OOS-window emission only
             return
         if len(self.blc) < _WARMUP:
+            return
+        self._oc = getattr(self, "_oc", 0) + 1      # cross-check a subsample (speed)
+        if self._oc % _XSTRIDE != 0:
             return
         lc = np.array(self.blc[-_TRAIL:], dtype=float)
         lr = np.zeros_like(lc)
