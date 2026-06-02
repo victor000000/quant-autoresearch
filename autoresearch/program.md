@@ -25,6 +25,13 @@ Scorer, splits, and real execution are LOCKED. Train/val metrics are just knobs 
   the future label filters only FIT bars, never which OOS bars trade. **bar thresholds fit on TRAIN
   minutes, not the full series.** a too-good KEEP must beat an `always_long` control. check this every round.
 - long/short is allowed on EVERY ETF — try it even on up-drifters. simpler is better. confirm on ≥2 runs.
+- **trust = trials-adjusted.** a kept edge must clear PSR vs Bonferroni-by-N_trials (`assess_dsr.py`),
+  else it's selection bias. Today only 4/7 champions clear it (EEM/GLD/HYG/TLT); QQQ/IWM/XLE don't.
+
+## verified (2026-06)
+- pipeline is leak-free (6-agent audit). the OOS backtest is a prediction-replay that is PROVEN
+  byte-identical (max diff 2.3e-8) to a fully-ONLINE run that rebuilds bars+features+frozen-model live
+  (`infer_online.py.tmpl` + the per-cell model bundle) — i.e. live-trading-equivalent.
 
 ## setup
 QC project 31338454, creds `qc/.creds.json`. py3.11 / pandas 2.3.3 / sklearn 1.6 / xgboost 3.
