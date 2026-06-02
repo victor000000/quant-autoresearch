@@ -963,6 +963,22 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
     return VolBarBuilder(_safe_thresh(total, target_bars))
 
 
+# Scalar-threshold builder classes by axis name — lets a verification run rebuild
+# bars ONLINE from a SAVED frozen threshold (no _make_builder recompute needed).
+# entropy/fracdiff omitted: they also need fitted params (edges/probs/T, weights/d).
+BUILDER_CLASSES = {
+    "dollar": DollarBarBuilder, "tick": TickBarBuilder, "vol": VolBarBuilder,
+    "range": RangeBarBuilder, "logdollar": LogDollarBarBuilder,
+    "imbalance": DollarImbalanceBarBuilder, "tickimb": TickImbalanceBarBuilder,
+    "volumeimb": VolumeImbalanceBarBuilder, "dc": DirectionalChangeBarBuilder,
+}
+
+
+def builder_threshold(b):
+    """The frozen scalar threshold of a built builder (uniform across classes)."""
+    return getattr(b, "thresh", getattr(b, "thresh_pct", getattr(b, "delta", None)))
+
+
 # ----------------------------------------------------------------------------
 # Dispatch — build a full bar series from minute data.
 # ----------------------------------------------------------------------------

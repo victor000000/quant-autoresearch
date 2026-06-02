@@ -1,0 +1,70 @@
+TICKER = "__TICKER__"
+AXIS = "__AXIS__"
+
+
+class OnlineBarVerify(QCAlgorithm):
+    """Proves online == batch custom-bar generation in the OOS window. Replays the
+    SAME 2009->2026 minute feed, rebuilds bars ONLINE from the FROZEN threshold the
+    footer saved (cls(thr) — no _make_builder recompute), slices to the OOS window,
+    and asserts the bars are byte-identical to the footer's batch OOS bars."""
+
+    def initialize(self):
+        self.set_start_date(2009, 8, 1)
+        self.set_end_date(2026, 6, 1)
+        self.set_cash(100000)
+        self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol
+        self.cll = []
+        self.vll = []
+        self.tsl = []
+
+    def on_data(self, slice):
+        if self.sym in slice.bars:
+            b = slice.bars[self.sym]
+            self.cll.append(float(b.close))
+            self.vll.append(float(b.volume))
+            self.tsl.append(b.end_time)
+
+    def on_end_of_algorithm(self):
+        try:
+            saved = json.loads(self.object_store.read("autoresearch/" + TICKER + "/oosbars_" + AXIS + ".json"))
+        except Exception:
+            self.set_runtime_statistic("verify_error", "no_saved_oosbars")
+            return
+        cls = BUILDER_CLASSES.get(saved.get("bar_type"))
+        if cls is None:
+            self.set_runtime_statistic("verify_error", "no_builder_class")
+            return
+        thr = float(saved["bar_thresh"])
+        vend = np.datetime64(saved["val_end"])
+        tend = np.datetime64(saved["test_end"])
+        close = np.asarray(self.cll)
+        vol = np.asarray(self.vll)
+        ts_arr = np.asarray(self.tsl)
+
+        builder = cls(thr)                       # ONLINE: frozen threshold, streamed from origin
+        on_ts, on_lc = [], []
+        for i in range(len(close)):
+            bar = builder.update(ts_arr[i], close[i], vol[i])
+            if bar is not None:
+                norm = str(ts_arr[i])[:19].replace(" ", "T")
+                if vend <= np.datetime64(norm) < tend:    # OOS-window emission only
+                    on_ts.append(norm)
+                    on_lc.append(float(bar["log_close"]))
+
+        sv_ts, sv_lc = saved.get("oos_bar_ts", []), saved.get("oos_bar_lc", [])
+        n_on, n_bt = len(on_ts), len(sv_ts)
+        first_mm, maxd = -1, 0.0
+        for i in range(min(n_on, n_bt)):
+            d = abs(on_lc[i] - sv_lc[i])
+            if d > maxd:
+                maxd = d
+            if on_ts[i] != sv_ts[i] or d > 1e-9:
+                first_mm = i
+                break
+        match = 1 if (n_on == n_bt and first_mm == -1) else 0
+        self.set_runtime_statistic("bars_match", str(match))
+        self.set_runtime_statistic("n_online", str(n_on))
+        self.set_runtime_statistic("n_batch", str(n_bt))
+        self.set_runtime_statistic("first_mismatch", str(first_mm))
+        self.set_runtime_statistic("max_lc_diff", str(round(maxd, 12)))
+        self.quit("online-bar verify done")

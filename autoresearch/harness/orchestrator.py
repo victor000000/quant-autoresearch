@@ -141,6 +141,19 @@ def render_train_config(config):
     return _minify(script)
 
 
+def render_verify(ticker, axis):
+    """Render the ONLINE-BAR VERIFY backtest for one (ticker, axis): bar_builder
+    module + verify template, replaying the feed from origin and rebuilding the OOS
+    bars online from the footer-saved frozen threshold. Reads oosbars_{axis}.json
+    (saved by a prior train run on that ticker/axis)."""
+    bb = read_module("bar_builder.py")
+    with open(os.path.join(TEMPLATES_DIR, "verify.py.tmpl")) as f:
+        vt = f.read()
+    code = ("from AlgorithmImports import *\nimport json\nimport math\nimport numpy as np\nimport pandas as pd\n\n"
+            "# === bar_builder.py ===\n" + bb + "\n\n# === verify ===\n" + vt)
+    return code.replace("__TICKER__", str(ticker)).replace("__AXIS__", str(axis))
+
+
 def render_infer_cell(ticker, cell):
     """Render the INFER script bound to one cell key '{axis}_{labeler}'.
 

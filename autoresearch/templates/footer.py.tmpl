@@ -338,6 +338,24 @@ class AutoresearchPipeline(QCAlgorithm):
             if tr_m.sum() < 500 or va_m.sum() < 50 or te_m.sum() < 50:
                 continue
 
+            # --- ONLINE-BARS VERIFY (guarded; never breaks training): persist this
+            # axis's FROZEN threshold + the batch OOS bars so verify.py can rebuild
+            # them ONLINE from the saved threshold and prove byte-identical. Scalar-
+            # threshold axes only (entropy/fracdiff need extra fitted params).
+            try:
+                if axis in BUILDER_CLASSES:
+                    _vb = _make_builder(axis, close, vol, ts_arr, TARGET_BARS)
+                    _vthr = builder_threshold(_vb) if _vb is not None else None
+                    if _vthr is not None:
+                        self.object_store.save("autoresearch/" + TICKER + "/oosbars_" + axis + ".json",
+                            json.dumps({"bar_type": axis, "bar_thresh": float(_vthr),
+                                        "target_bars": int(TARGET_BARS), "n_oos_batch": int(te_m.sum()),
+                                        "val_end": str(VAL_END), "test_end": str(TEST_END),
+                                        "oos_bar_ts": [str(t)[:19].replace(" ", "T") for t, m in zip(bar_ts, te_m) if m],
+                                        "oos_bar_lc": [float(x) for x in lc[te_m]]}))
+            except Exception:
+                pass
+
             try:
                 feats = build_feats(lc, lr, spy_lc, spy_lr)
             except NameError:
