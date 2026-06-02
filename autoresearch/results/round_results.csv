@@ -265,3 +265,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T21:40:58,XLE,0.8588,XLE_logdollar_tertile_cdf_overlay_t0.30,B,XLE,logdollar,bgm,0.45,cdf_overlay,1.0229,8.178,346,True,True,0.7097,0.7359,0.5802,0.9119,0.1003,10.8477,710,True,False,completed,completed
 2026-06-02T21:48:13,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,A,TLT,logdollar,bgm,0.45,ls_overlay,0.0279,31.5473,665,True,True,1.0629,0.8012,0.6354,0.0855,-0.1891,5.5617,710,True,False,completed,completed
 2026-06-02T21:48:13,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,B,TLT,imbalance,regime_gmm,0.45,ls_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-02T22:31:27,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,A,TLT,range,triple_barrier_meta,0.5,ls_overlay,-0.08,2.3684,393,True,True,0.0157,0.5299,0.4896,-0.118,0.4735,6.6561,710,False,False,completed,completed
+2026-06-02T22:31:27,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,B,TLT,logdollar,multi_horizon,0.45,ls_overlay,0.2847,25.2079,781,True,True,1.2813,0.7469,0.6887,0.3925,-0.1087,4.3271,710,True,False,completed,completed

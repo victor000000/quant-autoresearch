@@ -1142,7 +1142,7 @@
     "thresh": 0.45,
     "sizing": "ls_overlay"
    },
-   "status": "no_deployable_edge (every method negative over current window: timing collapsed, trend_scan -0.039, cusum_regime -0.237, buy-hold -0.057)",
+   "status": "EXHAUSTED/OUT \u2014 100 trials, no method survives deflation (best +0.28 multi_horizon << best-of-100 noise 0.92); buy-hold negative. No deployable single-ticker edge. Excluded from the lowest-pick.",
    "deployable": false,
    "deflated_calmar_benchmark": 0.9279,
    "deflation_margin": -0.9666,
@@ -1152,7 +1152,8 @@
    "sharpe": -0.0374,
    "n_days": 710,
    "real_skew": 0.3961,
-   "real_kurt": 8.7013
+   "real_kurt": 8.7013,
+   "exhausted_out": true
   },
   "GLD": {
    "cell": "GLD_logdollar_trend_scan_cdf_overlay_t0.45",
@@ -2557,6 +2558,12 @@
     "type": "round",
     "phase": "TLT",
     "label": "R134 TLT DISCARD: Sample on log-dollar bars; Bayesian-GMM regime labels; size long/short, vol-targeted, entry 0.45. -> Calmar +0.0279 (prev best -0.0387). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r135",
+    "type": "round",
+    "phase": "TLT",
+    "label": "R135 TLT DISCARD: Sample on log-dollar bars; multi-horizon trend labels; size long/short, vol-targeted, entry 0.45. -> Calmar +0.2847 (prev best -0.0387). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4153,6 +4160,11 @@
    {
     "src": "r133",
     "dst": "r134",
+    "label": "no improvement"
+   },
+   {
+    "src": "r134",
+    "dst": "r135",
     "label": "no improvement"
    }
   ],
