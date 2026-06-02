@@ -1294,7 +1294,9 @@
    "sharpe": 1.0556,
    "n_days": 710,
    "real_skew": -0.4605,
-   "real_kurt": 7.5678
+   "real_kurt": 7.5678,
+   "ceilinged": true,
+   "status": "REAL EDGE, OPTIMIZED \u2014 bgm 1.08 (val_auc 0.98) beats trend_scan 0.73 / KER 0.47 / regime_gmm(0); methods exhausted. Genuine deployable edge at its ceiling (not buy-hold). Excluded from active lowest-pick."
   },
   "TIP": {
    "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -2599,6 +2601,12 @@
     "type": "round",
     "phase": "DBC",
     "label": "R140 DBC DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5124 (prev best +0.9119). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r141",
+    "type": "round",
+    "phase": "UUP",
+    "label": "R141 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.4733 (prev best +1.0831). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4225,6 +4233,11 @@
    {
     "src": "r139",
     "dst": "r140",
+    "label": "no improvement"
+   },
+   {
+    "src": "r140",
+    "dst": "r141",
     "label": "no improvement"
    }
   ],
