@@ -81,7 +81,8 @@ if SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, SCRIPTS_DIR)
 from describe import describe_cfg  # noqa: E402  config -> plain-English hypothesis
 
-CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD"]
+CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
+          "EFA"]   # universe expansion: developed-intl equity (new asset class for the portfolio)
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
