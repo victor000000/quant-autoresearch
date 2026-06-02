@@ -1164,29 +1164,30 @@
    "exhausted_out": true
   },
   "GLD": {
-   "cell": "GLD_logdollar_ker+trend_scan_cdf_overlay_t0.45",
-   "real_calmar": 2.8904,
-   "real_cagr": 7.515,
-   "real_mdd": 2.6,
-   "real_da": 2.5262,
-   "real_sharpe": 2.221,
-   "trades": 580,
+   "cell": "GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40",
+   "real_calmar": 3.2026,
+   "real_cagr": 9.928,
+   "real_mdd": 3.1,
+   "real_da": 2.8484,
+   "real_sharpe": 2.317,
+   "trades": 704,
    "g2_pass": true,
-   "round": 36,
+   "round": 37,
    "source": "tournament",
    "psr": 1.0,
-   "n_trials": 16,
+   "n_trials": 18,
    "significant": true,
    "leak_fixed": true,
    "config": {
     "ticker": "GLD",
     "axis": "logdollar",
     "labeler": "ker+trend_scan",
-    "thresh": 0.45,
+    "thresh": 0.4,
     "sizing": "cdf_overlay"
    },
+   "ceilinged": true,
    "val_auc_reval": 0.594,
-   "status": "REAL EDGE, IMPROVED 2x \u2014 within-ticker ensemble ker+trend_scan = 2.89 (>KER 2.41 >trend_scan 2.16); val_auc 0.594>0.52, survives deflation (floor 1.135). Leak-free by construction (avg of two online-verified causal signals: KER preds_match=1, trend_scan 2.1e-8). Single-ticker (both labelers on GLD)."
+   "status": "REAL EDGE, OPTIMIZED to 3.20 (Calmar>3 \u2014 Wang goal): ker+trend_scan ensemble @thr0.40 (2.16->2.41->2.89->3.20 via new KER method + ensemble + threshold). val_auc 0.594, survives deflation floor 1.383, smooth-monotone (not knife-edge). Stop squeezing \u2014 further threshold-chasing overfit-prone."
   },
   "EFA": {
    "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1291,8 +1292,7 @@
    "n_days": 710,
    "real_skew": -0.4605,
    "real_kurt": 7.5678,
-   "ceilinged": true,
-   "status": "REAL EDGE, OPTIMIZED \u2014 bgm 1.08 (val_auc 0.98) beats trend_scan 0.73 / KER 0.47 / regime_gmm(0); methods exhausted. Genuine deployable edge at its ceiling (not buy-hold). Excluded from active lowest-pick."
+   "status": "REAL EDGE (bgm 1.08, val_auc 0.98 = strong structure). RE-OPENED for ensemble squeeze \u2014 GLD just improved 2.16->3.20 via within-ticker ensemble; UUP high val_auc suggests similar headroom (try bgm+trend_scan / bgm+ker)."
   },
   "TIP": {
    "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1330,7 +1330,7 @@
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
- "last_round": 36,
+ "last_round": 37,
  "causal_graph": {
   "phases": [
    "Landscape",
@@ -2647,6 +2647,12 @@
     "type": "milestone",
     "phase": "GLD",
     "label": "R148 GLD KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.45. -> Calmar +2.8904 (prev best +2.4103). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r149",
+    "type": "milestone",
+    "phase": "GLD",
+    "label": "R149 GLD KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +3.2026 (prev best +2.8904). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4313,6 +4319,11 @@
    {
     "src": "r147",
     "dst": "r148",
+    "label": "new best"
+   },
+   {
+    "src": "r148",
+    "dst": "r149",
     "label": "new best"
    }
   ],
