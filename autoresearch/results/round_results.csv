@@ -215,3 +215,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T14:30:11,EFA,0.0,,B,EFA,logdollar,always_long,0.45,cdf_overlay,1.2617,17.1737,632,True,True,-0.0649,0.5,0.5,True,True,completed,completed
 2026-06-02T14:35:31,DBC,0.0,,A,DBC,logdollar,always_long,0.45,cdf_overlay,0.858,36.1031,566,True,True,0.4677,0.5,0.5,True,True,completed,completed
 2026-06-02T14:35:31,DBC,0.0,,B,DBC,logdollar,triple_barrier_meta,0.3,cdf_overlay,0.5265,10.5002,374,True,True,0.6087,0.6507,0.5126,False,False,completed,completed
+2026-06-02T14:46:51,UUP,0.0,,A,UUP,logdollar,always_long,0.45,cdf_overlay,0.3432,24.235,532,True,True,0.4849,0.5,0.5,True,True,completed,completed
+2026-06-02T14:46:51,UUP,0.0,,B,UUP,logdollar,triple_barrier_meta,0.3,cdf_overlay,0.0086,6.0105,500,True,True,-0.2014,0.6387,0.5085,False,False,completed,completed

@@ -1170,10 +1170,33 @@
         "thresh": 0.45,
         "sizing": "cdf_overlay"
       }
+    },
+    "UUP": {
+      "cell": "UUP_logdollar_always_long_cdf_overlay_t0.45",
+      "real_calmar": 0.3432,
+      "real_cagr": 3.329,
+      "real_mdd": 9.7,
+      "real_da": 24.235,
+      "real_sharpe": 0.556,
+      "trades": 532,
+      "g2_pass": true,
+      "round": 29,
+      "source": "tournament",
+      "psr": 0.8219,
+      "n_trials": 2,
+      "significant": false,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "UUP",
+        "axis": "logdollar",
+        "labeler": "always_long",
+        "thresh": 0.45,
+        "sizing": "cdf_overlay"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 28,
+  "last_round": 29,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2171,6 +2194,12 @@
         "type": "milestone",
         "phase": "PORTFOLIO",
         "label": "R111 DECORRELATION CONFIRMED: adding DBC (weakest, 0.86) IMPROVES book \u2014 MaxDD 3.2->2.74%, Calmar 3.60->4.22. EFA(strong,correlated) hurt; DBC(weak,decorrelated) helped. Decorrelation > standalone strength. New deployable book = 8 ETFs (7+DBC)"
+      },
+      {
+        "id": "r112",
+        "type": "finding",
+        "phase": "UUP",
+        "label": "R112 UUP (dollar) added: weakest champion (always_long 0.34, flat 2023-26). Risk-off hedge candidate (negatively correlated). Conviction weight tiny (~2%). 7+DBC+UUP book test next"
       }
     ],
     "edges": [
@@ -3433,6 +3462,11 @@
         "src": "r111",
         "dst": "f_portfolio",
         "label": "8-ETF book is the new champion"
+      },
+      {
+        "src": "r111",
+        "dst": "r112",
+        "label": "add a negatively-correlated hedge (dollar)"
       }
     ],
     "running": []
