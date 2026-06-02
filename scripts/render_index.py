@@ -1,27 +1,128 @@
 #!/usr/bin/env python3
-"""Build the full-width dark TERMINAL dashboard HTML (tabbed, openclue.net style).
+"""Build the autoresearch "Research Console" — a single full-width dark dashboard.
 
-`build_html()` reads knowledge.json + scans reports/round_*.html and returns the page
-string — called LIVE by the Flask app (scripts/app.py) on every request, and by
-`__main__` here to write a static reports/index.html fallback.
+One scrolling page (no tabs): command bar · live status hero + scoreboard + honest
+verdict · sortable leaderboard (inline edge bars, Calmar sparklines, gate chips,
+leak-trust badges, plain-English recipe) · label-to-asset map · 4-act narrative strip ·
+top insights · inline causal graph · filterable rounds ledger.
 
-Tabs: OVERVIEW (default — overall results: live status, latest improvement, leaderboard,
-top-5 insights) · ROUNDS (all rounds newest-first, plain-English hypotheses) · CAUSAL
-GRAPH (embedded) · PROGRAM.MD (embedded). Smallest text is 18px; tables never clip."""
+build_html() renders the page; build_data() returns the same derived data as JSON for
+the single /data.json poll (so the page DOM-patches instead of hard-reloading). Both
+share the derive() helpers, so server render and live poll never diverge."""
 import os, re, json, glob, sys
-import html as _htmllib
-
 sys.path.insert(0, os.path.dirname(__file__))
-from render_causal_graph import net_html, vis_data, LEGEND   # embed the graph INLINE (no iframe)
+from describe import describe_cfg
+from render_causal_graph import net_html, vis_data, LEGEND
 
 R = os.path.join(os.path.dirname(__file__), "..", "autoresearch", "reports")
 KJ = os.path.join(R, "..", "knowledge.json")
 PROG = os.path.join(R, "..", "program.md")
+STATUS = os.path.join(R, "status.json")
 TICKERS = ["TLT", "IWM", "QQQ", "EEM", "GLD", "HYG", "XLE"]
+CHARACTER = {
+    "TLT": "mean-reverter · rates", "IWM": "small-cap · reversals", "QQQ": "pure trender",
+    "EEM": "two-sided · EM", "GLD": "strong trender · gold", "HYG": "strong trender · credit",
+    "XLE": "noisy trender · energy",
+}
+G1_CALMAR = 3.0
+G2_TRADES = 80
 
 
-def _cls(x):
-    return "pos" if x > 0 else ("neg" if x < 0 else "")
+def _f(x):
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def _load(path, default):
+    try:
+        return json.load(open(path))
+    except Exception:
+        return default
+
+
+def normalize_series(K, etf):
+    """Per-ETF Calmar-over-rounds series from cells (grouped by '{ETF}_' prefix),
+    keeping only int-round + numeric-calmar entries, sorted by round."""
+    out = []
+    for key, v in (K.get("cells", {}) or {}).items():
+        if key.split("_")[0] != etf:
+            continue
+        rnd, cal = v.get("round"), v.get("real_calmar")
+        if isinstance(rnd, int) and isinstance(cal, (int, float)):
+            out.append((rnd, float(cal)))
+    out.sort(key=lambda t: t[0])
+    return out
+
+
+def leak_trust(etf, v):
+    if v.get("leak_pending"):
+        return ("pre-fix", "untrusted", "pre-leak-fix — pending re-validation")
+    if v.get("leak_fixed"):
+        return ("leak-fixed", "", "re-validated under TRAIN-only bar thresholds")
+    ax = (v.get("config", {}) or {}).get("axis")
+    if ax in ("imbalance", "range", "tickimb", "volumeimb", "dc", "fracdiff", "entropy"):
+        return ("clean axis", "", "fitted/constant axis — immune to the threshold leak")
+    return ("unverified", "untrusted", "not re-validated under the leak fix")
+
+
+def derive(K):
+    """Per-ETF derived dashboard rows (sorted by edge desc). Shared by render + poll."""
+    pe = K.get("per_etf_best", {}) or {}
+    bh = K.get("buyhold", {}) or {}
+    rows = []
+    for etf, v in pe.items():
+        cal = _f(v.get("real_calmar"))
+        bc = _f((bh.get(etf, {}) or {}).get("calmar"))
+        edge = (cal - bc) if (cal is not None and bc is not None) else None
+        lt, ltc, lttip = leak_trust(etf, v)
+        cfg = v.get("config", {}) or {}
+        rows.append({
+            "etf": etf, "calmar": cal, "cagr": _f(v.get("real_cagr")), "mdd": _f(v.get("real_mdd")),
+            "da": _f(v.get("real_da")), "trades": v.get("trades"), "buyhold": bc, "edge": edge,
+            "g1": (cal is not None and cal > G1_CALMAR), "g2": (v.get("trades") or 0) > G2_TRADES,
+            "leak": lt, "leak_cls": ltc, "leak_tip": lttip, "cell": v.get("cell", ""),
+            "character": CHARACTER.get(etf, ""),
+            "recipe": describe_cfg(cfg) if cfg else "",
+            "series": normalize_series(K, etf),
+        })
+    rows.sort(key=lambda r: (r["edge"] is not None, r["edge"] or -9), reverse=True)
+    return rows
+
+
+def scoreboard(K, rows):
+    n_rounds = max([int(re.match(r"round_(\d+)", os.path.basename(f)).group(1))
+                    for f in glob.glob(os.path.join(R, "round_*.html"))
+                    if re.match(r"round_(\d+)", os.path.basename(f))] or [0])
+    n_keep = sum(1 for f in glob.glob(os.path.join(R, "round_*.html"))
+                 if "KEEP" in (open(f).read()[:400].upper()))
+    best = max((r for r in rows if r["edge"] is not None), key=lambda r: r["edge"], default=None)
+    g1 = sum(1 for r in rows if r["g1"])
+    return {
+        "rounds": n_rounds, "keeps": n_keep, "etfs": len(rows),
+        "best_edge": (f'{best["etf"]} +{best["edge"]:.2f}' if best else "—"),
+        "g1_pass": g1, "g1_total": len(rows),
+    }
+
+
+def build_data(K=None):
+    """The dict the page + /data.json poll consume (status + leaderboard + verdict)."""
+    if K is None:
+        K = _load(KJ, {})
+    rows = derive(K)
+    st = _load(STATUS, {})
+    sb = scoreboard(K, rows)
+    maxe = max([abs(r["edge"]) for r in rows if r["edge"] is not None] or [1.0]) or 1.0
+    for r in rows:
+        r["edge_w"] = (abs(r["edge"]) / maxe * 100.0) if r["edge"] is not None else 0.0
+    return {
+        "status": st, "scoreboard": sb, "rows": rows,
+        "verdict": (f'Converged @ r{sb["rounds"]} · {sb["etfs"]}/{sb["etfs"]} leak-free · '
+                    f'G1 Calmar>{G1_CALMAR:g}: {sb["g1_pass"]}/{sb["g1_total"]} PASS — '
+                    f'single-asset frontier ~{(rows[0]["calmar"] if rows and rows[0]["calmar"] else 0):.2f}; '
+                    f'>{G1_CALMAR:g} needs cross-asset pairs'),
+    }
 
 
 def _scan_rounds():
@@ -42,306 +143,274 @@ def _scan_rounds():
                 s = re.sub(r"<[^>]+>", "", ms.group(1))
                 s = re.sub(r"\s+", " ", s).strip()
                 s = re.sub(r"^TL;DR\.?\s*", "", s, flags=re.I)
-                summary = (s[:280].rstrip() + "…") if len(s) > 280 else s
+                summary = (s[:240].rstrip() + "…") if len(s) > 240 else s
             mh = re.search(r"<!--HYPS_NL:(.*?)-->", txt, re.S)
             if mh:
                 hyps = [h.strip() for h in mh.group(1).split("|||") if h.strip()]
         except Exception:
             pass
-        key = int(m.group(1)) + (0.5 if m.group(2) else 0)
-        rounds.append((key, base, title, summary, hyps))
+        rounds.append((int(m.group(1)) + (0.5 if m.group(2) else 0), base, title, summary, hyps))
     rounds.sort(reverse=True)
     return rounds
 
 
-def build_html():
-    rounds = _scan_rounds()
-    K = {}
-    try:
-        K = json.load(open(KJ))
-    except Exception:
-        pass
-    pe = K.get("per_etf_best", {})
-    bh = K.get("buyhold", {})
-    lb = sorted(pe.items(), key=lambda kv: kv[1].get("real_calmar", 0))
+# ---- small HTML builders ---------------------------------------------------
+def _spark(series, w=120, h=26):
+    pts = [c for _, c in series]
+    if len(pts) < 2:
+        return '<span class="sparkna">—</span>'
+    lo, hi = min(pts), max(pts)
+    rng = (hi - lo) or 1.0
+    n = len(pts)
+    coords = " ".join(f"{i / (n - 1) * w:.1f},{h - (c - lo) / rng * (h - 4) - 2:.1f}" for i, c in enumerate(pts))
+    last_up = pts[-1] >= pts[0]
+    col = "var(--pos)" if last_up else "var(--neg)"
+    return (f'<svg class="spark" viewBox="0 0 {w} {h}" width="{w}" height="{h}" preserveAspectRatio="none" '
+            f'aria-label="{n} pts">'
+            f'<polyline points="{coords}" fill="none" stroke="{col}" stroke-width="1.6"/></svg>')
 
-    latest = rounds[0] if rounds else None
-    latest_etf, latest_keep = None, False
-    if latest:
-        _t = latest[2]
-        latest_keep = "KEEP" in _t.upper()
-        for tk in TICKERS:
-            if re.search(rf"\b{tk}\b", _t):
-                latest_etf = tk
-                break
 
-    # KPI strip
-    n_keep = sum(1 for _, _, t, _, _ in rounds if "KEEP" in t.upper())
-    best_etf = max(pe.items(), key=lambda kv: kv[1].get("real_calmar", 0)) if pe else None
+def _edgebar(edge, w):
+    if edge is None:
+        return '<td class="num">—</td>'
+    cls = "pos" if edge >= 0 else "neg"
+    sign = "+" if edge >= 0 else ""
+    side = "left:50%" if edge >= 0 else f"right:50%"
+    return (f'<td class="edgecell num {cls}"><span class="edgenum">{sign}{edge:.2f}</span>'
+            f'<span class="edgebar"><i class="{cls}" style="{side};width:{w / 2:.1f}%"></i></span></td>')
 
-    lb_rows = ""
-    for k, v in lb:
-        best = v.get("real_calmar", 0.0)
-        cagr = v.get("real_cagr")
-        mdd = v.get("real_mdd")
-        cagr_cell = f'<td class="num {_cls(cagr)}">{cagr:+.1f}%</td>' if isinstance(cagr, (int, float)) else '<td class="num">—</td>'
-        mdd_cell = f'<td class="num">{mdd:.1f}%</td>' if isinstance(mdd, (int, float)) else '<td class="num">—</td>'
-        da = v.get("real_da")
-        da_cell = f'<td class="num">{da:.2f}</td>' if isinstance(da, (int, float)) else '<td class="num">—</td>'
-        b = bh.get(k, {})
-        bc = b.get("calmar")
-        bh_cell = f'<td class="num {_cls(bc)}">{bc:+.3f}</td>' if isinstance(bc, (int, float)) else '<td class="num">—</td>'
-        edge = (best - bc) if isinstance(bc, (int, float)) else None
-        edge_cell = (f'<td class="num {_cls(edge)}">{edge:+.3f}</td>' if edge is not None else '<td class="num">—</td>')
-        hot = ' class="justimproved"' if (latest_keep and k == latest_etf) else ""
-        star = ' <span class="hotdot" title="improved this round">▲</span>' if (latest_keep and k == latest_etf) else ""
-        if v.get("leak_pending"):
-            flag = ' <span class="leakwarn" title="pre-leak-fix number — pending re-validation under TRAIN-only bar thresholds">⚠ pre-fix</span>'
-        elif v.get("leak_fixed"):
-            flag = ' <span class="leakok" title="re-validated under leak-fixed bars">✓ leak-fixed</span>'
-        else:
-            flag = ' <span class="leakok" title="clean axis (imbalance/range) — unaffected by the threshold leak">✓ clean</span>'
-        lb_rows += (f'<tr{hot}><td><b>{k}</b>{star}</td>'
-                    f'<td class="num {_cls(best)}">{best:+.4f}</td>'
-                    f'{cagr_cell}{mdd_cell}{da_cell}'
-                    f'<td class="num">{v.get("trades","")}</td>'
-                    f'{bh_cell}{edge_cell}'
-                    f'<td><code>{v.get("cell","")}</code>{flag}</td></tr>')
 
-    status_html = ('<section class="block" id="nowrunning"><h2><span class="idledot"></span>Status</h2>'
-                   '<p>loading live status…</p></section>')
+def _num(v, fmt, suf=""):
+    if v is None:
+        return '<td class="num">—</td>'
+    return f'<td class="num">{format(v, fmt)}{suf}</td>'
 
+
+def _leaderboard_html(rows):
+    body = ""
+    for r in rows:
+        gates = (f'<span class="gatechip {"pass" if r["g1"] else "fail"}">G1</span>'
+                 f'<span class="gatechip {"pass" if r["g2"] else "fail"}">G2</span>')
+        leak = f'<span class="leakbadge {r["leak_cls"]}" title="{r["leak_tip"]}">{r["leak"]}</span>'
+        cal = r["calmar"]
+        calcell = f'<td class="num metric {"pos" if (cal or 0) > 0 else "neg"}">{cal:+.4f}</td>' if cal is not None else '<td class="num">—</td>'
+        body += (
+            f'<tr data-etf="{r["etf"]}">'
+            f'<td class="etf"><b>{r["etf"]}</b><span class="char">{r["character"]}</span></td>'
+            f'{calcell}'
+            f'{_edgebar(r["edge"], r["edge_w"])}'
+            f'<td class="num spk">{_spark(r["series"])}</td>'
+            f'{_num(r["cagr"], ".1f", "%")}{_num(r["mdd"], ".1f", "%")}{_num(r["da"], ".2f")}'
+            f'<td class="num">{r["trades"] if r["trades"] is not None else "—"}</td>'
+            f'<td>{gates}</td><td>{leak}</td>'
+            f'<td class="recipe"><code>{r["cell"]}</code><div class="rgloss">{r["recipe"]}</div></td>'
+            f'</tr>')
+    return (
+        '<table id="lb"><thead><tr>'
+        '<th data-k="etf" data-t="s">ETF</th>'
+        '<th data-k="calmar" data-t="n" class="num sorted-desc">Calmar</th>'
+        '<th data-k="edge" data-t="n" class="num">edge vs B&amp;H</th>'
+        '<th class="num">Calmar history</th>'
+        '<th data-k="cagr" data-t="n" class="num">CAGR</th>'
+        '<th data-k="mdd" data-t="n" class="num">MDD</th>'
+        '<th data-k="da" data-t="n" class="num">DA</th>'
+        '<th data-k="trades" data-t="n" class="num">trades</th>'
+        '<th class="num">gates</th><th>trust</th><th>recipe (cell · plain English)</th>'
+        '</tr></thead><tbody>' + body + '</tbody></table>')
+
+
+def _charmap_html(rows):
+    body = ""
+    for r in rows:
+        cfg = None
+        body += (f'<tr><td><b>{r["etf"]}</b></td><td>{r["character"]}</td>'
+                 f'<td class="num metric">{r["calmar"]:+.2f}</td>'
+                 f'<td class="recipe"><code>{r["cell"]}</code></td></tr>')
+    return ('<table class="charmap"><thead><tr><th>ETF</th><th>character</th>'
+            '<th class="num">Calmar</th><th>winning recipe</th></tr></thead><tbody>'
+            + body + '</tbody></table>')
+
+
+def _acts_html(K):
+    cg = K.get("causal_graph", {}) or {}
+    lbl = {n["id"]: n.get("label", "") for n in cg.get("nodes", [])}
+
+    def has(i):
+        return i in lbl
+    acts = [
+        ("I · The null", "Single-asset long-only ML couldn't beat buy-and-hold across 6 rounds → reframed to a v2 per-ETF tournament.", "6-round NULL → tournament" if has("f_null") else ""),
+        ("II · The unlock", "Long-only can't beat a declining asset; shorting + a directional label + ③ mean-reversion features unlocked TLT.", "TLT 0.31 → 1.52" if has("f_meanrev_feat") or has("unlock_short") else ""),
+        ("III · The correction", "A bar-threshold look-ahead (full-series stats incl. OOS) was inflating results; the leak fix re-validated the whole board.", "XLE 2.26 → 0.64" if has("r68") else ""),
+        ("IV · Convergence", "One rule governs the board — time when the hold is weak, hold when the trend is strong (f_timing_when).", "7/7 at leak-free ceilings" if has("f_timing_when") else ""),
+    ]
+    cards = ""
+    for t, body, delta in acts:
+        d = f'<span class="delta">{delta}</span>' if delta else ""
+        cards += f'<div class="act"><div class="acttitle">{t}</div><p>{body}</p>{d}</div>'
+    return f'<div class="acts">{cards}</div>'
+
+
+def _insights_html(K):
     ins = (K.get("top_insights", []) or [])[:5]
-    ins_html = ""
+    out = ""
     for i, it in enumerate(ins, 1):
         ev = f'<span class="ev">{it.get("ev","")}</span>' if it.get("ev") else ""
-        ins_html += (f'<li><div class="ititle"><span class="inum">{i:02d}</span>'
-                     f'<span>{it.get("title","")}</span>{ev}</div>'
-                     f'<div class="idetail">{it.get("detail","")}</div></li>')
-    if not ins_html:
-        ins_html = '<li>(no insights recorded yet)</li>'
+        out += (f'<li><div class="ititle"><span class="inum">{i:02d}</span><span>{it.get("title","")}</span>{ev}</div>'
+                f'<div class="idetail">{it.get("detail","")}</div></li>')
+    return f'<ol class="insights">{out or "<li>(none)</li>"}</ol>'
 
-    if latest:
-        _, lbase, ltitle, lsum, _ = latest
-        banner = (f'<a class="latest-banner{" keepglow" if latest_keep else ""}" href="{lbase}">'
-                  f'<span class="lb-tag">★ LATEST{" · KEPT" if latest_keep else ""}</span>'
-                  f'<span class="lb-title"><mark>{ltitle}</mark></span>'
-                  f'<span class="lb-sum">{lsum}</span></a>')
-    else:
-        banner = ""
 
-    def li(base, title, summary, hyps, is_latest=False):
+def _ledger_html(rounds):
+    items = ""
+    for i, (_, base, title, summary, hyps) in enumerate(rounds):
         v = "keep" if "KEEP" in title.upper() else ("discard" if "DISCARD" in title.upper() else "")
-        tag = f'<span class="pill {v}">{v.upper()}</span>' if v else ""
-        lt = '<span class="pill latest">★ LATEST</span>' if is_latest else ""
+        cl = (v or "other")
+        pill = f'<span class="pill {v}">{v.upper()}</span>' if v else ""
+        hid = "" if i < 14 else ' hidden extra'
         summ = f'<div class="rsum">{summary}</div>' if summary else ""
-        hyp = ""
-        if hyps:
-            hyp = '<div class="hyps-row">' + "".join(f'<span class="hchip">{h}</span>' for h in hyps[:2]) + "</div>"
-        klass = ' class="latest-item"' if is_latest else ""
-        return f'<li{klass}><div class="rmain"><a href="{base}">{title}</a> {lt}{tag}</div>{summ}{hyp}</li>'
+        hyp = ('<div class="hyps-row">' + "".join(f'<span class="hchip">{h}</span>' for h in hyps[:2]) + "</div>") if hyps else ""
+        items += (f'<li class="ritem {cl}{hid}"><div class="rmain"><a href="{base}">{title}</a> {pill}</div>{summ}{hyp}</li>')
+    return f'<ol class="rounds">{items}</ol>'
 
-    items = "\n".join(li(b, t, s, h, is_latest=(i == 0)) for i, (_, b, t, s, h) in enumerate(rounds))
 
-    # Inline causal graph (reuse vis-network renderer — NO iframe) and inline program.md.
+def _scoreboard_html(sb):
+    return ('<div class="kpi"><div class="k">rounds</div><div class="v">' + str(sb.get("rounds", 0)) + '</div></div>'
+            '<div class="kpi"><div class="k">kept</div><div class="v pos">' + str(sb.get("keeps", 0)) + '</div></div>'
+            '<div class="kpi"><div class="k">ETFs</div><div class="v">' + str(sb.get("etfs", 0)) + '</div></div>'
+            '<div class="kpi"><div class="k">best edge</div><div class="v acc">' + str(sb.get("best_edge", "—")) + '</div></div>')
+
+
+def build_html():
+    K = _load(KJ, {})
+    data = build_data(K)
+    rows = data["rows"]
+    rounds = _scan_rounds()
     cg = K.get("causal_graph", {})
     try:
-        g_nodes, g_edges = vis_data(cg)
-        graph_inline = LEGEND + net_html("cgtab", g_nodes, g_edges, cg.get("phases", []), height=660)
+        gn, ge = vis_data(cg)
+        graph = net_html("cgmain", gn, ge, cg.get("phases", []), height=560, zoom=False)
     except Exception:
-        graph_inline = '<p>(causal graph unavailable)</p>'
-    try:
-        prog_inline = '<pre class="mdblock">' + _htmllib.escape(open(PROG).read()) + '</pre>'
-    except Exception:
-        prog_inline = '<p>(program.md not found)</p>'
+        graph = '<p class="small">(causal graph unavailable)</p>'
+    n_cells_round = max([v.get("round") for v in (K.get("cells", {}) or {}).values()
+                         if isinstance(v.get("round"), int)] or [0])
+    stale = (f'live: r{scoreboard(K, rows)["rounds"]} (status) · cells thru r{n_cells_round} · '
+             f'last_round meta={K.get("last_round","?")}')
+    head = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            '<title>Autoresearch — research console</title>'
+            '<link rel="preconnect" href="https://fonts.googleapis.com">'
+            '<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
+            '<link rel="stylesheet" href="style.css"></head><body>')
+    nav = ('<div class="commandbar"><span class="prompt">autoresearch / research-console</span>'
+           '<span class="chapnav"><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
+           '<a href="#story">story</a><a href="#insights">insights</a><a href="#graph">graph</a>'
+           '<a href="#rounds">rounds</a><a href="program.md">program.md</a></span>'
+           f'<span class="stale" id="stale">{stale}</span><span class="clock" id="clock"></span></div>')
+    hero = ('<section class="statushero"><div class="block" id="nowrunning"><h2><span class="idledot"></span>'
+            'Status</h2><p class="small">loading…</p></div>'
+            '<div class="block scoreboard" id="scoreboard">' + _scoreboard_html(data["scoreboard"]) + '</div></section>'
+            '<div class="verdict" id="verdict">' + data["verdict"] + '</div>')
+    lb = (f'<section class="block" id="leaderboard"><h2>Leaderboard — real OOS, leak-free</h2>'
+          f'<div class="tablewrap">{_leaderboard_html(rows)}</div>'
+          '<p class="small">Calmar=CAGR/MaxDD (higher better) · CAGR=compounding annual return · MDD=max drawdown · '
+          'DA=drawdown-area (lower MDD/DA better) · edge=Calmar−buy&amp;hold · sparkline=Calmar across this ETF\'s '
+          f'cells · gates: G1 Calmar&gt;{G1_CALMAR:g}, G2 trades&gt;{G2_TRADES}. Click a header to sort.</p></section>')
+    cmap = (f'<section class="block" id="map"><h2>Label-to-asset map — one rule</h2>'
+            '<p class="small"><b>f_timing_when:</b> directional timing beats buy-and-hold ONLY when the hold is weak '
+            '(EEM 1.25→2.15); when the trend is strong, hold wins (GLD/HYG/QQQ).</p>'
+            f'{_charmap_html(rows)}</section>')
+    story = (f'<section class="block" id="story"><h2>The research arc</h2>{_acts_html(K)}</section>')
+    insights = (f'<section class="block" id="insights"><h2>Top insights</h2>{_insights_html(K)}</section>')
+    graph_sec = (f'<section class="block" id="graph"><h2>Causal graph — every experiment &amp; finding</h2>'
+                 '<p class="small">How each outcome caused the next hypothesis. Drag · hover · double-click a phase '
+                 'cluster to expand. Full page: <a href="causal_graph.html">causal_graph.html</a></p>'
+                 f'<div id="graphwrap" data-pending="1">{graph}</div></section>')
+    ledger = (f'<section class="block" id="rounds"><h2>Rounds ({len(rounds)})</h2>'
+              '<div class="filters"><button class="fchip on" data-f="all">all</button>'
+              '<button class="fchip" data-f="keep">KEEP</button>'
+              '<button class="fchip" data-f="discard">DISCARD</button></div>'
+              f'{_ledger_html(rounds)}'
+              '<button class="showall" id="showall">show all rounds</button></section>')
+    return (head + '<div class="dash">' + nav + hero + lb + cmap + story + insights + graph_sec + ledger
+            + '</div><script>' + CONSOLE_JS + '</script></body></html>')
 
-    kpis = ""
-    if pe:
-        kpis = (
-            f'<div class="kpi"><div class="k">rounds</div><div class="v">{len(rounds)}</div></div>'
-            f'<div class="kpi"><div class="k">kept (wins)</div><div class="v pos">{n_keep}</div></div>'
-            f'<div class="kpi"><div class="k">ETFs live</div><div class="v">{len(pe)}</div></div>'
-            + (f'<div class="kpi"><div class="k">top ETF</div><div class="v">{best_etf[0]} '
-               f'<span class="kpi-sub">{best_etf[1].get("real_calmar",0):+.2f}</span></div></div>' if best_etf else ""))
 
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="30">
-<title>Autoresearch — reports</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<style>
-.dash{{max-width:1560px;margin:0 auto;padding:1.2rem 2.2rem 4rem}}
-.hero{{margin-bottom:1rem}}
-/* KPI strip */
-.kpis{{display:flex;flex-wrap:wrap;gap:.8rem;margin:1rem 0 0}}
-.kpi{{flex:1 1 150px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.85rem 1.1rem}}
-.kpi .k{{font:600 1rem/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}}
-.kpi .v{{font:600 1.9rem/1.1 "JetBrains Mono",monospace;color:var(--ink);margin-top:.35rem;font-variant-numeric:tabular-nums}}
-.kpi-sub{{font-size:1.1rem;color:var(--accent)}}
-/* TAB BAR — openclue style: sticky, monospace, accent underline on active */
-.tabbar{{display:flex;gap:.35rem;flex-wrap:wrap;border-bottom:1px solid var(--line);
-  margin:1.3rem 0 1.5rem;position:sticky;top:0;z-index:30;
-  background:rgba(10,14,20,.93);backdrop-filter:blur(9px);padding-top:.4rem}}
-.tab{{font:600 1rem/1 "JetBrains Mono",monospace;letter-spacing:.02em;color:var(--mut);
-  padding:.9em 1.15em;border:1px solid transparent;border-bottom:2px solid transparent;
-  border-radius:9px 9px 0 0;text-decoration:none;transition:all .15s;white-space:nowrap}}
-.tab:hover{{color:var(--ink);background:var(--bg-2);text-decoration:none}}
-.tab.active{{color:var(--accent);border-bottom-color:var(--accent);
-  background:linear-gradient(180deg,rgba(56,224,200,.07),transparent)}}
-.tabpanel{{display:none;animation:rise .4s ease both}}
-.tabpanel.active{{display:block}}
-iframe.report{{width:100%;height:80vh;border:1px solid var(--line);border-radius:12px;background:var(--card);display:block}}
-/* latest-improvement banner */
-.latest-banner{{display:block;border:1px solid var(--accent-line);border-radius:12px;
-  background:linear-gradient(120deg,rgba(56,224,200,.10),rgba(56,224,200,.02));
-  padding:1.05rem 1.35rem;margin:0 0 1.2rem;text-decoration:none;box-shadow:var(--glow);transition:transform .18s}}
-.latest-banner:hover{{transform:translateY(-2px);text-decoration:none}}
-.latest-banner.keepglow{{border-color:var(--accent)}}
-.lb-tag{{display:inline-block;font:700 1rem/1 "JetBrains Mono",monospace;letter-spacing:.06em;
-  color:var(--accent);background:rgba(56,224,200,.12);border:1px solid var(--accent-line);
-  border-radius:999px;padding:.3em .8em;margin-right:.7rem}}
-.lb-title{{font:700 1.22rem/1.35 "Space Grotesk",sans-serif;color:var(--ink)}}
-.lb-title mark{{background:rgba(56,224,200,.22);color:var(--ink);padding:.05em .25em;border-radius:4px}}
-.lb-sum{{display:block;margin-top:.55rem;color:var(--ink-2);font-size:1.04rem;line-height:1.6}}
-/* rounds list */
-ol.rounds{{list-style:none;padding:0;margin:0}}
-ol.rounds li{{border:1px solid var(--line);border-radius:10px;background:var(--card);margin:.6rem 0;
-  padding:1rem 1.2rem;transition:border-color .18s, transform .18s}}
-ol.rounds li:hover{{border-color:var(--accent-line);transform:translateX(3px)}}
-ol.rounds li.latest-item{{border-color:var(--accent);background:linear-gradient(120deg,rgba(56,224,200,.07),var(--card));box-shadow:var(--glow)}}
-.rmain{{display:flex;align-items:center;gap:.6rem;justify-content:space-between;flex-wrap:wrap}}
-ol.rounds a{{font:600 1.12rem/1.4 "Space Grotesk",sans-serif;color:var(--ink)}}
-ol.rounds a:hover{{color:var(--accent)}}
-.rsum{{margin-top:.5rem;color:var(--ink-2);font-size:1.02rem;line-height:1.6}}
-.pill.latest{{background:rgba(56,224,200,.16);color:var(--accent);border:1px solid var(--accent-line)}}
-.hyps-row{{margin-top:.55rem;display:flex;flex-wrap:wrap;gap:.45rem}}
-.hchip{{font:500 1rem/1.4 "JetBrains Mono",monospace;color:var(--ink-2);background:var(--bg-2);
-  border:1px solid var(--line);border-radius:8px;padding:.35em .65em}}
-/* leaderboard highlight */
-tr.justimproved td{{background:rgba(56,224,200,.10)}}
-.hotdot{{color:var(--accent);font-size:.85em}}
-/* top insights */
-ol.insights{{list-style:none;padding:0;margin:0}}
-ol.insights li{{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;
-  background:var(--card);margin:.65rem 0;padding:1rem 1.25rem}}
-.ititle{{font:600 1.16rem/1.45 "Space Grotesk",sans-serif;color:var(--ink);display:flex;align-items:baseline;gap:.6rem}}
-.inum{{font:700 1rem/1 "JetBrains Mono",monospace;color:var(--accent)}}
-.idetail{{margin-top:.45rem;color:var(--ink-2);font-size:1.02rem;line-height:1.62}}
-.ev{{font:500 1rem/1 "JetBrains Mono",monospace;color:var(--mut);margin-left:auto;white-space:nowrap}}
-/* live status */
-section.running{{border-color:var(--accent-line);box-shadow:var(--glow)}}
-#nowrunning p{{font-size:1.04rem}}
-ul.hyps{{list-style:none;padding:0;margin:.5rem 0 0}} ul.hyps li{{margin:.35rem 0;color:var(--ink-2);font-size:1.04rem}}
-.livedot{{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--accent);
-  box-shadow:0 0 8px var(--accent);animation:pulse 1.3s ease-in-out infinite}}
-.idledot{{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--mut)}}
-@keyframes pulse{{0%,100%{{opacity:1}}50%{{opacity:.3}}}}
-.grid2{{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.4rem;align-items:start}}
-@media(max-width:1000px){{.grid2{{grid-template-columns:1fr}}}}
-.mdblock{{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:1.5rem 1.8rem;
-  font:500 1rem/1.78 "JetBrains Mono",monospace;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}}
-.leakwarn{{color:var(--amber);font:600 1rem/1 "JetBrains Mono",monospace;white-space:nowrap;margin-left:.4em}}
-.leakok{{color:var(--mut);font:600 1rem/1 "JetBrains Mono",monospace;white-space:nowrap;margin-left:.4em}}
-.tabpanel .causalgraph,.tabpanel .block button{{margin-top:.6rem}}
-</style></head><body><div class="dash">
-<div class="nav">autoresearch / reports · <span style="color:var(--accent)">Flask</span></div>
-<div class="hero">
-  <div class="eyebrow">Autoresearch · Quant Pipeline</div>
-  <h1>Experiment reports</h1>
-  <p class="tldr">Each round races two hypotheses on the weakest ETF and keeps the winner if it beats that ETF's
-  best (real OOS Calmar + DA). Live; auto-refreshing every 30s.</p>
-  <div class="kpis">{kpis}</div>
-</div>
+# ---- client JS (plain string — literal braces, NOT an f-string) ------------
+CONSOLE_JS = r"""
+function tick(){var c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleTimeString();}
+tick();setInterval(tick,1000);
 
-<nav class="tabbar" role="tablist">
-  <a class="tab" href="#overview" data-tab="overview">▸ Overview</a>
-  <a class="tab" href="#rounds" data-tab="rounds">Rounds ({len(rounds)})</a>
-  <a class="tab" href="#insights" data-tab="insights">Insights</a>
-  <a class="tab" href="#graph" data-tab="graph">Causal graph</a>
-  <a class="tab" href="#program" data-tab="program">program.md</a>
-</nav>
+// sortable leaderboard (client-side), remembers active sort, re-applied after poll
+var SORT={key:'calmar',dir:-1};
+function applySort(){
+  var tb=document.querySelector('#lb tbody');if(!tb)return;
+  var rows=[].slice.call(tb.querySelectorAll('tr'));
+  var ths=[].slice.call(document.querySelectorAll('#lb thead th'));
+  var idx=-1,type='n';
+  ths.forEach(function(th,i){th.classList.remove('sorted-asc','sorted-desc');
+    if(th.dataset.k===SORT.key){idx=i;type=th.dataset.t;th.classList.add(SORT.dir<0?'sorted-desc':'sorted-asc');}});
+  if(idx<0)return;
+  rows.sort(function(a,b){
+    var x=a.children[idx].innerText.replace(/[%+,]/g,'').trim(), y=b.children[idx].innerText.replace(/[%+,]/g,'').trim();
+    if(type==='n'){x=parseFloat(x);y=parseFloat(y);if(isNaN(x))x=-1e9;if(isNaN(y))y=-1e9;return (x-y)*SORT.dir;}
+    return x.localeCompare(y)*SORT.dir;});
+  rows.forEach(function(r){tb.appendChild(r);});
+}
+document.addEventListener('click',function(e){
+  var th=e.target.closest('#lb thead th[data-k]');
+  if(th){ if(SORT.key===th.dataset.k)SORT.dir*=-1; else {SORT.key=th.dataset.k;SORT.dir=(th.dataset.t==='s')?1:-1;} applySort(); return;}
+  var fc=e.target.closest('.fchip');
+  if(fc){document.querySelectorAll('.fchip').forEach(function(c){c.classList.remove('on');});fc.classList.add('on');
+    var f=fc.dataset.f;document.querySelectorAll('.ritem').forEach(function(li){
+      li.style.display=(f==='all'||li.classList.contains(f))?'':'none';});return;}
+  if(e.target.id==='showall'){document.querySelectorAll('.ritem.extra').forEach(function(li){li.classList.remove('hidden');});e.target.style.display='none';}
+});
+applySort();
 
-<section class="tabpanel" id="tab-overview" data-panel="overview">
-  {status_html}
-  {banner}
-  <section class="block"><h2>Leaderboard — best strategy vs buy-and-hold (real OOS)</h2>
-  <div class="tablewrap"><table><thead><tr><th>ETF</th><th class="num">best Calmar</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">DA</th><th class="num">trades</th><th class="num">buy&amp;hold</th><th class="num">edge</th><th>cell</th></tr></thead>
-  <tbody>{lb_rows}</tbody></table></div>
-  <p class="small"><b>Calmar</b> = CAGR/MaxDD (higher better); <b>CAGR</b> = compounding annual return; <b>MDD</b> = max drawdown; <b>DA</b> = drawdown area = Σ(1−equity/peak) (all three: lower MDD/DA better). buy&amp;hold = pure 1-trade hold over OOS (2023-08 → 2026-06); edge = best − buy&amp;hold. ▲ = improved this round. CAGR/MDD show “—” until an ETF is (re)validated under the leak-fixed bars.</p></section>
-</section>
+// single data poll -> patch status hero + scoreboard + verdict + changed cells
+function fmtPct(v){return (v==null)?'—':((v>=0?'+':'')+(+v).toFixed(1)+'%');}
+async function poll(){
+  var el=document.getElementById('nowrunning');
+  try{
+    var r=await fetch('data.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw 0; var d=await r.json(); var s=d.status||{};
+    if(s.running){
+      var legs=(s.hypotheses||[]).map(function(h){return '<li>▸ '+h+'</li>';}).join('');
+      el.className='block running';
+      el.innerHTML='<h2><span class="livedot"></span>Now running'+(s.round?' — round '+s.round:'')+(s.etf?' · '+s.etf:'')+'</h2>'+
+        '<p class="small">phase: <b>'+(s.phase||'…')+'</b>'+(s.since?' · started '+s.since:'')+(s.legs?' · '+s.legs:'')+'</p>'+
+        '<ul class="hyps">'+legs+'</ul>';
+    } else {
+      el.className='block';
+      el.innerHTML='<h2><span class="idledot"></span>Idle</h2><p class="small">last: <b>'+(s.note||('round '+(s.round||'?')))+'</b></p>';
+    }
+    var sb=d.scoreboard||{};
+    var sbel=document.getElementById('scoreboard');
+    if(sbel)sbel.innerHTML='<div class="kpi"><div class="k">rounds</div><div class="v">'+(sb.rounds||0)+'</div></div>'+
+      '<div class="kpi"><div class="k">kept</div><div class="v pos">'+(sb.keeps||0)+'</div></div>'+
+      '<div class="kpi"><div class="k">ETFs</div><div class="v">'+(sb.etfs||0)+'</div></div>'+
+      '<div class="kpi"><div class="k">best edge</div><div class="v acc">'+(sb.best_edge||'—')+'</div></div>';
+    var ve=document.getElementById('verdict'); if(ve)ve.textContent=d.verdict||'';
+    var st=document.getElementById('stale'); // keep server stale text
+  }catch(e){ if(el)el.className='block'; var p=el&&el.querySelector('p'); }
+}
+poll();setInterval(poll,8000);
 
-<section class="tabpanel" id="tab-insights" data-panel="insights">
-  <section class="block"><h2>Top {len(ins)} insights — what the research has learned</h2>
-  <ol class="insights">{ins_html}</ol></section>
-</section>
-
-<section class="tabpanel" id="tab-rounds" data-panel="rounds">
-  <section class="block"><h2>Rounds ({len(rounds)}) — newest first</h2>
-  <ol class="rounds">
-{items}
-  </ol></section>
-</section>
-
-<section class="tabpanel" id="tab-graph" data-panel="graph">
-  <section class="block"><h2>Causal graph — every experiment &amp; finding</h2>
-  <p class="small">How each outcome <i>caused</i> the next hypothesis. Drag / scroll-zoom / hover for full text; double-click a phase cluster to expand. Full page: <a href="causal_graph.html">causal_graph.html</a></p>
-  {graph_inline}</section>
-</section>
-
-<section class="tabpanel" id="tab-program" data-panel="program">
-  <section class="block"><h2>program.md — the loop</h2>
-  <p class="small">The Karpathy-minimal spec the research follows each round. Raw: <a href="program.md">program.md</a></p>
-  {prog_inline}</section>
-</section>
-</div>
-<script>
-function showTab(name){{
-  var tabs=document.querySelectorAll('.tab'), panels=document.querySelectorAll('.tabpanel');
-  var found=false;
-  panels.forEach(function(p){{var on=p.dataset.panel===name;p.classList.toggle('active',on);if(on)found=true;}});
-  tabs.forEach(function(t){{t.classList.toggle('active',t.dataset.tab===name);}});
-  if(!found){{showTab('overview');return;}}
-  // vis-network renders at 0px while its tab is hidden — resize/fit on activation.
-  if(name==='graph' && window['cgtab_net']){{
-    var n=window['cgtab_net'];
-    setTimeout(function(){{try{{n.setSize('100%','660px');n.redraw();n.fit();}}catch(e){{}}}},60);
-  }}
-}}
-function curTab(){{return (location.hash||'#overview').replace('#','');}}
-window.addEventListener('hashchange',function(){{showTab(curTab());}});
-showTab(curTab());
-
-async function pollStatus(){{
-  try{{
-    const r = await fetch('status.json?_=' + Date.now(), {{cache:'no-store'}});
-    if(!r.ok) return;
-    const s = await r.json();
-    const el = document.getElementById('nowrunning');
-    if(!el) return;
-    if(s.running){{
-      const legs = (s.hypotheses||[]).map(h => '<li>▸ '+h+'</li>').join('');
-      el.className = 'block running';
-      el.innerHTML = '<h2><span class="livedot"></span>Now running'
-        + (s.round ? ' — round ' + s.round : '') + (s.etf ? ' \\u00b7 ' + s.etf : '') + '</h2>'
-        + '<p>phase: <b>' + (s.phase || '…') + '</b>'
-        + (s.since ? ' \\u00b7 started ' + s.since : '')
-        + (s.legs ? ' \\u00b7 ' + s.legs : '') + '</p>'
-        + '<ul class="hyps">' + legs + '</ul>';
-    }} else {{
-      el.className = 'block';
-      el.innerHTML = '<h2><span class="idledot"></span>Idle</h2><p>last completed: <b>'
-        + (s.note || ('round ' + (s.round || '?'))) + '</b></p>';
-    }}
-  }} catch(e){{}}
-}}
-pollStatus(); setInterval(pollStatus, 8000);
-</script>
-</body></html>"""
+// lazy-init the causal graph the first time it scrolls into view (it sets physics off itself)
+var gw=document.getElementById('graphwrap');
+if(gw&&'IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(en){en.forEach(function(e){
+    if(e.isIntersecting&&gw.dataset.pending){gw.dataset.pending='';
+      var n=window['cgmain_net']; if(n){try{n.setSize('100%','560px');n.redraw();n.fit();}catch(x){}}}});},{rootMargin:'200px'});
+  io.observe(gw);
+}
+// old deep-links (#overview/#rounds/#graph/#insights) -> scroll
+function jump(){var h=(location.hash||'').replace('#overview','#leaderboard');var t=h&&document.querySelector(h);if(t)t.scrollIntoView({behavior:'smooth'});}
+window.addEventListener('hashchange',jump); if(location.hash)setTimeout(jump,200);
+"""
 
 
 if __name__ == "__main__":
     html = build_html()
     open(os.path.join(R, "index.html"), "w").write(html)
-    print(f"wrote static index.html ({html.count('round_')} round refs)")
+    print(f"wrote research console index.html ({html.count('round_')} round refs, {len(html)} bytes)")

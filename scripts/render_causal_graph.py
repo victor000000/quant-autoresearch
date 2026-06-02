@@ -25,8 +25,8 @@ PHASE_TITLE = {"Landscape": "A · Landscape / the 6-round null",
                "TLT": "B · TLT (declining / two-sided)",
                "IWM": "C · IWM (trending-up small-cap)",
                "XLE": "D · XLE (trending-up energy)"}
-GROUP_COLOR = {"finding": ("#fff3cd", "#e0a800"), "milestone": ("#d4edda", "#28a745"),
-               "decision": ("#e2dcff", "#6f42c1"), "round": ("#eef1f6", "#9aa5b1")}
+GROUP_COLOR = {"finding": ("#13231f", "#38e0c8"), "milestone": ("#0f241a", "#3fd07a"),
+               "decision": ("#1c1832", "#9a86ff"), "round": ("#0d1320", "#33415a")}
 VIS_CDN = "https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"
 
 
@@ -62,21 +62,22 @@ def vis_data(cg, highlight=None):
     return nodes, edges
 
 
-def net_html(cid, nodes, edges, phases, height=620):
+def net_html(cid, nodes, edges, phases, height=620, zoom=True):
     nj, ej, pj = json.dumps(nodes), json.dumps(edges), json.dumps(phases)
+    zoomjs = "true" if zoom else "false"
     return f"""<div id="{cid}" style="height:{height}px;border:1px solid #222b3a;border-radius:9px;background:#070a10"></div>
 <div style="margin:.4em 0"><button onclick="{cid}_collapse()">⊟ Collapse experiments by phase</button>
 <button onclick="{cid}_expand()">⊞ Expand all</button>
-<span style="color:#666;font-size:.85em"> · double-click a phase cluster to expand · drag / scroll-zoom · hover a node for full text</span></div>
+<span style="color:#7c8aa0;font-size:1rem"> · double-click a phase cluster to expand · drag · hover a node for full text</span></div>
 <script src="{VIS_CDN}"></script>
 <script>
 (function(){{
   var nodes=new vis.DataSet({nj}); var edges=new vis.DataSet({ej}); var phases={pj};
   var groups={{
-    finding:{{shape:'box',color:{{background:'#fff3cd',border:'#e0a800'}},font:{{color:'#5c4500',size:13}},borderWidth:2}},
-    milestone:{{shape:'box',color:{{background:'#d4edda',border:'#28a745'}},font:{{color:'#0b3d1a',size:13,bold:true}},borderWidth:2}},
-    decision:{{shape:'box',color:{{background:'#e2dcff',border:'#6f42c1'}},font:{{color:'#2d1a5c',size:13}},borderWidth:2}},
-    round:{{shape:'dot',color:{{background:'#eef1f6',border:'#9aa5b1'}},font:{{size:11,color:'#444'}}}}
+    finding:{{shape:'box',color:{{background:'#13231f',border:'#38e0c8'}},font:{{color:'#cdeee7',size:13}},borderWidth:2}},
+    milestone:{{shape:'box',color:{{background:'#0f241a',border:'#3fd07a'}},font:{{color:'#bfe9cd',size:13,bold:true}},borderWidth:2}},
+    decision:{{shape:'box',color:{{background:'#1c1832',border:'#9a86ff'}},font:{{color:'#d8d0ff',size:13}},borderWidth:2}},
+    round:{{shape:'dot',color:{{background:'#0d1320',border:'#33415a'}},font:{{size:11,color:'#9aa6b8'}}}}
   }};
   var opts={{
     nodes:{{shape:'box',margin:8,widthConstraint:{{maximum:190}},shadow:false}},
@@ -84,7 +85,7 @@ def net_html(cid, nodes, edges, phases, height=620):
     edges:{{arrows:{{to:{{scaleFactor:.6}}}},color:{{color:'#33415a',highlight:'#38e0c8'}},
       font:{{size:11,color:'#9aa6b8',strokeWidth:4,strokeColor:'#070a10',align:'middle'}},smooth:{{type:'cubicBezier',roundness:.4}}}},
     physics:{{stabilization:{{iterations:300}},barnesHut:{{gravitationalConstant:-14000,springLength:150,springConstant:.02,avoidOverlap:.5}}}},
-    interaction:{{hover:true,tooltipDelay:120,navigationButtons:true,keyboard:false,zoomView:true,dragView:true}},
+    interaction:{{hover:true,tooltipDelay:120,navigationButtons:true,keyboard:false,zoomView:{zoomjs},dragView:true}},
     layout:{{improvedLayout:true}}
   }};
   var net=new vis.Network(document.getElementById('{cid}'),{{nodes:nodes,edges:edges}},opts);

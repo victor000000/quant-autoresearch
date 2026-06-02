@@ -33,6 +33,12 @@ def index():
     return Response(build_html(), mimetype="text/html")
 
 
+@app.route("/data.json")
+def data_json():
+    from render_index import build_data
+    return Response(__import__("json").dumps(build_data()), mimetype="application/json")
+
+
 @app.route("/program.md")
 def program():
     try:
