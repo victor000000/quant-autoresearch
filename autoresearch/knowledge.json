@@ -1279,8 +1279,7 @@
         "thresh": 0.5,
         "sizing": "cdf_overlay"
       },
-      "status": "REAL EDGE, OPTIMIZED 1.30 (bgm+ker @thr0.50). 3-way ensembles INFEASIBLE (render 66k > QC 64k char limit) -> 2-way is the ceiling. UUP at its optimum.",
-      "ceilinged": true
+      "status": "REAL EDGE, OPTIMIZED 1.30 (bgm+ker @thr0.50). 3-way ensembles INFEASIBLE (render 66k > QC 64k char limit) -> 2-way is the ceiling. UUP at its optimum."
     },
     "TIP": {
       "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -2665,6 +2664,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R153 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +3.2026 (prev best +3.2026). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r154",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R154 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + directional-change trend-state labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.3400 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4356,6 +4361,11 @@
       {
         "src": "r152",
         "dst": "r153",
+        "label": "no improvement"
+      },
+      {
+        "src": "r153",
+        "dst": "r154",
         "label": "no improvement"
       }
     ],
