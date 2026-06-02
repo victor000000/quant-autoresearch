@@ -2319,6 +2319,12 @@
         "type": "finding",
         "phase": "TIP",
         "label": "R125 TIP added: always_long 1.15 (timing 0.89 underperforms \u2014 drift bond, buy-hold per R124). Decorrelated book-member candidate (inflation/real-rate). Book test next: does it lift 4.22 like DBC (R111)?"
+      },
+      {
+        "id": "r126",
+        "type": "finding",
+        "phase": "PORTFOLIO",
+        "label": "R126 TIP neutral (4.22->4.20: MaxDD down but CAGR drags). Decorrelated-member lever EXHAUSTED: DBC won, EFA hurt, UUP+TIP neutral. Book stays 8-ETF 4.22. Next R124 lever: per-member book-optimal cell (test EEM meta vs triple_barrier in the book)"
       }
     ],
     "edges": [
@@ -3746,6 +3752,16 @@
         "src": "f_book_objective",
         "dst": "r125",
         "label": "add decorrelated member (TIP)"
+      },
+      {
+        "src": "r125",
+        "dst": "r126",
+        "label": "book test TIP"
+      },
+      {
+        "src": "r124",
+        "dst": "r126",
+        "label": "apply R124 per-member cell selection"
       }
     ],
     "running": []
@@ -3916,6 +3932,12 @@
       "optimal": 1.0,
       "note": "\u221dCalmar^1 is the Calmar optimum (unimodal); ^0.5 over-diversifies (3.59), ^2 over-concentrates EEM->lower CAGR (3.80, though Sharpe 2.75). Objective-dependent: ^2 wins on Sharpe."
     },
-    "book_objective_note": "DEPLOYABLE BOOK uses always_long GLD (book Calmar 4.22), NOT the trend_scan standalone champion (book 2.91). Book objective = return+decorrelation, not standalone Calmar; diversification handles member drawdown, so timing a drifter (cutting its return) hurts the book."
+    "book_objective_note": "DEPLOYABLE BOOK uses always_long GLD (book Calmar 4.22), NOT the trend_scan standalone champion (book 2.91). Book objective = return+decorrelation, not standalone Calmar; diversification handles member drawdown, so timing a drifter (cutting its return) hurts the book.",
+    "with_TIP": {
+      "calmar": 4.197,
+      "cagr": 10.86,
+      "mdd": 2.59,
+      "note": "TIP neutral (decorrelated, MaxDD 2.74->2.59% but CAGR drag) \u2014 Calmar-flat; excluded. Decorrelated-member lever exhausted: DBC won, EFA hurt, UUP/TIP neutral."
+    }
   }
 }
