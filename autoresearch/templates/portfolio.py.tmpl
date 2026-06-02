@@ -54,6 +54,7 @@ def _size(p, thresh, sizing, rbuf):
 
 
 CHAMPIONS = __CHAMPIONS__       # [[ticker, cell_key, weight], ...] (weight normalised internally)
+LEVERAGE = __LEVERAGE__         # gross exposure multiplier (1.0 = fully-invested, no leverage)
 
 
 class AutoresearchPortfolio(QCAlgorithm):
@@ -65,7 +66,12 @@ class AutoresearchPortfolio(QCAlgorithm):
         loaded = 0
         tot_w = float(sum(max(0.0, float(c[2])) for c in CHAMPIONS)) or 1.0
         for tk, key, wraw in CHAMPIONS:
-            sym = self.add_equity(tk, Resolution.MINUTE).symbol
+            sec = self.add_equity(tk, Resolution.MINUTE)
+            try:
+                sec.set_leverage(max(2.0, float(LEVERAGE) + 1.0))   # margin headroom for the gross target
+            except Exception:
+                pass
+            sym = sec.symbol
             preds, thresh, sizing = [], 0.45, "cdf_overlay"
             try:
                 data = json.loads(self.object_store.read("autoresearch/" + tk + "/" + key))
@@ -80,7 +86,7 @@ class AutoresearchPortfolio(QCAlgorithm):
                 self.set_runtime_statistic("load_" + tk, str(e)[:40])
             self.books[sym] = {"tk": tk, "preds": preds, "idx": 0, "thresh": thresh,
                                "sizing": sizing, "rbuf": [], "last_close": None, "cur_w": 0.0,
-                               "w": max(0.0, float(wraw)) / tot_w}   # normalised capital allocation (gross<=1)
+                               "w": (max(0.0, float(wraw)) / tot_w) * float(LEVERAGE)}   # gross = LEVERAGE
         self.set_runtime_statistic("n_loaded", str(loaded))
         self._eq = []
         self._eqy = []        # calendar year of each daily equity sample (per-year robustness)

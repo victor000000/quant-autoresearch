@@ -169,13 +169,14 @@ def render_infer_online(ticker, cell):
     return code.replace("__TICKER__", str(ticker)).replace("__CELL__", str(cell))
 
 
-def render_portfolio(champions):
+def render_portfolio(champions, leverage=1.0):
     """Render the 7-champion PORTFOLIO replay (Wang's endpoint ⑨⑩). champions =
-    [[ticker, objectstore_cell_key], ...]; each is replayed via its saved predictions
-    at its own thresh+sizing, equal-capital weighted 1/N. Self-contained template."""
+    [[ticker, objectstore_cell_key, weight], ...]; each is replayed via its saved
+    predictions at its own thresh+sizing, weight normalised then scaled by `leverage`
+    (gross exposure = leverage). Self-contained template."""
     with open(os.path.join(TEMPLATES_DIR, "portfolio.py.tmpl")) as f:
         code = f.read()
-    return code.replace("__CHAMPIONS__", json.dumps(champions))
+    return code.replace("__CHAMPIONS__", json.dumps(champions)).replace("__LEVERAGE__", repr(float(leverage)))
 
 
 def render_benchmark(tickers):
