@@ -292,11 +292,16 @@ class AutoresearchPipeline(QCAlgorithm):
                     ms.fit(Xt[ok], meta_y)
                     pmeta_v = ms.predict_proba(Xv)[:, 1]
                     pmeta_e = ms.predict_proba(Xe)[:, 1]
-                    # shrink the primary's deviation-from-neutral by the meta confidence
-                    pv_cal = 0.5 + (np.asarray(pv_cal) - 0.5) * pmeta_v
-                    pe_cal = 0.5 + (np.asarray(pe_cal) - 0.5) * pmeta_e
+                    # META GATE (AFML): FLATTEN the bar where the secondary predicts the
+                    # primary is wrong (p_meta < 0.5); keep the primary signal otherwise.
+                    # Only ever REMOVES trades (raising precision) — never adds. The
+                    # neutral value that _size flattens to differs by sizing: 0.5 for
+                    # long/short (centred), 0.0 for long-only (below any entry thresh).
+                    _gate = 0.5 if str(sizing).startswith("ls") else 0.0
+                    pv_cal = np.where(pmeta_v >= 0.5, np.asarray(pv_cal), _gate)
+                    pe_cal = np.where(pmeta_e >= 0.5, np.asarray(pe_cal), _gate)
                     self.log(f"META {label_cfg}: oos={int(ok.sum())} meta_acc={float(meta_y.mean()):.3f} "
-                             f"pmeta_e_mean={float(np.mean(pmeta_e)):.3f}")
+                             f"kept_test={float(np.mean(pmeta_e >= 0.5)):.3f}")
             except Exception as _me:
                 try:
                     self.set_runtime_statistic("meta_err", str(_me)[:60])
