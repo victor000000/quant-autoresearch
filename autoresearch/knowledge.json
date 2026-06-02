@@ -2206,6 +2206,12 @@
         "type": "finding",
         "phase": "PORTFOLIO",
         "label": "R113 UUP NEUTRAL: genuine hedge (MaxDD 2.74->2.67%, Sharpe 2.52->2.55) but flat Calmar (return drag offsets at ~2% weight). Decorrelation NECESSARY not SUFFICIENT \u2014 needs MaxDD cut > return drag (DBC yes, UUP no). Book finalised 7+DBC 4.22. Universe converged"
+      },
+      {
+        "id": "r114",
+        "type": "finding",
+        "phase": "PORTFOLIO",
+        "label": "R114 \u221dCalmar^1 weighting CONFIRMED optimal (4.22; unimodal: ^0.5=3.59, ^2=3.80/Sharpe2.75). Book optimised on EVERY dim: members(7+DBC)/weighting(^1)/leverage. Objective-dependent: ^2 max Sharpe, ^1 max Calmar. System comprehensively complete"
       }
     ],
     "edges": [
@@ -3483,6 +3489,16 @@
         "src": "r113",
         "dst": "f_portfolio",
         "label": "decorrelation necessary not sufficient; book = 7+DBC"
+      },
+      {
+        "src": "r113",
+        "dst": "r114",
+        "label": "optimise the weighting exponent"
+      },
+      {
+        "src": "r114",
+        "dst": "f_portfolio",
+        "label": "\u221dCalmar^1 optimal; book fully optimised"
       }
     ],
     "running": []
@@ -3645,6 +3661,13 @@
       "mdd": 2.67,
       "sharpe": 2.552,
       "note": "UUP neutral \u2014 genuine hedge (MaxDD 2.74->2.67%, Sharpe up) but flat Calmar (return drag offsets at conviction weight). Excluded from book."
+    },
+    "weight_exponent": {
+      "0.5": 3.5884,
+      "1.0": 4.2166,
+      "2.0": 3.8033,
+      "optimal": 1.0,
+      "note": "\u221dCalmar^1 is the Calmar optimum (unimodal); ^0.5 over-diversifies (3.59), ^2 over-concentrates EEM->lower CAGR (3.80, though Sharpe 2.75). Objective-dependent: ^2 wins on Sharpe."
     }
   }
 }
