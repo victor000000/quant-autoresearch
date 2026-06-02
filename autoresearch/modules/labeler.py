@@ -31,6 +31,12 @@ import pandas as pd
 import math
 
 
+# Shared across the concatenated QC script (one namespace): the triple_barrier
+# labeler deposits its winning horizon's label END-TIMES (t1) here so the footer
+# can build AFML sample-uniqueness weights. Cleared/overwritten each call.
+_TB_LAST = {}
+
+
 # --------------------------------------------------------------------------- #
 # Forward metrics                                                             #
 # --------------------------------------------------------------------------- #
@@ -477,8 +483,13 @@ def generate_labels_triple_barrier(lc, lr, tr_m, va_m, te_m, fv,
         sigma_floor = 1e-6
     sigma = np.where(np.isnan(sigma) | (sigma <= 0), sigma_floor, sigma)
 
+    best_t1 = None
     for H in horizons:
         y_tb = np.full(N, -1, dtype=int)
+        # t1 = the bar at which a label RESOLVES (first barrier touch, or the
+        # vertical barrier on timeout) — AFML's label end-time. Recording it does
+        # not change any label; it is the input for sample-uniqueness weighting.
+        t1_tb = np.full(N, -1, dtype=int)
         for t in range(N - H):
             if not fv[t]:
                 continue
@@ -487,17 +498,21 @@ def generate_labels_triple_barrier(lc, lr, tr_m, va_m, te_m, fv,
             lo_b = -L * s
             cum = 0.0
             hit = None
+            touch = t + H               # default: vertical barrier (timeout)
             for j in range(t + 1, t + H + 1):
                 cum += lr[j]
                 if cum >= up_b:
                     hit = 1
+                    touch = j
                     break
                 if cum <= lo_b:
                     hit = 0
+                    touch = j
                     break
             if hit is None:  # vertical barrier (timeout)
                 hit = 1 if cum > 0 else 0
             y_tb[t] = hit
+            t1_tb[t] = touch
 
         ly = y_tb >= 0
         tx = fv & ly & tr_m
@@ -514,7 +529,14 @@ def generate_labels_triple_barrier(lc, lr, tr_m, va_m, te_m, fv,
                 best_labels = y_tb
                 best_cfg = cfg
                 best_horizon = H
+                best_t1 = t1_tb
 
+    # Expose the winning horizon's label end-times for downstream sample-uniqueness
+    # weighting (read by the footer through the shared concatenated namespace).
+    # Cleared every call so one cell's t1 never leaks into another.
+    _TB_LAST.clear()
+    if best_t1 is not None:
+        _TB_LAST["t1"] = best_t1
     return best_labels, best_cfg, best_horizon
 
 
