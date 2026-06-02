@@ -1939,6 +1939,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "SELECTION-BIAS ASSESSMENT (Wang #1): PSR + Bonferroni-by-N_trials. 4/7 champions SIGNIFICANT (EEM/GLD/HYG/TLT); QQQ/IWM/XLE NOT significant (modest Sharpe ~0.9-1.3 don't clear, esp. heavily-ground IWM/XLE). Honest trials-adjusted verdict"
+      },
+      {
+        "id": "f_online_infer",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "ONLINE OOS BACKTEST built (infer_online.py.tmpl + model bundle): rebuilds bars+features+frozen-model ONLINE. Cross-check vs saved preds: bars byte-identical, model/scaler/kept_idx/calibration EXACT on 89% of bars; ~11% residual = entropy stride-anchoring (mean 0.016, max 0.54). Fix scoped: anchored-grid entropy (O(W)). Production stays on (correct) prediction-replay until byte-exact"
       }
     ],
     "edges": [
@@ -2881,6 +2887,16 @@
         "src": "f_plateau",
         "dst": "f_selbias",
         "label": "which edges are real?"
+      },
+      {
+        "src": "f_online_verified",
+        "dst": "f_online_infer",
+        "label": "extend bars proof to full model"
+      },
+      {
+        "src": "f_metric_unify",
+        "dst": "f_online_infer",
+        "label": "frozen-model online replay"
       }
     ],
     "running": []
