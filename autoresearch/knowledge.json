@@ -2053,6 +2053,12 @@
         "type": "finding",
         "phase": "ALL",
         "label": "DRIFT CEILING: HYG/GLD/QQQ buy-and-hold is optimal \u2014 timing forfeits carry (R90/R98), crash-veto has no OOS skill + fails G2 (R100). Their edge IS the carry; can't be improved in this framework"
+      },
+      {
+        "id": "r101",
+        "type": "finding",
+        "phase": "EEM",
+        "label": "R101 EEM meta edge is logdollar-SPECIFIC: vol=0.07, range=0.66 vs logdollar 4.03. EEM 4.03 optimal on ALL dims (axis/threshold/density/labeler). Single-asset technique search COMPLETE. Next: deployable portfolio (Wang endpoint)"
       }
     ],
     "edges": [
@@ -3200,6 +3206,16 @@
         "src": "f_drift_ceiling",
         "dst": "f_frontier",
         "label": "drift ETFs at ceiling"
+      },
+      {
+        "src": "r99",
+        "dst": "r101",
+        "label": "also vary the bar axis"
+      },
+      {
+        "src": "r101",
+        "dst": "f_frontier",
+        "label": "EEM exhaustively characterised \u2014 search complete"
       }
     ],
     "running": []
