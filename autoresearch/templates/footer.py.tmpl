@@ -133,35 +133,6 @@ def _cstats_sized(probs, lc_arr, log_rets, thresh, sizing, tc=0.0005):
     return cal, trades, float(np.sum(strat_rets)), mdd, cagr, da
 
 
-def _afml_uniqueness_weights(t1, idx):
-    """AFML average-uniqueness sample weights (Lopez de Prado, Ch.4).
-
-    Overlapping triple-barrier labels are NOT IID: a label spanning [i, t1[i]]
-    shares outcome-determining returns with every other label whose lifespan
-    overlaps it. Weighting each TRAIN sample by its average uniqueness (the mean
-    of 1/concurrency over its own lifespan) stops the booster from over-counting
-    densely overlapping regions. idx = train label START bars; t1 = full-length
-    array of label END bars. Returns weights aligned to idx, normalised to mean 1
-    (preserving effective sample size + the scale_pos_weight interaction), or None
-    if it cannot be formed (caller then fits unweighted — unchanged behaviour)."""
-    if idx is None or t1 is None or len(idx) == 0:
-        return None
-    starts = np.asarray(idx, dtype=int)
-    ends = np.maximum(np.asarray([int(t1[i]) for i in starts], dtype=int), starts)
-    conc = np.zeros(int(ends.max()) + 2, dtype=float)
-    for a, b in zip(starts, ends):
-        conc[a:b + 1] += 1.0
-    w = np.empty(len(starts), dtype=float)
-    for k in range(len(starts)):
-        seg = conc[starts[k]:ends[k] + 1]
-        seg = seg[seg > 0]
-        w[k] = float(np.mean(1.0 / seg)) if len(seg) else 1.0
-    mw = float(np.mean(w))
-    if not np.isfinite(mw) or mw <= 0:
-        return None
-    return w / mw
-
-
 class AutoresearchPipeline(QCAlgorithm):
     def initialize(self):
         self.set_start_date(2009, 8, 1)
@@ -192,7 +163,7 @@ class AutoresearchPipeline(QCAlgorithm):
     # or None when the cell cannot be trained.                             #
     # --------------------------------------------------------------------- #
     def _run_cell(self, feats, y, label_cfg, tr_m, va_m, te_m, lc, lr, bar_ts, fv,
-                  thresh, sizing="cdf_overlay", t1=None):
+                  thresh, sizing="cdf_overlay"):
         try:
             from sklearn.preprocessing import StandardScaler
             from sklearn.metrics import roc_auc_score
@@ -244,14 +215,6 @@ class AutoresearchPipeline(QCAlgorithm):
             pe_cal = np.ones(len(ei))
             train_auc = val_auc = 0.5
         else:
-            # AFML sample-uniqueness weights for overlapping labels (triple_barrier
-            # passes t1; every other labeler passes None -> unweighted, unchanged).
-            w_tx = None
-            if t1 is not None:
-                try:
-                    w_tx = _afml_uniqueness_weights(t1, np.where(tx)[0])
-                except Exception:
-                    w_tx = None
             # FIXED: single XGBoost depth3 / lr0.03 / n200 / scale_pos_weight.
             scale_w = n_neg / max(1, n_pos)
             try:
@@ -261,8 +224,7 @@ class AutoresearchPipeline(QCAlgorithm):
                     scale_pos_weight=scale_w, objective="binary:logistic",
                     eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
                     early_stopping_rounds=30, base_score=0.5)
-                m.fit(Xt, y[tx], sample_weight=w_tx,
-                      eval_set=[(Xv[vlab], y[vx_lab])], verbose=False)
+                m.fit(Xt, y[tx], eval_set=[(Xv[vlab], y[vx_lab])], verbose=False)
             except Exception:
                 return None
             pt_raw = m.predict_proba(Xt)[:, 1]
@@ -463,16 +425,10 @@ class AutoresearchPipeline(QCAlgorithm):
                 if y is None:
                     continue
 
-                # Only triple_barrier exposes label end-times (_TB_LAST in the shared
-                # namespace) -> sample-uniqueness weights; None for any other labeler
-                # (incl. other ensemble legs), so their fits are unchanged.
-                _t1 = None
-                if label_name in ("triple_barrier", "triple_barrier_tight"):
-                    _t1 = globals().get("_TB_LAST", {}).get("t1")
                 try:
                     res = self._run_cell(feats, y, label_cfg or label_name,
                                          tr_m, va_m, te_m, lc, lr, bar_ts, fv, thresh,
-                                         sizing, t1=_t1)
+                                         sizing)
                 except Exception:
                     res = None                  # a failing leg must not crash the whole train
                 if res is None:
