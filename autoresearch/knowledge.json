@@ -981,7 +981,9 @@
         "labeler": "always_long",
         "thresh": 0.15,
         "sizing": "cdf_overlay"
-      }
+      },
+      "real_cagr": 24.117,
+      "real_mdd": 19.4
     },
     "IWM": {
       "cell": "IWM_imbalance_triple_barrier+bgm_cdf_overlay_t0.45",
@@ -997,7 +999,9 @@
         "labeler": "triple_barrier+bgm",
         "thresh": 0.45,
         "sizing": "cdf_overlay"
-      }
+      },
+      "real_cagr": 3.649,
+      "real_mdd": 3.2
     },
     "EEM": {
       "cell": "EEM_logdollar_triple_barrier_cdf_overlay_t0.30",
@@ -1070,7 +1074,9 @@
         "labeler": "triple_barrier",
         "thresh": 0.5,
         "sizing": "ls_overlay"
-      }
+      },
+      "real_cagr": 2.892,
+      "real_mdd": 1.9
     },
     "GLD": {
       "cell": "GLD_logdollar_always_long_cdf_overlay_t0.45",
