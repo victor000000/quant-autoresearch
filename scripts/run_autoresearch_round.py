@@ -423,6 +423,9 @@ def _validate_cfg(cfg):
     cfg["thresh"] = float(cfg["thresh"])
     if not (0.0 < cfg["thresh"] < 1.0):
         raise ValueError(f"thresh {cfg['thresh']} must be in (0,1)")
+    cfg["max_depth"] = int(cfg.get("max_depth", 3))   # optional model-capacity override; default 3
+    if not (2 <= cfg["max_depth"] <= 8):
+        raise ValueError(f"max_depth {cfg['max_depth']} must be in [2,8]")
     return cfg
 
 

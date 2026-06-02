@@ -217,11 +217,14 @@ class AutoresearchPipeline(QCAlgorithm):
             pe_cal = np.ones(len(ei))
             train_auc = val_auc = 0.5
         else:
-            # FIXED: single XGBoost depth3 / lr0.03 / n200 / scale_pos_weight.
+            # XGBoost lr0.03 / n200 / scale_pos_weight. depth defaults to 3 (shallow,
+            # regularized); CONFIG['max_depth'] can override for capacity A/B (leak-safe
+            # hyperparameter — train/val/embargo logic unchanged).
             scale_w = n_neg / max(1, n_pos)
+            _md = int(CONFIG.get("max_depth", 3))
             try:
                 m = xgb.XGBClassifier(
-                    n_estimators=200, max_depth=3, learning_rate=0.03,
+                    n_estimators=200, max_depth=_md, learning_rate=0.03,
                     reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
                     scale_pos_weight=scale_w, objective="binary:logistic",
                     eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
