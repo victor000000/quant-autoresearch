@@ -1887,6 +1887,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "R86 tertile useless on TLT (0.24). CONVERGED: label-to-asset map fully characterized, all 7 ETFs at leak-free ceilings. Single-config swaps exhausted -> next gains need a build"
+      },
+      {
+        "id": "f_audit2",
+        "type": "milestone",
+        "phase": "IWM",
+        "label": "AUDIT v2 (6-agent, all stages): pipeline VERIFIED leak-free. Bar-threshold + G3 fixes confirmed; features/fit/embargo/infer/ObjectStore all clean. Only finding: dead triple_barrier sigma_floor full-series fallback -> fixed to epsilon (defense-in-depth)"
       }
     ],
     "edges": [
@@ -2799,6 +2805,16 @@
         "src": "r86",
         "dst": "f_plateau",
         "label": "single-config space exhausted -> converged"
+      },
+      {
+        "src": "f_barthresh_leak",
+        "dst": "f_audit2",
+        "label": "re-audit after fixes"
+      },
+      {
+        "src": "f_metric_unify",
+        "dst": "f_audit2",
+        "label": "verified leak-free"
       }
     ],
     "running": []

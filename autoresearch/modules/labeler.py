@@ -472,8 +472,9 @@ def generate_labels_triple_barrier(lc, lr, tr_m, va_m, te_m, fv,
     else:
         sigma_floor = 0.0
     if not np.isfinite(sigma_floor) or sigma_floor <= 0:
-        s_all = sigma[~np.isnan(sigma)]
-        sigma_floor = float(np.median(s_all)) if len(s_all) > 0 else 1e-6
+        # Degenerate TRAIN vol (cannot occur under footer's tr_m.sum()>=500 guard):
+        # use a fixed epsilon, NEVER a full-series median (which would include OOS).
+        sigma_floor = 1e-6
     sigma = np.where(np.isnan(sigma) | (sigma <= 0), sigma_floor, sigma)
 
     for H in horizons:
