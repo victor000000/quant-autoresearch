@@ -2266,6 +2266,12 @@
         "type": "finding",
         "phase": "XLE",
         "label": "R121 trend_scan is GLD-SPECIFIC: fails XLE (0.02/-0.38, DA 134 shorting energy rallies). Won GLD (clean trend), failed HYG/DBC/XLE. XLE ceilinged 0.905. Labels exhausted on weak ETFs -> pivot to NEW custom AXIS (Wang's standardized-cumsum CUSUM clock)"
+      },
+      {
+        "id": "r122",
+        "type": "finding",
+        "phase": "DBC",
+        "label": "R122 zcusum (new axis) fails DBC too (0.34/0.13 vs 0.858) but is MECHANICALLY SOUND (957tr, dense). DBC ceilinged across labels AND axes \u2014 untimeable basket. zcusum axis functional; validate on directional XLE next"
       }
     ],
     "edges": [
@@ -3643,6 +3649,16 @@
         "src": "r121",
         "dst": "f_xle_ceiling",
         "label": "XLE ceiling holds vs trend_scan"
+      },
+      {
+        "src": "r121",
+        "dst": "r122",
+        "label": "test new zcusum axis on weakest DBC"
+      },
+      {
+        "src": "r122",
+        "dst": "f_drift_ceiling",
+        "label": "DBC ceilinged across modules"
       }
     ],
     "running": []
