@@ -1258,29 +1258,29 @@
    "status": "CEILINGED \u2014 5 method-families (trend_scan/KER/bgm/cusum_regime/tertile) all < buy-hold 0.91; commodity up-drifter, timing misses upside. Buy-hold 0.91 deployable champion."
   },
   "UUP": {
-   "cell": "UUP_imbalance_bgm+ker_cdf_overlay_t0.45",
-   "real_calmar": 1.1818,
-   "real_cagr": 2.6,
-   "real_mdd": 2.2,
-   "real_da": 2.9741,
-   "real_sharpe": 1.051,
+   "cell": "UUP_imbalance_bgm+ker_cdf_overlay_t0.50",
+   "real_calmar": 1.2958,
+   "real_cagr": 2.462,
+   "real_mdd": 1.9,
+   "real_da": 2.1572,
+   "real_sharpe": 1.135,
    "trades": 146,
    "g2_pass": true,
-   "round": 38,
+   "round": 39,
    "source": "tournament",
-   "psr": 0.9589,
-   "n_trials": 10,
+   "psr": 0.9699,
+   "n_trials": 12,
    "significant": false,
    "leak_fixed": true,
    "config": {
     "ticker": "UUP",
     "axis": "imbalance",
     "labeler": "bgm+ker",
-    "thresh": 0.45,
+    "thresh": 0.5,
     "sizing": "cdf_overlay"
    },
-   "val_auc_reval": 0.876,
-   "status": "REAL EDGE, IMPROVED \u2014 bgm+ker ensemble 1.18 beats bgm 1.08 (val_auc 0.876, survives deflation 0.68). The new KER method complements bgm (regime+efficiency-trend); bgm+trend_scan diluted (0.84). Leak-free by construction (avg of two causal signals). Single-ticker."
+   "ceilinged": true,
+   "status": "REAL EDGE, OPTIMIZED to 1.30: bgm+ker @thr0.50 (1.08->1.18->1.30 via bgm+KER ensemble + threshold). val_auc 0.876, survives deflation 0.779. Stop threshold-chasing."
   },
   "TIP": {
    "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1318,7 +1318,7 @@
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
- "last_round": 38,
+ "last_round": 39,
  "causal_graph": {
   "phases": [
    "Landscape",
@@ -2647,6 +2647,12 @@
     "type": "milestone",
     "phase": "UUP",
     "label": "R150 UUP KEEP: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +1.1818 (prev best +1.0831). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r151",
+    "type": "milestone",
+    "phase": "UUP",
+    "label": "R151 UUP KEEP: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +1.2958 (prev best +1.1818). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4323,6 +4329,11 @@
    {
     "src": "r149",
     "dst": "r150",
+    "label": "new best"
+   },
+   {
+    "src": "r150",
+    "dst": "r151",
     "label": "new best"
    }
   ],
