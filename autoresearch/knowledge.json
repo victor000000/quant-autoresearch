@@ -4160,7 +4160,14 @@
      1.8276
     ]
    ],
-   "note": "Honest book-optimization winner (sweep 2026-06-02): dropping correlated high-MDD equities (QQQ/EEM/EFA/IWM/XLE) cut MaxDD 6.6%->2.13% and ~doubled Calmar 1.78->3.32. Decorrelation > member-count. Real edges GLD trend_scan + UUP imbalance_bgm anchor it; TIP/DBC/HYG are decorrelated buy-hold diversifiers. Leverage is a separate dial (Calmar invariant)."
+   "note": "Honest book-optimization winner (sweep 2026-06-02): dropping correlated high-MDD equities (QQQ/EEM/EFA/IWM/XLE) cut MaxDD 6.6%->2.13% and ~doubled Calmar 1.78->3.32. Decorrelation > member-count. Real edges GLD trend_scan + UUP imbalance_bgm anchor it; TIP/DBC/HYG are decorrelated buy-hold diversifiers. Leverage is a separate dial (Calmar invariant).",
+   "per_year": {
+    "2023": "+1.4% (mdd 2.1%)",
+    "2024": "+5.2% (mdd 1.6%)",
+    "2025": "+6.4% (mdd 1.9%)",
+    "2026": "+6.7% (mdd 1.8%)"
+   },
+   "positive_every_year": true
   }
  }
 }
