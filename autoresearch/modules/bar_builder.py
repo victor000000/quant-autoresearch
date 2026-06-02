@@ -175,6 +175,60 @@ class LogDollarBarBuilder:
         return None
 
 
+class ZCusumBarBuilder:
+    """Standardized-cumsum CUSUM bar (Wang's LogDollar event clock). Driver
+    x = log(close*vol); rolling-standardize over a trailing window (causal):
+    z = (x - mu_w)/sd_w; run a SYMMETRIC CUSUM filter
+        S+ = max(0, S+ + z),  S- = min(0, S- + z),
+    emit a bar when S+ >= T or -S- >= T, then reset both. Samples densely at
+    directional RUNS in standardized log-dollar flow and sparsely in calm drift —
+    an event clock, unlike the count/threshold bars. Rolling stats are kept
+    incrementally (ring buffer, O(1)/update) so the SAME update() drives the batch
+    build and the online infer -> byte-exact. Leak-free: the window is trailing
+    (no future); the threshold T comes from the minute count only (no fit)."""
+
+    def __init__(self, threshold, window=1950):
+        self.thresh = float(threshold)          # T (uniform name for builder_threshold)
+        self.w = int(window)
+        self._ring = [0.0] * self.w
+        self._cnt = 0
+        self._sum = 0.0
+        self._sumsq = 0.0
+        self.sp = 0.0
+        self.sn = 0.0
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0 or vol <= 0:
+            return None
+        self.close_lc = math.log(close)
+        x = math.log(close * vol)
+        pos = self._cnt % self.w
+        if self._cnt >= self.w:                 # evict the value leaving the window
+            old = self._ring[pos]
+            self._sum -= old
+            self._sumsq -= old * old
+        self._ring[pos] = x
+        self._sum += x
+        self._sumsq += x * x
+        self._cnt += 1
+        n = self.w if self._cnt >= self.w else self._cnt
+        if n < 30:                              # warm-up: too few for a stable z
+            return None
+        mu = self._sum / n
+        var = self._sumsq / n - mu * mu
+        if var <= 1e-18:
+            return None
+        z = (x - mu) / math.sqrt(var)
+        self.sp = max(0.0, self.sp + z)
+        self.sn = min(0.0, self.sn + z)
+        if self.sp >= self.thresh or -self.sn >= self.thresh:
+            self.sp = 0.0
+            self.sn = 0.0
+            return {"ts_close": ts, "log_close": self.close_lc}
+        return None
+
+
 class EntropyBarBuilder:
     """Entropy / information-surprise bar (NEW, information-driven).
 
@@ -502,7 +556,7 @@ class DirectionalChangeBarBuilder:
 
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -515,6 +569,7 @@ AXES = {
     "volumeimb": VolumeImbalanceBarBuilder,
     "fracdiff": FracDiffBarBuilder,
     "dc": DirectionalChangeBarBuilder,
+    "zcusum": ZCusumBarBuilder,
 }
 
 
@@ -857,6 +912,13 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         total = float(np.mean(np.log1p(dv[keep]))) * int(np.sum(valid))
         return LogDollarBarBuilder(_safe_thresh(total, target_bars))
 
+    if bar_type == "zcusum":
+        # Standardized-cumsum CUSUM clock (Wang's LogDollar). z is unit-variance, so a
+        # symmetric CUSUM crosses ~ every T^2 minutes -> T = sqrt(minutes/bar) targets
+        # ~target_bars. Count-only threshold (causal, no fit); rolling window is trailing.
+        m = max(1.0, len(close) / max(1, int(target_bars)))
+        return ZCusumBarBuilder(math.sqrt(m))
+
     if bar_type == "entropy":
         edges, probs, T = _fit_entropy_axis(close, vol, ts_arr, target_bars)
         if edges is None:
@@ -971,6 +1033,7 @@ BUILDER_CLASSES = {
     "range": RangeBarBuilder, "logdollar": LogDollarBarBuilder,
     "imbalance": DollarImbalanceBarBuilder, "tickimb": TickImbalanceBarBuilder,
     "volumeimb": VolumeImbalanceBarBuilder, "dc": DirectionalChangeBarBuilder,
+    "zcusum": ZCusumBarBuilder,
 }
 
 
