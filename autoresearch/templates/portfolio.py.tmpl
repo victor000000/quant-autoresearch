@@ -53,7 +53,7 @@ def _size(p, thresh, sizing, rbuf):
     return b
 
 
-CHAMPIONS = __CHAMPIONS__       # [[ticker, cell_key], ...]
+CHAMPIONS = __CHAMPIONS__       # [[ticker, cell_key, weight], ...] (weight normalised internally)
 
 
 class AutoresearchPortfolio(QCAlgorithm):
@@ -63,7 +63,8 @@ class AutoresearchPortfolio(QCAlgorithm):
         self.set_cash(100000)
         self.books = {}
         loaded = 0
-        for tk, key in CHAMPIONS:
+        tot_w = float(sum(max(0.0, float(c[2])) for c in CHAMPIONS)) or 1.0
+        for tk, key, wraw in CHAMPIONS:
             sym = self.add_equity(tk, Resolution.MINUTE).symbol
             preds, thresh, sizing = [], 0.45, "cdf_overlay"
             try:
@@ -78,8 +79,8 @@ class AutoresearchPortfolio(QCAlgorithm):
             except Exception as e:
                 self.set_runtime_statistic("load_" + tk, str(e)[:40])
             self.books[sym] = {"tk": tk, "preds": preds, "idx": 0, "thresh": thresh,
-                               "sizing": sizing, "rbuf": [], "last_close": None, "cur_w": 0.0}
-        self.w_each = 1.0 / max(1, len(CHAMPIONS))   # equal capital per champion
+                               "sizing": sizing, "rbuf": [], "last_close": None, "cur_w": 0.0,
+                               "w": max(0.0, float(wraw)) / tot_w}   # normalised capital allocation (gross<=1)
         self.set_runtime_statistic("n_loaded", str(loaded))
         self._eq = []
         self._last_day = None
@@ -100,7 +101,7 @@ class AutoresearchPortfolio(QCAlgorithm):
                 pt = b.end_time
             if b.end_time >= pt:
                 bk["idx"] += 1
-                w = self.w_each * _size(float(p["pred"]), bk["thresh"], bk["sizing"], bk["rbuf"])
+                w = bk["w"] * _size(float(p["pred"]), bk["thresh"], bk["sizing"], bk["rbuf"])
                 if abs(w - bk["cur_w"]) > 0.005:        # per-champion rebalance dead-band
                     if abs(w) < 0.003:
                         self.liquidate(sym)
