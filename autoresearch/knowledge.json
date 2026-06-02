@@ -2095,6 +2095,12 @@
         "type": "milestone",
         "phase": "PORTFOLIO",
         "label": "R106 ALPHA vs buy-hold: strategy book Calmar 3.60 vs passive 1.61, MaxDD 3.2% vs 11.2%, Sharpe 2.55 vs 1.51 (gives up CAGR 11.5% vs 17.9% in this bull). Alpha = RISK REDUCTION, not raw return. Honest deployment framing"
+      },
+      {
+        "id": "r107",
+        "type": "milestone",
+        "phase": "PORTFOLIO",
+        "label": "R107 LEVERAGE: low-DD book under-levered. 2x -> CAGR 25%/MaxDD 6.2%/Calmar 4.01 DOMINATES passive (17.9%/11.2%); 3x -> 39.8%/9.3%/Calmar 4.26 (still < passive DD). Calmar rises w/ leverage. Resolves alpha gap. 2x prudent, 3x Calmar-max"
       }
     ],
     "edges": [
@@ -3307,6 +3313,16 @@
         "src": "r106",
         "dst": "f_portfolio",
         "label": "alpha is risk-reduction (2.2x Calmar)"
+      },
+      {
+        "src": "r106",
+        "dst": "r107",
+        "label": "lever the low-drawdown book"
+      },
+      {
+        "src": "r107",
+        "dst": "f_portfolio",
+        "label": "2x dominates passive both axes"
       }
     ],
     "running": []
@@ -3419,6 +3435,26 @@
       "da": 11.804,
       "note": "passive equal-weight buy-hold of the 7 ETFs; strategy book beats it 3.60 vs 1.61 Calmar via drawdown reduction"
     },
-    "alpha": "risk-reduction: strategy 3.60 Calmar / 3.2% MaxDD / 2.55 Sharpe vs buy-hold 1.61 / 11.2% / 1.51 (gives up raw CAGR 11.5% vs 17.9% in this bull)"
+    "alpha": "risk-reduction: strategy 3.60 Calmar / 3.2% MaxDD / 2.55 Sharpe vs buy-hold 1.61 / 11.2% / 1.51 (gives up raw CAGR 11.5% vs 17.9% in this bull)",
+    "leverage": {
+      "1x": {
+        "calmar": 3.6,
+        "cagr": 11.5,
+        "mdd": 3.2
+      },
+      "2x": {
+        "calmar": 4.01,
+        "cagr": 25.0,
+        "mdd": 6.2,
+        "sharpe": 2.61
+      },
+      "3x": {
+        "calmar": 4.26,
+        "cagr": 39.8,
+        "mdd": 9.3,
+        "sharpe": 2.63
+      },
+      "note": "low-DD book is under-levered; 2x dominates passive (25%>17.9% CAGR, 6.2%<11.2% MaxDD); 3x maxes Calmar 4.26, still < passive MaxDD. Caveat: leverage amplifies tail risk + flattered by the bull OOS."
+    }
   }
 }
