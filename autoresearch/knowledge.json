@@ -2343,6 +2343,12 @@
         "type": "finding",
         "phase": "IWM",
         "label": "R129 IWM workflow top-2 fail: meta-on-ENSEMBLE 0.31 (gate HURTS the blend \u2014 meta needs a strong primary, IWM's tb leg isn't one even in the ensemble; R96 holds at ensemble level). volumeimb degenerate (0tr). IWM ceiling 1.14 holds; book role already optimal (R128). Try crash_ahead next"
+      },
+      {
+        "id": "r130",
+        "type": "finding",
+        "phase": "IWM",
+        "label": "R130 IWM crash_ahead G2-fail (1 trade, no crash skill \u2014 like HYG R100). Workflow top-3 ALL fail (meta-ens 0.31, volumeimb degenerate, crash_ahead). IWM conclusively ceilinged 1.14; book role optimal (R128). Weak-ETF space (DBC/XLE/IWM) EXHAUSTED; book verified-optimal 4.22. Next: FFD features (Wang-canon gap, new-featuring priority)"
       }
     ],
     "edges": [
@@ -3810,6 +3816,21 @@
         "src": "r129",
         "dst": "f_meta",
         "label": "meta needs a strong primary \u2014 IWM lacks one even in the ensemble"
+      },
+      {
+        "src": "r129",
+        "dst": "r130",
+        "label": "last zero-code IWM idea"
+      },
+      {
+        "src": "r130",
+        "dst": "f_iwm_ceiling",
+        "label": "conclusive via workflow ideation"
+      },
+      {
+        "src": "r100",
+        "dst": "r130",
+        "label": "crash_ahead no skill (IWM like HYG)"
       }
     ],
     "running": []
