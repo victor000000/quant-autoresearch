@@ -16,6 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 REPORTS = os.path.abspath(os.path.join(HERE, "..", "autoresearch", "reports"))
 PROGRAM = os.path.abspath(os.path.join(HERE, "..", "autoresearch", "program.md"))
+DEPLOY = os.path.abspath(os.path.join(HERE, "..", "autoresearch", "DEPLOYMENT.md"))
 from render_index import build_html   # live dashboard renderer
 
 app = Flask(__name__, static_folder=None)
@@ -39,15 +40,14 @@ def data_json():
     return Response(__import__("json").dumps(build_data()), mimetype="application/json")
 
 
-@app.route("/program.md")
-def program():
+def _md_page(path, title):
     try:
-        txt = open(PROGRAM).read()
+        txt = open(path).read()
     except Exception:
-        txt = "(program.md not found)"
+        txt = "(" + title + " not found)"
     page = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width, initial-scale=1">'
-            '<title>program.md</title>'
+            '<title>' + title + '</title>'
             '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
             '<link rel="stylesheet" href="style.css">'
             '<style>.mdwrap{max-width:920px;margin:0 auto;padding:1.6rem 1.4rem 5rem}'
@@ -56,9 +56,20 @@ def program():
             'white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere;box-shadow:var(--shadow)}'
             '</style></head><body><div class="mdwrap">'
             '<div class="nav"><a href="/">← dashboard</a><span class="sep">·</span>'
-            '<a href="/#overview">overview</a></div>'
+            '<a href="/program.md">program.md</a><span class="sep">·</span>'
+            '<a href="/deployment.md">deployment.md</a></div>'
             '<pre class="md">' + _html.escape(txt) + '</pre></div></body></html>')
     return Response(page, mimetype="text/html")
+
+
+@app.route("/program.md")
+def program():
+    return _md_page(PROGRAM, "program.md")
+
+
+@app.route("/deployment.md")
+def deployment():
+    return _md_page(DEPLOY, "deployment.md")
 
 
 @app.route("/<path:fname>")

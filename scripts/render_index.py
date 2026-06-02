@@ -345,7 +345,7 @@ def build_html():
     nav = ('<div class="commandbar"><span class="prompt">autoresearch / research-console</span>'
            '<span class="chapnav"><a href="#portfolio">book</a><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
            '<a href="#story">story</a><a href="#insights">insights</a><a href="#graph">graph</a>'
-           '<a href="#rounds">rounds</a><a href="program.md">program.md</a></span>'
+           '<a href="#rounds">rounds</a><a href="program.md">program.md</a><a href="deployment.md">deploy</a></span>'
            f'<span class="stale" id="stale">{stale}</span><span class="clock" id="clock"></span></div>')
     hero = ('<section class="statushero"><div class="block" id="nowrunning"><h2><span class="idledot"></span>'
             'Status</h2><p class="small">loading…</p></div>'
