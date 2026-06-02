@@ -1124,7 +1124,9 @@
    "deflation": "N/A_buyhold",
    "n_days": 710,
    "real_skew": 0.457,
-   "real_kurt": 8.1525
+   "real_kurt": 8.1525,
+   "ceilinged": true,
+   "status": "CEILINGED \u2014 trend_scan 0.05 / cusum_regime 0.91 << buy-hold 1.83; credit carry beats timing. Buy-hold 1.83 deployable champion."
   },
   "TLT": {
    "cell": "TLT_logdollar_trend_scan_ls_overlay_t0.45",
@@ -2638,6 +2640,12 @@
     "type": "round",
     "phase": "EEM",
     "label": "R145 EEM DISCARD: Sample on signed-dollar imbalance (directional) bars; CUSUM change-point regime labels; size long/short, vol-targeted, entry 0.45. -> Calmar -0.0739 (prev best +1.2930). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r146",
+    "type": "round",
+    "phase": "HYG",
+    "label": "R146 HYG DISCARD: Sample on log-dollar bars; CUSUM change-point regime labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.9129 (prev best +1.8276). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4289,6 +4297,11 @@
    {
     "src": "r144",
     "dst": "r145",
+    "label": "no improvement"
+   },
+   {
+    "src": "r145",
+    "dst": "r146",
     "label": "no improvement"
    }
   ],
