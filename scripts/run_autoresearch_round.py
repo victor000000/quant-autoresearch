@@ -427,6 +427,9 @@ def _validate_cfg(cfg):
     cfg["max_depth"] = int(cfg.get("max_depth", 3))   # optional model-capacity override; default 3
     if not (2 <= cfg["max_depth"] <= 8):
         raise ValueError(f"max_depth {cfg['max_depth']} must be in [2,8]")
+    cfg["model"] = str(cfg.get("model", "xgb"))        # optional model-family override; default xgb
+    if cfg["model"] not in ("xgb", "extratrees"):
+        raise ValueError(f"model {cfg['model']!r} not in ('xgb','extratrees')")
     return cfg
 
 
