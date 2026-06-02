@@ -176,7 +176,7 @@ td code{word-break:break-word}
 /* ============================================================================
    RESEARCH CONSOLE (single-page dashboard)  — dark instrument-cluster
    ========================================================================== */
-.dash{max-width:1680px;margin:0 auto;padding:0 1.8rem 5rem}
+.dash{max-width:none;margin:0;padding:0 2.2rem 5rem}
 .commandbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;
   background:rgba(10,14,20,.94);backdrop-filter:blur(9px);border-bottom:1px solid var(--line);
   padding:.7rem .2rem;margin-bottom:1.1rem}

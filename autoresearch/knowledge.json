@@ -2504,6 +2504,12 @@
         "type": "round",
         "phase": "XLE",
         "label": "R133 XLE DISCARD: Sample on log-dollar bars; Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.0229 (prev best +0.8588). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r134",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R134 TLT DISCARD: Sample on log-dollar bars; Bayesian-GMM regime labels; size long/short, vol-targeted, entry 0.45. -> Calmar +0.0279 (prev best -0.0387). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4095,6 +4101,11 @@
       {
         "src": "r132",
         "dst": "r133",
+        "label": "no improvement"
+      },
+      {
+        "src": "r133",
+        "dst": "r134",
         "label": "no improvement"
       }
     ],
