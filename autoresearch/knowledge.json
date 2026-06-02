@@ -1945,6 +1945,12 @@
         "type": "milestone",
         "phase": "IWM",
         "label": "ONLINE OOS BACKTEST fully VALIDATED (byte-exact): infer_online rebuilds bars+features+frozen-model+calibration ONLINE and reproduces saved preds to float precision (max_pred_diff 2.3e-08, 0 big diffs). Anchored-entropy grid fix made features byte-identical; train-neutral (best_cal 0.2347). Live-trading requirement proven. Production stays on the PROVEN-EQUIVALENT replay (fast); literal full-density online needs incremental features (perf only, not correctness)"
+      },
+      {
+        "id": "r87",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R87 XLE tertile variants: tertile+bgm dilutes (0.86), imbalance axis worse (0.82) < logdollar/tertile 0.91. XLE ceiling re-confirmed; single-config space exhausted"
       }
     ],
     "edges": [
@@ -2897,6 +2903,16 @@
         "src": "f_metric_unify",
         "dst": "f_online_infer",
         "label": "frozen-model online replay"
+      },
+      {
+        "src": "r86",
+        "dst": "r87",
+        "label": "more swaps confirm convergence"
+      },
+      {
+        "src": "r87",
+        "dst": "f_xle_ceiling",
+        "label": "0.91 re-confirmed"
       }
     ],
     "running": []
