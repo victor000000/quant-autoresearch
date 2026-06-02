@@ -1226,7 +1226,9 @@
    "sharpe": 1.1603,
    "n_days": 710,
    "real_skew": -0.1403,
-   "real_kurt": 6.8631
+   "real_kurt": 6.8631,
+   "ceilinged": true,
+   "status": "CEILINGED \u2014 trend_scan 1.385 BEAT buy-hold 1.286 but val_auc 0.466<0.52 (no predictive validity, window/path artifact); bgm 0.67. Buy-hold 1.286 deployable champion."
   },
   "DBC": {
    "cell": "DBC_logdollar_always_long_cdf_overlay_t0.45",
@@ -2623,6 +2625,12 @@
     "type": "round",
     "phase": "QQQ",
     "label": "R143 QQQ DISCARD: Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45. -> Calmar +1.0245 (prev best +1.2355). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r144",
+    "type": "round",
+    "phase": "EFA",
+    "label": "R144 EFA DISCARD: Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45. -> Calmar +1.3850 (prev best +1.2856). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4264,6 +4272,11 @@
    {
     "src": "r142",
     "dst": "r143",
+    "label": "no improvement"
+   },
+   {
+    "src": "r143",
+    "dst": "r144",
     "label": "no improvement"
    }
   ],
