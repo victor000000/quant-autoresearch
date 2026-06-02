@@ -9,15 +9,16 @@ top insights · inline causal graph · filterable rounds ledger.
 build_html() renders the page; build_data() returns the same derived data as JSON for
 the single /data.json poll (so the page DOM-patches instead of hard-reloading). Both
 share the derive() helpers, so server render and live poll never diverge."""
-import os, re, json, glob, sys
+import os, re, json, glob, sys, csv
 sys.path.insert(0, os.path.dirname(__file__))
-from describe import describe_cfg
+from describe import describe_cfg, describe
 from render_causal_graph import net_html, vis_data, LEGEND
 
 R = os.path.join(os.path.dirname(__file__), "..", "autoresearch", "reports")
 KJ = os.path.join(R, "..", "knowledge.json")
 PROG = os.path.join(R, "..", "program.md")
 STATUS = os.path.join(R, "status.json")
+ROUND_CSV = os.path.join(R, "..", "results", "round_results.csv")
 TICKERS = ["TLT", "IWM", "QQQ", "EEM", "GLD", "HYG", "XLE"]
 CHARACTER = {
     "TLT": "mean-reverter · rates", "IWM": "small-cap · reversals", "QQQ": "pure trender",
@@ -95,11 +96,19 @@ def derive(K):
 
 
 def scoreboard(K, rows):
-    n_rounds = max([int(re.match(r"round_(\d+)", os.path.basename(f)).group(1))
-                    for f in glob.glob(os.path.join(R, "round_*.html"))
-                    if re.match(r"round_(\d+)", os.path.basename(f))] or [0])
-    n_keep = sum(1 for f in glob.glob(os.path.join(R, "round_*.html"))
-                 if "KEEP" in (open(f).read()[:400].upper()))
+    # Prefer the LIVE CSV (always current): rounds = distinct timestamps, keeps =
+    # distinct timestamps containing a kept_as_new_best row. Fall back to the
+    # frozen pre-rendered-HTML counts only if the CSV can't be read.
+    csv_rounds = _scan_rounds_csv()
+    if csv_rounds:
+        n_rounds = len(csv_rounds)
+        n_keep = sum(1 for r in csv_rounds if r["verdict"] == "keep")
+    else:
+        n_rounds = max([int(re.match(r"round_(\d+)", os.path.basename(f)).group(1))
+                        for f in glob.glob(os.path.join(R, "round_*.html"))
+                        if re.match(r"round_(\d+)", os.path.basename(f))] or [0])
+        n_keep = sum(1 for f in glob.glob(os.path.join(R, "round_*.html"))
+                     if "KEEP" in (open(f).read()[:400].upper()))
     best = max((r for r in rows if r["edge"] is not None), key=lambda r: r["edge"], default=None)
     g1 = sum(1 for r in rows if r["g1"])
     return {
@@ -158,6 +167,64 @@ def _scan_rounds():
         rounds.append((int(m.group(1)) + (0.5 if m.group(2) else 0), base, title, summary, hyps))
     rounds.sort(reverse=True)
     return rounds
+
+
+def _csv_true(v):
+    return str(v).strip().lower() == "true"
+
+
+def _scan_rounds_csv():
+    """Build the rounds ledger LIVE from autoresearch/results/round_results.csv —
+    ALWAYS current (the driver appends to this every round). One ledger entry per
+    distinct `timestamp` (== one round of 2 competing hypotheses). Returns a list
+    of dicts, newest first, each with a chronological round number n (1..N over the
+    sorted-ascending distinct timestamps). Falls back to [] on any read error so the
+    caller can use the pre-rendered-HTML scanner instead."""
+    try:
+        with open(ROUND_CSV, newline="") as f:
+            allrows = list(csv.DictReader(f))
+    except Exception:
+        return []
+    if not allrows:
+        return []
+    # group rows by timestamp, preserving first-seen (chronological) order
+    groups, order = {}, []
+    for r in allrows:
+        ts = r.get("timestamp", "")
+        if ts not in groups:
+            groups[ts] = []
+            order.append(ts)
+        groups[ts].append(r)
+    order_sorted = sorted(order)            # ascending => chronological round number
+    num_of = {ts: i + 1 for i, ts in enumerate(order_sorted)}
+    out = []
+    for ts in order:
+        grp = groups[ts]
+        winner = next((r for r in grp if _csv_true(r.get("is_winner"))), None) or grp[0]
+        loser = next((r for r in grp if r is not winner), None)
+        kept = any(_csv_true(r.get("kept_as_new_best")) for r in grp)
+        n = num_of[ts]
+        link = f"round_{n}.html" if os.path.exists(os.path.join(R, f"round_{n}.html")) else None
+        try:
+            hyp = describe(winner.get("axis"), winner.get("labeler"),
+                           winner.get("thresh"), winner.get("sizing"))
+        except Exception:
+            hyp = ""
+        out.append({
+            "n": n, "ts": ts, "etf": winner.get("weakest_etf") or winner.get("ticker", ""),
+            "prev_calmar": _f(winner.get("prev_best_calmar")),
+            "prev_cell": winner.get("prev_best_cell") or "",
+            "win_calmar": _f(winner.get("real_calmar")),
+            "win_da": _f(winner.get("real_da")), "win_trades": winner.get("trades"),
+            "win_cell": (winner.get("ticker", "") + "_" + (winner.get("axis", "")) + "_"
+                         + (winner.get("labeler", "")) + "_" + (winner.get("sizing", ""))
+                         + "_t" + str(winner.get("thresh", ""))),
+            "win_recipe": hyp,
+            "lose_calmar": (_f(loser.get("real_calmar")) if loser else None),
+            "verdict": "keep" if kept else "discard", "link": link,
+        })
+    out.sort(key=lambda d: d["n"], reverse=True)
+    return out
 
 
 # ---- small HTML builders ---------------------------------------------------
@@ -287,6 +354,44 @@ def _ledger_html(rounds):
     return f'<ol class="rounds">{items}</ol>'
 
 
+def _ledger_html_csv(rounds):
+    """Rounds ledger built LIVE from round_results.csv (newest first). Keeps the
+    .ritem/keep/discard/extra classes + .rmain/.rsum/.hyps-row hooks the filter +
+    show-all JS expects, so the existing client code keeps working unchanged."""
+    items = ""
+    for i, d in enumerate(rounds):
+        v = d["verdict"]                                    # 'keep' | 'discard'
+        pill = f'<span class="pill {v}">{v.upper()}</span>'
+        hid = "" if i < 14 else " hidden extra"
+        title = f'Round {d["n"]} · {d["etf"]}'
+        head = (f'<a href="{d["link"]}">{title}</a>' if d["link"]
+                else f'<span class="rtitle">{title}</span>')
+        wc = d["win_calmar"]
+        wc_txt = f'{wc:+.2f}' if wc is not None else "—"
+        # plain-English line: what was tried, what it scored, vs the bar it had to beat
+        bits = []
+        if d["win_recipe"]:
+            bits.append(d["win_recipe"])
+        prevc = d["prev_calmar"]
+        if v == "keep":
+            sub = (f'New best for {d["etf"]}: Calmar <b>{wc_txt}</b> beat the prior '
+                   f'{prevc:+.2f}.' if prevc is not None else
+                   f'New best for {d["etf"]}: Calmar <b>{wc_txt}</b>.')
+        else:
+            sub = (f'Calmar <b>{wc_txt}</b> did not beat {d["etf"]}\'s standing best '
+                   f'{prevc:+.2f} — kept the incumbent.' if prevc is not None else
+                   f'Calmar <b>{wc_txt}</b> — not kept.')
+        trd = f' · {d["win_trades"]} trades' if d["win_trades"] not in (None, "") else ""
+        summ = f'<div class="rsum">{sub}{trd}</div>'
+        chips = ""
+        if d["win_recipe"]:
+            chips = (f'<div class="hyps-row"><span class="hchip">{d["win_recipe"]}</span>'
+                     f'<span class="hchip">cell {d["win_cell"]}</span></div>')
+        items += (f'<li class="ritem {v}{hid}"><div class="rmain">{head} {pill}'
+                  f'<span class="rcal">{wc_txt}</span></div>{summ}{chips}</li>')
+    return f'<ol class="rounds">{items}</ol>'
+
+
 def _scoreboard_html(sb):
     return ('<div class="kpi"><div class="k">rounds</div><div class="v">' + str(sb.get("rounds", 0)) + '</div></div>'
             '<div class="kpi"><div class="k">kept</div><div class="v pos">' + str(sb.get("keeps", 0)) + '</div></div>'
@@ -349,11 +454,29 @@ def _intro_html(K):
         '<code>asset · bar-clock · labeling-method · sizing · threshold</code>.</li></ul></details></section>')
 
 
+def _latest_callout(csv_rounds):
+    """A plain-English 'latest result' banner reading the most recent round in the
+    CSV — so a human sees what just happened without scrolling to the ledger."""
+    if not csv_rounds:
+        return ""
+    d = csv_rounds[0]                                       # newest first
+    wc = d["win_calmar"]
+    wc_txt = f'{wc:+.2f}' if wc is not None else "—"
+    verb = "KEPT a new best" if d["verdict"] == "keep" else "tested but did not beat the standing best"
+    cls = "keep" if d["verdict"] == "keep" else "discard"
+    recipe = f' — {d["win_recipe"]}' if d["win_recipe"] else ""
+    when = d["ts"].replace("T", " ")
+    return ('<div class="latest tldr-box"><b>Latest round (#' + str(d["n"]) + ', ' + when + '):</b> '
+            f'on <b>{d["etf"]}</b> the loop {verb} at Calmar <b>{wc_txt}</b>'
+            f'<span class="pill {cls}">{d["verdict"].upper()}</span>{recipe}</div>')
+
+
 def build_html():
     K = _load(KJ, {})
     data = build_data(K)
     rows = data["rows"]
-    rounds = _scan_rounds()
+    csv_rounds = _scan_rounds_csv()
+    rounds = csv_rounds if csv_rounds else _scan_rounds()
     cg = K.get("causal_graph", {})
     try:
         gn, ge = vis_data(cg)
@@ -378,8 +501,11 @@ def build_html():
     hero = ('<section class="statushero"><div class="block" id="nowrunning"><h2><span class="idledot"></span>'
             'Status</h2><p class="small">loading…</p></div>'
             '<div class="block scoreboard" id="scoreboard">' + _scoreboard_html(data["scoreboard"]) + '</div></section>'
-            '<div class="verdict" id="verdict">' + data["verdict"] + '</div>')
+            '<div class="verdict" id="verdict">' + data["verdict"] + '</div>'
+            + _latest_callout(csv_rounds))
     pf_sec = (f'<section class="block" id="portfolio"><h2>Production book — deployable portfolio (Wang endpoint)</h2>'
+              '<p class="small">The actual money-on portfolio: a small basket of decorrelated holdings, '
+              'weighted to maximise risk-adjusted return (Calmar). These are the live numbers.</p>'
               f'{_portfolio_html(K)}</section>')
     lb = (f'<section class="block" id="leaderboard"><h2>Leaderboard — real OOS, leak-free</h2>'
           f'<div class="tablewrap">{_leaderboard_html(rows)}</div>'
@@ -393,17 +519,27 @@ def build_html():
             'short window but <b>decayed to nothing</b> as the out-of-sample window grew — so the rest of the '
             'universe is best held passively, and the value comes from combining decorrelated holdings.</p>'
             f'{_charmap_html(rows)}</section>')
-    story = (f'<section class="block" id="story"><h2>The research arc</h2>{_acts_html(K)}</section>')
-    insights = (f'<section class="block" id="insights"><h2>Top insights</h2>{_insights_html(K)}</section>')
+    story = (f'<section class="block" id="story"><h2>The research arc</h2>'
+             '<p class="small">How the project got here, in four acts — from a failed start to the rule that '
+             'now governs the whole board.</p>'
+             f'{_acts_html(K)}</section>')
+    insights = (f'<section class="block" id="insights"><h2>Top insights</h2>'
+                '<p class="small">The most important things learned, each with the evidence that backs it.</p>'
+                f'{_insights_html(K)}</section>')
     graph_sec = (f'<section class="block" id="graph"><h2>Causal graph — every experiment &amp; finding</h2>'
                  '<p class="small">How each outcome caused the next hypothesis. Drag · hover · double-click a phase '
                  'cluster to expand. Full page: <a href="causal_graph.html">causal_graph.html</a></p>'
                  f'<div id="graphwrap" data-pending="1">{graph}</div></section>')
+    ledger_body = _ledger_html_csv(rounds) if csv_rounds else _ledger_html(rounds)
     ledger = (f'<section class="block" id="rounds"><h2>Rounds ({len(rounds)})</h2>'
+              '<p class="small">Every round pits <b>two competing hypotheses</b> against the '
+              'weakest ETF\'s standing best; we <b>KEEP</b> the winner only if it beats that bar on '
+              'real out-of-sample Calmar (else <b>DISCARD</b> and keep the incumbent). Newest first; '
+              'built live from <code>round_results.csv</code>.</p>'
               '<div class="filters"><button class="fchip on" data-f="all">all</button>'
               '<button class="fchip" data-f="keep">KEEP</button>'
               '<button class="fchip" data-f="discard">DISCARD</button></div>'
-              f'{_ledger_html(rounds)}'
+              f'{ledger_body}'
               '<button class="showall" id="showall">show all rounds</button></section>')
     return (head + '<div class="dash">' + nav + _intro_html(K) + hero + pf_sec + lb + cmap + story + insights + graph_sec + ledger
             + '</div><script>' + CONSOLE_JS + '</script></body></html>')

@@ -1,65 +1,41 @@
 # autoresearch
 
-Real ETF ML on QuantConnect, built as Wang's production line. Pick the weakest ETF, think hard,
-race two hypotheses on the 2 nodes, keep the winner iff it beats that ETF's best on real OOS.
+Single-ticker ETF ML on QuantConnect, Wang's pipeline. Each round: pick the weakest ticker, race
+two hypotheses on the 2 nodes, keep the winner iff it beats that ticker's best on real OOS Calmar.
 
-**Do not stop exploring.** There's always another axis, label, feature, dim-reduce, model, or
-scale to try. Convergence means try something *different*, not stop. **Simple is best** — prefer the
-small change that hardens honesty over a framework that adds horsepower.
+**Do not stop exploring.** Always another axis, label, feature, reduce, model, sizing to try.
+**Simple is best.** **Single-ticker only — no cross-ticker ensembling.**
 
-## backtest contract (the invariant — never break it)
-The real OOS backtest is **online, leak-free, and uses ONLY the QC-ObjectStore-trained model.** Audited
-+ proven (2026-06-02, see `BACKTEST_AUDIT.md`):
-- `infer.py` (the headline metric) holds **no model** — it loads saved predictions+thresh+sizing from the
-  cell and applies a causal `_size`. `portfolio.py` is the same. Nothing is re-fit on test.
-- Every `.fit` lives in `footer.py` (training): model on TRAIN, calibrator/early-stop on embargoed VAL,
-  meta on purged-CV within TRAIN. Test enters ONLY as predict_proba/transform — no future-label trade selection.
-- Bars/features/predict/set_holdings run causally bar-by-bar. Proven: `verify.py` bars byte-identical
-  (max_lc_diff≤1e-9); `infer_online.py` rebuilds everything online and asserts p_live==p_saved
-  (max_pred_diff≤1e-6; live: GLD 2.1e-8, UUP 0.0). Bar thresholds = TRAIN-only minutes, fail-loud.
-- Keep it this way: features past-only; thresholds/scaler/reduce/calibrator fit on TRAIN(+embargoed VAL) only;
-  before trusting a champion's Calmar, its `infer_online` must show preds_match=1.
+## the loop
+1. Pick the weakest ticker (lowest real OOS Calmar). Re-validate its stored best first — records go stale.
+2. Think — read the provenance graph + findings; co-design one ticker's `axis × label × features × reduce × model × sizing`.
+3. Race: `run_autoresearch_round.py '<A>' '<B>'` (the driver auto-updates the report).
+4. Keep iff **deployable (trades>80) AND Calmar>0 AND > re-validated best AND val_auc>0.52 AND beats `always_long` AND survives deflation**. Else discard. Record → commit.
 
-## wang's philosophy (the backbone)
-1. **Resample off the clock** — non-time bars (dollar/vol/range/…) → returns closer to IID → cleaner ML.
-2. **Label unsupervised; the label may look ahead** (it's the target). Causality lives in the SUPERVISED
-   model predicting that label from past-only features. (Detectors: trend-scan, change-point, clustering — NOT HMM.)
-3. **Rich features, then reduce** (fit on TRAIN). 4. **Combine across scales** + bet-size; diversify to cut drawdown.
-5. Aim Calmar > 3, reproducible, deployable.
+## never break — backtest contract (audited clean, see BACKTEST_AUDIT.md)
+Real OOS backtest is **online, leak-free, model-only-from-QC-ObjectStore.** `infer.py` holds no model (replays
+saved predictions + causal `_size`); every `.fit` is in `footer.py` on TRAIN(+embargoed VAL) only; test enters
+only via predict. Proven: `verify.py` bars ≤1e-9, `infer_online.py` p_live==p_saved ≤1e-6. Features past-only,
+thresholds TRAIN-only. Don't trust a champion until its `infer_online` shows preds_match=1.
 
-## metric (locked)
-Real OOS Calmar = CAGR/MaxDD. Splits train→2021-08, val→2023-08, test→2026-06. Deterministic (fixed seeds):
-same code+data ⇒ same result. But TEST_END clamps to available data, so the **OOS window grows and stored
-Calmars go STALE** — a weak edge lucky over a short window decays as the window extends. **Re-validate before trusting.**
+## wang's backbone
+Resample off the clock → label **unsupervised** (the label may look ahead; causality lives in the supervised
+model on past-only features) → **rich features then reduce** (fit on TRAIN) → **bet-size.** Detectors:
+trend-scan / change-point / clustering — **NOT HMM.** Aim Calmar > 3, reproducible, deployable.
 
-## loop
-1. Pick the weakest ETF (lowest real OOS Calmar, trades>80). **Re-validate its stored best first** over the current window.
-2. Think — read the provenance graph + findings; co-design axis × label × features × reduce × model × sizing.
-3. Race `run_autoresearch_round.py '<A>' '<B>'`.
-4. Record: render_round → knowledge.json (provenance graph) → render_causal_graph → render_index → commit.
+## why the gates (hard-won)
+- **Records go stale.** OOS window grows as data arrives → a short-window-lucky edge decays. Re-validate before trusting.
+- **Trust = trials-deflated** (Deflated Sharpe / `deflated_audit.py`): the max of N tries is upward-biased; a searched
+  edge must clear the best-of-N noise. `always_long` baselines carry no selection bias.
+- **Durable > lucky:** drift/long-biased edges persist; two-sided timing with val_auc≈0.5 decays. A/B every new method vs the champion.
 
-## rules (honesty > horsepower)
-- A keep must be: **deployable** (trades>80) AND **Calmar > 0** (a negative Calmar loses money — never keep it,
-  even if it beats a worse control) AND **> the re-validated prev best** AND **val_auc > 0.52** (val_auc≈0.5 ⇒ the
-  Calmar is a window/path artifact, not an edge) AND beat an `always_long` control.
-- **Trust = trials-deflated.** Many configs tried ⇒ the max is upward-biased; require the edge to clear the
-  best-of-N-trials noise (Deflated Sharpe / `deflated_audit.py`), not a raw threshold. A SEARCHED model edge that
-  fails deflation is a selection artifact; an `always_long` baseline carries no selection bias.
-- **durable > lucky.** Drift/long-biased cells persist; two-sided timing with val_auc≈0.5 decays. Don't deploy a Calmar you can't reproduce today.
-- A/B every new method vs the champion; revert if it loses (sample-uniqueness HURT, meta-labeling collapsed, trend_scan won on GLD).
-
-## best so far · keep pushing
-Re-validated + deflation-audited 2026-06-02 (the old "EEM 4.03 / book 4.22" were STALE artifacts). Honest state:
-durable single-asset ML alpha is SCARCE — only **GLD trend_scan (2.16)** + **UUP imbalance_bgm (1.08)** survive
-both re-validation and the deflated-Calmar selection-bias audit; EEM/TLT/IWM/DBC/XLE timing all collapse to
-≤buy-hold or fail deflation. Everything else is best held PASSIVELY. **Deployable book = DECORRELATED CORE
-(GLD/UUP/TIP/DBC/HYG), weight ∝ Calmar², Calmar 3.53, MaxDD 2.1%, Sharpe 2.06, positive every year.**
-Decorrelation (not member-count) is the lever; dropping correlated high-MDD equities ~doubled Calmar.
-Priorities: (1) squeeze GLD/UUP; (2) find a NEW durable, DECORRELATED edge (new axis / unsupervised label) that
-JOINS the core; (3) book dials. Don't grind ceilinged buy-hold names.
+## honest state (2026-06-02)
+Durable single-ticker alpha is **scarce** — only **GLD trend_scan (2.16)** and **UUP imbalance_bgm (1.08)** survive
+re-validation + deflation; EEM/TLT/IWM/DBC/XLE timing collapse to ≤buy-hold or fail deflation; the rest is best
+held passively. (The old "EEM 4.03" was a stale window artifact.) Find **new durable single-ticker edges** — a new
+axis or unsupervised label. The deployable book is just a downstream combination of single-ticker champions — not the research target.
 
 ## setup
 QC project 31338454, creds `qc/.creds.json`. Hypothesis = `{ticker, axis, labeler, thresh, sizing}`.
-Modules `autoresearch/modules/`; findings `knowledge.json` (provenance graph); deploy `DEPLOYMENT.md`;
-reviews `RESEARCH_REVIEW.md` / `RESEARCH_REVIEW_v2.md`; backtest audit `BACKTEST_AUDIT.md`;
-Wang's course `pdfs/`, `docs/legacy/wang_qa_questions.md`, `uni/transcripts/`.
+Code `autoresearch/modules/` · findings `knowledge.json` (provenance graph) · audit `BACKTEST_AUDIT.md` ·
+reviews `RESEARCH_REVIEW*.md` · Wang's course `pdfs/`, `docs/legacy/wang_qa_questions.md`.

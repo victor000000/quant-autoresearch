@@ -246,6 +246,80 @@ def _save_knowledge(k):
         json.dump(k, f, indent=2, default=str)
 
 
+def _append_causal_round_node(target, winner, kept, prev_cal):
+    """Append ONE round node (+ one edge from the prior round) to
+    knowledge.json.causal_graph so the graph keeps pace with the CSV ledger.
+    Idempotent on id; fully guarded — never raises into the round.
+
+    The node id is r<n> where n = the chronological round number == count of
+    distinct timestamps in round_results.csv (the same numbering the live ledger
+    uses). The richer hand-curated FINDING hubs are still added by a human; this
+    just keeps the round-trail current automatically."""
+    try:
+        # round number = distinct timestamps already logged (this round is logged
+        # immediately before this call, so the latest ts is included).
+        seen = []
+        try:
+            with open(ROUND_RESULTS_CSV, newline="") as f:
+                for r in csv.DictReader(f):
+                    ts = r.get("timestamp", "")
+                    if ts and ts not in seen:
+                        seen.append(ts)
+        except Exception:
+            pass
+        if not seen:
+            return
+        with open(KNOWLEDGE_JSON) as f:
+            k = json.load(f)
+        cg = k.setdefault("causal_graph", {})
+        cg.setdefault("nodes", [])
+        cg.setdefault("edges", [])
+        ids = {nd.get("id") for nd in cg["nodes"]}
+        # collision-proof monotonic id: continue PAST the highest existing rN node
+        # (the CSV round count is a different universe than the historical html numbering).
+        rnums = [int(i[1:]) for nd in cg["nodes"]
+                 for i in [str(nd.get("id", ""))] if i.startswith("r") and i[1:].isdigit()]
+        n = (max(rnums) + 1) if rnums else len(seen)
+        nid = f"r{n}"
+        if nid in ids:
+            return                                  # idempotent — already present
+        verdict = "KEEP" if kept else "DISCARD"
+        wc = (f'{winner["real_calmar"]:+.4f}' if winner else "—")
+        recipe = describe_cfg(winner) if winner else ""
+        label = (f"R{n} {target} {verdict}: {recipe} -> Calmar {wc} "
+                 f"(prev best {prev_cal:+.4f}). Auto-logged from round_results.csv.")
+        node = {"id": nid, "type": ("milestone" if kept else "round"),
+                "phase": target, "label": label}
+        cg["nodes"].append(node)
+        # link from the immediately-prior round node if one exists
+        prev_id = f"r{n-1}"
+        if prev_id in ids:
+            cg["edges"].append({"src": prev_id, "dst": nid,
+                                "label": ("new best" if kept else "no improvement")})
+        with open(KNOWLEDGE_JSON, "w") as f:
+            json.dump(k, f, indent=2, default=str)
+    except Exception as e:
+        print(f"[warn] causal-graph round node not appended: {e}")
+
+
+def _refresh_report():
+    """Regenerate the static reports/index.html via render_index.build_html() so
+    the dashboard is current the moment a round finishes (the Flask app also renders
+    live per-request, but this keeps the on-disk file fresh for static hosting).
+    Fully guarded — a render failure must NEVER fail a round."""
+    try:
+        if SCRIPTS_DIR not in sys.path:
+            sys.path.insert(0, SCRIPTS_DIR)
+        import render_index
+        html = render_index.build_html()
+        out = os.path.join(AR, "reports", "index.html")
+        with open(out, "w") as f:
+            f.write(html)
+        print(f"[{_now()}] report refreshed -> {out} ({len(html)} bytes)")
+    except Exception as e:
+        print(f"[warn] report auto-refresh skipped: {e}")
+
+
 def _seed_per_etf_best(knowledge):
     """Derive a per-ETF best from the legacy `cells` dict when per_etf_best is
     absent. PREFER an active (trades>80) G2-passing cell; if none, fall back to
@@ -593,7 +667,14 @@ def run_round(argv):
     _append_round_results(rows, target, prev_best, winner, kept)
     print(f"\n[{_now()}] logged 2 hypotheses -> {ROUND_RESULTS_CSV}")
     print(f"[{_now()}] knowledge.json per_etf_best {'UPDATED' if kept else 'unchanged'} for {target}")
-    print("NOTE: HTML report + git commit are done by the human/opus per round (not here).")
+
+    # ---- AUTO-REFRESH the report (additive, fully guarded; never fails a round) ----
+    # The rounds ledger renders LIVE from round_results.csv, so just (a) append a
+    # round node to the causal graph and (b) rebuild index.html. The Flask app also
+    # renders live per request; this keeps the on-disk file current for static hosting.
+    _append_causal_round_node(target, winner, kept, prev_cal)
+    _refresh_report()
+    print(f"[{_now()}] report auto-refreshed from round_results.csv (git commit still done by human/opus).")
 
     # ---- Live status -> idle/done (dashboard poller reads this) ----
     if winner is not None:
