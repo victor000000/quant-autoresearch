@@ -1328,7 +1328,9 @@
    "sharpe": 0.9399,
    "n_days": 710,
    "real_skew": 0.675,
-   "real_kurt": 7.7273
+   "real_kurt": 7.7273,
+   "ceilinged": true,
+   "status": "CEILINGED \u2014 trend_scan/bgm both G2-FAIL (45/13 trades<80) + < buy-hold 1.15. Low-vol inflation bond: timing under-trades (same as TLT). Buy-hold 1.15 deployable champion."
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -2607,6 +2609,12 @@
     "type": "round",
     "phase": "UUP",
     "label": "R141 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.4733 (prev best +1.0831). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r142",
+    "type": "round",
+    "phase": "TIP",
+    "label": "R142 TIP DISCARD: Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45. -> Calmar +0.6800 (prev best +1.1463). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4238,6 +4246,11 @@
    {
     "src": "r140",
     "dst": "r141",
+    "label": "no improvement"
+   },
+   {
+    "src": "r141",
+    "dst": "r142",
     "label": "no improvement"
    }
   ],
