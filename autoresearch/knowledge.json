@@ -2035,6 +2035,12 @@
         "type": "finding",
         "phase": "HYG",
         "label": "R98 HYG: meta-labeling can't beat DRIFT. Gate cut DA (1.56) but timing primary lost the carry -> Calmar 0.66 vs always_long 2.21. Confirms R90. Meta map complete: helps strong long-only timing (EEM), fails long/short (TLT), weak primary (IWM), drift (HYG/QQQ)"
+      },
+      {
+        "id": "r99",
+        "type": "finding",
+        "phase": "EEM",
+        "label": "R99 EEM: 1.5\u03c3 tight labels HURT meta (1.64 vs 4.03). 2.0\u03c3 confirmed optimal label density. EEM 4.03 robust on BOTH threshold (R97) and density (R99). Flagship well-characterised; EEM grinding exhausted"
       }
     ],
     "edges": [
@@ -3152,6 +3158,16 @@
         "src": "r90",
         "dst": "r98",
         "label": "drift beats timing \u2014 confirmed with meta"
+      },
+      {
+        "src": "r97",
+        "dst": "r99",
+        "label": "also vary label density"
+      },
+      {
+        "src": "r99",
+        "dst": "f_meta",
+        "label": "2.0\u03c3 optimal; EEM robust"
       }
     ],
     "running": []

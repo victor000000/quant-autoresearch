@@ -1,1 +1,1 @@
-{"running": false, "round": 98, "etf": "HYG", "last": "R98 HYG DISCARD \u2014 meta can't beat drift (0.66 vs 2.21; gate cut DA but timing lost carry). Meta lever fully explored."}
+{"running": false, "round": 99, "etf": "EEM", "last": "R99 EEM DISCARD \u2014 2.0\u03c3 labels optimal (1.5\u03c3=1.64<4.03). EEM 4.03 robust on threshold+density. Next: crash-veto secondary on drift ETFs."}
