@@ -2325,6 +2325,12 @@
         "type": "finding",
         "phase": "PORTFOLIO",
         "label": "R126 TIP neutral (4.22->4.20: MaxDD down but CAGR drags). Decorrelated-member lever EXHAUSTED: DBC won, EFA hurt, UUP+TIP neutral. Book stays 8-ETF 4.22. Next R124 lever: per-member book-optimal cell (test EEM meta vs triple_barrier in the book)"
+      },
+      {
+        "id": "r127",
+        "type": "finding",
+        "phase": "PORTFOLIO",
+        "label": "R127 EEM meta is BOOK-optimal (4.22 vs tb 3.74): for a TIMING asset the gate's DD-reduction helps the book (timing IS the return). R124 is asset-type-dependent: drift->buy-hold, timing->timing cell. Book 4.22 correctly assembled. Check IWM (drift-up small-cap) next"
       }
     ],
     "edges": [
@@ -3762,6 +3768,16 @@
         "src": "r124",
         "dst": "r126",
         "label": "apply R124 per-member cell selection"
+      },
+      {
+        "src": "r126",
+        "dst": "r127",
+        "label": "check EEM book cell"
+      },
+      {
+        "src": "r127",
+        "dst": "f_book_objective",
+        "label": "book-optimal cell is asset-type-dependent"
       }
     ],
     "running": []
