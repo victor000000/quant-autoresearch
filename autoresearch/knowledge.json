@@ -2331,6 +2331,12 @@
         "type": "finding",
         "phase": "PORTFOLIO",
         "label": "R127 EEM meta is BOOK-optimal (4.22 vs tb 3.74): for a TIMING asset the gate's DD-reduction helps the book (timing IS the return). R124 is asset-type-dependent: drift->buy-hold, timing->timing cell. Book 4.22 correctly assembled. Check IWM (drift-up small-cap) next"
+      },
+      {
+        "id": "r128",
+        "type": "milestone",
+        "phase": "PORTFOLIO",
+        "label": "R128 R124 sweep COMPLETE: IWM/TLT keep timing cells (always_long hurts 3.34/2.92 vs 4.22 \u2014 their DD-reduction is book-needed). Only clean drifter GLD wanted buy-hold. Book verified book-optimal at 4.22 across members/cells/weighting/leverage"
       }
     ],
     "edges": [
@@ -3778,6 +3784,16 @@
         "src": "r127",
         "dst": "f_book_objective",
         "label": "book-optimal cell is asset-type-dependent"
+      },
+      {
+        "src": "r127",
+        "dst": "r128",
+        "label": "check IWM/TLT book cells"
+      },
+      {
+        "src": "r128",
+        "dst": "f_book_objective",
+        "label": "sweep complete: volatile members keep timing, clean drifters buy-hold"
       }
     ],
     "running": []
