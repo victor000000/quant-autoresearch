@@ -82,7 +82,8 @@ if SCRIPTS_DIR not in sys.path:
 from describe import describe_cfg  # noqa: E402  config -> plain-English hypothesis
 
 CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
-          "EFA"]   # universe expansion: developed-intl equity (new asset class for the portfolio)
+          "EFA",   # universe expansion: developed-intl equity (correlated w/ equity sleeve — excluded from book, R109)
+          "DBC"]   # broad commodities — genuinely DECORRELATED from the equity-heavy book (R109 decorrelation test)
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
