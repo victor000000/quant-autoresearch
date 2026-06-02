@@ -1088,7 +1088,9 @@
    "deflated_benchmark": 1.3611,
    "n_days": 710,
    "real_skew": -0.2919,
-   "real_kurt": 5.6787
+   "real_kurt": 5.6787,
+   "ceilinged": true,
+   "status": "CEILINGED \u2014 tertile/bgm/trend_scan/KER all fail deflation (floor 1.36, 37 trials); KER val_auc 0.42 confirms NO learnable structure (asset-driven ceiling, not a method gap). Honest champion = buy-hold 0.64."
   },
   "HYG": {
    "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
@@ -2577,6 +2579,12 @@
     "type": "round",
     "phase": "IWM",
     "label": "R137 IWM DISCARD: Sample on zcusum; directional-change trend-state labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.0562 (prev best +0.5496). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r138",
+    "type": "round",
+    "phase": "XLE",
+    "label": "R138 XLE DISCARD: Sample on log-dollar bars; ker; size long/short, vol-targeted, entry 0.45. -> Calmar +0.9691 (prev best +0.8588). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4188,6 +4196,11 @@
    {
     "src": "r136",
     "dst": "r137",
+    "label": "no improvement"
+   },
+   {
+    "src": "r137",
+    "dst": "r138",
     "label": "no improvement"
    }
   ],
