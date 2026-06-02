@@ -4129,7 +4129,8 @@
     "2026": "+10.8% (mdd 2.9%)"
    },
    "vs_passive_buyhold": "1.78 vs 1.61 \u2014 still beats passive via diversification + drawdown reduction",
-   "note": "Stale '4.22/3.36' book was inflated by EEM's stale 4.03 timing cell (now buy-hold 1.29). TLT dropped (no positive edge). Genuine durable ML alpha is narrow: GLD trend_scan + UUP imbalance_bgm; rest is diversified buy-hold."
+   "note": "Stale '4.22/3.36' book was inflated by EEM's stale 4.03 timing cell (now buy-hold 1.29). TLT dropped (no positive edge). Genuine durable ML alpha is narrow: GLD trend_scan + UUP imbalance_bgm; rest is diversified buy-hold.",
+   "car_pct": 11.7
   }
  }
 }
