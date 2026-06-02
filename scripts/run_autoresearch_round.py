@@ -158,6 +158,33 @@ def _count_trials(ticker):
         return 1
 
 
+def _survives_deflation(ticker, winner):
+    """A SEARCHED edge must clear the best-of-N-trials Calmar noise (Bailey-LdP deflation):
+    with N configs tried, the max is upward-biased, so the winner must exceed E[max] of N
+    iid-noise trials. always_long baselines carry no selection bias -> exempt. <3 trials -> allow.
+    Returns (ok, benchmark, n)."""
+    if (winner.get("labeler") or "").startswith("always_long"):
+        return True, 0.0, 0
+    try:
+        import csv as _csv
+        cals = [float(r["real_calmar"]) for r in _csv.DictReader(open(ROUND_RESULTS_CSV))
+                if r.get("ticker") == ticker and r.get("real_calmar") not in ("", None)]
+    except Exception:
+        cals = []
+    cals = cals + [_f(winner.get("real_calmar", 0.0))]      # include this round
+    n = len(cals)
+    if n < 3:
+        return True, 0.0, n
+    mean = sum(cals) / n
+    var = sum((c - mean) ** 2 for c in cals) / (n - 1)
+    try:
+        from stats_rigor import expected_max_sharpe
+        bench = expected_max_sharpe(var, n)
+    except Exception:
+        return True, 0.0, n
+    return (_f(winner.get("real_calmar", 0.0)) > bench), round(bench, 4), n
+
+
 def _psr_significance(sharpe, skew, kurt, n_days, n_trials):
     """PSR(SR>0) with skew/kurt correction + a Bonferroni-by-N_trials threshold.
     Returns (psr, significant). The trials-adjusted 'is this edge real?' test."""
@@ -596,8 +623,12 @@ def run_round(argv):
     # Keep iff the winner is DEPLOYABLE (G2 + DA reported) AND beats the ETF's
     # current best Calmar.
     prev_cal = _f(prev_best.get("real_calmar", 0.0))
-    kept = bool(winner is not None and _is_deployable(winner)
-                and winner["real_calmar"] > prev_cal)
+    # program.md keep-rule (honesty > horsepower): beats prev best AND Calmar>0 AND
+    # val_auc>0.52 (window-artifact guard) AND survives deflation (best-of-N-trials noise).
+    _vauc = _f(winner.get("val_auc", 0.0)) if winner else 0.0
+    _defl_ok, _defl_bench, _defl_n = _survives_deflation(target, winner) if winner else (True, 0.0, 0)
+    _beats = bool(winner is not None and _is_deployable(winner) and winner["real_calmar"] > prev_cal)
+    kept = bool(_beats and winner["real_calmar"] > 0 and _vauc > 0.52 and _defl_ok)
 
     # ---- PRINT clear comparison ----
     print("\n" + "=" * 84)
@@ -623,11 +654,23 @@ def run_round(argv):
             _psr, _sig = _psr_significance(winner.get("real_sharpe"), winner.get("real_skew"),
                                            winner.get("real_kurt"), winner.get("n_days"), _nt)
             winner["_psr"], winner["_sig"], winner["_ntrials"] = _psr, _sig, _nt
-            print(f"VERDICT: KEEP — beats {target} prev best ({winner['real_calmar']:+.4f} > {prev_cal:+.4f}). "
+            print(f"VERDICT: KEEP — beats {target} prev best ({winner['real_calmar']:+.4f} > {prev_cal:+.4f}), "
+                  f"Calmar>0, val_auc {_vauc:.3f}>0.52, survives deflation (best-of-{_defl_n} noise {_defl_bench}). "
                   f"per_etf_best[{target}] updated.")
             if _psr is not None:
                 print(f"  TRIALS-ADJUSTED TRUST: Sharpe {winner.get('real_sharpe')}, PSR {_psr}, "
                       f"N_trials {_nt}, Bonferroni {'PASS — significant' if _sig else 'FAIL — selection-bias-suspect (edge not trials-significant)'}")
+        elif _beats:
+            # beat prev best but FAILED an honest gate (program.md) — do NOT crown an artifact
+            reasons = []
+            if winner["real_calmar"] <= 0:
+                reasons.append("Calmar<=0")
+            if _vauc <= 0.52:
+                reasons.append(f"val_auc {_vauc:.3f}<=0.52 (window/path artifact, not an edge)")
+            if not _defl_ok:
+                reasons.append(f"FAILS deflation (best-of-{_defl_n}-trials noise {_defl_bench}; selection-bias artifact)")
+            print(f"VERDICT: DISCARD — winner {winner['real_calmar']:+.4f} beats prev best {prev_cal:+.4f} "
+                  f"but FAILS the honest keep-gate: {', '.join(reasons)}.")
         elif _is_deployable(winner):
             print(f"VERDICT: DISCARD — winner {winner['real_calmar']:+.4f} does NOT beat "
                   f"prev best {prev_cal:+.4f}.")
