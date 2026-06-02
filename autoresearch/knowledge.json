@@ -985,15 +985,17 @@
    "real_cagr": 24.957,
    "real_mdd": 20.2,
    "sharpe": 1.3435,
-   "psr": 0.9858,
-   "n_trials": 8,
+   "psr": 0.9871,
+   "n_trials": 10,
    "significant": false,
    "stale_calmar_prior": 1.2431,
    "revalidated": "2026-06-02",
    "revalidated_trades": 774,
    "val_auc_reval": "0.5",
    "deflation": "N/A_buyhold",
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": -0.1693,
+   "real_kurt": 5.4363
   },
   "IWM": {
    "config": {
@@ -1013,7 +1015,11 @@
    "real_da": 40.8239,
    "trades": 1,
    "sharpe": 0.7553,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": 0.1432,
+   "real_kurt": 7.2458,
+   "n_trials": 48,
+   "psr": 0.8978
   },
   "EEM": {
    "cell": "EEM_logdollar_always_long_always_long_t0.50",
@@ -1026,8 +1032,8 @@
    "g2_pass": true,
    "round": 26,
    "source": "tournament",
-   "psr": 1.0,
-   "n_trials": 24,
+   "psr": 0.9775,
+   "n_trials": 32,
    "significant": false,
    "leak_fixed": true,
    "config": {
@@ -1044,7 +1050,9 @@
    "status": "replaced_always_long",
    "deflation": "N/A_buyhold",
    "sharpe": 1.2049,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": -0.1107,
+   "real_kurt": 6.702
   },
   "XLE": {
    "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
@@ -1065,8 +1073,8 @@
    },
    "leak_fixed": true,
    "sharpe": 0.7892,
-   "psr": 0.9322,
-   "n_trials": 28,
+   "psr": 0.9053,
+   "n_trials": 36,
    "significant": false,
    "stale_calmar_prior": 0.9052,
    "revalidated": "2026-06-02",
@@ -1077,7 +1085,9 @@
    "survives_deflation": false,
    "deflation_metric": "Calmar",
    "deflated_benchmark": 1.3611,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": -0.2919,
+   "real_kurt": 5.6787
   },
   "HYG": {
    "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
@@ -1098,15 +1108,17 @@
    },
    "leak_fixed": true,
    "sharpe": 1.5643,
-   "psr": 0.9974,
-   "n_trials": 4,
+   "psr": 0.9961,
+   "n_trials": 10,
    "significant": true,
    "stale_calmar_prior": 2.2122,
    "revalidated": "2026-06-02",
    "revalidated_trades": 794,
    "val_auc_reval": "0.5",
    "deflation": "N/A_buyhold",
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": 0.457,
+   "real_kurt": 8.1525
   },
   "TLT": {
    "cell": "TLT_logdollar_trend_scan_ls_overlay_t0.45",
@@ -1120,7 +1132,7 @@
    "round": 33,
    "source": "tournament",
    "psr": 0.475,
-   "n_trials": 94,
+   "n_trials": 98,
    "significant": false,
    "leak_fixed": true,
    "config": {
@@ -1138,7 +1150,9 @@
    "deflation_metric": "Calmar",
    "deflated_benchmark": 0.9279,
    "sharpe": -0.0374,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": 0.3961,
+   "real_kurt": 8.7013
   },
   "GLD": {
    "cell": "GLD_logdollar_trend_scan_cdf_overlay_t0.45",
@@ -1152,7 +1166,7 @@
    "round": 30,
    "source": "tournament",
    "psr": 0.9963,
-   "n_trials": 8,
+   "n_trials": 12,
    "significant": true,
    "leak_fixed": true,
    "config": {
@@ -1172,7 +1186,9 @@
    "deflation_metric": "Calmar",
    "deflated_benchmark": 0.9185,
    "sharpe": 1.433,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": 3.1607,
+   "real_kurt": 46.6909
   },
   "EFA": {
    "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1185,7 +1201,7 @@
    "g2_pass": true,
    "round": 27,
    "source": "tournament",
-   "psr": 0.9741,
+   "psr": 0.9731,
    "n_trials": 2,
    "significant": false,
    "leak_fixed": true,
@@ -1202,7 +1218,9 @@
    "val_auc_reval": "0.5",
    "deflation": "N/A_buyhold",
    "sharpe": 1.1603,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": -0.1403,
+   "real_kurt": 6.8631
   },
   "DBC": {
    "cell": "DBC_logdollar_always_long_cdf_overlay_t0.45",
@@ -1215,8 +1233,8 @@
    "g2_pass": true,
    "round": 28,
    "source": "tournament",
-   "psr": 0.8883,
-   "n_trials": 2,
+   "psr": 0.9005,
+   "n_trials": 10,
    "significant": false,
    "leak_fixed": true,
    "config": {
@@ -1232,7 +1250,9 @@
    "val_auc_reval": "0.5",
    "deflation": "N/A_buyhold",
    "sharpe": 0.7742,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": -0.3954,
+   "real_kurt": 6.1746
   },
   "UUP": {
    "cell": "UUP_imbalance_bgm_cdf_overlay_t0.40",
@@ -1246,7 +1266,7 @@
    "round": 31,
    "source": "tournament",
    "psr": 0.9589,
-   "n_trials": 4,
+   "n_trials": 6,
    "significant": false,
    "leak_fixed": true,
    "config": {
@@ -1266,7 +1286,9 @@
    "deflation_metric": "Calmar",
    "deflated_benchmark": 0.5375,
    "sharpe": 1.0556,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": -0.4605,
+   "real_kurt": 7.5678
   },
   "TIP": {
    "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1296,7 +1318,9 @@
    "val_auc_reval": null,
    "deflation": "N/A_buyhold",
    "sharpe": 0.9399,
-   "n_days": 710
+   "n_days": 710,
+   "real_skew": 0.675,
+   "real_kurt": 7.7273
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -4136,32 +4160,37 @@
  },
  "buyhold": {
   "TLT": {
-   "calmar": -0.0569,
-   "da": 56.26
+   "calmar": -0.0567
   },
   "IWM": {
-   "calmar": 0.5615,
-   "da": 40.68
+   "calmar": 0.5496
   },
   "XLE": {
-   "calmar": 0.6057,
-   "da": 46.03
+   "calmar": 0.643
   },
   "QQQ": {
-   "calmar": 1.1094,
-   "da": 22.87
+   "calmar": 1.2355
   },
   "EEM": {
-   "calmar": 1.2539,
-   "da": 26.7
+   "calmar": 1.293
   },
   "GLD": {
-   "calmar": 1.62,
-   "da": 23.99
+   "calmar": 1.5835
   },
   "HYG": {
-   "calmar": 1.6471,
-   "da": 3.65
+   "calmar": 1.8276
+  },
+  "EFA": {
+   "calmar": 1.2856
+  },
+  "DBC": {
+   "calmar": 0.9119
+  },
+  "TIP": {
+   "calmar": 1.1463
+  },
+  "UUP": {
+   "calmar": 0.4194
   }
  },
  "top_insights": [
