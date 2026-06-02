@@ -2165,6 +2165,12 @@
         "type": "finding",
         "phase": "DBC",
         "label": "R110 DBC (commodities) added: weakest champion (always_long 0.86, huge DA 36 \u2014 brutal 2023-26 commodities). Decorrelated from equity book. R109 test: does decorrelation help the book despite DBC's weakness? -> 7+DBC test"
+      },
+      {
+        "id": "r111",
+        "type": "milestone",
+        "phase": "PORTFOLIO",
+        "label": "R111 DECORRELATION CONFIRMED: adding DBC (weakest, 0.86) IMPROVES book \u2014 MaxDD 3.2->2.74%, Calmar 3.60->4.22. EFA(strong,correlated) hurt; DBC(weak,decorrelated) helped. Decorrelation > standalone strength. New deployable book = 8 ETFs (7+DBC)"
       }
     ],
     "edges": [
@@ -3412,6 +3418,21 @@
         "src": "r109",
         "dst": "r110",
         "label": "add a DECORRELATED class (commodities)"
+      },
+      {
+        "src": "r110",
+        "dst": "r111",
+        "label": "test 7+DBC in the book"
+      },
+      {
+        "src": "r109",
+        "dst": "r111",
+        "label": "decorrelation confirmed (DBC helps, EFA hurt)"
+      },
+      {
+        "src": "r111",
+        "dst": "f_portfolio",
+        "label": "8-ETF book is the new champion"
       }
     ],
     "running": []
@@ -3499,7 +3520,7 @@
       "ndays": 710,
       "scheme": "capital \u221d Calmar"
     },
-    "champion": "conviction_weight",
+    "champion": "conviction_8_with_DBC",
     "significant_only": {
       "calmar_daily": 2.9637,
       "mdd_pct": 3.95,
@@ -3551,6 +3572,16 @@
       "mdd": 3.58,
       "sharpe": 2.328,
       "note": "adding EFA (correlated equity) HURTS: 3.60->3.31, MaxDD 3.2->3.58%. Decorrelation>name-count. EFA excluded from the deployable book."
+    },
+    "conviction_8_with_DBC": {
+      "calmar_daily": 4.2166,
+      "cagr": 11.56,
+      "mdd": 2.74,
+      "sharpe": 2.524,
+      "da": 2.6904,
+      "n": 8,
+      "members": "7 + DBC (commodities)",
+      "note": "NEW deployable champion \u2014 DBC (weak 0.86) HELPS via decorrelation (MaxDD 3.2->2.74%, Calmar 3.60->4.22 daily) where EFA (1.26) hurt. Decorrelation > standalone strength."
     }
   }
 }
