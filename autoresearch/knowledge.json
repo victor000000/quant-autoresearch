@@ -1279,8 +1279,8 @@
     "thresh": 0.5,
     "sizing": "cdf_overlay"
    },
-   "ceilinged": true,
-   "status": "REAL EDGE, OPTIMIZED to 1.30: bgm+ker @thr0.50 (1.08->1.18->1.30 via bgm+KER ensemble + threshold). val_auc 0.876, survives deflation 0.779. Stop threshold-chasing."
+   "status": "REAL EDGE, OPTIMIZED 1.30 (bgm+ker @thr0.50). 3-way ensembles INFEASIBLE (render 66k > QC 64k char limit) -> 2-way is the ceiling. UUP at its optimum.",
+   "ceilinged": true
   },
   "TIP": {
    "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
