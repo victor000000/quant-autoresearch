@@ -991,7 +991,8 @@
    "stale_calmar_prior": 1.2431,
    "revalidated": "2026-06-02",
    "revalidated_trades": 774,
-   "val_auc_reval": "0.5"
+   "val_auc_reval": "0.5",
+   "deflation": "N/A_buyhold"
   },
   "IWM": {
    "cell": "IWM_logdollar_always_long_always_long_t0.50",
@@ -1018,7 +1019,8 @@
    "revalidated": "2026-06-02",
    "revalidated_trades": 0,
    "val_auc_reval": "0.5807",
-   "status": "replaced_always_long"
+   "status": "replaced_always_long",
+   "deflation": "N/A_buyhold"
   },
   "EEM": {
    "cell": "EEM_logdollar_always_long_always_long_t0.50",
@@ -1046,7 +1048,8 @@
    "revalidated": "2026-06-02",
    "revalidated_trades": 470,
    "val_auc_reval": "0.4962",
-   "status": "replaced_always_long"
+   "status": "replaced_always_long",
+   "deflation": "N/A_buyhold"
   },
   "XLE": {
    "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
@@ -1073,7 +1076,10 @@
    "stale_calmar_prior": 0.9052,
    "revalidated": "2026-06-02",
    "revalidated_trades": 566,
-   "val_auc_reval": "0.4662"
+   "val_auc_reval": "0.4662",
+   "deflated_calmar_benchmark": 1.3611,
+   "deflation_margin": -0.5023,
+   "survives_deflation": false
   },
   "HYG": {
    "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
@@ -1100,7 +1106,8 @@
    "stale_calmar_prior": 2.2122,
    "revalidated": "2026-06-02",
    "revalidated_trades": 794,
-   "val_auc_reval": "0.5"
+   "val_auc_reval": "0.5",
+   "deflation": "N/A_buyhold"
   },
   "TLT": {
    "cell": "TLT_logdollar_trend_scan_ls_overlay_t0.45",
@@ -1125,7 +1132,10 @@
     "sizing": "ls_overlay"
    },
    "status": "no_deployable_edge (every method negative over current window: timing collapsed, trend_scan -0.039, cusum_regime -0.237, buy-hold -0.057)",
-   "deployable": false
+   "deployable": false,
+   "deflated_calmar_benchmark": 0.9279,
+   "deflation_margin": -0.9666,
+   "survives_deflation": false
   },
   "GLD": {
    "cell": "GLD_logdollar_trend_scan_cdf_overlay_t0.45",
@@ -1152,7 +1162,10 @@
    "stale_calmar_prior": 2.1631,
    "revalidated": "2026-06-02",
    "revalidated_trades": 558,
-   "val_auc_reval": "0.5432"
+   "val_auc_reval": "0.5432",
+   "deflated_calmar_benchmark": 0.8919,
+   "deflation_margin": 1.2712,
+   "survives_deflation": true
   },
   "EFA": {
    "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1179,7 +1192,8 @@
    "stale_calmar_prior": 1.2617,
    "revalidated": "2026-06-02",
    "revalidated_trades": 659,
-   "val_auc_reval": "0.5"
+   "val_auc_reval": "0.5",
+   "deflation": "N/A_buyhold"
   },
   "DBC": {
    "cell": "DBC_logdollar_always_long_cdf_overlay_t0.45",
@@ -1206,7 +1220,8 @@
    "stale_calmar_prior": 0.858,
    "revalidated": "2026-06-02",
    "revalidated_trades": 558,
-   "val_auc_reval": "0.5"
+   "val_auc_reval": "0.5",
+   "deflation": "N/A_buyhold"
   },
   "UUP": {
    "cell": "UUP_imbalance_bgm_cdf_overlay_t0.40",
@@ -1233,7 +1248,10 @@
    "stale_calmar_prior": 1.0831,
    "revalidated": "2026-06-02",
    "revalidated_trades": 129,
-   "val_auc_reval": "0.9802"
+   "val_auc_reval": "0.9802",
+   "deflated_calmar_benchmark": 0.5375,
+   "deflation_margin": 0.5456,
+   "survives_deflation": true
   },
   "TIP": {
    "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1260,7 +1278,8 @@
    "stale_calmar_prior": 1.1463,
    "revalidated": "2026-06-02",
    "revalidated_trades": 772,
-   "val_auc_reval": null
+   "val_auc_reval": null,
+   "deflation": "N/A_buyhold"
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
