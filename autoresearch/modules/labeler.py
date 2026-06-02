@@ -1194,6 +1194,54 @@ def generate_labels_dc_trend(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
     return None, "dc_trend_unbalanced", None
 
 
+def generate_labels_trend_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                               horizons=[50, 100, 200]):
+    """TREND-SCANNING label (Lopez de Prado, AFML Ch.5) — UNSUPERVISED, NOT HMM. For each bar t,
+    fit OLS of forward log-price over several horizons L; take each fit's slope t-statistic; pick
+    the horizon with the MAX |t-stat|; label by the SIGN of that most-significant trend (1=up,
+    0=down). Discovers the dominant forward trend per bar with NO predefined barrier. Uses the
+    future (allowed — the label is the target; the supervised model predicts it causally on OOS).
+    Fully vectorised per horizon (convolution + rolling sums). Returns (labels, cfg, None)."""
+    N = len(lc)
+    Ls = [20, 40, 80]                       # trend horizons in BARS (~4/8/16 trading days on dollar bars)
+    csum = np.concatenate([[0.0], np.cumsum(lc)])
+    csum2 = np.concatenate([[0.0], np.cumsum(lc * lc)])
+    best_abs_t = np.zeros(N)
+    best_sign = np.full(N, -1, dtype=int)
+    for L in Ls:
+        n = L + 1
+        if n >= N:
+            continue
+        x = np.arange(n, dtype=float); w = x - x.mean(); sxx = float((w * w).sum())
+        if sxx <= 0:
+            continue
+        T = N - n + 1                       # windows [t, t+L] for t = 0..T-1
+        num = np.convolve(lc, w[::-1], mode="valid")        # Σ_k lc[t+k]·w[k]
+        beta = num / sxx
+        wsum = csum[n:n + T] - csum[0:T]
+        wsum2 = csum2[n:n + T] - csum2[0:T]
+        ym = wsum / n
+        Syy = wsum2 - n * ym * ym
+        SSE = np.maximum(Syy - beta * beta * sxx, 0.0)
+        se = np.sqrt(SSE / max(1, n - 2) / sxx)
+        tval = np.where(se > 1e-12, beta / se, 0.0)
+        at = np.abs(tval)
+        upd = at > best_abs_t[:T]
+        best_abs_t[:T] = np.where(upd, at, best_abs_t[:T])
+        best_sign[:T] = np.where(upd, (beta > 0).astype(int), best_sign[:T])
+    y = np.full(N, -1, dtype=int)
+    lab = (best_abs_t > 0) & fv
+    y[lab] = best_sign[lab]
+    tx = fv & (y >= 0) & tr_m
+    vx = fv & (y >= 0) & va_m
+    if tx.sum() < 200 or vx.sum() < 30:
+        return None, "trendscan_insufficient", None
+    bal = float(y[tx].mean())
+    if not (0.1 < bal < 0.9):               # natural balance ok (don't force 0.5); reject only degenerate
+        return None, "trendscan_degenerate", None
+    return y, "trendscan_L20_40_80", None
+
+
 def generate_labels_crash_ahead(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                                 horizons=[50, 100, 200]):
     """TAIL-RISK label: y=1 if the forward return over horizon H is a CRASH (< -k*sigma_H),
@@ -1249,6 +1297,7 @@ LABELERS = {
     "triple_barrier_ae": generate_labels_triple_barrier_ae,   # autoencoder dim-reduce (footer routes it)
     "multi_horizon": generate_labels_multi_horizon,
     "crash_ahead": generate_labels_crash_ahead,       # tail-risk target; pair with 'crashveto' sizing.
+    "trend_scan": generate_labels_trend_scan,         # AFML trend-scanning (unsupervised, non-HMM).
     "regime_gmm": generate_labels_regime_gmm,         # causal-feature GMM regimes.
     "cusum_regime": generate_labels_cusum_regime,     # CUSUM change-point regimes.
     "hmm": generate_labels_hmm,                       # BASELINE comparator only.
@@ -1259,6 +1308,7 @@ LABELERS = {
 FEATURED_LABELERS = [
     "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
-    "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon", "regime_gmm", "cusum_regime",
+    "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
+    "regime_gmm", "cusum_regime",
 ]
 BASELINE_LABELERS = ["hmm", "always_long"]

@@ -9,8 +9,8 @@ combination, or scale to try. Convergence means try something *different*, not s
 ## wang's philosophy (the why)
 1. **Resample off the clock.** Non-time bars (dollar/vol/…) make returns closer to IID-normal → cleaner ML.
 2. **Label unsupervised; the label may look ahead.** Labels are the *training target*, so an unsupervised
-   regime detector (HMM smoothed posterior, etc.) using the *full* series is fine. Causality lives in the
-   downstream SUPERVISED model, which predicts the label from past-only features on OOS.
+   detector (trend-scanning, change-point, clustering — NOT HMM) using the *full* series is fine. Causality
+   lives in the downstream SUPERVISED model, which predicts the label from past-only features on OOS.
 3. **Rich features, then reduce.** Many features (integer-diff + frac-diff + entropy + freq), then a learned
    (non-linear) dim-reduce — fit on TRAIN.
 4. **Combine across scales/models.** Multi-scale stacking + bet-sizing/leverage; diversify to cut drawdown.
@@ -33,8 +33,9 @@ Real OOS Calmar = CAGR/MaxDD. Splits train→2021-08, val→2023-08, test→2026
 
 ## best so far · keep pushing
 EEM 4.03 (meta-labeling, Calmar>3, live-equivalent) · 8-ETF book 4.22 (conviction, 2× dominates passive).
-Open levers: HMM smoothed-posterior labels (Wang's Module 4), richer features, learned dim-reduce (VAE),
-multi-scale stacking, meta-labeling on more primaries, decorrelated ETFs, gate/threshold tuning.
+Priorities: **new custom axes** + **new unsupervised labels** (trend-scanning, change-point, clustering — NOT
+HMM). Also: richer features, learned dim-reduce, multi-scale stacking, meta-labeling on more primaries,
+decorrelated ETFs. Search papers for every module.
 
 ## setup
 QC project 31338454, creds `qc/.creds.json`. Hypothesis = `{ticker, axis, labeler, thresh, sizing}`.
