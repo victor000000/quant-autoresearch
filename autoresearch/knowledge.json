@@ -2077,6 +2077,12 @@
         "type": "milestone",
         "phase": "PORTFOLIO",
         "label": "R103 conviction-weighting (\u221dCalmar) BEATS equal: Calmar 3.27->3.36, MaxDD 3.6->3.4%, Sharpe 2.35->2.55, win 70%. Tilt to low-DD proven edges cuts book MaxDD. Deployable champion = conviction-weighted book"
+      },
+      {
+        "id": "r104",
+        "type": "finding",
+        "phase": "PORTFOLIO",
+        "label": "R104 diversification > concentration: full 7-book Calmar 3.60 beats significant-only 4-book 2.96 (daily metric). Dropping weak names RAISED MaxDD 3.2->3.95%. Their decorrelation cuts drawdown > their low Calmar dilutes. Keep all 7. Deployable champion = conviction ALL-7 (3.36)"
       }
     ],
     "edges": [
@@ -3259,6 +3265,16 @@
         "src": "r103",
         "dst": "f_portfolio",
         "label": "conviction beats equal on every risk metric"
+      },
+      {
+        "src": "r103",
+        "dst": "r104",
+        "label": "try dropping non-significant names"
+      },
+      {
+        "src": "r104",
+        "dst": "f_portfolio",
+        "label": "keep weak edges for decorrelation"
       }
     ],
     "running": []
@@ -3346,6 +3362,15 @@
       "ndays": 710,
       "scheme": "capital \u221d Calmar"
     },
-    "champion": "conviction_weight"
+    "champion": "conviction_weight",
+    "significant_only": {
+      "calmar_daily": 2.9637,
+      "mdd_pct": 3.95,
+      "sharpe": 2.611,
+      "da": 3.1061,
+      "n": 4,
+      "note": "4 significant champions; LOSES to full-7 on Calmar (less diversification)"
+    },
+    "conv7_daily_calmar": 3.5962
   }
 }
