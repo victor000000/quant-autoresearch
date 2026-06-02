@@ -1185,9 +1185,9 @@
     "thresh": 0.4,
     "sizing": "cdf_overlay"
    },
-   "ceilinged": true,
    "val_auc_reval": 0.594,
-   "status": "REAL EDGE, OPTIMIZED to 3.20 (Calmar>3 \u2014 Wang goal): ker+trend_scan ensemble @thr0.40 (2.16->2.41->2.89->3.20 via new KER method + ensemble + threshold). val_auc 0.594, survives deflation floor 1.383, smooth-monotone (not knife-edge). Stop squeezing \u2014 further threshold-chasing overfit-prone."
+   "status": "REAL EDGE, OPTIMIZED 3.20 (logdollar ker+trend_scan @0.40). Optimal across labels, ensembles, thresholds, AND axes (range 1.00 / zcusum 1.34 << logdollar 3.20). Calmar>3.",
+   "ceilinged": true
   },
   "EFA": {
    "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -2671,6 +2671,12 @@
     "type": "round",
     "phase": "UUP",
     "label": "R154 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + directional-change trend-state labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.3400 (prev best +1.2958). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r155",
+    "type": "round",
+    "phase": "GLD",
+    "label": "R155 GLD DISCARD: Sample on zcusum; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +1.3449 (prev best +3.2026). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4367,6 +4373,11 @@
    {
     "src": "r153",
     "dst": "r154",
+    "label": "no improvement"
+   },
+   {
+    "src": "r154",
+    "dst": "r155",
     "label": "no improvement"
    }
   ],
