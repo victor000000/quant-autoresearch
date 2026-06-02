@@ -1282,7 +1282,57 @@ def generate_labels_crash_ahead(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best[1], best[2], best[3]
 
 
+def generate_labels_ker(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                        horizons=[20, 40, 80]):
+    """Kaufman Efficiency-Ratio 'clean-trend' label (Kaufman, 'Smarter Trading' 1995) — UNSUPERVISED,
+    non-HMM, orthogonal to trend_scan (which uses an OLS t-stat). For horizon H the forward
+    Efficiency Ratio is KER = |lc[t+H]-lc[t]| / sum_{i in (t,t+H]} |lc[i]-lc[i-1]|  in [0,1]:
+    high KER = an EFFICIENT (low-noise) directional move, low KER = chop. Label 1 if the forward
+    move is an efficient UPtrend (KER>=cut and lc[t+H]>lc[t]), 0 if efficient DOWNtrend, -1 (ignore)
+    if choppy. The cutoff is a TRAIN quantile chosen to balance the label set. Forward info defines
+    only the TARGET (G3-ok); the SUPERVISED model predicts it from past-only features. Sweeps H and
+    the quantile; picks the most TRAIN-balanced config. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    abs_dl = np.abs(np.diff(lc, prepend=lc[0]))     # |bar move|; abs_dl[i] = |lc[i]-lc[i-1]|
+    cum = np.cumsum(abs_dl)                          # for O(1) gross path
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H:
+            continue
+        ker = np.full(N, np.nan)
+        net = np.full(N, np.nan)
+        idx = np.arange(N - H)
+        net_v = lc[idx + H] - lc[idx]
+        gross_v = cum[idx + H] - cum[idx]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            ker[idx] = np.abs(net_v) / np.where(gross_v > 1e-12, gross_v, np.nan)
+        net[idx] = net_v
+        trsel = tr_m & fv & np.isfinite(ker)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.4, 0.5, 0.6, 0.7):
+            cut = float(np.quantile(ker[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            clean = fv & np.isfinite(ker) & (ker >= cut)
+            y[clean & (net > 0)] = 1
+            y[clean & (net <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"ker_H{H}_q{q}_cut{round(cut,3)}", H
+    if best is None:
+        return None, "ker_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
+    "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
     "dc_reversal": generate_labels_dc_reversal,
@@ -1306,7 +1356,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "kmeans2stage", "carry", "tertile", "bgm",
+    "ker", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
