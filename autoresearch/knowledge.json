@@ -3581,7 +3581,13 @@
       "da": 2.6904,
       "n": 8,
       "members": "7 + DBC (commodities)",
-      "note": "NEW deployable champion \u2014 DBC (weak 0.86) HELPS via decorrelation (MaxDD 3.2->2.74%, Calmar 3.60->4.22 daily) where EFA (1.26) hurt. Decorrelation > standalone strength."
+      "note": "NEW deployable champion \u2014 DBC (weak 0.86) HELPS via decorrelation (MaxDD 3.2->2.74%, Calmar 3.60->4.22 daily) where EFA (1.26) hurt. Decorrelation > standalone strength.",
+      "calmar": 4.2166,
+      "mdd_pct": 2.74,
+      "car_pct": 11.56,
+      "win_pct": 70,
+      "scheme": "conviction-weighted (\u221dCalmar), 8 ETFs incl DBC commodities",
+      "metric": "daily-equity (QC dict flaky)"
     }
   }
 }

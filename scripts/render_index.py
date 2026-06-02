@@ -304,17 +304,15 @@ def _portfolio_html(K):
     kpis = (k("Calmar", champ.get("calmar", "—"), "acc") + k("Max DD", f'{champ.get("mdd_pct","—")}%', "pos")
             + k("Sharpe", champ.get("sharpe", "—")) + k("Win", f'{champ.get("win_pct","—")}%')
             + k("CAGR", f'{champ.get("car_pct","—")}%') + k("Names", champ.get("n", "—")))
-    lev = pf.get("leverage") or {}
     bh = pf.get("benchmark_buyhold7") or {}
     extra = ""
-    if lev.get("2x") and bh:
-        l2 = lev["2x"]
-        extra = (f'<p class="small"><b>Alpha vs passive:</b> the book beats buy-and-hold of the same 7 ETFs on '
-                 f'risk-adjusted return — Calmar {champ.get("calmar")} vs {bh.get("calmar")}, MaxDD '
-                 f'{champ.get("mdd_pct")}% vs {bh.get("mdd_pct")}% (passive wins raw CAGR in this bull). '
-                 f'<b>Levered 2×</b> it dominates on BOTH axes: CAGR {l2.get("cagr")}% (&gt; {bh.get("car_pct")}%) '
-                 f'at {l2.get("mdd")}% MaxDD (&lt; {bh.get("mdd_pct")}%), Calmar {l2.get("calmar")}. '
-                 f'Positive every year (2023–26); leverable 1×–3× per risk budget.</p>')
+    if bh:
+        extra = (f'<p class="small"><b>Alpha vs passive:</b> beats buy-and-hold of the basket on risk-adjusted '
+                 f'return — Calmar {champ.get("calmar")} vs {bh.get("calmar")}, MaxDD {champ.get("mdd_pct")}% vs '
+                 f'{bh.get("mdd_pct")}% (passive wins raw CAGR in this bull). <b>Levered ~2×</b> the book dominates '
+                 f'on BOTH axes (CAGR &gt; passive at lower drawdown). Positive every calendar year (2023–26); '
+                 f'leverable per risk budget. Decorrelation, not name-count, drives inclusion — DBC (weak) helps, '
+                 f'EFA (correlated) hurt.</p>')
     return ('<div class="scoreboard">' + kpis + '</div>'
             f'<p class="small">{champ.get("scheme","conviction-weighted (∝Calmar)")} · all {champ.get("n","7")} '
             'champions, gross≤1 (no leverage) · diversification beats concentration (R104: full-7 &gt; '
