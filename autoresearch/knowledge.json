@@ -2130,6 +2130,12 @@
         "type": "milestone",
         "phase": "EFA",
         "label": "R108 UNIVERSE EXPANSION: EFA (developed-intl equity) added. Drift asset \u2014 always_long 1.26 beats timing+meta -0.004 (4th drift confirmation). Joins as buy-hold champion; value = portfolio diversification. Universe now 8 ETFs"
+      },
+      {
+        "id": "r109",
+        "type": "finding",
+        "phase": "PORTFOLIO",
+        "label": "R109 EFA HURTS the book (3.60->3.31, MaxDD 3.2->3.58%): correlated equity beta adds drawdown, not decorrelation. Diversification = DECORRELATION not name-count. Deployable book stays 7-ETF; extend only with a decorrelated class (commodities/REITs)"
       }
     ],
     "edges": [
@@ -3362,6 +3368,16 @@
         "src": "r108",
         "dst": "f_drift_ceiling",
         "label": "EFA drift \u2014 timing rejected (4th)"
+      },
+      {
+        "src": "r108",
+        "dst": "r109",
+        "label": "test EFA in the book"
+      },
+      {
+        "src": "r109",
+        "dst": "f_portfolio",
+        "label": "decorrelation>name-count; keep 7"
       }
     ],
     "running": []
@@ -3494,6 +3510,13 @@
         "sharpe": 2.63
       },
       "note": "low-DD book is under-levered; 2x dominates passive (25%>17.9% CAGR, 6.2%<11.2% MaxDD); 3x maxes Calmar 4.26, still < passive MaxDD. Caveat: leverage amplifies tail risk + flattered by the bull OOS."
+    },
+    "with_EFA_8": {
+      "calmar": 3.3123,
+      "cagr": 11.85,
+      "mdd": 3.58,
+      "sharpe": 2.328,
+      "note": "adding EFA (correlated equity) HURTS: 3.60->3.31, MaxDD 3.2->3.58%. Decorrelation>name-count. EFA excluded from the deployable book."
     }
   }
 }
