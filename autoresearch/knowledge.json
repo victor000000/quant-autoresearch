@@ -1186,7 +1186,7 @@
     "sizing": "cdf_overlay"
    },
    "val_auc_reval": 0.594,
-   "status": "REAL EDGE, OPTIMIZED 3.20 (logdollar ker+trend_scan @0.40). Optimal across labels, ensembles, thresholds, AND axes (range 1.00 / zcusum 1.34 << logdollar 3.20). Calmar>3.",
+   "status": "REAL EDGE, OPTIMIZED 3.20 (logdollar ker+trend_scan @0.40). 2nd new label 'accel' tested: ker+accel 2.75 / accel+trend_scan 2.36 < 3.20 -> accel valid but not a better partner than ker+trend_scan. Optimal across labels/ensembles/thresholds/axes.",
    "ceilinged": true
   },
   "EFA": {
@@ -2677,6 +2677,12 @@
     "type": "round",
     "phase": "GLD",
     "label": "R155 GLD DISCARD: Sample on zcusum; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +1.3449 (prev best +3.2026). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r156",
+    "type": "round",
+    "phase": "GLD",
+    "label": "R156 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +2.7512 (prev best +3.2026). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4378,6 +4384,11 @@
    {
     "src": "r154",
     "dst": "r155",
+    "label": "no improvement"
+   },
+   {
+    "src": "r155",
+    "dst": "r156",
     "label": "no improvement"
    }
   ],

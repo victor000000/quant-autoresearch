@@ -1331,7 +1331,45 @@ def generate_labels_ker(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_accel(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                          horizons=[20, 40, 80]):
+    """Trend-ACCELERATION label — UNSUPERVISED, non-HMM. Targets ACCELERATING moves, orthogonal to
+    trend LEVEL (trend_scan), QUALITY (KER), and REGIME (bgm). For horizon H, split the forward
+    window in half: m1 = lc[t+H/2]-lc[t], m2 = lc[t+H]-lc[t+H/2]. Label 1 if accelerating UP
+    (m2>0 and m2>m1), 0 if accelerating DOWN (m2<0 and m2<m1), -1 (ignore) if decelerating/mixed.
+    Forward info defines only the TARGET (G3-ok); the supervised model predicts it from past
+    features. Sweeps H; picks most TRAIN-balanced. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        h2 = H // 2
+        if N <= H or h2 < 1:
+            continue
+        idx = np.arange(N - H)
+        m1 = lc[idx + h2] - lc[idx]
+        m2 = lc[idx + H] - lc[idx + h2]
+        yy = np.full(N - H, -1, dtype=int)
+        yy[(m2 > 0) & (m2 > m1)] = 1
+        yy[(m2 < 0) & (m2 < m1)] = 0
+        y = np.full(N, -1, dtype=int)
+        y[idx] = yy
+        ly = y >= 0
+        tx = fv & ly & tr_m
+        vx = fv & ly & va_m
+        if tx.sum() < 100 or vx.sum() < 20:
+            continue
+        bal = float(y[tx].mean())
+        if 0.2 < bal < 0.8:
+            score = min(bal, 1 - bal)
+            if score > best_score:
+                best_score, best, best_cfg, best_h = score, y, f"accel_H{H}", H
+    if best is None:
+        return None, "accel_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
+    "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
@@ -1356,7 +1394,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "ker", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
