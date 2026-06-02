@@ -995,7 +995,9 @@
    "deflation": "N/A_buyhold",
    "n_days": 710,
    "real_skew": -0.1693,
-   "real_kurt": 5.4363
+   "real_kurt": 5.4363,
+   "ceilinged": true,
+   "status": "CEILINGED \u2014 trend_scan 1.02 / KER 0.89 < buy-hold 1.24; tech up-trender, timing trims upside. Buy-hold 1.24 deployable champion."
   },
   "IWM": {
    "config": {
@@ -2615,6 +2617,12 @@
     "type": "round",
     "phase": "TIP",
     "label": "R142 TIP DISCARD: Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45. -> Calmar +0.6800 (prev best +1.1463). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r143",
+    "type": "round",
+    "phase": "QQQ",
+    "label": "R143 QQQ DISCARD: Sample on log-dollar bars; trend_scan; size long-only, vol-targeted, entry 0.45. -> Calmar +1.0245 (prev best +1.2355). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4251,6 +4259,11 @@
    {
     "src": "r141",
     "dst": "r142",
+    "label": "no improvement"
+   },
+   {
+    "src": "r142",
+    "dst": "r143",
     "label": "no improvement"
    }
   ],
