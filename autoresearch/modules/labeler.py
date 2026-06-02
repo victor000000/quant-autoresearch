@@ -1079,6 +1079,16 @@ def generate_labels_triple_barrier_tight(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, 
         lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, U=1.5, L=1.5)
 
 
+def generate_labels_triple_barrier_meta(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                        horizons=[50, 100, 200]):
+    """Meta-labeling PRIMARY: identical triple-barrier labels — the footer adds the
+    SECONDARY 'is-the-primary-right' model on top (Wang's trading-decision 2nd model).
+    Distinct name so the renderer's labeler-pruner keeps it (and, via its call below,
+    generate_labels_triple_barrier) and the cell gets its own key (champion untouched)."""
+    return generate_labels_triple_barrier(
+        lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=horizons)
+
+
 def generate_labels_dc_reversal(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
     """Directional-Change REVERSAL label — MEAN-REVERSION target. Run the delta-reversal
     directional-change process; label each bar with the direction of the NEXT confirmed
@@ -1175,6 +1185,7 @@ LABELERS = {
     "agglomerative": generate_labels_agglomerative,
     "triple_barrier": generate_labels_triple_barrier,
     "triple_barrier_tight": generate_labels_triple_barrier_tight,
+    "triple_barrier_meta": generate_labels_triple_barrier_meta,   # same labels; footer adds the meta secondary model
     "multi_horizon": generate_labels_multi_horizon,
     "regime_gmm": generate_labels_regime_gmm,         # causal-feature GMM regimes.
     "cusum_regime": generate_labels_cusum_regime,     # CUSUM change-point regimes.
@@ -1185,7 +1196,7 @@ LABELERS = {
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
     "kmeans2stage", "carry", "tertile", "bgm",
-    "agglomerative", "triple_barrier", "triple_barrier_tight", "multi_horizon",
-    "regime_gmm", "cusum_regime",
+    "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
+    "multi_horizon", "regime_gmm", "cusum_regime",
 ]
 BASELINE_LABELERS = ["hmm", "always_long"]

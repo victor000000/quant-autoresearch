@@ -163,7 +163,7 @@ class AutoresearchPipeline(QCAlgorithm):
     # or None when the cell cannot be trained.                             #
     # --------------------------------------------------------------------- #
     def _run_cell(self, feats, y, label_cfg, tr_m, va_m, te_m, lc, lr, bar_ts, fv,
-                  thresh, sizing="cdf_overlay"):
+                  thresh, sizing="cdf_overlay", meta=False):
         try:
             from sklearn.preprocessing import StandardScaler
             from sklearn.metrics import roc_auc_score
@@ -246,11 +246,70 @@ class AutoresearchPipeline(QCAlgorithm):
             except Exception:
                 pv_cal, pe_cal = pv_raw, pe_raw
 
+        # META-LABELING (Wang's "trading-decision secondary model" / AFML Ch.3): a
+        # SECONDARY model predicts whether the PRIMARY's directional call is correct,
+        # and shrinks the primary signal toward neutral where the secondary distrusts
+        # it -> higher precision, fewer false trades. Honest meta-labels need OOS
+        # primary preds, so the primary is re-fit over 3 contiguous PURGED folds of
+        # TRAIN to score each train bar out-of-sample. Any failure -> primary-only (no-op).
+        if meta and n_pos > 0 and n_neg > 0:
+            try:
+                ytx = y[tx]
+                idx_tx = np.where(tx)[0]                  # full-N positions (time-sorted)
+                ntr = len(idx_tx)
+                oos_pt = np.full(ntr, np.nan)
+                K = 3
+                bnd = [int(ntr * f / K) for f in range(K + 1)]
+                for kf in range(K):
+                    a, b = bnd[kf], bnd[kf + 1]
+                    if b - a < 20:
+                        continue
+                    keep = np.ones(ntr, dtype=bool)
+                    keep[a:b] = False                    # hold out this contiguous fold
+                    purge = (idx_tx >= idx_tx[a] - _EMBARGO) & (idx_tx <= idx_tx[b - 1] + _EMBARGO)
+                    keep = keep & ~purge                 # purge label-overlapping bars near the fold
+                    if keep.sum() < 100 or len(np.unique(ytx[keep])) < 2:
+                        continue
+                    swk = float(np.sum(ytx[keep] == 0)) / max(1, int(np.sum(ytx[keep] == 1)))
+                    mk = xgb.XGBClassifier(
+                        n_estimators=200, max_depth=3, learning_rate=0.03,
+                        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+                        scale_pos_weight=swk, objective="binary:logistic",
+                        eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
+                        base_score=0.5)
+                    mk.fit(Xt[keep], ytx[keep])
+                    oos_pt[a:b] = mk.predict_proba(Xt[a:b])[:, 1]
+                ok = ~np.isnan(oos_pt)
+                meta_y = ((oos_pt[ok] >= 0.5).astype(int) == ytx[ok]).astype(int)
+                if int(ok.sum()) > 200 and len(np.unique(meta_y)) == 2:
+                    swm = float(np.sum(meta_y == 0)) / max(1, int(np.sum(meta_y == 1)))
+                    ms = xgb.XGBClassifier(
+                        n_estimators=200, max_depth=3, learning_rate=0.03,
+                        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+                        scale_pos_weight=swm, objective="binary:logistic",
+                        eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
+                        base_score=0.5)
+                    ms.fit(Xt[ok], meta_y)
+                    pmeta_v = ms.predict_proba(Xv)[:, 1]
+                    pmeta_e = ms.predict_proba(Xe)[:, 1]
+                    # shrink the primary's deviation-from-neutral by the meta confidence
+                    pv_cal = 0.5 + (np.asarray(pv_cal) - 0.5) * pmeta_v
+                    pe_cal = 0.5 + (np.asarray(pe_cal) - 0.5) * pmeta_e
+                    self.log(f"META {label_cfg}: oos={int(ok.sum())} meta_acc={float(meta_y.mean()):.3f} "
+                             f"pmeta_e_mean={float(np.mean(pmeta_e)):.3f}")
+            except Exception as _me:
+                try:
+                    self.set_runtime_statistic("meta_err", str(_me)[:60])
+                except Exception:
+                    pass
+
         # MODEL BUNDLE — frozen artifacts so the OOS backtest can run the model ONLINE
         # (not replay predictions). Bar params (axis/threshold) added by the caller.
         # Guarded; constant_long cells (always_long) carry no model. (online OOS redesign)
         try:
-            if n_pos == 0 or n_neg == 0:
+            if meta:
+                _bundle = None        # meta cell: a primary-only bundle would be incomplete; the A/B uses prediction-replay infer
+            elif n_pos == 0 or n_neg == 0:
                 _bundle = {"constant_long": True, "thresh": float(thresh), "sizing": sizing,
                            "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
             else:
@@ -428,7 +487,7 @@ class AutoresearchPipeline(QCAlgorithm):
                 try:
                     res = self._run_cell(feats, y, label_cfg or label_name,
                                          tr_m, va_m, te_m, lc, lr, bar_ts, fv, thresh,
-                                         sizing)
+                                         sizing, meta=(label_name == "triple_barrier_meta"))
                 except Exception:
                     res = None                  # a failing leg must not crash the whole train
                 if res is None:
