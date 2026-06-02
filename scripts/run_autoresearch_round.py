@@ -85,7 +85,8 @@ CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "EFA",   # universe expansion: developed-intl equity (correlated w/ equity sleeve — excluded from book, R109)
           "DBC",   # broad commodities — DECORRELATED; improved the book 3.60->4.22 (R111)
           "UUP",   # US dollar — NEGATIVELY correlated w/ risk assets (risk-off hedge); decorrelation candidate
-          "TIP"]   # TIPS / inflation-linked bonds — real-rate/inflation exposure, decorrelated book member (R124 lever)
+          "TIP",   # TIPS / inflation-linked bonds — real-rate/inflation exposure, decorrelated book member (R124 lever)
+          "SLV"]   # silver — precious-metal trend sibling of GLD; tests whether GLD's tradeable-trend edge (ker+trend_scan) generalizes to a sharper-moving metal (new-input probe)
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
