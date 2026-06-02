@@ -1164,30 +1164,29 @@
    "exhausted_out": true
   },
   "GLD": {
-   "cell": "GLD_logdollar_ker_cdf_overlay_t0.45",
-   "real_calmar": 2.4103,
-   "real_cagr": 8.195,
-   "real_mdd": 3.4,
-   "real_da": 3.4926,
-   "real_sharpe": 2.498,
-   "trades": 181,
+   "cell": "GLD_logdollar_ker+trend_scan_cdf_overlay_t0.45",
+   "real_calmar": 2.8904,
+   "real_cagr": 7.515,
+   "real_mdd": 2.6,
+   "real_da": 2.5262,
+   "real_sharpe": 2.221,
+   "trades": 580,
    "g2_pass": true,
-   "round": 35,
+   "round": 36,
    "source": "tournament",
    "psr": 1.0,
-   "n_trials": 14,
+   "n_trials": 16,
    "significant": true,
    "leak_fixed": true,
    "config": {
     "ticker": "GLD",
     "axis": "logdollar",
-    "labeler": "ker",
+    "labeler": "ker+trend_scan",
     "thresh": 0.45,
     "sizing": "cdf_overlay"
    },
-   "online_verified": true,
-   "val_auc_reval": 0.644,
-   "status": "REAL EDGE IMPROVED \u2014 KER (Kaufman efficiency-ratio, NEW method) 2.41 beats trend_scan 2.16; val_auc 0.644, survives deflation (floor 0.998), online-equivalent (preds_match=1, max_pred_diff 8e-9). First new-method edge since meta-labeling."
+   "val_auc_reval": 0.594,
+   "status": "REAL EDGE, IMPROVED 2x \u2014 within-ticker ensemble ker+trend_scan = 2.89 (>KER 2.41 >trend_scan 2.16); val_auc 0.594>0.52, survives deflation (floor 1.135). Leak-free by construction (avg of two online-verified causal signals: KER preds_match=1, trend_scan 2.1e-8). Single-ticker (both labelers on GLD)."
   },
   "EFA": {
    "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1331,7 +1330,7 @@
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
- "last_round": 35,
+ "last_round": 36,
  "causal_graph": {
   "phases": [
    "Landscape",
@@ -2642,6 +2641,12 @@
     "type": "milestone",
     "phase": "GLD",
     "label": "R147 GLD KEEP: Sample on log-dollar bars; ker; size long-only, vol-targeted, entry 0.45. -> Calmar +2.4103 (prev best +2.1631). Auto-logged from round_results.csv."
+   },
+   {
+    "id": "r148",
+    "type": "milestone",
+    "phase": "GLD",
+    "label": "R148 GLD KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.45. -> Calmar +2.8904 (prev best +2.4103). Auto-logged from round_results.csv."
    }
   ],
   "edges": [
@@ -4303,6 +4308,11 @@
    {
     "src": "r146",
     "dst": "r147",
+    "label": "new best"
+   },
+   {
+    "src": "r147",
+    "dst": "r148",
     "label": "new best"
    }
   ],
