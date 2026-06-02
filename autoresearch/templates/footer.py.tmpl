@@ -502,7 +502,7 @@ class AutoresearchPipeline(QCAlgorithm):
                 try:
                     res = self._run_cell(feats, y, label_cfg or label_name,
                                          tr_m, va_m, te_m, lc, lr, bar_ts, fv, thresh,
-                                         sizing, meta=(label_name == "triple_barrier_meta"))
+                                         sizing, meta=str(label_name).endswith("_meta"))
                 except Exception:
                     res = None                  # a failing leg must not crash the whole train
                 if res is None:
