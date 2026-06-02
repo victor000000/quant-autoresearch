@@ -115,15 +115,25 @@ class AutoresearchPortfolio(QCAlgorithm):
                 bk["last_close"] = c
 
     def on_end_of_algorithm(self):
-        # Portfolio DA + Sharpe from daily equity (Calmar comes from QC's CAR/Drawdown).
-        da, peak = 0.0, None
+        # Portfolio Calmar/DA/Sharpe computed from DAILY equity (robust — QC's Statistics
+        # dict is read intermittently; these runtime stats always land).
+        da, peak, mdd = 0.0, None, 0.0
         for v in self._eq:
             peak = v if (peak is None or v > peak) else peak
             if peak and peak > 0:
-                da += 1.0 - v / peak
+                dd = 1.0 - v / peak
+                da += dd
+                if dd > mdd:
+                    mdd = dd
         self.set_runtime_statistic("port_da", str(round(da, 4)))
+        self.set_runtime_statistic("port_mdd", str(round(mdd, 4)))
         eq = np.array(self._eq, dtype=float)
-        if len(eq) > 4:
+        n = len(eq)
+        if n > 4 and eq[0] > 0:
+            cagr = float((eq[-1] / eq[0]) ** (252.0 / n) - 1.0)
+            self.set_runtime_statistic("port_cagr", str(round(cagr, 4)))
+            if mdd > 1e-9:
+                self.set_runtime_statistic("port_calmar", str(round(cagr / mdd, 4)))
             rets = np.diff(eq) / np.where(eq[:-1] == 0, np.nan, eq[:-1])
             rets = rets[np.isfinite(rets)]
             if len(rets) > 4 and np.std(rets) > 0:
