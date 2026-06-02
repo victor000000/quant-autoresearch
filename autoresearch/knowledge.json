@@ -2248,6 +2248,12 @@
         "type": "milestone",
         "phase": "UUP",
         "label": "R118 UUP 0.34->1.08 (3.2x) via Ultracode workflow's rank-2: port IWM imbalance/bgm/cdf_overlay (unsupervised regime-timer on dollar-FLOW axis). TLT range/tb port failed (0.09) - character-matched transfer. Workflow fan-out beat the single top guess. Not yet trials-sig (PSR 0.96, N=4)"
+      },
+      {
+        "id": "r119",
+        "type": "finding",
+        "phase": "DBC",
+        "label": "R119 DBC: proven recipes fail (trend_scan 0.28, imbalance/bgm 0.49 vs 0.858). DBC is a CHOPPY commodity BASKET, not a clean trender (GLD) or macro instrument (UUP) \u2014 recipe transfer is character-matched. Try coarse tertile + DC reversal-clock next"
       }
     ],
     "edges": [
@@ -3590,6 +3596,16 @@
         "src": "r118",
         "dst": "f_trendscan",
         "label": "character-matched recipe transfer"
+      },
+      {
+        "src": "r118",
+        "dst": "r119",
+        "label": "next weakest = DBC"
+      },
+      {
+        "src": "r119",
+        "dst": "f_trendscan",
+        "label": "trend_scan needs clean trends, not choppy baskets"
       }
     ],
     "running": []
