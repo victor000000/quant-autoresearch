@@ -415,6 +415,7 @@ def _append_round_results(rows, weakest, prev_best, winner, kept):
             "name", "ticker", "axis", "labeler", "thresh", "sizing",
             "real_calmar", "real_da", "trades", "g2_pass", "deployable",
             "synth_cal", "train_auc", "val_auc",
+            "real_sharpe", "real_skew", "real_kurt", "n_days",  # per-trial OOS moments -> enables exact Deflated Sharpe (RESEARCH_REVIEW Tier-1)
             "is_winner", "kept_as_new_best", "train_status", "infer_status"]
     new = not os.path.exists(ROUND_RESULTS_CSV) or os.path.getsize(ROUND_RESULTS_CSV) == 0
     ts = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
@@ -434,6 +435,10 @@ def _append_round_results(rows, weakest, prev_best, winner, kept):
                 "trades": r["trades"], "g2_pass": r["g2_pass"], "deployable": _is_deployable(r),
                 "synth_cal": round(r["synth_cal"], 4), "train_auc": round(r["train_auc"], 4),
                 "val_auc": round(r["val_auc"], 4),
+                "real_sharpe": round(_f(r.get("real_sharpe", 0.0)), 4),
+                "real_skew": round(_f(r.get("real_skew", 0.0)), 4),
+                "real_kurt": round(_f(r.get("real_kurt", 0.0)), 4),
+                "n_days": int(_f(r.get("n_days", 0.0))),
                 "is_winner": (winner is not None and r["name"] == winner["name"]),
                 "kept_as_new_best": (kept and winner is not None and r["name"] == winner["name"]),
                 "train_status": r["train_status"], "infer_status": r["infer_status"],

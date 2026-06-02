@@ -1079,7 +1079,9 @@
    "val_auc_reval": "0.4662",
    "deflated_calmar_benchmark": 1.3611,
    "deflation_margin": -0.5023,
-   "survives_deflation": false
+   "survives_deflation": false,
+   "deflation_metric": "Calmar",
+   "deflated_benchmark": 1.3611
   },
   "HYG": {
    "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
@@ -1135,7 +1137,9 @@
    "deployable": false,
    "deflated_calmar_benchmark": 0.9279,
    "deflation_margin": -0.9666,
-   "survives_deflation": false
+   "survives_deflation": false,
+   "deflation_metric": "Calmar",
+   "deflated_benchmark": 0.9279
   },
   "GLD": {
    "cell": "GLD_logdollar_trend_scan_cdf_overlay_t0.45",
@@ -1165,7 +1169,9 @@
    "val_auc_reval": "0.5432",
    "deflated_calmar_benchmark": 0.8919,
    "deflation_margin": 1.2712,
-   "survives_deflation": true
+   "survives_deflation": true,
+   "deflation_metric": "Calmar",
+   "deflated_benchmark": 0.8919
   },
   "EFA": {
    "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1251,7 +1257,9 @@
    "val_auc_reval": "0.9802",
    "deflated_calmar_benchmark": 0.5375,
    "deflation_margin": 0.5456,
-   "survives_deflation": true
+   "survives_deflation": true,
+   "deflation_metric": "Calmar",
+   "deflated_benchmark": 0.5375
   },
   "TIP": {
    "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",

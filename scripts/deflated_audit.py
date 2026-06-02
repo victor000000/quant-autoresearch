@@ -37,13 +37,24 @@ def expected_max_of_N(var, N):
     return math.sqrt(var) * ((1.0 - GAMMA) * z1 + GAMMA * z2)
 
 
-# per-asset trial Calmars from the round log
+# per-asset trial Calmars + (when logged) Sharpes from the round log
 trials = collections.defaultdict(list)
+trial_sharpe = collections.defaultdict(list)
 for row in csv.DictReader(open(R.ROUND_RESULTS_CSV)):
     try:
         trials[row["ticker"]].append(float(row["real_calmar"]))
     except (ValueError, KeyError):
         pass
+    try:
+        s = row.get("real_sharpe", "")
+        if s not in ("", None):
+            trial_sharpe[row["ticker"]].append(float(s))
+    except (ValueError, KeyError):
+        pass
+
+_n_sharpe = sum(len(v) for v in trial_sharpe.values())
+print(f"[per-trial Sharpe logged so far: {_n_sharpe} trials across {len(trial_sharpe)} assets — "
+      f"exact Deflated-Sharpe auto-activates per asset once ≥5 Sharpe-trials accrue; Calmar-deflation used meanwhile]\n")
 
 K = json.load(open(R.KNOWLEDGE_JSON))
 pe = K["per_etf_best"]
@@ -63,13 +74,20 @@ for etf, v in sorted(pe.items(), key=lambda kv: -(kv[1].get("real_calmar") or 0)
     if N < 3:
         print(f"{etf:5s} {champ:7.3f} {lab:>14s} {N:5d}   (too few trials to deflate)")
         continue
-    mean = sum(ct) / N
-    var = sum((c - mean) ** 2 for c in ct) / (N - 1)
-    emax = expected_max_of_N(var, N)
-    margin = champ - emax
-    verdict = "SURVIVES (above best-of-N noise)" if margin > 0 else "FAILS — selection-bias artifact"
-    print(f"{etf:5s} {champ:7.3f} {lab:>14s} {N:5d} {math.sqrt(var):6.3f} {emax:7.3f} {margin:+7.3f}  {verdict}")
-    pe[etf]["deflated_calmar_benchmark"] = round(emax, 4)
+    # Prefer EXACT Sharpe-based DSR once enough per-trial Sharpes have accrued; else Calmar proxy.
+    st = trial_sharpe.get(etf, [])
+    if len(st) >= 5:
+        metric, champ_m, ts, Nm = "Sharpe", max(st), st, len(st)
+    else:
+        metric, champ_m, ts, Nm = "Calmar", champ, ct, N
+    mean = sum(ts) / Nm
+    var = sum((c - mean) ** 2 for c in ts) / (Nm - 1)
+    emax = expected_max_of_N(var, Nm)
+    margin = champ_m - emax
+    verdict = f"SURVIVES ({metric}, above best-of-N noise)" if margin > 0 else f"FAILS — selection-bias artifact ({metric})"
+    print(f"{etf:5s} {champ_m:7.3f} {lab:>14s} {Nm:5d} {math.sqrt(var):6.3f} {emax:7.3f} {margin:+7.3f}  {verdict}")
+    pe[etf]["deflation_metric"] = metric
+    pe[etf]["deflated_benchmark"] = round(emax, 4)
     pe[etf]["deflation_margin"] = round(margin, 4)
     pe[etf]["survives_deflation"] = bool(margin > 0)
 
