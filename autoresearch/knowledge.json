@@ -2212,6 +2212,18 @@
         "type": "finding",
         "phase": "PORTFOLIO",
         "label": "R114 \u221dCalmar^1 weighting CONFIRMED optimal (4.22; unimodal: ^0.5=3.59, ^2=3.80/Sharpe2.75). Book optimised on EVERY dim: members(7+DBC)/weighting(^1)/leverage. Objective-dependent: ^2 max Sharpe, ^1 max Calmar. System comprehensively complete"
+      },
+      {
+        "id": "r115",
+        "type": "finding",
+        "phase": "EEM",
+        "label": "R115 AUTOENCODER REFUTED: linear correlation-select 2.44 >> nonlinear AE 1.11 (AE overfits/noisy). We SELECT not PROJECT, so no linear-projection problem to fix. CLOSES Wang technique space: meta-labeling=only new-method win; AE+cross-asset refuted; rest built. Research frontier definitively closed"
+      },
+      {
+        "id": "f_wang_closed",
+        "type": "finding",
+        "phase": "ALL",
+        "label": "WANG TECHNIQUE SPACE CLOSED: every first-public technique tested. WON: meta-labeling (EEM 4.03, Calmar>3). REFUTED: autoencoder dim-reduce, cross-asset features. BUILT: custom axes, trend labels, entropy, leverage, portfolio combination. No untested techniques remain"
       }
     ],
     "edges": [
@@ -3499,6 +3511,26 @@
         "src": "r114",
         "dst": "f_portfolio",
         "label": "\u221dCalmar^1 optimal; book fully optimised"
+      },
+      {
+        "src": "r114",
+        "dst": "r115",
+        "label": "test the last Wang technique (autoencoder)"
+      },
+      {
+        "src": "r115",
+        "dst": "f_wang_closed",
+        "label": "AE refuted -> space closed"
+      },
+      {
+        "src": "r94",
+        "dst": "f_wang_closed",
+        "label": "meta-labeling = the one win"
+      },
+      {
+        "src": "f_wang_closed",
+        "dst": "f_portfolio",
+        "label": "research closed; deployable system is the result"
       }
     ],
     "running": []
