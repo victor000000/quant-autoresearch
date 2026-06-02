@@ -2760,6 +2760,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R167 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.44. -> Calmar +2.9867 (prev best +3.2026). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r168",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R168 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.43. -> Calmar +0.0000 (prev best +3.2026). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4521,6 +4527,11 @@
       {
         "src": "r166",
         "dst": "r167",
+        "label": "no improvement"
+      },
+      {
+        "src": "r167",
+        "dst": "r168",
         "label": "no improvement"
       }
     ],

@@ -44,7 +44,4 @@ CONFIG = {
     # Model capacity (XGBoost tree depth). Defaults to 3 (shallow, regularized) so
     # every legacy render is byte-identical; an explicit override enables capacity A/B.
     "max_depth": int(_cfg_or("__MAXDEPTH__", "__" "MAXDEPTH__", "3")),
-    # Model family. Defaults to "xgb" (legacy byte-identical); "extratrees" swaps the
-    # inductive bias (bagging vs boosting) for a model-family A/B.
-    "model": _cfg_or("__MODEL__", "__" "MODEL__", "xgb"),
 }

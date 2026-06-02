@@ -331,3 +331,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T01:25:20,SLV,0.0,,B,SLV,logdollar,always_long,0.5,cdf_overlay,1.2631,57.6714,767,True,True,-0.1214,0.5,0.5,1.2462,-1.2275,12.4302,710,True,False,completed,completed
 2026-06-03T01:31:22,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,A,GLD,logdollar,ker+trend_scan,0.43,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,Runtime Error,?
 2026-06-03T01:31:22,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,B,GLD,logdollar,ker+trend_scan,0.44,cdf_overlay,2.9867,2.5403,596,True,True,0.0,0.7167,0.5937,2.2659,2.1389,24.3842,710,True,False,completed,completed
+2026-06-03T01:34:27,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,A,GLD,logdollar,ker+trend_scan,0.43,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,Runtime Error,?
+2026-06-03T01:34:27,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,B,GLD,logdollar,ker+trend_scan,0.44,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,Runtime Error,?

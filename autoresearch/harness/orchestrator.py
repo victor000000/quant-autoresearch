@@ -138,8 +138,7 @@ def render_train_config(config):
               .replace("__LABELER__", str(config["labeler"]))
               .replace("__THRESH__", repr(float(config["thresh"])))
               .replace("__SIZING__", str(config["sizing"]))
-              .replace("__MAXDEPTH__", str(int(config.get("max_depth", 3))))
-              .replace("__MODEL__", str(config.get("model", "xgb"))))
+              .replace("__MAXDEPTH__", str(int(config.get("max_depth", 3)))))
     return _minify(script)
 
 
