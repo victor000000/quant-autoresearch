@@ -143,6 +143,28 @@ def _mdd_from_stats(st):
     return round(_f(st.get("Drawdown", "0%")), 4)
 
 
+def _count_trials(ticker):
+    """How many configs have been tried for this ETF (multiple-testing N)."""
+    try:
+        import csv as _csv
+        return sum(1 for r in _csv.DictReader(open(ROUND_RESULTS_CSV)) if r.get("ticker") == ticker)
+    except Exception:
+        return 1
+
+
+def _psr_significance(sharpe, skew, kurt, n_days, n_trials):
+    """PSR(SR>0) with skew/kurt correction + a Bonferroni-by-N_trials threshold.
+    Returns (psr, significant). The trials-adjusted 'is this edge real?' test."""
+    import math
+    if not (n_days and n_days > 3 and sharpe):
+        return None, None
+    srd = float(sharpe) / math.sqrt(252.0)                  # per-observation Sharpe
+    denom = math.sqrt(max(1e-9, 1.0 - float(skew) * srd + (float(kurt) - 1.0) / 4.0 * srd * srd))
+    psr = 0.5 * (1.0 + math.erf((srd * math.sqrt(n_days - 1) / denom) / math.sqrt(2.0)))
+    thr = 1.0 - 0.05 / max(1, int(n_trials))
+    return round(psr, 4), bool(psr > thr)
+
+
 def _trades_from_stats(st):
     raw = str(st.get("Total Orders", "0")).strip()
     try:
@@ -512,8 +534,15 @@ def run_round(argv):
         print(f"WINNER: {winner['name']} — Calmar {winner['real_calmar']:+.4f}, "
               f"DA {winner['real_da']:.3f}, trades {winner['trades']} [{depl}]")
         if kept:
+            _nt = _count_trials(target) + 2          # + this round's 2 hypotheses (not yet logged)
+            _psr, _sig = _psr_significance(winner.get("real_sharpe"), winner.get("real_skew"),
+                                           winner.get("real_kurt"), winner.get("n_days"), _nt)
+            winner["_psr"], winner["_sig"], winner["_ntrials"] = _psr, _sig, _nt
             print(f"VERDICT: KEEP — beats {target} prev best ({winner['real_calmar']:+.4f} > {prev_cal:+.4f}). "
                   f"per_etf_best[{target}] updated.")
+            if _psr is not None:
+                print(f"  TRIALS-ADJUSTED TRUST: Sharpe {winner.get('real_sharpe')}, PSR {_psr}, "
+                      f"N_trials {_nt}, Bonferroni {'PASS — significant' if _sig else 'FAIL — selection-bias-suspect (edge not trials-significant)'}")
         elif _is_deployable(winner):
             print(f"VERDICT: DISCARD — winner {winner['real_calmar']:+.4f} does NOT beat "
                   f"prev best {prev_cal:+.4f}.")
@@ -531,10 +560,15 @@ def run_round(argv):
             "real_cagr": round(winner.get("real_cagr", 0.0), 4),
             "real_mdd": round(winner.get("real_mdd", 0.0), 4),
             "real_da": round(winner["real_da"], 4),
+            "real_sharpe": round(_f(winner.get("real_sharpe")), 3),
             "trades": winner["trades"],
             "g2_pass": True,
             "round": new_round,
             "source": "tournament",
+            "psr": winner.get("_psr"),
+            "n_trials": winner.get("_ntrials"),
+            "significant": winner.get("_sig"),
+            "leak_fixed": True,
             "config": {k: winner[k] for k in ("ticker", "axis", "labeler", "thresh", "sizing")},
         }
         knowledge["per_etf_best"] = per_etf_best
