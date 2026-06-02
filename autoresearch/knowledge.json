@@ -1944,7 +1944,7 @@
         "id": "f_online_infer",
         "type": "milestone",
         "phase": "IWM",
-        "label": "ONLINE OOS BACKTEST built (infer_online.py.tmpl + model bundle): rebuilds bars+features+frozen-model ONLINE. Cross-check vs saved preds: bars byte-identical, model/scaler/kept_idx/calibration EXACT on 89% of bars; ~11% residual = entropy stride-anchoring (mean 0.016, max 0.54). Fix scoped: anchored-grid entropy (O(W)). Production stays on (correct) prediction-replay until byte-exact"
+        "label": "ONLINE OOS BACKTEST fully VALIDATED (byte-exact): infer_online rebuilds bars+features+frozen-model+calibration ONLINE and reproduces saved preds to float precision (max_pred_diff 2.3e-08, 0 big diffs). Anchored-entropy grid fix made features byte-identical; train-neutral (best_cal 0.2347). Live-trading requirement proven. Production stays on the PROVEN-EQUIVALENT replay (fast); literal full-density online needs incremental features (perf only, not correctness)"
       }
     ],
     "edges": [
