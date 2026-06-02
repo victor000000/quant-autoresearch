@@ -226,11 +226,15 @@ class AutoresearchPipeline(QCAlgorithm):
             try:
                 if _model == "extratrees":
                     # Different inductive bias than boosting: bagging + extreme
-                    # randomization (variance reduction). Deep decorrelated trees
-                    # regularized by min_samples_leaf; class_weight ~ scale_pos_weight.
+                    # randomization (variance reduction). Bounded (200 trees, depth 12)
+                    # to fit QC's on_end_of_algorithm resource budget; NaN-guarded since
+                    # sklearn (unlike XGB-hist) rejects missing values.
                     from sklearn.ensemble import ExtraTreesClassifier
+                    Xt = np.nan_to_num(Xt, nan=0.0, posinf=0.0, neginf=0.0)
+                    Xv = np.nan_to_num(Xv, nan=0.0, posinf=0.0, neginf=0.0)
+                    Xe = np.nan_to_num(Xe, nan=0.0, posinf=0.0, neginf=0.0)
                     m = ExtraTreesClassifier(
-                        n_estimators=400, max_depth=None, max_features="sqrt",
+                        n_estimators=200, max_depth=12, max_features="sqrt",
                         min_samples_leaf=20, class_weight="balanced",
                         random_state=42, n_jobs=1)
                     m.fit(Xt, y[tx])
