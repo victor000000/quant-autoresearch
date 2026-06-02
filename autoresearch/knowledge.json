@@ -2272,6 +2272,12 @@
         "type": "finding",
         "phase": "DBC",
         "label": "R122 zcusum (new axis) fails DBC too (0.34/0.13 vs 0.858) but is MECHANICALLY SOUND (957tr, dense). DBC ceilinged across labels AND axes \u2014 untimeable basket. zcusum axis functional; validate on directional XLE next"
+      },
+      {
+        "id": "r123",
+        "type": "finding",
+        "phase": "XLE",
+        "label": "R123 zcusum fails XLE (0.18/0.36, over-samples 2400-2800tr - T too loose for volatile energy). zcusum failed both weak ETFs (DBC/XLE); both ceilinged across labels AND axes. Bank the session wins (GLD 2.16, UUP 1.08) in the portfolio"
       }
     ],
     "edges": [
@@ -3659,6 +3665,16 @@
         "src": "r122",
         "dst": "f_drift_ceiling",
         "label": "DBC ceilinged across modules"
+      },
+      {
+        "src": "r122",
+        "dst": "r123",
+        "label": "test zcusum on directional XLE"
+      },
+      {
+        "src": "r123",
+        "dst": "f_xle_ceiling",
+        "label": "XLE ceiling holds vs new axis"
       }
     ],
     "running": []

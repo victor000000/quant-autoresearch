@@ -233,3 +233,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-02T16:03:55,XLE,0.9052,XLE_logdollar_tertile_cdf_overlay_t0.30,B,XLE,logdollar,trend_scan,0.45,ls_overlay,-0.3829,133.931,564,True,True,0.7786,0.5911,0.5032,False,False,completed,completed
 2026-06-02T16:11:54,DBC,0.858,DBC_logdollar_always_long_cdf_overlay_t0.45,A,DBC,zcusum,tertile,0.45,cdf_overlay,0.34,12.1799,957,True,True,0.0976,0.8535,0.5892,True,False,completed,completed
 2026-06-02T16:11:54,DBC,0.858,DBC_logdollar_always_long_cdf_overlay_t0.45,B,DBC,zcusum,triple_barrier,0.45,cdf_overlay,0.1331,19.532,861,True,True,0.4606,0.6237,0.5382,False,False,completed,completed
+2026-06-02T16:16:18,XLE,0.9052,XLE_logdollar_tertile_cdf_overlay_t0.30,A,XLE,zcusum,tertile,0.3,cdf_overlay,0.1827,28.0442,2824,True,True,0.1411,0.6084,0.5266,False,False,completed,completed
+2026-06-02T16:16:18,XLE,0.9052,XLE_logdollar_tertile_cdf_overlay_t0.30,B,XLE,zcusum,triple_barrier,0.45,cdf_overlay,0.3645,8.0283,2395,True,True,0.1681,0.5677,0.5209,True,False,completed,completed
