@@ -89,8 +89,27 @@ def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005, thresh=0.45):
 
 
 def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20):
-    """Module ④: Dimensionality reduction — variance + correlation + top-K cap."""
+    """Module ④: Dimensionality reduction — variance + correlation + top-K cap, OR a
+    NONLINEAR AUTOENCODER (Wang ⑥ first-public: linear vs non-linear dim-reduce)."""
     F = X_train.shape[1]; variances = np.var(X_train, axis=0)
+    if method == "autoencoder":
+        # Bottleneck autoencoder (sklearn MLP, no torch): fit X->X on TRAIN, then use the
+        # bottleneck (first hidden layer, tanh) activations as the reduced features. A
+        # NON-LINEAR embedding vs the linear correlation-SELECT. kept_idx is a placeholder
+        # (no column subset); the bundle is skipped for AE cells (A/B uses prediction replay).
+        try:
+            from sklearn.neural_network import MLPRegressor
+            L = int(max(4, min(n_components, F // 3)))
+            ae = MLPRegressor(hidden_layer_sizes=(L,), activation="tanh", solver="adam",
+                              alpha=1e-3, learning_rate_init=1e-3, max_iter=400,
+                              random_state=42, early_stopping=False)
+            ae.fit(X_train, X_train)                 # reconstruct — TRAIN only
+            W0 = ae.coefs_[0]; b0 = ae.intercepts_[0]
+            enc = lambda Z: np.tanh(Z @ W0 + b0)     # bottleneck encoder
+            return (enc(X_train).astype(np.float32), enc(X_val).astype(np.float32),
+                    enc(X_test).astype(np.float32), L, f"ae{L}", list(range(L)))
+        except Exception:
+            method = "correlation"                   # degrade gracefully to the linear path
     kept = np.ones(F, dtype=bool)
     if method == "variance": kept &= variances > 0.01
     elif method == "correlation":

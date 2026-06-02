@@ -165,7 +165,7 @@ class AutoresearchPipeline(QCAlgorithm):
     # or None when the cell cannot be trained.                             #
     # --------------------------------------------------------------------- #
     def _run_cell(self, feats, y, label_cfg, tr_m, va_m, te_m, lc, lr, bar_ts, fv,
-                  thresh, sizing="cdf_overlay", meta=False):
+                  thresh, sizing="cdf_overlay", meta=False, ae=False):
         try:
             from sklearn.preprocessing import StandardScaler
             from sklearn.metrics import roc_auc_score
@@ -202,7 +202,7 @@ class AutoresearchPipeline(QCAlgorithm):
         Xv_raw = sc.transform(feats[vx])
         Xe_raw = sc.transform(feats[ex])
         Xt, Xv, Xe, nk, dim_name, kept_idx = reduce_dims(
-            Xt_raw, Xv_raw, Xe_raw, method="correlation", n_components=20)
+            Xt_raw, Xv_raw, Xe_raw, method=("autoencoder" if ae else "correlation"), n_components=20)
 
         vi = np.where(vx)[0]
         ei = np.where(ex)[0]
@@ -318,8 +318,8 @@ class AutoresearchPipeline(QCAlgorithm):
         # (not replay predictions). Bar params (axis/threshold) added by the caller.
         # Guarded; constant_long cells (always_long) carry no model. (online OOS redesign)
         try:
-            if meta and _meta_booster_json is None:
-                _bundle = None        # meta requested but the secondary couldn't be built -> no online bundle
+            if ae or (meta and _meta_booster_json is None):
+                _bundle = None        # AE (placeholder kept_idx) or meta-without-secondary -> no online bundle
             elif n_pos == 0 or n_neg == 0:
                 _bundle = {"constant_long": True, "thresh": float(thresh), "sizing": sizing,
                            "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
@@ -504,7 +504,8 @@ class AutoresearchPipeline(QCAlgorithm):
                 try:
                     res = self._run_cell(feats, y, label_cfg or label_name,
                                          tr_m, va_m, te_m, lc, lr, bar_ts, fv, thresh,
-                                         sizing, meta=str(label_name).endswith("_meta"))
+                                         sizing, meta=str(label_name).endswith("_meta"),
+                                         ae=str(label_name).endswith("_ae"))
                 except Exception:
                     res = None                  # a failing leg must not crash the whole train
                 if res is None:

@@ -1099,6 +1099,15 @@ def generate_labels_triple_barrier_tight_meta(lc, lr, tr_m, va_m, te_m, fv, fwd_
         lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=horizons, U=1.5, L=1.5)
 
 
+def generate_labels_triple_barrier_ae(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                      horizons=[50, 100, 200]):
+    """Same triple-barrier labels; the footer routes this cell through a NONLINEAR
+    AUTOENCODER dim-reduction (Wang ⑥) instead of the linear correlation-select. Distinct
+    name → own cell key + the pruner keeps it (+ generate_labels_triple_barrier)."""
+    return generate_labels_triple_barrier(
+        lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=horizons)
+
+
 def generate_labels_dc_reversal(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
     """Directional-Change REVERSAL label — MEAN-REVERSION target. Run the delta-reversal
     directional-change process; label each bar with the direction of the NEXT confirmed
@@ -1237,6 +1246,7 @@ LABELERS = {
     "triple_barrier_tight": generate_labels_triple_barrier_tight,
     "triple_barrier_meta": generate_labels_triple_barrier_meta,   # same labels; footer adds the meta secondary model
     "triple_barrier_tight_meta": generate_labels_triple_barrier_tight_meta,  # 1.5σ labels + meta secondary
+    "triple_barrier_ae": generate_labels_triple_barrier_ae,   # autoencoder dim-reduce (footer routes it)
     "multi_horizon": generate_labels_multi_horizon,
     "crash_ahead": generate_labels_crash_ahead,       # tail-risk target; pair with 'crashveto' sizing.
     "regime_gmm": generate_labels_regime_gmm,         # causal-feature GMM regimes.
@@ -1249,6 +1259,6 @@ LABELERS = {
 FEATURED_LABELERS = [
     "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
-    "triple_barrier_tight_meta", "multi_horizon", "regime_gmm", "cusum_regime",
+    "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon", "regime_gmm", "cusum_regime",
 ]
 BASELINE_LABELERS = ["hmm", "always_long"]
