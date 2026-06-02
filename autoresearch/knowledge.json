@@ -2278,6 +2278,18 @@
         "type": "finding",
         "phase": "XLE",
         "label": "R123 zcusum fails XLE (0.18/0.36, over-samples 2400-2800tr - T too loose for volatile energy). zcusum failed both weak ETFs (DBC/XLE); both ceilinged across labels AND axes. Bank the session wins (GLD 2.16, UUP 1.08) in the portfolio"
+      },
+      {
+        "id": "r124",
+        "type": "milestone",
+        "phase": "PORTFOLIO",
+        "label": "R124 KEY: standalone Calmar != portfolio objective. GLD standalone WIN (trend_scan 2.16) makes the BOOK WORSE (4.22->2.91): same MaxDD but CAGR 11.6->8.0% (timing a drifter sacrifices the return the book needs; diversification already handled its drawdown). Book keeps always_long GLD (4.22). Drift members -> max-return buy-hold is book-optimal"
+      },
+      {
+        "id": "f_book_objective",
+        "type": "finding",
+        "phase": "ALL",
+        "label": "BOOK OBJECTIVE != STANDALONE CALMAR: a portfolio member's job is RETURN+decorrelation (diversification handles its drawdown). Timing a drifter raises its standalone Calmar but cuts the return the book needs -> hurts the book. Pick each member to max BOOK Calmar: drift->buy-hold, timing(EEM/TLT)->directional. Improve the book via timing edges + decorrelated members, not by timing drifters"
       }
     ],
     "edges": [
@@ -3675,6 +3687,26 @@
         "src": "r123",
         "dst": "f_xle_ceiling",
         "label": "XLE ceiling holds vs new axis"
+      },
+      {
+        "src": "r123",
+        "dst": "r124",
+        "label": "bank wins -> discover book!=standalone"
+      },
+      {
+        "src": "r116",
+        "dst": "r124",
+        "label": "GLD standalone win hurts the book"
+      },
+      {
+        "src": "f_book_objective",
+        "dst": "f_portfolio",
+        "label": "reframes book member selection"
+      },
+      {
+        "src": "f_drift_ceiling",
+        "dst": "f_book_objective",
+        "label": "drift buy-hold is book-OPTIMAL, not a failure"
       }
     ],
     "running": []
@@ -3844,6 +3876,7 @@
       "2.0": 3.8033,
       "optimal": 1.0,
       "note": "\u221dCalmar^1 is the Calmar optimum (unimodal); ^0.5 over-diversifies (3.59), ^2 over-concentrates EEM->lower CAGR (3.80, though Sharpe 2.75). Objective-dependent: ^2 wins on Sharpe."
-    }
+    },
+    "book_objective_note": "DEPLOYABLE BOOK uses always_long GLD (book Calmar 4.22), NOT the trend_scan standalone champion (book 2.91). Book objective = return+decorrelation, not standalone Calmar; diversification handles member drawdown, so timing a drifter (cutting its return) hurts the book."
   }
 }
