@@ -109,3 +109,14 @@ HYG       1.69    1.32    1.85    0.61   4/4 yrs +, CONSISTENT
 ```
 
 Read: GLD/SOXX positive across (nearly) all years = consistent, not one-year artifacts; UUP's regime edge is lumpier (regime-dependent) — consistent with its statistical fragility.
+
+## Transaction-cost stress (explicit slippage; pipeline default = none)
+
+Calmar after re-running each crown's infer (same decisions) with explicit per-fill slippage:
+
+```
+crown  default      5bp     10bp   erosion@10bp
+GLD      4.545    3.478    2.461     46%
+SOXX     3.025    2.776    2.551     16%
+UUP      1.296    1.000    0.734     43%
+```
