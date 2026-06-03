@@ -533,3 +533,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T17:15:59,SOXX,3.0248,SOXX_logdollar_ker+trend_scan+bgm_cdf_overlay_t0.50,B,SOXX,logdollar,ker+trend_scan,0.5,cdf_overlay,1.9881,2.8366,308,True,True,0.0,0.684,0.5288,1.1346,7.7931,134.6906,710,True,False,completed,completed
 2026-06-03T17:20:12,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,A,UUP,imbalance,ker,0.5,cdf_overlay,0.3989,8.5118,92,True,True,12.2059,0.95,0.7713,0.5492,-2.046,31.8359,710,False,False,completed,completed
 2026-06-03T17:20:12,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,B,UUP,imbalance,bgm,0.5,cdf_overlay,1.1108,3.569,124,True,True,8.1883,0.9123,0.9802,1.1309,-0.4687,8.9327,710,True,False,completed,completed
+2026-06-03T17:51:06,XME,0.0,,A,XME,logdollar,always_long,0.5,cdf_overlay,1.1608,51.7061,736,True,True,0.1554,0.5,0.5,1.1711,-0.1211,4.4945,710,True,False,completed,completed
+2026-06-03T17:51:06,XME,0.0,,B,XME,logdollar,ker+trend_scan+bgm,0.5,cdf_overlay,0.2938,7.5166,191,True,True,0.0,0.8691,0.7978,0.4453,-1.1915,29.0845,710,False,False,completed,completed

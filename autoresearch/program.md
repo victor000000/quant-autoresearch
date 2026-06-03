@@ -72,6 +72,7 @@ are asset-intrinsic: GLD/SOXX edges live on logdollar (information clock), UUP o
 1. **TREND-MOMENTUM** (`ker+trend_scan`): wins ⟺ drawdowns are MOMENTUM-CYCLICAL / trend-predictable AND trimming
    costs < MaxDD it saves → GLD ✓, SOXX ✓; SLV near-miss (mechanism fires, 20× less DD, but Calmar just under BH);
    FAILS on event/shock-driven (XLE oil, XBI FDA, DBC commodities → 0.05–0.3) and V-recovery up-drifters (QQQ/SPY → trims).
+   **XME (metals/miners, 2026-06-03 universe probe, fully gated): NO edge** — the recipe cuts drawdown 7× (DA 51.7→7.5, mechanism partially fires) but Calmar COLLAPSES 1.16(buy-hold)→0.29 (CAGR cost > MaxDD saved) AND val_auc=0.500 (no learnable structure). So the trend-predictable-drawdown mechanism is SEMIS-SPECIFIC, not a general 'cyclical sector' property (cf. failed SMH sibling replication + SLV near-miss). New-input universe probes keep returning buy-hold → durable edges are rare + sector-idiosyncratic; stop expanding.
 2. **REGIME** (`bgm`): wins on macro-regime OSCILLATION → UUP ✓ (dollar). The trend core gets only 0.55 on UUP.
 Each labeler FAILS on the other's asset. `revert` (mean-reversion) captures signal on TLT/IWM/EEM but never beats their up-drift.
 

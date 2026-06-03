@@ -92,7 +92,8 @@ CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "XBI",   # biotech — event-driven (FDA) jumps -> trend labels can't time -> NO edge
           "KRE",   # regional banks — rate-trend edge but Bonferroni-FAIL -> provisional, NOT deployable
           "ITB",   # homebuilders — rate-cyclical, mechanism shows (DA 9x lower) but Bonferroni-FAIL -> provisional
-          "SMH"]   # VanEck semis — pre-registered REPLICATION of the SOXX semis edge (different fund, same sector)
+          "SMH",   # VanEck semis — pre-registered REPLICATION of the SOXX semis edge (different fund, same sector)
+          "XME"]   # metals & miners — cyclical commodity producers; DIFFERENT sector test of the SOXX trend-predictable-drawdown mechanism (not a semis sibling)
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
