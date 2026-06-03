@@ -2996,6 +2996,12 @@
         "type": "round",
         "phase": "SLV",
         "label": "R203 SLV DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.30. -> Calmar +1.7007 (prev best +1.2631). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r204",
+        "type": "round",
+        "phase": "SLV",
+        "label": "R204 SLV DISCARD: Sample on directional-change (reversal) bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.30. -> Calmar +1.2888 (prev best +1.2631). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4937,6 +4943,11 @@
       {
         "src": "r202",
         "dst": "r203",
+        "label": "no improvement"
+      },
+      {
+        "src": "r203",
+        "dst": "r204",
         "label": "no improvement"
       }
     ],
