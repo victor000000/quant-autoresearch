@@ -3230,6 +3230,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R242 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + causal-feature GMM regime labels; size dd_overlay, entry 0.50. -> Calmar +3.3410 (prev best +4.0204). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r243",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R243 QQQ DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.55. -> Calmar +0.8141 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5366,6 +5372,11 @@
       {
         "src": "r241",
         "dst": "r242",
+        "label": "no improvement"
+      },
+      {
+        "src": "r242",
+        "dst": "r243",
         "label": "no improvement"
       }
     ],
