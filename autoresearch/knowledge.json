@@ -1325,31 +1325,31 @@
       "status": "DRIFTER (buy-hold 1.26). GLD's tradeable-trend edge does NOT generalize: ker+trend_scan timing 1.19 < buy-hold 1.26 (val_auc 0.5, no structure). GLD's edge is idiosyncratic to gold, not a precious-metals property."
     },
     "SOXX": {
-      "cell": "SOXX_logdollar_ker+trend_scan+bgm_cdf_overlay_t0.45",
-      "real_calmar": 2.7348,
-      "real_cagr": 13.127,
-      "real_mdd": 4.8,
-      "real_da": 6.0498,
-      "real_sharpe": 1.558,
-      "trades": 748,
+      "cell": "SOXX_logdollar_ker+trend_scan+bgm_cdf_overlay_t0.50",
+      "real_calmar": 3.0248,
+      "real_cagr": 9.377,
+      "real_mdd": 3.1,
+      "real_da": 3.5785,
+      "real_sharpe": 1.521,
+      "trades": 575,
       "g2_pass": true,
-      "round": 46,
+      "round": 47,
       "source": "tournament",
-      "psr": 0.9981,
-      "n_trials": 20,
+      "psr": 0.9987,
+      "n_trials": 26,
       "significant": true,
       "leak_fixed": true,
       "config": {
         "ticker": "SOXX",
         "axis": "logdollar",
         "labeler": "ker+trend_scan+bgm",
-        "thresh": 0.45,
+        "thresh": 0.5,
         "sizing": "cdf_overlay"
       }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 46,
+  "last_round": 47,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -3206,6 +3206,12 @@
         "type": "round",
         "phase": "UUP",
         "label": "R238 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + accel; size long-only, vol-targeted, entry 0.50. -> Calmar +1.0700 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r239",
+        "type": "milestone",
+        "phase": "SOXX",
+        "label": "R239 SOXX KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +3.0248 (prev best +2.7348). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5323,6 +5329,11 @@
         "src": "r237",
         "dst": "r238",
         "label": "no improvement"
+      },
+      {
+        "src": "r238",
+        "dst": "r239",
+        "label": "new best"
       }
     ],
     "running": []
