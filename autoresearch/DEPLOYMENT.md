@@ -14,7 +14,7 @@ single-ticker timing edges (there is essentially ONE modest genuine timing edge,
 
 | ETF | strategy | role | leak-free Calmar |
 |-----|----------|------|-----------------:|
-| GLD | logdollar / ker+regime_gmm / dd_overlay (band 0.03) | **the one real model edge** (gold trend timing) | ~2.6 |
+| GLD | logdollar / ker+regime_gmm / dd_overlay (band 0.03) | **the one real model edge** (gold trend timing) | 2.51 |
 | UUP | imbalance / bgm+ker / cdf_overlay | dollar-regime edge (leak-unaffected; statistically fragile) | 1.30 |
 | HYG | logdollar / always_long | credit carry (buy-hold) | 1.83 |
 | TIP | logdollar / always_long | inflation/duration carry (buy-hold) | 1.15 |
@@ -25,9 +25,10 @@ single-ticker timing edges (there is essentially ONE modest genuine timing edge,
 buy-hold names are leak-UNAFFECTED; only GLD/SOXX (logdollar model strategies) moved on the leak fix.
 
 ## What is actually real (read this before trusting the book)
-- **GLD is a genuine but MODEST edge.** Leak-free Calmar ~2.5–2.8 ≈ gold buy-hold (~2.0) **+ ~0.5 real
+- **GLD is a genuine but MODEST edge.** Leak-free Calmar **reproducibly 2.51** ≈ gold buy-hold (~2.0) **+ ~0.5 real
   label-timing alpha**. The alpha is **permute-confirmed** (shuffling TRAIN labels drops GLD below buy-hold), so
-  it is real signal — but most of the deployable value is just gold exposure. Mild run-to-run variance (2.51–2.76).
+  it is real signal — but most of the deployable value is just gold exposure. Deterministic + band-robust
+  (0.03→2.51, 0.05→2.49); the earlier 2.76 was a one-off anomaly.
 - **Most of the book is buy-hold.** HYG/TIP/DBC are `always_long` (no timing); they earn their seat by
   decorrelation, not edge. The book beats a passive equal-weight basket on **risk-adjusted** terms (smoother,
   lower drawdown), not on raw CAGR.
