@@ -3134,6 +3134,12 @@
         "type": "milestone",
         "phase": "SOXX",
         "label": "R226 SOXX KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.45. -> Calmar +2.7348 (prev best +1.9162). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r227",
+        "type": "round",
+        "phase": "XLE",
+        "label": "R227 XLE DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +0.8714 (prev best +0.8588). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5191,6 +5197,11 @@
         "src": "r225",
         "dst": "r226",
         "label": "new best"
+      },
+      {
+        "src": "r226",
+        "dst": "r227",
+        "label": "no improvement"
       }
     ],
     "running": []
