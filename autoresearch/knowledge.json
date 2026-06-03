@@ -1165,24 +1165,24 @@
       "ceilinged": true
     },
     "GLD": {
-      "cell": "GLD_logdollar_ker+trend_scan+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 4.0204,
-      "real_cagr": 10.453,
-      "real_mdd": 2.6,
-      "real_da": 4.3946,
-      "real_sharpe": 2.4,
-      "trades": 1411,
+      "cell": "GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40",
+      "real_calmar": 4.1884,
+      "real_cagr": 12.984,
+      "real_mdd": 3.1,
+      "real_da": 5.32,
+      "real_sharpe": 2.518,
+      "trades": 1353,
       "g2_pass": true,
-      "round": 45,
+      "round": 48,
       "source": "tournament",
       "psr": 1.0,
-      "n_trials": 60,
+      "n_trials": 68,
       "significant": true,
       "leak_fixed": true,
       "config": {
         "ticker": "GLD",
         "axis": "logdollar",
-        "labeler": "ker+trend_scan+regime_gmm",
+        "labeler": "ker+regime_gmm",
         "thresh": 0.4,
         "sizing": "dd_overlay"
       }
@@ -1349,7 +1349,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 47,
+  "last_round": 48,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -3242,6 +3242,12 @@
         "type": "round",
         "phase": "SLV",
         "label": "R244 SLV DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.25. -> Calmar +1.5741 (prev best +1.2631). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r245",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R245 GLD KEEP: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.1884 (prev best +4.0204). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5389,6 +5395,11 @@
         "src": "r243",
         "dst": "r244",
         "label": "no improvement"
+      },
+      {
+        "src": "r244",
+        "dst": "r245",
+        "label": "new best"
       }
     ],
     "running": []
