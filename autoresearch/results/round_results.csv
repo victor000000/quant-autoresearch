@@ -389,3 +389,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T11:19:40,KRE,0.0,,B,KRE,logdollar,ker+trend_scan,0.4,cdf_overlay,0.8229,8.9365,474,True,True,0.0,0.6379,0.5454,1.0091,4.2713,55.0852,710,True,False,completed,completed
 2026-06-03T11:24:54,KRE,0.0,,A,KRE,logdollar,ker+trend_scan,0.4,cdf_overlay,0.8229,8.9365,474,True,True,0.0,0.6379,0.5454,1.0091,4.2713,55.0852,710,True,True,completed,completed
 2026-06-03T11:24:54,KRE,0.0,,B,KRE,logdollar,trend_scan,0.45,cdf_overlay,0.8083,21.6096,292,True,True,-0.2412,0.6338,0.5907,1.0336,6.8247,102.0386,710,False,False,completed,completed
+2026-06-03T11:32:34,ITB,0.0,,A,ITB,logdollar,always_long,0.45,cdf_overlay,-0.0733,107.5691,685,True,True,0.1365,0.5,0.5,0.0311,-0.0225,4.7609,710,False,False,completed,completed
+2026-06-03T11:32:34,ITB,0.0,,B,ITB,logdollar,ker+trend_scan,0.4,cdf_overlay,0.1668,12.5094,440,True,True,0.0,0.7007,0.55,0.2252,0.1969,14.3399,710,True,True,completed,completed

@@ -90,7 +90,8 @@ CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "SPY",   # S&P 500 — broad large-cap up-drifter (user request; equity-index complex w/ QQQ/IWM)
           "SOXX",  # semiconductors
           "XBI",   # biotech — deep boom/bust drawdowns (persistent-drawdown thesis: SOXX-like tradeable cyclicality)
-          "KRE"]   # regional banks — crisis-prone deep drawdowns (2023 SVB); persistent-drawdown candidate — cyclical, DEEP persistent drawdowns (more avoidable than QQQ V-recoveries; best trend-timing candidate) — precious-metal trend sibling of GLD; tests whether GLD's tradeable-trend edge (ker+trend_scan) generalizes to a sharper-moving metal (new-input probe)
+          "KRE",
+          "ITB"]  # homebuilders — rate-cyclical, deep persistent drawdowns (2007-09/2022); distinct sector test of the trend-predictable-drawdown thesis   # regional banks — crisis-prone deep drawdowns (2023 SVB); persistent-drawdown candidate — cyclical, DEEP persistent drawdowns (more avoidable than QQQ V-recoveries; best trend-timing candidate) — precious-metal trend sibling of GLD; tests whether GLD's tradeable-trend edge (ker+trend_scan) generalizes to a sharper-moving metal (new-input probe)
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
@@ -655,8 +656,18 @@ def run_round(argv):
     # val_auc>0.52 (window-artifact guard) AND survives deflation (best-of-N-trials noise).
     _vauc = _f(winner.get("val_auc", 0.0)) if winner else 0.0
     _defl_ok, _defl_bench, _defl_n = _survives_deflation(target, winner) if winner else (True, 0.0, 0)
+    # Trials-adjusted significance (Bonferroni-deflated PSR) — a CROWN must be trials-significant,
+    # not just beat the best-of-N noise. Prevents crowning weak permute-passing edges on new tickers
+    # with few trials / negative buy-hold (e.g. ITB Sharpe 0.22, KRE PSR 0.972 — real label signal but
+    # NOT trials-significant => provisional, not deployable). GLD/UUP/SOXX clear this; KRE/ITB do not.
+    _nt = (_count_trials(target) + 2) if winner else 0
+    _psr, _sig = (_psr_significance(winner.get("real_sharpe"), winner.get("real_skew"),
+                                    winner.get("real_kurt"), winner.get("n_days"), _nt)
+                  if winner else (None, False))
+    if winner is not None:
+        winner["_psr"], winner["_sig"], winner["_ntrials"] = _psr, _sig, _nt
     _beats = bool(winner is not None and _is_deployable(winner) and winner["real_calmar"] > prev_cal)
-    kept = bool(_beats and winner["real_calmar"] > 0 and _vauc > 0.52 and _defl_ok)
+    kept = bool(_beats and winner["real_calmar"] > 0 and _vauc > 0.52 and _defl_ok and _sig)
 
     # ---- STANDING PERMUTED-LABEL GATE (honesty harness) ----
     # A real edge must COLLAPSE when the TRAIN labels are shuffled. Re-run the winner with
@@ -721,10 +732,6 @@ def run_round(argv):
         print(f"WINNER: {winner['name']} — Calmar {winner['real_calmar']:+.4f}, "
               f"DA {winner['real_da']:.3f}, trades {winner['trades']} [{depl}]")
         if kept:
-            _nt = _count_trials(target) + 2          # + this round's 2 hypotheses (not yet logged)
-            _psr, _sig = _psr_significance(winner.get("real_sharpe"), winner.get("real_skew"),
-                                           winner.get("real_kurt"), winner.get("n_days"), _nt)
-            winner["_psr"], winner["_sig"], winner["_ntrials"] = _psr, _sig, _nt
             print(f"VERDICT: KEEP — beats {target} prev best ({winner['real_calmar']:+.4f} > {prev_cal:+.4f}), "
                   f"Calmar>0, val_auc {_vauc:.3f}>0.52, survives deflation (best-of-{_defl_n} noise {_defl_bench})"
                   f"{_perm_note}. per_etf_best[{target}] updated.")
@@ -742,6 +749,8 @@ def run_round(argv):
                 reasons.append(f"FAILS deflation (best-of-{_defl_n}-trials noise {_defl_bench}; selection-bias artifact)")
             if "PERMUTE-GATE FAILED" in _perm_note:
                 reasons.append(_perm_note.split("·")[-1].strip())
+            if not _sig:
+                reasons.append(f"NOT trials-significant (Bonferroni FAIL, PSR {_psr}, N={_nt} — selection-bias-suspect)")
             print(f"VERDICT: DISCARD — winner {winner['real_calmar']:+.4f} beats prev best {prev_cal:+.4f} "
                   f"but FAILS the honest keep-gate: {', '.join(reasons)}.")
         elif _is_deployable(winner):
