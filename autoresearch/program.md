@@ -155,3 +155,32 @@ Second deep review. **#1 NEW upgrade: E-VALUES / anytime-valid inference for con
 **E-VALUE MONITOR IMPLEMENTED (2026-06-03, `scripts/evalue_monitor.py`) — the review's #1 upgrade, validated.** Testing-by-betting e-process (WSR 2023) for H0: mean<=0; anytime-valid (Ville), peeking-robust, re-validations MULTIPLY in. Self-test PASSES: strong-signal e=135 (power), zero-mean false-positive rate 0.000 (<=0.05 Ville bound, valid). RESULT on champions (weekly cached series): GLD e=6.80, SOXX e=3.27, UUP e=1.31, HYG 2.51, TIP 1.58, DBC 1.26 — ALL 'weak' (e>=1 but <20), NONE clear anytime-valid significance. KEY: the peeking-robust e-value is STRICTLY MORE CONSERVATIVE than the fixed-sample DSR (GLD 0.93/SOXX 0.96) — the honest price of our continuous re-testing; GLD has the most anytime-valid evidence. CAVEATS: weekly series (short -> limited power), tests RAW mean (drift-confounded; buy-hold also positive). REFINEMENT QUEUED: daily-resolution + excess-over-buyhold e-process. This SUPERSEDES the peeking-invalidated DSR/p-value re-checks for ongoing decay monitoring.
 
 **E-VALUE now NATIVE + frequency-invariant (2026-06-03).** Added `evalue_oos` runtime stat to infer.py.tmpl (anytime-valid e-process on the DAILY OOS returns, computed on-QC; contract-safe post-hoc stat like sharpe_oos) — every champion infer now auto-reports its peeking-robust e-value. HONEST findings: (1) the e-value is FREQUENCY-INVARIANT — daily ≈ weekly (GLD 6.38≈6.80, SOXX 3.09≈3.27, UUP 1.32≈1.31) because e-value ~ Sharpe²×years independent of sampling -> last tick's 'daily adds power' hypothesis was a NO-OP (honest negative). (2) The binding constraint is BOUNDED BETTING (λ_max=5), not resolution: low-vol risk-managed strategies have optimal λ≫cap, so the bet is clipped -> the e-value is CONSERVATIVE. (3) SCOPE (corrects a slight over-claim): the e-value tests PROFITABILITY (mean>0, peeking-robust), drift-confounded for long-biased edges + bounded-bet-conservative -> it's a peeking-robust LIVENESS/DECAY monitor, NOT a high-power significance test nor an anytime-valid Calmar test (risk-reduction isn't a mean). Ranking holds GLD>SOXX>UUP. USE: ongoing decay monitoring (re-validations multiply in), not crowning.
+
+## FRONTIER — what would re-open productive research (2026-06-03 terminus)
+The loop has reached an EARNED terminus on the current inputs: 3 confirmed edges fully characterized
+(selection/decay/module/granularity/cost/anytime-valid lenses), a deployed gated upgrade (GLD 4.71),
+a complete honesty stack incl. the native e-value monitor + validated decay gate, and the deep review
+delivered + its #1 upgrade implemented. The new-method frontier is exhausted (kyle/run/spectral axes,
+turn_scan/perment/accel/mfe_mae/revert labels all lost or redundant; even medicine-inspired survival
+labeling = our existing triple_barrier). New universe returns buy-hold (XME✗). The review confirmed
+durable single-asset alpha is intrinsically scarce (R²~0.003-0.005) and the bottleneck is self-deception
+(now armored), not throughput. **Static OOS data + 5-min ticks => no new information per tick.** Further
+config/universe grinding only inflates the multiple-testing burden. Productive work needs a NEW INPUT:
+
+1. **New DATA modality** (highest leverage) — we have exhausted price/volume. Alternative data with a
+   DIFFERENT information source: options-implied vol / skew, positioning (COT, ETF flows), macro-release
+   surprises, cross-asset signals (credit spreads, the VIX term structure). New information, not new tuning.
+2. **New MECHANISM-CLASS universe** — we tested trend/regime on equity-sector/commodity/dollar/bond ETFs.
+   Untested edge mechanisms: volatility products (term-structure carry), rate-CURVE spreads, FX carry —
+   each a structurally different edge than our trend/regime crowns.
+3. **Cross-asset PAIRS** (relaxes the single-ticker constraint) — the one place a real cross-asset edge can
+   live (a 2-symbol relative-value strategy); single-ticker provably can't capture it (frontier-mapped).
+4. **Intraday holding** — we use minute bars but ~daily holding; an intraday-horizon edge is a different
+   regime we haven't searched.
+5. **REGIME CHANGE / real-time decay** — the ONLY thing that changes on the current inputs is the OOS
+   window growing as real calendar time passes. The native `evalue_oos` decay gate is the standing monitor;
+   re-validate + act when it flags. Until then, the deployed book is the answer.
+
+**Standing behavior at terminus:** monitor the deployed book's `evalue_oos` liveness/decay; do NOT
+manufacture experiments on static data (it inflates the deflation bar for zero edge). Re-open only on a
+new input (above) or a decay flag. To redirect the loop, point it at one of (1)-(4).
