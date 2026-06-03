@@ -5784,7 +5784,7 @@
       "ndays": 710,
       "scheme": "capital \u221d Calmar"
     },
-    "champion": "decorr_calmarsq_2026_06_02",
+    "champion": "honest_book_2026_06_03",
     "significant_only": {
       "calmar_daily": 2.9637,
       "mdd_pct": 3.95,
@@ -6006,6 +6006,28 @@
       ],
       "result": "none beat 3.53 (+SLV 0.94, +EMB 2.98, +LQD 3.24); decorr-core optimal",
       "note": "SLV 44% MDD wrecks low-DD book; EMB/LQD correlated+lower-Calmar dilute. Book confirmed at ceiling."
+    },
+    "honest_book_2026_06_03": {
+      "members": [
+        "GLD",
+        "SOXX",
+        "UUP",
+        "TIP",
+        "DBC",
+        "HYG"
+      ],
+      "scheme": "weight proportional to Calmar^2, gross<=1",
+      "calmar": 6.19,
+      "mdd_pct": 2.03,
+      "sharpe": 3.04,
+      "cagr_pct": 12.59,
+      "note": "HONEST re-derivation on real OOS series (scripts/portfolio_rederive.py). ADD SOXX (strict win, deployed book predated it); KEEP UUP despite individual fragility (decorrelation lifts book Calmar 6.19 vs drop-UUP 5.15). Recomputed Calmars exceed stored 3.53 due to grown OOS window + ~weekly granularity; RELATIVE ranking is the robust finding.",
+      "rederive_table": {
+        "current_core": 5.22,
+        "plus_SOXX": 6.19,
+        "UUP_to_SOXX_swap": 6.11,
+        "drop_UUP": 5.15
+      }
     }
   }
 }

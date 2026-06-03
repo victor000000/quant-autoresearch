@@ -58,3 +58,16 @@ full-sample OOS Sharpe by config (IS-best candidate = top):
   trend_scan               +0.1739
   accel                    +0.1290
 ```
+
+## Honest book re-derivation (real OOS series; decorr champion predates SOXX + audits)
+
+Weights ∝ Calmar² (the deployed scheme), gross=1, on 224-pt common OOS grid.
+
+```
+composition                                   Calmar  CAGR%  MaxDD%  Sharpe
+current decorr core (GLD/UUP/TIP/DBC/HYG)      5.224  13.61    2.61   2.725
++ SOXX added (6)                               6.192  12.59    2.03   3.039
+UUP -> SOXX swap                               6.107  13.10    2.14   2.993
+drop UUP (4)                                   5.145  14.36    2.79   2.675
+robust crowns + diversifiers, no UUP           6.107  13.10    2.14   2.993
+```
