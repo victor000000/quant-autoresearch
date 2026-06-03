@@ -29,7 +29,16 @@ buy-hold core HYG/TIP/DBC (28%). **Trust the Calmar (3.20) — CAR 12.5% / MaxDD
 alongside a 3.9% MaxDD (17.6%-vol over 17y would see 20-40% drawdowns) — a portfolio-replay computation artifact
 (flat/partial-cash periods deflating the daily-return Sharpe), not a real modest Sharpe. So drop the prior
 optimistic weekly "Sharpe ~2.6" claim too — report the book on its CONSISTENT metric: low-drawdown compounding,
-**Calmar ~3.2 / MaxDD ~3.9% / CAR ~12.5%**. UUP and the buy-hold names are
+**Calmar ~3.2 / MaxDD ~3.9% / CAR ~12.5%**.
+
+**WEIGHTING FRONTIER (measured 2026-06-04, real portfolio backtests).** GLD-weight vs book metrics:
+`63% (Calmar²) → Calmar 3.20, MaxDD 3.9%, CAR 12.5%` · `85% (GLD-heavy) → 3.31, 4.5%, 14.9%` · `100% (GLD alone)
+→ 3.47, ~4.3%, ~15%`. So the buy-hold diversifiers TRADE Calmar for drawdown: they cut MaxDD (3.9% vs 4.5%) but
+dilute CAR more, so on pure backtested Calmar GLD-heavy/alone wins (3.47 > 3.20). The diversifiers' genuine value
+is FORWARD ROBUSTNESS — insurance against GLD-specific decay/regime-shift, which the in-sample backtest can't
+price. DEPLOY by objective: **min-drawdown / robust → Calmar²-weighted (GLD 63%, MaxDD 3.9%)**; max-return/Calmar →
+GLD-heavy (but concentrated in one asset's decay risk). Recommended: the diversified Calmar²-book (capital
+preservation + GLD-decay insurance) — the durable GLD edge anchors it, the core cushions it. UUP and the buy-hold names are
 leak-UNAFFECTED; only GLD/SOXX
 (logdollar model strategies) moved on the leak fix.
 
