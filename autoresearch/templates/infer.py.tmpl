@@ -158,6 +158,27 @@ class AutoresearchInfer(QCAlgorithm):
                                            json.dumps([round(float(x), 8) for x in rets.tolist()[:6000]]))
                 except Exception:
                     pass
+            # Anytime-valid e-value (testing-by-betting, WSR 2023; H0: mean<=0) on the DAILY OOS
+            # returns — peeking-robust evidence the edge is alive. Post-hoc stat (no effect on
+            # decisions/metric/leak), like sharpe_oos. e>=20 == anytime-valid significance at 0.05.
+            try:
+                _K = 1.0; _s = 0.0; _s2 = 0.0; _n = 0
+                for _r in rets.tolist():
+                    _r = -0.18 if _r < -0.18 else float(_r)
+                    if _n >= 5:
+                        _m = _s / _n
+                        _v = _s2 / _n - _m * _m
+                        _v = 1e-9 if _v < 1e-9 else _v
+                        _lam = _m / _v
+                        _lam = 0.0 if _lam < 0 else (5.0 if _lam > 5.0 else _lam)
+                    else:
+                        _lam = 0.0
+                    _K = _K * (1.0 + _lam * _r)
+                    _K = 1e-12 if _K < 1e-12 else _K
+                    _s += _r; _s2 += _r * _r; _n += 1
+                self.set_runtime_statistic("evalue_oos", str(round(_K, 4)))
+            except Exception:
+                pass
             sd = float(np.std(rets, ddof=1)) if len(rets) > 3 else 0.0
             if len(rets) > 3 and sd > 1e-12:
                 mu = float(np.mean(rets))
