@@ -1,5 +1,5 @@
 {
- "as_of": "2026-06-03 (updated book)",
+ "as_of": "2026-06-03 (GLD 4.02, SOXX 3.02)",
  "note": "Within-OOS-window decay check (early-half vs late-half Sharpe). All edges HOLDING.",
  "edges": {
   "GLD": {
@@ -10,11 +10,11 @@
    "status": "holding (strengthening)"
   },
   "SOXX": {
-   "calmar": 2.7348,
-   "cell": "ker+trend_scan+bgm t0.45",
-   "sharpe_early": 0.5807,
-   "sharpe_late": 2.1712,
-   "status": "holding (strengthening); temporally robust, cross-fund fragile (SMH)"
+   "calmar": 3.0248,
+   "cell": "ker+trend_scan+bgm t0.50",
+   "sharpe_early": 0.4913,
+   "sharpe_late": 2.1186,
+   "status": "holding (strengthening)"
   },
   "UUP": {
    "calmar": 1.2958,
