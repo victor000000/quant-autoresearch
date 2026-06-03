@@ -35,6 +35,19 @@ def _cfg_or(val, placeholder, fallback):
     return fallback if val == placeholder else val
 
 
+# INTRADAY-holding search lever (2026-06-03): optional forward-label horizons override (in BARS).
+# Default null -> labelers use their built-in horizons (~daily holding). Short horizons (e.g.
+# [5, 10, 20] bars) target an INTRADAY-horizon edge regime (a different holding regime, untested).
+# Bulletproof parse: any malformed / non-positive-int value falls back to None (= legacy defaults).
+_HZRAW = _cfg_or("__HORIZONS__", "__" "HORIZONS__", "null")
+try:
+    _HZ = json.loads(_HZRAW)
+    if not (isinstance(_HZ, list) and len(_HZ) > 0 and all(isinstance(_h, int) and _h > 0 for _h in _HZ)):
+        _HZ = None
+except Exception:
+    _HZ = None
+
+
 CONFIG = {
     "ticker": TICKER,
     "axis": _cfg_or("__AXIS__", "__" "AXIS__", None),
@@ -56,8 +69,11 @@ CONFIG = {
     # 0.01 (byte-identical). Wider (e.g. 0.05 for high-frequency GLD) cuts trades -> less cost drag
     # (the validated net-of-cost deployment lever). Saved in the cell payload; infer reads + applies it.
     "rebal_band": float(_cfg_or("__REBALBAND__", "__" "REBALBAND__", "0.01")),
+    # Forward-label horizons override (in BARS) — the INTRADAY-holding search dimension. None =>
+    # labelers use their built-in (~daily) horizons; a short list => intraday regime. Distinct _hz cell.
+    "horizons": _HZ,
 }
 # Cell-key suffix for the permuted-label control (distinct cell -> never overwrites a champion).
 # Precomputed as a plain name so f-string keys stay simple (no nested conditional/quotes, which
 # QC's Python rejects after ast.unparse re-emits the f-string).
-_PSUF = ("_perm" if CONFIG["permute_labels"] else "") + ("" if CONFIG["n_components"] == 20 else "_n" + str(CONFIG["n_components"])) + ("" if CONFIG["rebal_band"] == 0.01 else "_b" + str(int(round(CONFIG["rebal_band"] * 100))))
+_PSUF = ("_perm" if CONFIG["permute_labels"] else "") + ("" if CONFIG["n_components"] == 20 else "_n" + str(CONFIG["n_components"])) + ("" if CONFIG["rebal_band"] == 0.01 else "_b" + str(int(round(CONFIG["rebal_band"] * 100)))) + ("" if CONFIG["horizons"] is None else "_hz" + "x".join(str(_h) for _h in CONFIG["horizons"]))

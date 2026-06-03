@@ -432,6 +432,10 @@ def _validate_cfg(cfg):
             raise ValueError(f"labeler part {_lp!r} (of {cfg['labeler']!r}) not in {VALID_LABELERS}")
     if cfg["sizing"] not in VALID_SIZING:
         raise ValueError(f"sizing {cfg['sizing']!r} not in {VALID_SIZING}")
+    if cfg.get("horizons") is not None:   # optional INTRADAY-holding override (forward-label bars)
+        hz = cfg["horizons"]
+        if not (isinstance(hz, list) and 1 <= len(hz) <= 4 and all(isinstance(h, int) and 1 < h <= 400 for h in hz)):
+            raise ValueError(f"horizons {hz!r} must be a list of 1-4 ints in (1,400] (forward-label bars)")
     cfg["thresh"] = float(cfg["thresh"])
     if not (0.0 < cfg["thresh"] < 1.0):
         raise ValueError(f"thresh {cfg['thresh']} must be in (0,1)")
@@ -636,7 +640,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}")   # config-unique; dot- AND plus-free (QC ObjectStore path); _perm = falsification, _b = dead-band cell
+            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}") + ("" if not cfg.get("horizons") else "_hz" + "x".join(str(int(h)) for h in cfg["horizons"]))   # config-unique; dot- AND plus-free (QC ObjectStore path); _perm = falsification, _b = dead-band, _hz = intraday-horizon cell
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")

@@ -502,7 +502,11 @@ class AutoresearchPipeline(QCAlgorithm):
             except TypeError:
                 feats = build_feats(lc, lr)
             fv = ~np.isnan(feats).any(axis=1)
-            fwd_ret, fwd_vol = compute_forward_metrics(lc, lr)
+            _hz = CONFIG.get("horizons")     # intraday-holding override (in BARS); None => labeler defaults
+            if _hz:
+                fwd_ret, fwd_vol = compute_forward_metrics(lc, lr, horizons=_hz)
+            else:
+                fwd_ret, fwd_vol = compute_forward_metrics(lc, lr)
 
             # Hypothesis mode -> ONLY CONFIG['labeler']; else sweep the full registry.
             try:
@@ -524,8 +528,12 @@ class AutoresearchPipeline(QCAlgorithm):
             _ens_preds, _ens_tauc, _ens_vauc, _ens_bundles = [], [], [], []
             for label_name, label_fn in labeler_registry.items():
                 try:
-                    y, label_cfg, _ = label_fn(
-                        lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol)
+                    if _hz:
+                        y, label_cfg, _ = label_fn(
+                            lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=_hz)
+                    else:
+                        y, label_cfg, _ = label_fn(
+                            lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol)
                 except Exception:
                     y = None
                     label_cfg = f"{label_name}_error"
