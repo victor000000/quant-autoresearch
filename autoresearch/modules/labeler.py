@@ -1825,6 +1825,85 @@ def generate_labels_calmar_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def _adf_tstat(y):
+    """ADF t-stat for the explosiveness regression dy = a + beta*y_lag (p=0, no lagged diffs for speed).
+    Large POSITIVE t = explosive / super-martingale (bubble/crash); ~0 = random walk; negative = mean-revert."""
+    nobs = len(y) - 1
+    if nobs < 6:
+        return -1e9
+    x = y[:-1]
+    dy = y[1:] - y[:-1]
+    xbar = x.mean()
+    dybar = dy.mean()
+    xd = x - xbar
+    sxx = float((xd * xd).sum())
+    if sxx < 1e-12:
+        return -1e9
+    beta = float((xd * (dy - dybar)).sum()) / sxx
+    a = dybar - beta * xbar
+    resid = dy - (a + beta * x)
+    dof = nobs - 2
+    if dof < 1:
+        return -1e9
+    sig2 = float((resid * resid).sum()) / dof
+    if sig2 <= 0.0:
+        return -1e9
+    se = math.sqrt(sig2 / sxx)
+    return beta / se if se > 1e-12 else -1e9
+
+
+def generate_labels_sadf_explosive(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[100, 200]):
+    """Supremum-ADF EXPLOSIVE-regime label (AFML Ch.17.4.2, Phillips-Wu-Yu 2011) — mined 2026-06-03.
+    A structurally NOVEL signal: neither trend (trend_leg/ker) nor distributional regime (bgm) — it flags
+    whether the forward window is in a price BUBBLE/CRASH (explosive / super-martingale, faster-than-
+    random-walk growth or collapse). SADF_t = sup over backward-EXPANDING start points of the ADF t-stat
+    (beta/se of dy=a+beta*y_lag) with right end fixed at t+H (coarse 5-point grid for speed). Label 1 if
+    SADF>=cut and the forward move is UP, 0 if explosive-DOWN, -1 (ignore) if NOT explosive. cut = TRAIN
+    quantile of SADF. de Prado's motivation: the explosive regime is where most participants are caught off
+    guard — orthogonal to the trend/regime edges. Cut TRAIN-only; forward window = TARGET only (G3-ok).
+    Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H:
+            continue
+        tau = max(10, H // 4)
+        step = max(1, (H - tau) // 4)
+        sadf = np.full(N, np.nan)
+        net = np.full(N, np.nan)
+        for t in range(N - H):
+            y = lc[t:t + H + 1]
+            bt = -1e9
+            for t0 in range(0, H - tau + 1, step):
+                ts = _adf_tstat(y[t0:])
+                if ts > bt:
+                    bt = ts
+            sadf[t] = bt
+            net[t] = lc[t + H] - lc[t]
+        trsel = tr_m & fv & np.isfinite(sadf)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.5, 0.7, 0.85):
+            cut = float(np.quantile(sadf[trsel], q))
+            y_lab = np.full(N, -1, dtype=int)
+            expl = fv & np.isfinite(sadf) & (sadf >= cut)
+            y_lab[expl & (net > 0)] = 1
+            y_lab[expl & (net <= 0)] = 0
+            ly = y_lab >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y_lab[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y_lab, f"sadf_H{H}_q{q}", H
+    if best is None:
+        return None, "sadf_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_mfe_mae(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                             horizons=[20, 40, 80]):
     """Forward EXCURSION-ASYMMETRY label — UNSUPERVISED, non-HMM. Over horizon H the path
@@ -1885,6 +1964,7 @@ LABELERS = {
     "trend_leg": generate_labels_trend_leg,           # Wang's flagship connected-leg trend SEGMENTATION (new, non-HMM)
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
     "calmar_scan": generate_labels_calmar_scan,       # drawdown-adjusted forward-trend (new, non-HMM; targets Calmar/downside)
+    "sadf_explosive": generate_labels_sadf_explosive, # Supremum-ADF EXPLOSIVE/bubble regime (new, non-HMM; novel signal)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
@@ -1913,7 +1993,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "calmar_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "calmar_scan", "sadf_explosive", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
