@@ -1331,6 +1331,87 @@ def generate_labels_ker(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_trend_leg(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                              horizons=[40, 80]):
+    """Wang's FLAGSHIP connected-leg trend-SEGMENTATION label (course Module 4,
+    '根据趋势行为自定义标签的密度' / customize label density by trend behaviour) — mined 2026-06-03 as
+    the primary Wang labeler we had never built. UNSUPERVISED, non-HMM.
+
+    Segment the forward window into directional LEGS with a CUSUM/zig-zag reversal rule and label by
+    the FIRST leg's direction. Walk forward from t tracking the running extreme; the leg is confirmed
+    REVERSED when price retraces from that extreme by more than rev = krev*sigma*sqrt(elapsed_bars)
+    (random-walk-scaled). The first leg's signed magnitude (extreme - start) is the readout: label 1
+    if the first clean leg is UP, 0 if DOWN, -1 (ignore) if its magnitude is below a TRAIN quantile
+    (the 'label density' knob — only label where a trend leg is clean).
+
+    Distinct from ker (endpoint efficiency ratio over a FIXED horizon) and trend_scan (OLS t-stat over
+    a fixed horizon): trend_leg ADAPTS the effective horizon to the actual trend structure (how far the
+    first move runs before a confirmed reversal), and from turn_scan (which reads reversal TIMING, not
+    leg direction). sigma (reversal scale) and the magnitude cutoff are TRAIN-fit; the forward window
+    defines only the TARGET (G3-ok) — the supervised model predicts it from past-only features.
+    Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    trr = lr[tr_m & np.isfinite(lr)]
+    sigma = float(np.std(trr)) if trr.size > 50 else float(np.std(lr[np.isfinite(lr)]))
+    if not np.isfinite(sigma) or sigma <= 0:
+        return None, "trend_leg_degenerate", None
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H:
+            continue
+        for krev in (2.0, 3.5):
+            legnet = np.full(N, np.nan)        # signed magnitude of the first forward leg
+            for t in range(N - H):
+                start = lc[t]
+                peak = start
+                trough = start
+                peak_i = t
+                trough_i = t
+                done = False
+                for j in range(t + 1, t + H + 1):
+                    p = lc[j]
+                    if p > peak:
+                        peak = p
+                        peak_i = j
+                    if p < trough:
+                        trough = p
+                        trough_i = j
+                    thr = krev * sigma * ((j - t) ** 0.5)
+                    if (peak - p) >= thr and peak_i > t:       # up-leg confirmed-reversed at its peak
+                        legnet[t] = peak - start
+                        done = True
+                        break
+                    if (p - trough) >= thr and trough_i > t:   # down-leg confirmed-reversed at its trough
+                        legnet[t] = trough - start
+                        done = True
+                        break
+                if not done:
+                    legnet[t] = lc[t + H] - start              # no reversal within H -> net over H
+            mag = np.abs(legnet)
+            trsel = tr_m & fv & np.isfinite(legnet)
+            if int(trsel.sum()) < 100:
+                continue
+            for q in (0.4, 0.5, 0.6):
+                cut = float(np.quantile(mag[trsel], q))
+                y = np.full(N, -1, dtype=int)
+                clean = fv & np.isfinite(legnet) & (mag >= cut)
+                y[clean & (legnet > 0)] = 1
+                y[clean & (legnet <= 0)] = 0
+                ly = y >= 0
+                tx = fv & ly & tr_m
+                vx = fv & ly & va_m
+                if tx.sum() < 100 or vx.sum() < 20:
+                    continue
+                bal = float(y[tx].mean())
+                if 0.2 < bal < 0.8:
+                    score = min(bal, 1 - bal)
+                    if score > best_score:
+                        best_score, best, best_cfg, best_h = score, y, f"trendleg_H{H}_k{krev}_q{q}", H
+    if best is None:
+        return None, "trend_leg_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_accel(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                           horizons=[20, 40, 80]):
     """Trend-ACCELERATION label — UNSUPERVISED, non-HMM. Targets ACCELERATING moves, orthogonal to
@@ -1638,6 +1719,7 @@ def generate_labels_mfe_mae(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
+    "trend_leg": generate_labels_trend_leg,           # Wang's flagship connected-leg trend SEGMENTATION (new, non-HMM)
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
@@ -1666,7 +1748,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "sharpe_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
