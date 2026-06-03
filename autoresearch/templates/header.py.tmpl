@@ -52,8 +52,12 @@ CONFIG = {
     # Reducer width (correlation reduce_dims n_components). Default 20 (Wang backbone).
     # An override (e.g. 30/15) is the program-sanctioned "reduce" lever — writes a DISTINCT _n cell.
     "n_components": int(_cfg_or("__NCOMP__", "__" "NCOMP__", "20")),
+    # Rebalance ADJUSTMENT dead-band: skip a re-trade when the target weight moves < band. Default
+    # 0.01 (byte-identical). Wider (e.g. 0.05 for high-frequency GLD) cuts trades -> less cost drag
+    # (the validated net-of-cost deployment lever). Saved in the cell payload; infer reads + applies it.
+    "rebal_band": float(_cfg_or("__REBALBAND__", "__" "REBALBAND__", "0.01")),
 }
 # Cell-key suffix for the permuted-label control (distinct cell -> never overwrites a champion).
 # Precomputed as a plain name so f-string keys stay simple (no nested conditional/quotes, which
 # QC's Python rejects after ast.unparse re-emits the f-string).
-_PSUF = ("_perm" if CONFIG["permute_labels"] else "") + ("" if CONFIG["n_components"] == 20 else "_n" + str(CONFIG["n_components"]))
+_PSUF = ("_perm" if CONFIG["permute_labels"] else "") + ("" if CONFIG["n_components"] == 20 else "_n" + str(CONFIG["n_components"])) + ("" if CONFIG["rebal_band"] == 0.01 else "_b" + str(int(round(CONFIG["rebal_band"] * 100))))

@@ -441,6 +441,9 @@ def _validate_cfg(cfg):
     cfg["n_components"] = int(cfg.get("n_components", 20))            # optional reducer-width lever (default 20)
     if not (5 <= cfg["n_components"] <= 60):
         raise ValueError(f"n_components {cfg['n_components']} must be in [5,60]")
+    cfg["rebal_band"] = float(cfg.get("rebal_band", 0.01))           # optional net-of-cost dead-band lever (default 0.01)
+    if not (0.0 <= cfg["rebal_band"] <= 0.20):
+        raise ValueError(f"rebal_band {cfg['rebal_band']} must be in [0.0,0.20]")
     return cfg
 
 
@@ -574,7 +577,7 @@ def _run_one_config(target, cfg, tag="permval"):
     if not str(tr.get("status", "")).startswith("Completed"):
         return None
     cell = (f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}"
-            f"_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}"))
+            f"_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}"))
     ilabel = f"{tag}_{target}_infer"
     ir = run_pool([(ilabel, render_infer_cell(cfg["ticker"], cell))]).get(ilabel, {})
     return _extract_result(tag.upper(), tr, ir, cfg)
@@ -632,7 +635,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}")   # config-unique; dot- AND plus-free (QC ObjectStore path); _perm = falsification control cell
+            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}")   # config-unique; dot- AND plus-free (QC ObjectStore path); _perm = falsification, _b = dead-band cell
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")

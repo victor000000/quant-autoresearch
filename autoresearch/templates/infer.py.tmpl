@@ -75,6 +75,7 @@ class AutoresearchInfer(QCAlgorithm):
         self.idx = 0
         self.thresh = 0.45
         self.sizing = "cdf_overlay"
+        self.band = 0.01       # rebalance ADJUSTMENT dead-band; overridden from the cell payload below
         self.meta = {}
         self._eq = []          # daily equity, for Drawdown Area
         self._last_day = None
@@ -94,6 +95,8 @@ class AutoresearchInfer(QCAlgorithm):
                 self.thresh = float(data["thresh"])
             if data.get("sizing"):
                 self.sizing = str(data["sizing"])
+            if data.get("rebal_band") is not None:
+                self.band = float(data["rebal_band"])
             self.meta = {k: data.get(k) for k in
                          ("synth_cal", "val_da", "train_auc", "val_auc", "cfg")}
             self._returns_key = key.replace("/cell_", "/returns_")  # mirror cell key; for decay/PBO
@@ -127,7 +130,7 @@ class AutoresearchInfer(QCAlgorithm):
                 if self._cur_w != 0.0:
                     self.liquidate(self.sym)
                     self._cur_w = 0.0
-            elif abs(w - self._cur_w) > 0.01:       # long (w>0) OR short (w<0)
+            elif abs(w - self._cur_w) > self.band:  # long (w>0) OR short (w<0); band from cell payload
                 self.set_holdings(self.sym, w)
                 self._cur_w = w
             c = float(b.close)
