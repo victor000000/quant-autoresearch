@@ -1416,6 +1416,53 @@ def generate_labels_revert(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_turn_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                              horizons=[20, 40, 80]):
+    """Forward TURNING-POINT / extremum-TIMING label — UNSUPERVISED, non-HMM. Orthogonal to every
+    existing label by the QUANTITY it reads off the forward window: trend_scan=slope significance,
+    ker=path efficiency, accel=curvature, mfe_mae=excursion MAGNITUDE, revert=trail-vs-fwd sign.
+    This one reads the POSITION (timing) of the forward EXTREMUM to detect a local reversal we are
+    sitting ON: a V (forward MIN occurs EARLY, then price ends higher) = a TROUGH -> label UP (1);
+    a Λ (forward MAX early, then ends lower) = a PEAK -> label DOWN (0); else -1 (still trending /
+    extremum at the far end). Built on this session's finding that edges RESOLVE at turning points,
+    and matched to regime-OSCILLATING assets (UUP/dollar) whose tradeable signal IS the regime turn.
+    Distinct from `revert` (which keys off the PAST trailing move); turn_scan uses ONLY the forward
+    shape. Sweeps H and the 'early' fraction; picks the most TRAIN-balanced. Forward info is the
+    TARGET only (G3-ok); the supervised model predicts it from past-only features. Returns (y,cfg,H)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H + 1:
+            continue
+        M = N - H
+        seg = np.empty((M, H), dtype=float)             # seg[t, k-1] = lc[t+k], k=1..H
+        for k in range(1, H + 1):
+            seg[:, k - 1] = lc[k:k + M]
+        terminal = seg[:, -1] - lc[:M]                  # forward net move
+        amin = np.argmin(seg, axis=1)                   # position (0-based) of forward MIN
+        amax = np.argmax(seg, axis=1)                   # position of forward MAX
+        for frac in (0.25, 0.4, 0.5):
+            early = max(1, int(H * frac))
+            yy = np.full(M, -1, dtype=int)
+            yy[(amin < early) & (terminal > 0)] = 1     # V: bottomed early then rose -> trough -> UP
+            yy[(amax < early) & (terminal < 0)] = 0     # Λ: peaked early then fell  -> peak  -> DOWN
+            y = np.full(N, -1, dtype=int)
+            y[:M] = yy
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"turnscan_H{H}_f{frac}", H
+    if best is None:
+        return None, "turnscan_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_sharpe_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                                 horizons=[20, 40, 80]):
     """Risk-adjusted forward-trend label — UNSUPERVISED, non-HMM. For horizon H the forward
@@ -1530,6 +1577,7 @@ LABELERS = {
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
+    "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
     "dc_reversal": generate_labels_dc_reversal,
@@ -1553,7 +1601,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "sharpe_scan", "mfe_mae", "revert", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "sharpe_scan", "mfe_mae", "revert", "turn_scan", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",

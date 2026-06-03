@@ -82,7 +82,11 @@ genuinely *new method*, tested on the weakest names:
   trend edge must time; `dc`/`logdollar` sample those → win. LESSON: sample where the edge RESOLVES, not where the
   trend IS). Untried: spectral.
 - new **unsupervised labels** (priority) — what you call "up". Built: `ker` ✓ + `accel` ✓ (ensemble-win on GLD);
-  `sharpe_scan`/`mfe_mae` valid, no win (mfe_mae gold-specific 2.5). Untried: reversal-timing, info-theoretic.
+  `sharpe_scan`/`mfe_mae`/`revert`/`turn_scan` valid, no win (mfe_mae gold-specific 2.5; `turn_scan` = forward V/Λ
+  extremum-TIMING / reversal label — the "edges resolve at turning points" insight tried as a TARGET: deployable +
+  balanced on UUP but loses 0.36 (solo 0.18) vs `bgm+ker` 1.30. MECHANISM: local micro-reversal timing ≠ UUP's MACRO
+  regime oscillation, which bgm's distributional clustering already captures. LESSON: the resolution insight is about
+  where to SAMPLE the clock (a bar-axis property), NOT a labeling target). Untried: info-theoretic.
 - **ensemble composition** (now cheap — multi-file unblocked 3-way+): same-family 3rd labels on a structured
   champion. GLD/UUP 3-way mapped; deeper combos = diminishing/overfit.
 - secondary: new **features** (non-crowding), **reducers** (vs corr-20), **sizers** (`dd_overlay` tried, lost on UUP).
