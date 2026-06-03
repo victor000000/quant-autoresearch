@@ -1,53 +1,63 @@
-# Deployment — the autoresearch book
+# Deployment — the autoresearch book (LEAK-CORRECTED, 2026-06-03)
 
-The deliverable of the program: a diversified, leak-free, live-equivalent ETF book.
-Everything below is real OOS (2023-08 → 2026-06), QC project 31338454.
+The deliverable: a diversified, **leak-free** ETF book. Real OOS (2023-08 → 2026-06), QC project 31338454.
 
-## The book (deployable)
-Conviction-weighted (capital ∝ each champion's Calmar), 8 ETFs, gross ≤ 1 (lever per budget):
+> ⚠️ **This doc was fully revised after a MATERIAL look-ahead leak was found and fixed (2026-06-03).** A prior
+> version led with EEM 4.03 / book Calmar 4.22 / "byte-exact live-equivalent" — those numbers were **leak-inflated**
+> (the `logdollar`/`kyle` bar-thresholds scaled by a full-series OOS-inclusive minute count; see `program.md`
+> CRITICAL LEAK CORRECTION + `tests/test_bar_threshold_leak.py`). Leak-free, the model edges collapse toward
+> buy-hold. **The numbers below are the honest leak-free re-validation.**
 
-| ETF | strategy (cell) | role | Calmar |
-|-----|-----------------|------|-------:|
-| EEM | logdollar / triple_barrier + **meta** / cdf_overlay @0.30 | timing edge (flagship) | 4.03 |
-| HYG | logdollar / always_long @0.55 | credit carry | 2.21 |
-| GLD | logdollar / always_long @0.45 | gold | 1.99 |
-| TLT | range / triple_barrier / ls_overlay @0.50 | rates timing (long/short) | 1.52 |
-| QQQ | logdollar / always_long @0.15 | US tech beta | 1.24 |
-| IWM | imbalance / triple_barrier+bgm / cdf_overlay @0.45 | small-cap | 1.14 |
-| XLE | logdollar / tertile / cdf_overlay @0.30 | energy | 0.91 |
-| DBC | logdollar / always_long @0.45 | commodities (decorrelator) | 0.86 |
+## The honest deployable book (leak-free)
+Calmar²-weighted, gross ≤ 1. The book's value is **diversification + risk-reduction**, NOT a stack of strong
+single-ticker timing edges (there is essentially ONE modest genuine timing edge, on gold).
 
-EFA and UUP are champions in the universe but EXCLUDED from the book (EFA correlated → hurts;
-UUP too weak → Calmar-neutral).
+| ETF | strategy | role | leak-free Calmar |
+|-----|----------|------|-----------------:|
+| GLD | logdollar / ker+regime_gmm / dd_overlay (band 0.03) | **the one real model edge** (gold trend timing) | ~2.6 |
+| UUP | imbalance / bgm+ker / cdf_overlay | dollar-regime edge (leak-unaffected; statistically fragile) | 1.30 |
+| HYG | logdollar / always_long | credit carry (buy-hold) | 1.83 |
+| TIP | logdollar / always_long | inflation/duration carry (buy-hold) | 1.15 |
+| DBC | logdollar / always_long | commodities decorrelator (buy-hold) | 0.91 |
+| SOXX | logdollar / ker+trend_scan+bgm | weak decorrelator — **edge GONE leak-free** (0.71 < buy-hold) | 0.71 |
 
-## Expected performance (real OOS)
-- **Calmar 4.22, MaxDD 2.74%, Sharpe 2.52**, positive every calendar year (2023 +3%, 2024 +8.3%,
-  2025 +15.5%, 2026 +5.3%; yearly MaxDD ≤3.2%).
-- **vs passive** buy-hold of the same basket (Calmar 1.61 / MaxDD 11.2%): the book gives up raw
-  CAGR in a bull (11.5% vs 17.9%) but is far smoother — **2.2× the Calmar, a third of the drawdown**.
-- **Levered 2×** it dominates passive on BOTH axes: CAGR 25% (>17.9%) at 6.2% MaxDD (<11.2%),
-  Calmar 4.01. 3× → CAGR 39.8% / MaxDD 9.3% / Calmar 4.26. Leverage caveat below.
+**Book: Calmar² ≈ 4.15, MaxDD ~2.2%, Sharpe ~2.6** (weekly-resolution; net-of-realistic-cost lower). UUP and the
+buy-hold names are leak-UNAFFECTED; only GLD/SOXX (logdollar model strategies) moved on the leak fix.
 
-## How to run
-1. Train champions: `render_train_config(cfg)` per row → QC backtest writes the cell to ObjectStore.
-2. Replay the book: `orchestrator.render_portfolio(champions, leverage)` where
-   `champions = [[ticker, cell_key, weight], ...]`, `weight = real_calmar`, `cell_key` from
-   `per_etf_best[t].cell` (`+`→`_x_`, `t0.XX`→`tXX`). One QC backtest = the portfolio equity.
-3. Live: each champion is byte-exact live-equivalent (`infer_online.py.tmpl` rebuilds bars+features
-   +model online; EEM's meta secondary is carried in the bundle). The book is its weighted sum.
+## What is actually real (read this before trusting the book)
+- **GLD is a genuine but MODEST edge.** Leak-free Calmar ~2.5–2.8 ≈ gold buy-hold (~2.0) **+ ~0.5 real
+  label-timing alpha**. The alpha is **permute-confirmed** (shuffling TRAIN labels drops GLD below buy-hold), so
+  it is real signal — but most of the deployable value is just gold exposure. Mild run-to-run variance (2.51–2.76).
+- **Most of the book is buy-hold.** HYG/TIP/DBC are `always_long` (no timing); they earn their seat by
+  decorrelation, not edge. The book beats a passive equal-weight basket on **risk-adjusted** terms (smoother,
+  lower drawdown), not on raw CAGR.
+- **SOXX's "edge" was the leak.** Leak-free 0.71 < its ~1.33 buy-hold — kept only as a weak decorrelator.
+- **Durable single-ticker alpha is even scarcer than the pre-leak research claimed** — the leak was carrying
+  much of the apparent edge. This is the honest bottom line.
 
-## Caveats & risks (read before deploying)
-- **Bull-market OOS.** 2023-26 was favorable; the book's edge is risk-reduction, so it should hold
-  up in drawdowns, but leverage AMPLIFIES tail risk the calm OOS understates. 2× is the prudent point.
-- **Selection bias.** Champions were chosen on OOS Calmar; 4/8 clear PSR-vs-Bonferroni (EEM/HYG/GLD/TLT),
-  the rest are beta or trials-suspect. The portfolio's value is diversification + the EEM/TLT timing edges.
-- **Objective-dependent.** ∝Calmar¹ maximizes Calmar (4.22); ∝Calmar² maximizes Sharpe (2.75). Choose by mandate.
-- **Inclusion rule:** add a name iff DECORRELATED from the sleeve AND its MaxDD cut beats its return drag.
+## Live deployment
+- `templates/live_trade.py.tmpl` (`orchestrator.render_live_trade`) runs the FROZEN model from ObjectStore fully
+  ONLINE: online custom-bar gen → online features → online predict (booster+isotonic+meta) → causal `_size` →
+  real-time `set_holdings`, with **rbuf warmup from history** (so a cold live start matches the backtest sizing).
+  Same code in backtest and live; multi-file (<64k/file).
+- **The online predict path is proven** (`infer_online.py.tmpl`: p_live==p_saved ≤ 1e-6; `verify.py`: bars ≤ 1e-9).
+- **LIMITATION:** ensemble cells (e.g. GLD `ker+regime_gmm`) do **not** save an online model bundle, so only
+  SINGLE-labeler / buy-hold cells are live-deployable via this path today. Live-deploying GLD's best (ensemble)
+  champion needs ensemble-bundle support (a tracked follow-up); the single-labeler GLD `ker` cell deploys now
+  (weaker, ~1.0 leak-free).
 
-## Methodology (what the research established)
-Wang's full production line: custom non-time bars → directional/trend labels → causal features +
-entropy → TRAIN-fit dim-select → calibrated XGBoost → **meta-labeling** (secondary "is-the-primary-right"
-GATE — the one new-method edge, lifted EEM 2.43→4.03) → conviction-weighted, decorrelation-gated portfolio.
-Leak-free (TRAIN-only thresholds; embargoed calibrator), trials-gated (PSR/Bonferroni), byte-exact
-live-equivalent. Drift ETFs can't be timed (carry dominates); meta-labeling helps only a strong long-only
-timing primary; diversification > concentration, but decorrelation > name-count.
+## Caveats & risks
+- **Bull-market OOS.** 2023–26 was favorable; the book's edge is risk-reduction. Leverage amplifies tail risk the
+  calm OOS understates.
+- **Selection bias.** Champions were chosen on OOS Calmar; the leak showed how badly that selects the leak's lucky
+  cases. DSR/Bonferroni numbers in `knowledge.json` are flagged `STALE_PRE_LEAK_FIX` (computed on leaky trials);
+  a fully leak-free DSR needs re-running all trials (infeasible) — treat trials-significance as unverified post-leak.
+- **Honesty infrastructure:** permute control (real-edge collapse), `tests/test_bar_threshold_leak.py` (regression
+  guard), the e-value monitor (`evalue_oos`, anytime-valid liveness), and the audited online path are the trust basis.
+
+## Methodology
+Wang's production line: custom non-time bars → unsupervised directional labels → causal features + entropy →
+TRAIN-fit dim-select → calibrated XGBoost → bet-size. Leak-free (TRAIN-only thresholds, **now regression-guarded**;
+embargoed calibrator), permute-validated, online-replay-audited. The deepest lesson from this program: **in-sample
+and code audits MISS leaks — only re-running with the fix reveals impact, and most apparent single-ticker alpha did
+not survive that test.**
