@@ -1185,40 +1185,27 @@
       "dsr_survives_holm": false
     },
     "GLD": {
-      "cell": "GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 2.514,
-      "real_cagr": 16.007,
-      "real_mdd": 3.4,
-      "real_da": 6.0779,
-      "real_sharpe": 2.652,
-      "trades": 1070,
+      "cell": "GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
+      "real_calmar": 3.4716,
+      "real_cagr": 13.192,
+      "real_mdd": 3.8,
+      "real_da": 7.1199,
+      "real_sharpe": 2.125,
+      "trades": 826,
       "g2_pass": true,
-      "round": 50,
+      "round": 51,
       "source": "tournament",
-      "psr": 1.0,
-      "n_trials": 90,
+      "psr": 0.9997,
+      "n_trials": 100,
       "significant": true,
       "leak_fixed": true,
       "config": {
         "ticker": "GLD",
         "axis": "logdollar",
-        "labeler": "ker+regime_gmm",
+        "labeler": "trend_leg+regime_gmm",
         "thresh": 0.4,
         "sizing": "dd_overlay"
-      },
-      "dsr": 0.9249,
-      "dsr_n_trials": 80,
-      "dsr_survives_holm": false,
-      "evalue_oos": 4.56,
-      "evalue_verdict": "weak (e>=1)",
-      "real_calmar_leaky": 4.708,
-      "leak_fixed_2026_06_03": true,
-      "leak_note": "logdollar bar-threshold OOS-validity leak fixed: 4.708->2.7584 leak-free",
-      "dsr_PRE_LEAK": 0.9249,
-      "evalue_oos_PRE_LEAK": 6.38,
-      "psr_PRE_LEAK": 1.0,
-      "evalue_leak_free": true,
-      "repro_note": "reproducible leak-free Calmar = 2.51 (confirmed identical across 2 runs + band-robust 0.03->2.51/0.05->2.49); the earlier 2.76 was a one-off anomaly. Pipeline is deterministic (seeded)."
+      }
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1411,7 +1398,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 50,
+  "last_round": 51,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -3526,6 +3513,30 @@
         "type": "round",
         "phase": "UUP",
         "label": "R281 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +1.2958 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r282",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R282 UUP DISCARD: Sample on vpin; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.40. -> Calmar +0.0000 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r283",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R283 UUP DISCARD: Sample on vpin; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.40. -> Calmar +0.0000 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r284",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R284 UUP DISCARD: Sample on vpin; ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.6013 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r285",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R285 GLD KEEP: Sample on log-dollar bars; ensemble of trend_leg + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +3.4716 (prev best +2.5140). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5858,6 +5869,26 @@
         "src": "r280",
         "dst": "r281",
         "label": "no improvement"
+      },
+      {
+        "src": "r281",
+        "dst": "r282",
+        "label": "no improvement"
+      },
+      {
+        "src": "r282",
+        "dst": "r283",
+        "label": "no improvement"
+      },
+      {
+        "src": "r283",
+        "dst": "r284",
+        "label": "no improvement"
+      },
+      {
+        "src": "r284",
+        "dst": "r285",
+        "label": "new best"
       }
     ],
     "running": []
