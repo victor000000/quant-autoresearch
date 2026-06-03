@@ -1368,6 +1368,54 @@ def generate_labels_accel(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_revert(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                           horizons=[20, 40, 80]):
+    """Mean-REVERSION / contrarian label — UNSUPERVISED, non-HMM. Every other label targets trend
+    CONTINUATION; this targets REVERSALS. For horizon H, trail = lc[t]-lc[t-H] (past move), fwd =
+    lc[t+H]-lc[t] (forward move). Label 1 = BOUNCE (trail DOWN, fwd UP), 0 = FADE (trail UP, fwd DOWN);
+    -1 (ignore) for CONTINUATIONS (trail & fwd same sign) or weak moves. The supervised model then
+    predicts — from PAST-ONLY features (which include the trailing move / oversold state) — whether an
+    extended move REVERSES. This is the natural target for MEAN-REVERTERS (TLT rates, IWM) where every
+    trend-shape label (ker/trend_scan/accel) fails. cut = TRAIN quantile of |fwd| (keep strong reversals,
+    balanced). Forward info defines only the TARGET (G3-ok); features stay past-only. Sweeps H and q.
+    Orthogonal to ALL existing labels (they label continuation; this labels the turn)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= 2 * H:
+            continue
+        idx = np.arange(H, N - H)
+        fwd = lc[idx + H] - lc[idx]                       # forward net move
+        trail = lc[idx] - lc[idx - H]                     # trailing net move (past; selection only)
+        fwd_full = np.full(N, np.nan)
+        tr_sign = np.zeros(N)
+        fwd_full[idx] = fwd
+        tr_sign[idx] = np.sign(trail)
+        trsel = tr_m & fv & np.isfinite(fwd_full)
+        if int(trsel.sum()) < 100:
+            continue
+        afwd = np.abs(fwd_full)
+        for q in (0.4, 0.5, 0.6, 0.7):
+            cut = float(np.quantile(afwd[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            strong = fv & np.isfinite(fwd_full) & (afwd >= cut)
+            y[strong & (tr_sign < 0) & (fwd_full > 0)] = 1     # bounce: was falling, now rising
+            y[strong & (tr_sign > 0) & (fwd_full < 0)] = 0     # fade: was rising, now falling
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"revert_H{H}_q{q}_cut{round(cut, 4)}", H
+    if best is None:
+        return None, "revert_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_sharpe_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                                 horizons=[20, 40, 80]):
     """Risk-adjusted forward-trend label — UNSUPERVISED, non-HMM. For horizon H the forward
@@ -1481,6 +1529,7 @@ LABELERS = {
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
+    "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
     "dc_reversal": generate_labels_dc_reversal,
@@ -1504,7 +1553,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "sharpe_scan", "mfe_mae", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "sharpe_scan", "mfe_mae", "revert", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",

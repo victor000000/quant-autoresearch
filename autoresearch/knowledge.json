@@ -2865,6 +2865,12 @@
         "type": "round",
         "phase": "DBC",
         "label": "R185 DBC DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +0.2975 (prev best +0.9119). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r186",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R186 TLT DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.45. -> Calmar -0.0923 (prev best -0.0387). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4716,6 +4722,11 @@
       {
         "src": "r184",
         "dst": "r185",
+        "label": "no improvement"
+      },
+      {
+        "src": "r185",
+        "dst": "r186",
         "label": "no improvement"
       }
     ],
