@@ -33,7 +33,10 @@ optimistic weekly "Sharpe ~2.6" claim too — report the book on its CONSISTENT 
 book's TRUE Sharpe is **early 0.80 → late 1.24 (~1.0-1.2, STRENGTHENING)** — confirming the QC 0.71 WAS an artifact,
 and that the **combined book is DECAY-HEALTHY forward** (GLD-dominated, GLD strengthening; robust despite UUP's
 standalone softening). The book holds up across EVERY lens: measured Calmar 3.20, real Sharpe ~1.1, decay-healthy,
-UUP-decorrelated, weighting-mapped, cost-survived, leak-free.
+UUP-decorrelated, weighting-mapped, cost-survived, leak-free. **NET-OF-COST measured 2026-06-04 (explicit slippage
+on the portfolio): gross 3.20 → 5bp 2.76 (CAR 11.0%/MaxDD 4.0%) → 10bp 2.28.** So the REALISTIC deployable book
+(top-liquid ETFs, real spreads ~1-2bp, conservative 5bp) is **Calmar ~2.76** — only a 14% haircut (buy-hold core
+barely trades; only GLD's ~826 orders erode). Every book metric is now MEASURED, not asserted.
 
 **WEIGHTING FRONTIER (measured 2026-06-04, real portfolio backtests).** GLD-weight vs book metrics:
 `63% (Calmar²) → Calmar 3.20, MaxDD 3.9%, CAR 12.5%` · `85% (GLD-heavy) → 3.31, 4.5%, 14.9%` · `100% (GLD alone)
