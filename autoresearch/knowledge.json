@@ -1213,7 +1213,10 @@
       "evalue_verdict": "weak (e>=1)",
       "real_calmar_leaky": 4.708,
       "leak_fixed_2026_06_03": true,
-      "leak_note": "logdollar bar-threshold OOS-validity leak fixed: 4.708->2.7584 leak-free"
+      "leak_note": "logdollar bar-threshold OOS-validity leak fixed: 4.708->2.7584 leak-free",
+      "dsr_PRE_LEAK": 0.9249,
+      "evalue_oos_PRE_LEAK": 6.38,
+      "psr_PRE_LEAK": 1.0
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1380,7 +1383,7 @@
       "source": "tournament",
       "psr": 0.9987,
       "n_trials": 26,
-      "significant": true,
+      "significant": false,
       "leak_fixed": true,
       "config": {
         "ticker": "SOXX",
@@ -1396,7 +1399,11 @@
       "evalue_verdict": "weak (e>=1)",
       "real_calmar_leaky": 3.025,
       "leak_fixed_2026_06_03": true,
-      "leak_note": "logdollar bar-threshold OOS-validity leak fixed: 3.025->0.8074 leak-free"
+      "leak_note": "logdollar bar-threshold OOS-validity leak fixed: 3.025->0.8074 leak-free | significant flipped True->False: leak-free 0.81 < buy-hold 1.33, edge GONE",
+      "significant_leaky": true,
+      "dsr_PRE_LEAK": 0.961,
+      "evalue_oos_PRE_LEAK": 3.09,
+      "psr_PRE_LEAK": 0.9987
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -5913,7 +5920,9 @@
       "win_pct": 70,
       "n": 7,
       "ndays": 710,
-      "scheme": "capital \u221d Calmar"
+      "scheme": "capital \u221d Calmar",
+      "STALE_PRE_LEAK_FIX": true,
+      "stale_note": "computed on LEAKY logdollar champions (GLD 4.71/SOXX 3.02); superseded by the 2026-06-03 leak fix -> re-derive leak-free before trusting"
     },
     "champion": "honest_book_2026_06_03",
     "significant_only": {
@@ -6127,7 +6136,9 @@
         "2026": "+6.2% (mdd 2.0%)"
       },
       "positive_every_year": true,
-      "note": "Allocation-only improvement over conviction\u221dCalmar (3.32->3.53, Sharpe 1.96->2.06). Weight sweep on decorr-core: inv_calmar 1.97 < equal 2.55 < sqrt 3.01 < calmar 3.32 < calmar^2 3.53; stopped at ^2 (^3+ = curve-fitting weights to the window). No new edge \u2014 pure allocation."
+      "note": "Allocation-only improvement over conviction\u221dCalmar (3.32->3.53, Sharpe 1.96->2.06). Weight sweep on decorr-core: inv_calmar 1.97 < equal 2.55 < sqrt 3.01 < calmar 3.32 < calmar^2 3.53; stopped at ^2 (^3+ = curve-fitting weights to the window). No new edge \u2014 pure allocation.",
+      "STALE_PRE_LEAK_FIX": true,
+      "stale_note": "computed on LEAKY logdollar champions (GLD 4.71/SOXX 3.02); superseded by the 2026-06-03 leak fix -> re-derive leak-free before trusting"
     },
     "universe_expansion_2026_06_02": {
       "tested": [
@@ -6162,7 +6173,9 @@
       "calmar_weekly_optimistic": 6.19,
       "calmar_daily_corrected": 5.38,
       "mdd_pct_daily_corrected": 2.34,
-      "granularity_note": "weekly-chart MaxDD understates daily by ~1.15x (per-name vs QC real_mdd); compositional rankings unaffected (relative). Honest daily Calmar ~5.4, MaxDD ~2.3%, Sharpe ~3.0."
+      "granularity_note": "weekly-chart MaxDD understates daily by ~1.15x (per-name vs QC real_mdd); compositional rankings unaffected (relative). Honest daily Calmar ~5.4, MaxDD ~2.3%, Sharpe ~3.0.",
+      "STALE_PRE_LEAK_FIX": true,
+      "stale_note": "computed on LEAKY logdollar champions (GLD 4.71/SOXX 3.02); superseded by the 2026-06-03 leak fix -> re-derive leak-free before trusting"
     },
     "honest_deployable_netcost_2026_06_03": {
       "note": "REAL deployable book at realistic 5bp slippage WITH deployed dead-bands. Gross headlines are optimistic ~20-30%. These are the numbers to trust for deployment.",
@@ -6197,7 +6210,9 @@
         "UUP": 1.0
       },
       "diversified_book_gross": 6.19,
-      "diversified_book_daily_corrected": 5.4
+      "diversified_book_daily_corrected": 5.4,
+      "STALE_PRE_LEAK_FIX": true,
+      "stale_note": "computed on LEAKY logdollar champions (GLD 4.71/SOXX 3.02); superseded by the 2026-06-03 leak fix -> re-derive leak-free before trusting"
     }
   }
 }

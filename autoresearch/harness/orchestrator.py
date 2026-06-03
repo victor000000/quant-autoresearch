@@ -189,6 +189,26 @@ def render_infer_online(ticker, cell):
     return code.replace("__TICKER__", str(ticker)).replace("__CELL__", str(cell))
 
 
+def render_live_trade(ticker, cell):
+    """Render the LIVE-DEPLOYABLE algorithm for one cell. MULTI-FILE (bar_builder.py separate, like the
+    train render) so main.py stays under QC's 64k-char-per-file limit. main.py = imports + features +
+    live_trade body, importing BUILDER_CLASSES from the separate bar_builder.py. Loads the frozen model
+    bundle, warms bars/features/rbuf from history, runs fully ONLINE (online bars->features->predict->
+    _size->set_holdings). Same code in backtest+live. Returns (main_code, {"bar_builder.py": bb_code})."""
+    ff = read_module("features.py")
+    with open(os.path.join(TEMPLATES_DIR, "live_trade.py.tmpl")) as f:
+        lt = f.read()
+    _i = lt.find('TICKER = "__TICKER__"')
+    lt_body = lt[_i:] if _i >= 0 else lt   # strip the template's standalone import header
+    main = ("from AlgorithmImports import *\nimport json\nimport math\nimport numpy as np\n"
+            "import pandas as pd\nimport xgboost as xgb\nfrom datetime import datetime, timedelta\n"
+            "import bar_builder as _bbmod\n_bbmod.TRAIN_END = None\nfrom bar_builder import BUILDER_CLASSES\n\n"
+            "# === features.py ===\n" + ff + "\n\n# === live_trade ===\n" + lt_body)
+    main = main.replace("__TICKER__", str(ticker)).replace("__CELL__", str(cell))
+    bb = "TRAIN_END = None\n" + read_module("bar_builder.py")
+    return _minify(main), {"bar_builder.py": _minify(bb)}
+
+
 def render_portfolio(champions, leverage=1.0):
     """Render the 7-champion PORTFOLIO replay (Wang's endpoint ⑨⑩). champions =
     [[ticker, objectstore_cell_key, weight], ...]; each is replayed via its saved

@@ -72,8 +72,17 @@ def deployment():
     return _md_page(DEPLOY, "deployment.md")
 
 
+import re as _re
+from flask import abort
+_ALLOW = _re.compile(r"^(round_\d+[a-z]?|causal_graph|style|status|data)\.(html|json|css)$")
+
+
 @app.route("/<path:fname>")
 def static_file(fname):
+    # Allowlist the intended output files only — send_from_directory blocks ../ traversal but would
+    # otherwise serve every file under REPORTS (templates, _md_legacy, etc.) with no auth.
+    if not _ALLOW.fullmatch(fname):
+        abort(404)
     return send_from_directory(REPORTS, fname)
 
 

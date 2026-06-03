@@ -24,7 +24,7 @@ CHARACTER = {
     "TLT": "long bonds · rates", "IWM": "small-cap equity", "QQQ": "big-cap tech",
     "EEM": "emerging markets", "GLD": "gold", "HYG": "high-yield credit", "XLE": "energy",
     "EFA": "developed ex-US", "DBC": "broad commodities", "UUP": "US dollar",
-    "TIP": "inflation-linked bonds", "SLV": "silver",
+    "TIP": "inflation-linked bonds", "SLV": "silver", "SOXX": "semiconductors",
 }
 # What SIGNAL each asset rewards — the edge type our ML can (or can't) extract from it.
 # Plain-English, one phrase. Pairs with the data-derived verdict badge in _charmap_html.
@@ -41,6 +41,7 @@ REWARDS = {
     "TIP": "inflation + duration carry — holding beats timing",
     "IWM": "small-cap beta — no learnable timing signal",
     "SLV": "silver beta — no learnable timing signal (gold's edge doesn't transfer)",
+    "SOXX": "semis cyclicality — looked like a trend+regime edge but it was a bar-threshold leak; gone leak-free",
 }
 G1_CALMAR = 3.0
 G2_TRADES = 80
@@ -516,8 +517,14 @@ def _champions_html(K):
         return f"{c:.2f}" if c is not None else "—"
     pf = K.get("portfolio") or {}
     book = pf.get(pf.get("champion", "")) or {}
-    bc = book.get("calmar")
-    bc = f"{bc:.2f}" if isinstance(bc, (int, float)) else "—"
+    _stale = bool(book.get("STALE_PRE_LEAK_FIX"))
+    _members = book.get("members") or ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]
+    _bcv = book.get("calmar")
+    # Book Calmar was computed on the LEAK-INFLATED champions; quarantine it until re-derived leak-free.
+    bc = "pending" if _stale else (f"{_bcv:.2f}" if isinstance(_bcv, (int, float)) else "—")
+    book_note = ('⚠ pre-leak-fix — re-deriving leak-free' if _stale
+                 else '·'.join(_members) + f' · MaxDD {book.get("mdd_pct","—")}%')
+    book_count = len(_members)
     n_drift = sum(1 for v in pe.values()
                   if (v.get("config") or {}).get("labeler") == "always_long")
     return (
@@ -535,9 +542,9 @@ def _champions_html(K):
         f'<div class="cnum">—<span class="cunit">buy &amp; hold</span></div>'
         f'<div class="cnote">timing edges decayed out-of-sample</div></div>'
         f'<div class="champ book"><div class="ctag">DEPLOYABLE BOOK</div>'
-        f'<div class="cname">5-ETF book <span class="csub">decorrelated</span></div>'
+        f'<div class="cname">{book_count}-ETF book <span class="csub">decorrelated</span></div>'
         f'<div class="cnum">{bc}<span class="cunit">Calmar</span></div>'
-        f'<div class="cnote">GLD·HYG·TIP·UUP·DBC · MaxDD {book.get("mdd_pct","—")}%</div></div>'
+        f'<div class="cnote">{book_note}</div></div>'
         '</section>')
 
 

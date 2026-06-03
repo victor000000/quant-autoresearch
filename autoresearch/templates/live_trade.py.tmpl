@@ -1,0 +1,220 @@
+from AlgorithmImports import *
+import json
+import math
+import numpy as np
+from datetime import datetime, timedelta
+
+# LIVE-DEPLOYABLE algorithm (2026-06-03): the FROZEN model from ObjectStore is run fully ONLINE —
+# online custom-bar generation -> online features -> online predict (booster + isotonic + meta gate) ->
+# causal _size() -> real-time set_holdings. Identical code path runs in BACKTEST and LIVE (QC streams the
+# same on_data); LIVE just needs a brokerage + LiveMode. Unlike infer_online.py (which only cross-checks
+# predictions on a subsample and never trades) this one TRADES every bar, and unlike infer.py (replay of
+# saved predictions with a COLD rbuf) it (a) needs no saved predictions and (b) WARMS UP the trailing-return
+# buffer from history so the vol/drawdown sizing overlays are correctly populated from the first live bar
+# (the cold-start gap the leak/online audit flagged). NOTHING is refit here.
+
+TICKER = "__TICKER__"
+CELL = "__CELL__"
+_WARMUP = 820            # >= max feature window (800) + margin
+_TRAIL = 840             # bars of trailing log-close fed to build_feats
+_VOL_FAST = 10
+_VOL_SLOW = 60
+_HIST_DAYS = 2400        # minute history pulled at start to warm bars + features + rbuf (>= TRAIN span margin)
+
+
+def _size(p, thresh, sizing, rbuf):
+    # SAME causal sizing rule as infer.py / footer VAL — decide from rbuf, caller appends after.
+    if sizing == "crashveto":
+        return 0.0 if p > thresh else 1.0
+    if sizing == "longshort":
+        return 1.0 if p > thresh else (-1.0 if p < 1.0 - thresh else 0.0)
+    if sizing in ("ls_cdf", "ls_overlay"):
+        pp = min(max(p, 1e-6), 1.0 - 1e-6)
+        zc = (pp - 0.5) / math.sqrt(pp * (1.0 - pp))
+        w = float(min(1.0, max(-1.0, 2.0 * 0.5 * (1.0 + math.erf(zc / math.sqrt(2.0))) - 1.0)))
+        if sizing == "ls_overlay":
+            m = len(rbuf)
+            if m >= _VOL_FAST + 2:
+                fast = float(np.std(rbuf[-_VOL_FAST:]))
+                slow = float(np.std(rbuf[-min(m, _VOL_SLOW):]))
+                if fast > 1e-9:
+                    w *= float(min(1.0, max(0.45, slow / fast)))
+        return w
+    if sizing == "binary":
+        return 1.0 if p > thresh else 0.0
+    if sizing == "ramp":
+        return float(min(1.0, (p - thresh) * 200.0)) if p > thresh else 0.0
+    if p <= thresh:
+        return 0.0
+    pp = min(max(p, 1e-6), 1 - 1e-6)
+    z = (pp - thresh) / math.sqrt(pp * (1.0 - pp))
+    b = 2.0 * 0.5 * (1.0 + math.erf(z / math.sqrt(2.0))) - 1.0
+    b = float(min(1.0, max(0.0, b)))
+    if sizing == "cdf_overlay":
+        m = len(rbuf)
+        if m >= _VOL_FAST + 2:
+            fast = float(np.std(rbuf[-_VOL_FAST:]))
+            slow = float(np.std(rbuf[-min(m, _VOL_SLOW):]))
+            if fast > 1e-9:
+                b *= float(min(1.0, max(0.6, slow / fast)))
+    if sizing == "dd_overlay":
+        m = len(rbuf)
+        if m >= _VOL_FAST + 2:
+            win = np.asarray(rbuf[-min(m, _VOL_SLOW):], dtype=float)
+            cum = np.cumsum(win)
+            dd = float(cum[-1] - float(np.max(cum)))
+            ref = 3.0 * float(np.std(win)) * math.sqrt(len(win))
+            if ref > 1e-9:
+                b *= float(min(1.0, max(0.5, 1.0 + dd / ref)))
+    return b
+
+
+class LiveTrade(QCAlgorithm):
+
+    def initialize(self):
+        # Backtest window for verification; for LIVE, deploy with a brokerage and remove dates.
+        self.set_start_date(2023, 8, 1)
+        self.set_end_date(2026, 6, 1)
+        self.set_cash(100000)
+        self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol
+        self.blc = []            # online per-bar log-close
+        self._rbuf = []          # trailing BAR log-returns (warm-started); causal, for vol/dd overlays
+        self._last_bar_lc = None  # previous bar's log-close (for bar returns)
+        self._cur_w = 0.0
+        self._last_close = None  # previous bar-boundary close (mirror of infer.py)
+        self.ok = True
+        self.band = 0.01
+        try:
+            mb = json.loads(self.object_store.read("autoresearch/" + TICKER + "/model_" + CELL + ".json"))
+            cell = json.loads(self.object_store.read("autoresearch/" + TICKER + "/cell_" + CELL + ".json"))
+        except Exception as e:
+            self.set_runtime_statistic("err", "load:" + str(e)[:60])
+            self.ok = False
+            return
+        self.thresh = float(cell.get("thresh", mb.get("thresh", 0.5)))
+        self.sizing = str(cell.get("sizing", mb.get("sizing", "cdf_overlay")))
+        if cell.get("rebal_band") is not None:
+            self.band = float(cell["rebal_band"])
+        self.constant_long = bool(mb.get("constant_long"))
+        if self.constant_long:
+            return
+        bt = mb.get("bar_type")
+        cls = BUILDER_CLASSES.get(bt)
+        if cls is None:
+            self.set_runtime_statistic("err", "no_builder:" + str(bt))
+            self.ok = False
+            return
+        self.builder = cls(float(mb["bar_thresh"]))
+        self.mean = np.array(mb["scaler_mean"], dtype=float)
+        self.scale = np.array(mb["scaler_scale"], dtype=float)
+        self.kept = np.array(mb["kept_idx"], dtype=int)
+        self.cal_x = np.array(mb.get("cal_x", []), dtype=float)
+        self.cal_y = np.array(mb.get("cal_y", []), dtype=float)
+        self.best_iter = int(mb.get("best_iter", 0) or 0)
+        self.nfeat = int(mb.get("n_features", 0) or 0)
+        self.booster = xgb.Booster()
+        self.booster.load_model(bytearray(mb["booster"], "utf-8"))
+        self.is_meta = bool(mb.get("meta"))
+        if self.is_meta:
+            self.meta_booster = xgb.Booster()
+            self.meta_booster.load_model(bytearray(mb["meta_booster"], "utf-8"))
+            self.meta_gate = float(mb.get("meta_gate", 0.0))
+        self._warm_from_history()
+
+    def _warm_from_history(self):
+        # Build bars + feature buffer + rbuf from real history so the FIRST live bar already has a warm
+        # vol/drawdown window (the cold-start gap). Uses the SAME frozen builder/threshold; nothing is fit.
+        try:
+            hist = self.history(self.sym, timedelta(days=_HIST_DAYS), Resolution.MINUTE)
+        except Exception:
+            hist = None
+        if hist is None or len(hist) == 0:
+            self.set_runtime_statistic("warm", "no_history")
+            return
+        n_warm = 0
+        for idx, row in hist.iterrows():
+            try:
+                ts = idx[-1] if isinstance(idx, tuple) else idx
+                close = float(row["close"]); vol = float(row.get("volume", 0.0))
+            except Exception:
+                continue
+            if close <= 0:
+                continue
+            bar = self.builder.update(ts, close, vol)
+            if bar is None:
+                continue
+            lc = float(bar["log_close"])
+            self.blc.append(lc)
+            if self._last_bar_lc is not None:
+                self._rbuf.append(lc - self._last_bar_lc)
+            self._last_bar_lc = lc
+            n_warm += 1
+        self.set_runtime_statistic("warm_bars", str(n_warm))
+        self.set_runtime_statistic("warm_rbuf", str(len(self._rbuf)))
+
+    def _calibrate(self, p):
+        if len(self.cal_x) >= 2:
+            return float(np.interp(p, self.cal_x, self.cal_y))
+        return float(p)
+
+    def on_data(self, slice):
+        if not self.ok:
+            return
+        if self.constant_long:
+            if not self.portfolio.invested:
+                self.set_holdings(self.sym, 1.0)
+            return
+        if self.sym not in slice.bars:
+            return
+        b = slice.bars[self.sym]
+        bar = self.builder.update(b.end_time, float(b.close), float(b.volume))
+        if bar is None:
+            return
+        lc = float(bar["log_close"])
+        self.blc.append(lc)
+        if len(self.blc) < _WARMUP:
+            if self._last_bar_lc is not None:
+                self._rbuf.append(lc - self._last_bar_lc)
+            self._last_bar_lc = lc
+            return
+        # online features on a trailing window (last row reproduces the full-history build via abs_start)
+        win = np.array(self.blc[-_TRAIL:], dtype=float)
+        lr = np.zeros_like(win)
+        lr[1:] = win[1:] - win[:-1]
+        abs_start = len(self.blc) - len(win)
+        try:
+            feats = build_feats(win, lr, abs_start=abs_start)
+        except Exception:
+            if self._last_bar_lc is not None:
+                self._rbuf.append(lc - self._last_bar_lc)
+            self._last_bar_lc = lc
+            return
+        row = feats[-1]
+        if np.isnan(row).any():
+            if self._last_bar_lc is not None:
+                self._rbuf.append(lc - self._last_bar_lc)
+            self._last_bar_lc = lc
+            return
+        x = ((row - self.mean) / self.scale)[self.kept]
+        dm = xgb.DMatrix(x.reshape(1, -1))
+        if self.best_iter > 0:
+            praw = float(self.booster.predict(dm, iteration_range=(0, self.best_iter + 1))[0])
+        else:
+            praw = float(self.booster.predict(dm)[0])
+        p = self._calibrate(praw)
+        if self.is_meta:
+            pmeta = float(self.meta_booster.predict(dm)[0])
+            if pmeta < 0.5:
+                p = self.meta_gate
+        # CAUSAL sizing: decide from the warm rbuf, THEN append this bar's realized return.
+        w = _size(float(p), self.thresh, self.sizing, self._rbuf)
+        if abs(w) < 0.01:
+            if self._cur_w != 0.0:
+                self.liquidate(self.sym)
+                self._cur_w = 0.0
+        elif abs(w - self._cur_w) > self.band:
+            self.set_holdings(self.sym, w)
+            self._cur_w = w
+        if self._last_bar_lc is not None:
+            self._rbuf.append(lc - self._last_bar_lc)
+        self._last_bar_lc = lc
