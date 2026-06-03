@@ -341,3 +341,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T08:52:37,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,B,TLT,kyle,trend_scan,0.45,ls_overlay,-0.0583,21.6864,173,True,True,0.9853,0.6995,0.3833,-0.1038,-0.2079,4.8094,710,True,False,completed,completed
 2026-06-03T08:59:23,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,A,UUP,kyle,ker,0.5,cdf_overlay,0.1255,15.9397,493,True,True,1.6135,0.8562,0.5338,0.2978,-1.2352,10.8008,710,True,False,completed,completed
 2026-06-03T08:59:23,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,B,UUP,imbalance,mfe_mae,0.5,cdf_overlay,0.3862,6.4193,64,False,False,1.9247,0.7715,0.2843,0.6217,-0.5485,4.7882,710,False,False,completed,completed
+2026-06-03T09:03:30,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,A,GLD,kyle,ker,0.4,cdf_overlay,0.7265,4.8676,428,True,True,1.3327,0.8354,0.6258,1.007,-0.028,37.6135,710,False,False,completed,completed
+2026-06-03T09:03:30,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,B,GLD,logdollar,mfe_mae,0.4,cdf_overlay,2.4808,5.3454,412,True,True,0.246,0.7747,0.6481,1.5837,1.2395,32.532,710,True,False,completed,completed
