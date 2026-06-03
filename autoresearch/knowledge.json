@@ -3627,6 +3627,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R300 TLT DISCARD: Sample on log-dollar bars; ensemble of sadf_explosive + trend_scan; size long/short, vol-targeted, entry 0.45. -> Calmar +0.3333 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r301",
+        "type": "round",
+        "phase": "DBC",
+        "label": "R301 DBC DISCARD: Sample on log-dollar bars; ensemble of trend_leg + sadf_explosive; size long-only, vol-targeted, entry 0.45. -> Calmar +0.3910 (prev best +0.9119). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6053,6 +6059,11 @@
       {
         "src": "r299",
         "dst": "r300",
+        "label": "no improvement"
+      },
+      {
+        "src": "r300",
+        "dst": "r301",
         "label": "no improvement"
       }
     ],
