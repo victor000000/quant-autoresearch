@@ -658,9 +658,12 @@ def run_round(argv):
 
     # ---- STANDING PERMUTED-LABEL GATE (honesty harness) ----
     # A real edge must COLLAPSE when the TRAIN labels are shuffled. Re-run the winner with
-    # permute_labels=True (distinct _perm cell, leak-safe); if the permuted Calmar holds at
-    # >=60% of the real Calmar, the "edge" survives label-destruction => it's a drift/sizing/
-    # leak artifact, NOT label signal -> do NOT crown it. Runs only on a tentative KEEP (rare).
+    # permute_labels=True (distinct _perm cell, leak-safe). The right metric is the EXCESS over
+    # the no-skill BUY-HOLD baseline (raw Calmar conflates retained drift with retained edge for
+    # up-drifters): a REAL edge's excess-over-buyhold collapses to ~0 under permutation. PASS iff
+    # (a) the real edge over buy-hold is MEANINGFUL (>0.15, not noise — rejects SPY's +0.07) AND
+    # (b) permuting removes >=60% of that excess. Falls back to the raw permuted/real ratio only
+    # when no buy-hold baseline is available. Runs only on a tentative KEEP (rare).
     _perm_note = ""
     if kept:
         _wcfg = dict(cfg_by_name[winner["name"]]); _wcfg["permute_labels"] = True
@@ -670,10 +673,29 @@ def run_round(argv):
             _perm_note = " · permute-gate: control run did not complete (KEEP held — validate manually)"
         else:
             _pc = _f(_pv.get("real_calmar", 0.0)); _rc = _f(winner.get("real_calmar", 0.0))
-            if _pc >= 0.6 * _rc:
+            # buy-hold baseline: knowledge['buyhold'], else an always_long arm in THIS round.
+            _bh = knowledge.get("buyhold", {}).get(target, {}).get("calmar")
+            if _bh is None:
+                _alrows = [r for r in rows if "always_long" in (r.get("cell", "") or "")]
+                _bh = _alrows[0]["real_calmar"] if _alrows else None
+            if _bh is not None:
+                _bh = _f(_bh)
+                _real_x = _rc - _bh; _perm_x = _pc - _bh            # excess over no-skill buy-hold
+                if _real_x <= 0.15:
+                    kept = False
+                    _perm_note = (f" · PERMUTE-GATE FAILED: real edge over buy-hold {_real_x:+.4f} <= 0.15 "
+                                  f"(real {_rc:+.4f} vs buy-hold {_bh:+.4f}) — too small to be a real edge")
+                elif _perm_x >= 0.4 * _real_x:
+                    kept = False
+                    _perm_note = (f" · PERMUTE-GATE FAILED: permuted edge {_perm_x:+.4f} >= 40% of real edge "
+                                  f"{_real_x:+.4f} (buy-hold {_bh:+.4f}) — edge survives label-shuffle = ARTIFACT")
+                else:
+                    _perm_note = (f" · permute-gate PASS: edge over buy-hold {_real_x:+.4f} COLLAPSES to {_perm_x:+.4f} "
+                                  f"under label-shuffle (buy-hold {_bh:+.4f}) — REAL label signal")
+            elif _pc >= 0.6 * _rc:                                   # fallback: no buy-hold baseline
                 kept = False
                 _perm_note = (f" · PERMUTE-GATE FAILED: permuted Calmar {_pc:+.4f} >= 60% of real {_rc:+.4f} "
-                              f"— edge survives label-shuffle = ARTIFACT, not crowned")
+                              f"(no buy-hold baseline) — edge survives label-shuffle = ARTIFACT, not crowned")
             else:
                 _perm_note = f" · permute-gate PASS: permuted {_pc:+.4f} << real {_rc:+.4f} (real label signal)"
 

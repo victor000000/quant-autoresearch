@@ -1323,10 +1323,33 @@
       "val_auc": 0.5,
       "ceilinged": true,
       "status": "DRIFTER (buy-hold 1.26). GLD's tradeable-trend edge does NOT generalize: ker+trend_scan timing 1.19 < buy-hold 1.26 (val_auc 0.5, no structure). GLD's edge is idiosyncratic to gold, not a precious-metals property."
+    },
+    "SOXX": {
+      "cell": "SOXX_logdollar_ker+trend_scan_cdf_overlay_t0.40",
+      "real_calmar": 1.9162,
+      "real_cagr": 12.455,
+      "real_mdd": 6.5,
+      "real_da": 9.0133,
+      "real_sharpe": 1.383,
+      "trades": 610,
+      "g2_pass": true,
+      "round": 41,
+      "source": "tournament",
+      "psr": 0.994,
+      "n_trials": 6,
+      "significant": true,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "SOXX",
+        "axis": "logdollar",
+        "labeler": "ker+trend_scan",
+        "thresh": 0.4,
+        "sizing": "cdf_overlay"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 40,
+  "last_round": 41,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2901,6 +2924,18 @@
         "type": "round",
         "phase": "SOXX",
         "label": "R191 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +1.5576 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r192",
+        "type": "round",
+        "phase": "SOXX",
+        "label": "R192 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +1.9162 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r193",
+        "type": "milestone",
+        "phase": "SOXX",
+        "label": "R193 SOXX KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +1.9162 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4783,6 +4818,16 @@
         "src": "r190",
         "dst": "r191",
         "label": "no improvement"
+      },
+      {
+        "src": "r191",
+        "dst": "r192",
+        "label": "no improvement"
+      },
+      {
+        "src": "r192",
+        "dst": "r193",
+        "label": "new best"
       }
     ],
     "running": []
@@ -4820,6 +4865,12 @@
     },
     "UUP": {
       "calmar": 0.4194
+    },
+    "SOXX": {
+      "calmar": 1.3353
+    },
+    "SPY": {
+      "calmar": 1.3967
     }
   },
   "top_insights": [
