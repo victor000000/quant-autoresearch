@@ -14,15 +14,22 @@ single-ticker timing edges (there is essentially ONE modest genuine timing edge,
 
 | ETF | strategy | role | leak-free Calmar |
 |-----|----------|------|-----------------:|
-| GLD | logdollar / ker+regime_gmm / dd_overlay (band 0.03) | **the one real model edge** (gold trend timing) | 2.51 |
+| GLD | logdollar / **trend_leg**+regime_gmm / dd_overlay (band 0.03) | **the one real model edge** (gold trend timing) — UPGRADED 2026-06-03 | **3.47** |
 | UUP | imbalance / bgm+ker / cdf_overlay | dollar-regime edge (leak-unaffected; statistically fragile) | 1.30 |
 | HYG | logdollar / always_long | credit carry (buy-hold) | 1.83 |
 | TIP | logdollar / always_long | inflation/duration carry (buy-hold) | 1.15 |
 | DBC | logdollar / always_long | commodities decorrelator (buy-hold) | 0.91 |
 | SOXX | logdollar / ker+trend_scan+bgm | weak decorrelator — **edge GONE leak-free** (0.71 < buy-hold) | 0.71 |
 
-**Book: Calmar² ≈ 4.15, MaxDD ~2.2%, Sharpe ~2.6** (weekly-resolution; net-of-realistic-cost lower). UUP and the
-buy-hold names are leak-UNAFFECTED; only GLD/SOXX (logdollar model strategies) moved on the leak fix.
+**Book: Calmar² ≈ 4.15+, MaxDD ~2.2%, Sharpe ~2.6** (weekly-resolution; net-of-realistic-cost lower; GLD's
+upgrade 2.51→3.47 lifts the book somewhat). UUP and the buy-hold names are leak-UNAFFECTED; only GLD/SOXX
+(logdollar model strategies) moved on the leak fix.
+
+> **GLD CHAMPION UPGRADED 2026-06-03: ker+regime_gmm 2.51 → `trend_leg`+regime_gmm 3.47.** Wang's flagship
+> trend-SEGMENTATION labeler (mined this session) beat ker's efficiency-ratio at trend-labeling. Fully gated
+> (deployable 826 trades, permute-PASS, deflation-PASS floor 3.21, Bonferroni PSR 0.9997), **reproducible EXACTLY
+> 3.4716**, and **proven online** (ensemble `preds_match=1`, `max_pred_diff=1.4e-08`). Decomposition: 3.47 = ~2.0
+> gold buy-hold + ~1.16 real label-timing alpha (>2× ker's ~0.5). Gold-specific (does not generalize to SLV).
 
 ## What is actually real (read this before trusting the book)
 - **GLD is a genuine but MODEST edge.** Leak-free Calmar **reproducibly 2.51** ≈ gold buy-hold (~2.0) **+ ~0.5 real
