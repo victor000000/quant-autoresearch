@@ -3561,6 +3561,12 @@
         "type": "round",
         "phase": "UUP",
         "label": "R289 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of jump_model + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +0.3397 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r290",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R290 GLD DISCARD: Sample on log-dollar bars; ensemble of trend_leg + calmar_scan + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +3.4310 (prev best +3.4716). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5932,6 +5938,11 @@
       {
         "src": "r288",
         "dst": "r289",
+        "label": "no improvement"
+      },
+      {
+        "src": "r289",
+        "dst": "r290",
         "label": "no improvement"
       }
     ],
