@@ -120,3 +120,18 @@ GLD      4.545    3.478    2.461     46%
 SOXX     3.025    2.776    2.551     16%
 UUP      1.296    1.000    0.734     43%
 ```
+
+## GLD rebalance dead-band tuning (net-of-5bp-cost objective)
+
+Wider band → fewer trades → less cost drag. Net Calmar @ 5bp slippage (current band = 0.01):
+
+```
+  band  netCalmar  orders  CAGR%
+  0.01      3.478    1546  13.22
+  0.02      3.609    1256  13.35
+  0.03      3.637    1070  13.46
+  0.05      3.844     837  13.84
+  0.08      3.971     637  13.90  <- best
+```
+
+Best net band = 0.08 → net Calmar 3.971 (637 orders); +14% vs current 0.01 band at 5bp. WORTH widening (cuts cost drag).
