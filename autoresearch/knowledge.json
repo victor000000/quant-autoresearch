@@ -3026,6 +3026,12 @@
         "type": "round",
         "phase": "SOXX",
         "label": "R208 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + causal-feature GMM regime labels; size long-only, vol-targeted, entry 0.40. -> Calmar +1.9162 (prev best +1.9162). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r209",
+        "type": "round",
+        "phase": "HYG",
+        "label": "R209 HYG DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +1.8276 (prev best +1.8276). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4992,6 +4998,11 @@
       {
         "src": "r207",
         "dst": "r208",
+        "label": "no improvement"
+      },
+      {
+        "src": "r208",
+        "dst": "r209",
         "label": "no improvement"
       }
     ],
