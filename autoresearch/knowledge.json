@@ -3254,6 +3254,12 @@
         "type": "round",
         "phase": "SOXX",
         "label": "R246 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +2.4341 (prev best +3.0248). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r247",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R247 QQQ DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +1.0459 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5410,6 +5416,11 @@
       {
         "src": "r245",
         "dst": "r246",
+        "label": "no improvement"
+      },
+      {
+        "src": "r246",
+        "dst": "r247",
         "label": "no improvement"
       }
     ],
