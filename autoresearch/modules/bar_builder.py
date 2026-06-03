@@ -675,9 +675,61 @@ class SpectralCycleBarBuilder:
         return None
 
 
+class VpinBarBuilder:
+    """Custom axis: VPIN / bulk-volume-classified order-flow TOXICITY clock (Easley, Lopez de
+    Prado & O'Hara 2012 'Flow Toxicity and Liquidity'; AFML Ch.19.5.2 + Ch.2.3.2). Mined
+    2026-06-03 as the AFML information-bar method we had MISSED.
+
+    Unlike the imbalance axes (`imbalance`/`tickimb`/`volumeimb`) that classify each minute's
+    volume 100%/0% buy-or-sell by the HARD tick rule (sign of the price change), Bulk Volume
+    Classification splits it SOFTLY: buy-fraction f = Phi(z), z = standardized minute log-return,
+    Phi = standard-normal CDF. A +0.3-sigma minute is ~62% buy / 38% sell, so the accumulator
+    weights flow by HOW one-sided the move was, not by a binary sign. Accumulate the one-sided
+    imbalance theta += vol*|2f-1| (the VPIN numerator) and emit a bar when theta >= threshold.
+
+    sigma is an ONLINE TRAILING std of recent minute returns (causal ring buffer) so the builder
+    needs ONLY the scalar threshold -> BUILDER_CLASSES-compatible (online-verifiable), no second
+    fitted param. Phi is parameter-free (math.erf). The threshold is TRAIN-fit in _make_builder.
+    A genuinely new functional class (soft probabilistic classification clock), not a reweighting
+    of the existing hard-sign accumulators.
+    """
+
+    _SW = 240   # trailing minutes for the online sigma (BVC scale)
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.theta = 0.0
+        self.last_lc = None
+        self.close_lc = None
+        self._rs = []          # trailing minute log-returns for online sigma
+
+    def update(self, ts, close, vol):
+        if close <= 0 or vol <= 0:
+            self.last_lc = None      # break the return chain across invalid prints
+            return None
+        lc = math.log(close)
+        if self.last_lc is not None:
+            r = lc - self.last_lc
+            self._rs.append(r)
+            if len(self._rs) > self._SW:
+                self._rs.pop(0)
+            if len(self._rs) >= 20:
+                sigma = math.sqrt(sum(x * x for x in self._rs) / len(self._rs))
+                if sigma > 1e-12:
+                    z = r / sigma
+                    f = 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))   # Phi(z): BVC buy fraction
+                    self.theta += vol * abs(2.0 * f - 1.0)
+        self.last_lc = lc
+        self.close_lc = lc
+        if self.theta >= self.thresh:
+            self.theta = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -694,6 +746,7 @@ AXES = {
     "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder,
     "spectral": SpectralCycleBarBuilder,
+    "vpin": VpinBarBuilder,
 }
 
 
@@ -1251,6 +1304,36 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         total = float(np.mean(imp[keep])) * (int(np.sum(keep)) * len(c) / _trc)
         return KyleImpactBarBuilder(_safe_thresh(total, target_bars))
 
+    if bar_type == "vpin":
+        # VPIN / bulk-volume-classification toxicity clock. Per-minute BVC imbalance =
+        # vol*|2*Phi(z)-1|, z = return / online-trailing-sigma (the SAME causal rolling sigma the
+        # builder uses at runtime, so calibration matches replay). Threshold = TRAIN mean of that
+        # per-minute imbalance x full length / target_bars (rate-on-TRAIN-then-scale, OOS-invariant;
+        # a full-series SUM would leak OOS flow into bar bounds). sigma is causal (trailing only).
+        c = np.asarray(close, dtype=float)
+        v = np.asarray(vol, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        terms = np.full(len(c), np.nan)
+        _rs = []
+        for i in range(len(c)):
+            if not np.isfinite(ret[i]) or c[i] <= 0 or v[i] <= 0:
+                continue
+            _rs.append(float(ret[i]))
+            if len(_rs) > 240:
+                _rs.pop(0)
+            if len(_rs) >= 20:
+                sg = math.sqrt(sum(x * x for x in _rs) / len(_rs))
+                if sg > 1e-12:
+                    z = float(ret[i]) / sg
+                    f = 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+                    terms[i] = float(v[i]) * abs(2.0 * f - 1.0)
+        keep = tr & np.isfinite(terms)
+        if not np.any(keep):
+            return None
+        total = float(np.mean(terms[keep])) * len(c)       # TRAIN rate x full length (OOS-invariant)
+        return VpinBarBuilder(_safe_thresh(total, target_bars))
+
     if bar_type == "run":
         thresh = _fit_run_axis(close, vol, ts_arr, target_bars)
         if thresh is None:
@@ -1297,6 +1380,7 @@ BUILDER_CLASSES = {
     "volumeimb": VolumeImbalanceBarBuilder, "dc": DirectionalChangeBarBuilder,
     "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder, "spectral": SpectralCycleBarBuilder,
+    "vpin": VpinBarBuilder,
 }
 
 
