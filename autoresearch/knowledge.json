@@ -3002,6 +3002,12 @@
         "type": "round",
         "phase": "SLV",
         "label": "R204 SLV DISCARD: Sample on directional-change (reversal) bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.30. -> Calmar +1.2888 (prev best +1.2631). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r205",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R205 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of CUSUM change-point regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +0.2185 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4948,6 +4954,11 @@
       {
         "src": "r203",
         "dst": "r204",
+        "label": "no improvement"
+      },
+      {
+        "src": "r204",
+        "dst": "r205",
         "label": "no improvement"
       }
     ],
