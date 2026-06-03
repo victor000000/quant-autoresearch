@@ -3008,6 +3008,12 @@
         "type": "round",
         "phase": "UUP",
         "label": "R205 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of CUSUM change-point regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +0.2185 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r206",
+        "type": "round",
+        "phase": "EEM",
+        "label": "R206 EEM DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +1.4888 (prev best +1.2930). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4959,6 +4965,11 @@
       {
         "src": "r204",
         "dst": "r205",
+        "label": "no improvement"
+      },
+      {
+        "src": "r205",
+        "dst": "r206",
         "label": "no improvement"
       }
     ],
