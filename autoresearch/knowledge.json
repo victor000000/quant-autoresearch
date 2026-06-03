@@ -2853,6 +2853,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R183 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + CUSUM change-point regime labels; size long-only, vol-targeted, entry 0.40. -> Calmar +2.6458 (prev best +3.2216). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r184",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R184 QQQ DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +0.9848 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4694,6 +4700,11 @@
       {
         "src": "r182",
         "dst": "r183",
+        "label": "no improvement"
+      },
+      {
+        "src": "r183",
+        "dst": "r184",
         "label": "no improvement"
       }
     ],
