@@ -1088,8 +1088,22 @@ BUILDER_CLASSES = {
 
 
 def builder_threshold(b):
-    """The frozen scalar threshold of a built builder (uniform across classes)."""
-    return getattr(b, "thresh", getattr(b, "thresh_pct", getattr(b, "delta", None)))
+    """The frozen scalar threshold of a built builder (uniform across classes).
+    try/except attribute access (not getattr) so this file is lint-clean as a STANDALONE
+    QC project module — QC's cloud compiler treats the getattr 'discouraged' warning as a
+    build error for non-main files (it was a tolerated warning when concatenated)."""
+    try:
+        return b.thresh
+    except AttributeError:
+        pass
+    try:
+        return b.thresh_pct
+    except AttributeError:
+        pass
+    try:
+        return b.delta
+    except AttributeError:
+        return None
 
 
 # ----------------------------------------------------------------------------

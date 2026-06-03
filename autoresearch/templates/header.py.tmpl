@@ -44,4 +44,13 @@ CONFIG = {
     # Model capacity (XGBoost tree depth). Defaults to 3 (shallow, regularized) so
     # every legacy render is byte-identical; an explicit override enables capacity A/B.
     "max_depth": int(_cfg_or("__MAXDEPTH__", "__" "MAXDEPTH__", "3")),
+    # Permuted-label FALSIFICATION CONTROL (research 2026-06-03): shuffle the TRAIN
+    # labels before fit. A real ML edge collapses toward buy-hold under permutation;
+    # if it survives, the "edge" is an artifact (drift/sizing/leak), not label signal.
+    # Default "0" => off => byte-identical legacy renders. Writes a DISTINCT _perm cell.
+    "permute_labels": _cfg_or("__PERMUTE__", "__" "PERMUTE__", "0") == "1",
 }
+# Cell-key suffix for the permuted-label control (distinct cell -> never overwrites a champion).
+# Precomputed as a plain name so f-string keys stay simple (no nested conditional/quotes, which
+# QC's Python rejects after ast.unparse re-emits the f-string).
+_PSUF = "_perm" if CONFIG["permute_labels"] else ""

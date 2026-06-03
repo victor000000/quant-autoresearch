@@ -211,18 +211,21 @@ def _trades_from_stats(st):
 # 2-NODE POOL (reused from run_axis_label_parallel.py)
 # ===========================================================================
 def run_pool(jobs):
-    """jobs: list of (label, code). Keeps <=MAX_INFLIGHT backtests RUNNING at once.
-    submit_backtest blocks through create (serializes main.py safely); polling then
-    overlaps the run phase across both nodes. 'no spare nodes' is TRANSIENT — the
-    job is re-queued and we wait for a node to free (300s cap per backtest).
+    """jobs: list of (label, code) OR (label, code, extra_files). Keeps <=MAX_INFLIGHT
+    backtests RUNNING at once. submit_backtest blocks through create (serializes main.py
+    safely); polling then overlaps the run phase across both nodes. 'no spare nodes' is
+    TRANSIENT — the job is re-queued and we wait for a node to free (300s cap per backtest).
+    extra_files (e.g. a separate bar_builder.py) are uploaded alongside main.py.
     Returns {label: backtest_result_dict}."""
     results, inflight, pending, retries = {}, {}, list(jobs), {}
     while pending or inflight:
         while pending and len(inflight) < MAX_INFLIGHT:
-            label, code = pending.pop(0)
+            job = pending.pop(0)
+            label, code = job[0], job[1]
+            extra = job[2] if len(job) > 2 else None
             print(f"[{_now()}] SUBMIT {label} (inflight={len(inflight)+1}/{MAX_INFLIGHT}, pending={len(pending)})")
             try:
-                bid = submit_backtest(code, label)          # upload->compile->create (serial, safe)
+                bid = submit_backtest(code, label, extra_files=extra)   # upload->compile->create (serial, safe)
                 inflight[label] = (bid, time.time())
             except Exception as e:
                 msg = str(e)
@@ -234,7 +237,7 @@ def run_pool(jobs):
                              or ("could not find a part of the path" in low))  # QC build-cache miss
                 if transient and retries.get(label, 0) < 4:
                     retries[label] = retries.get(label, 0) + 1
-                    pending.insert(0, (label, code))
+                    pending.insert(0, job)
                     print(f"[{_now()}]   {label} transient submit error (retry {retries[label]}/4): {msg[:90]} — re-queue + wait")
                     time.sleep(8)
                     break
@@ -427,6 +430,7 @@ def _validate_cfg(cfg):
     cfg["max_depth"] = int(cfg.get("max_depth", 3))   # optional model-capacity override; default 3
     if not (2 <= cfg["max_depth"] <= 8):
         raise ValueError(f"max_depth {cfg['max_depth']} must be in [2,8]")
+    cfg["permute_labels"] = bool(cfg.get("permute_labels", False))   # optional falsification control
     return cfg
 
 
@@ -586,10 +590,10 @@ def run_round(argv):
     # Render BOTH train scripts, then run them IN PARALLEL on the 2 nodes.
     train_jobs = []
     for nm, cfg in (("A", cfg_a), ("B", cfg_b)):
-        code = render_train_config(cfg)
+        code, extra = render_train_config(cfg)   # multi-file: extra = {"bar_builder.py": ...}
         if len(code) >= 64000:
             raise RuntimeError(f"rendered train {nm} too large: {len(code)} >= 64000")
-        train_jobs.append((f"train_{target}_{nm}_{cfg['axis']}_{cfg['labeler']}", code))
+        train_jobs.append((f"train_{target}_{nm}_{cfg['axis']}_{cfg['labeler']}", code, extra))
     print(f"\n[{_now()}] PHASE TRAIN: 2 hypotheses in parallel")
     train_res = run_pool(train_jobs)
 
@@ -602,7 +606,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}"   # config-unique; dot- AND plus-free (QC ObjectStore path)
+            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "")   # config-unique; dot- AND plus-free (QC ObjectStore path); _perm = falsification control cell
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")

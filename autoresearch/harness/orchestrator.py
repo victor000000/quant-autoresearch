@@ -122,11 +122,25 @@ def render_train_config(config):
 
     The cell written is autoresearch/{ticker}/cell_{axis}_{labeler}.json; pass that
     same '{axis}_{labeler}' to render_infer_cell as the CELL key.
+
+    MULTI-FILE (2026-06-03): bar_builder.py is NOT concatenated into main.py — it is a
+    SEPARATE QC project file that main.py imports. QC's 64,000-char limit is PER FILE, so
+    splitting the largest module off keeps main.py well under the cap and unblocks big
+    labeler ENSEMBLES (bgm+ker etc.) that previously overflowed. bar_builder's only external
+    dependency is TRAIN_END, which main injects after importing it (bar_builder.TRAIN_END=...).
+    Bars are byte-identical to the old concatenated build (same source, just imported), and
+    infer/verify renders still concatenate bar_builder (they're small) so the leak-safe online
+    replay path is untouched. Returns (main_code, {"bar_builder.py": bar_builder_code}).
     """
     header_path = os.path.join(TEMPLATES_DIR, "header.py.tmpl")
     footer_path = os.path.join(TEMPLATES_DIR, "footer.py.tmpl")
     with open(header_path) as f: script = f.read()
-    for mod in ["bar_builder.py", "labeler.py", "features.py", "trainer.py"]:
+    # bar_builder is a SEPARATE file: import it + inject TRAIN_END (defined above in the
+    # header) into its module namespace, then pull the names the footer uses into scope.
+    script += ("\nimport bar_builder as _bbmod\n_bbmod.TRAIN_END = TRAIN_END\n"
+               "from bar_builder import AXES, BUILDER_CLASSES, build_bars, "
+               "builder_threshold, _make_builder\n")
+    for mod in ["labeler.py", "features.py", "trainer.py"]:
         body = read_module(mod)
         if mod == "labeler.py" and config.get("labeler"):
             body = _prune_labelers(body, str(config["labeler"]))   # keep only the 1 used labeler (size)
@@ -138,8 +152,11 @@ def render_train_config(config):
               .replace("__LABELER__", str(config["labeler"]))
               .replace("__THRESH__", repr(float(config["thresh"])))
               .replace("__SIZING__", str(config["sizing"]))
-              .replace("__MAXDEPTH__", str(int(config.get("max_depth", 3)))))
-    return _minify(script)
+              .replace("__MAXDEPTH__", str(int(config.get("max_depth", 3))))
+              .replace("__PERMUTE__", "1" if config.get("permute_labels") else "0"))
+    # Separate bar_builder.py file: standalone (TRAIN_END default None -> injected by main).
+    bb = "TRAIN_END = None\n" + read_module("bar_builder.py")
+    return _minify(script), {"bar_builder.py": _minify(bb)}
 
 
 def render_verify(ticker, axis):

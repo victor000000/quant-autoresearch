@@ -53,10 +53,23 @@ def _qc_post(path, body=None, max_time=120):
         except: pass
     return {}
 
-def submit_backtest(code, name):
-    """Upload code, compile, create backtest. Returns backtestId or raises RuntimeError."""
+def submit_backtest(code, name, extra_files=None):
+    """Upload code, compile, create backtest. Returns backtestId or raises RuntimeError.
+
+    extra_files: optional {filename: content} of ADDITIONAL project files (e.g. a
+    separate bar_builder.py) that main.py imports — QC's per-file 64,000-char limit is
+    sidestepped by splitting large modules into their own files. Uploaded BEFORE main.py
+    so they're present at compile. Idempotent: create-then-update (create no-ops if the
+    file already exists, update sets the latest content)."""
     from .constants import QC_PROJECT_ID
     pid = QC_PROJECT_ID
+
+    # 0. Upload any extra module files first (create-then-update = exists-safe).
+    for fname, fcontent in (extra_files or {}).items():
+        _qc_post("/files/create", {"projectId": pid, "name": fname, "content": fcontent})
+        ru = _qc_post("/files/update", {"projectId": pid, "name": fname, "content": fcontent})
+        if not ru.get("success"):
+            raise RuntimeError(f"Extra-file upload failed for {fname}: {ru}")
 
     # 1. Upload
     r = _qc_post("/files/update", {"projectId": pid, "name": "main.py", "content": code})
@@ -110,10 +123,11 @@ def is_done(status):
     """True if backtest is in a terminal state."""
     return status.startswith("Completed") or "Error" in status or status == "Canceled"
 
-def submit_and_wait(code, name, timeout_s=None):
+def submit_and_wait(code, name, timeout_s=None, extra_files=None):
     """Full lifecycle: submit -> poll -> read result. Auto-deletes on timeout.
     Returns (result_dict, status_string) where status is one of:
       'completed', 'timeout', 'crash'
+    extra_files: optional {filename: content} of separate project modules (see submit_backtest).
     """
     from .constants import TIME_BUDGET, QC_POLL_INTERVAL
     if timeout_s is None:
@@ -121,7 +135,7 @@ def submit_and_wait(code, name, timeout_s=None):
 
     # Submit
     try:
-        bid = submit_backtest(code, name)
+        bid = submit_backtest(code, name, extra_files=extra_files)
     except Exception as e:
         return {"error": str(e)}, "crash"
 
