@@ -3152,6 +3152,12 @@
         "type": "round",
         "phase": "EEM",
         "label": "R229 EEM DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +1.4888 (prev best +1.2930). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r230",
+        "type": "round",
+        "phase": "SOXX",
+        "label": "R230 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.45. -> Calmar +2.7348 (prev best +2.7348). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5223,6 +5229,11 @@
       {
         "src": "r228",
         "dst": "r229",
+        "label": "no improvement"
+      },
+      {
+        "src": "r229",
+        "dst": "r230",
         "label": "no improvement"
       }
     ],
