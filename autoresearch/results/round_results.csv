@@ -513,3 +513,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T15:43:02,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,B,UUP,imbalance,bgm+ker,0.5,cdf_overlay,0.0685,8.5723,323,True,True,0.0,0.4776,0.6901,0.1586,-0.5466,8.7149,710,False,False,completed,completed
 2026-06-03T15:46:17,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,A,UUP,imbalance,bgm+ker,0.4,cdf_overlay,1.69,1.8143,135,True,True,0.0,0.8933,0.8519,1.181,-0.1477,10.5669,710,False,False,completed,completed
 2026-06-03T15:46:17,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,B,UUP,imbalance,bgm+ker,0.45,cdf_overlay,2.2122,1.3598,128,True,True,0.0,0.8933,0.8519,1.2303,0.0696,12.9643,710,True,False,completed,completed
+2026-06-03T15:49:33,GLD,4.5454,GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40,A,GLD,logdollar,ker+regime_gmm,0.4,dd_overlay,3.5496,5.7305,1524,True,True,0.0,0.8212,0.7091,2.713,0.8503,6.739,710,True,False,completed,completed
+2026-06-03T15:49:33,GLD,4.5454,GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,ker+regime_gmm,0.4,dd_overlay,3.4862,6.7942,1713,True,True,0.0,0.7881,0.7085,2.4927,0.6306,7.754,710,False,False,completed,completed
