@@ -1181,17 +1181,17 @@
     },
     "GLD": {
       "cell": "GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 4.5454,
-      "real_cagr": 15.909,
-      "real_mdd": 3.5,
-      "real_da": 6.1405,
-      "real_sharpe": 2.634,
-      "trades": 1546,
+      "real_calmar": 4.7079,
+      "real_cagr": 16.007,
+      "real_mdd": 3.4,
+      "real_da": 6.0779,
+      "real_sharpe": 2.652,
+      "trades": 1070,
       "g2_pass": true,
-      "round": 49,
+      "round": 50,
       "source": "tournament",
       "psr": 1.0,
-      "n_trials": 78,
+      "n_trials": 90,
       "significant": true,
       "leak_fixed": true,
       "config": {
@@ -1200,10 +1200,7 @@
         "labeler": "ker+regime_gmm",
         "thresh": 0.4,
         "sizing": "dd_overlay"
-      },
-      "dsr": 0.9311,
-      "dsr_n_trials": 72,
-      "dsr_survives_holm": false
+      }
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1379,7 +1376,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 49,
+  "last_round": 50,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -3422,6 +3419,24 @@
         "type": "round",
         "phase": "XME",
         "label": "R269 XME DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.1608 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r270",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R270 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.5454 (prev best +4.5454). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r271",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R271 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.5454 (prev best +4.5454). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r272",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R272 GLD KEEP: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.7079 (prev best +4.5454). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5694,6 +5709,21 @@
         "src": "r268",
         "dst": "r269",
         "label": "no improvement"
+      },
+      {
+        "src": "r269",
+        "dst": "r270",
+        "label": "no improvement"
+      },
+      {
+        "src": "r270",
+        "dst": "r271",
+        "label": "no improvement"
+      },
+      {
+        "src": "r271",
+        "dst": "r272",
+        "label": "new best"
       }
     ],
     "running": []
