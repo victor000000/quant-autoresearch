@@ -3320,6 +3320,12 @@
         "type": "round",
         "phase": "UUP",
         "label": "R257 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +2.5400 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r258",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R258 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +2.2122 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5531,6 +5537,11 @@
       {
         "src": "r256",
         "dst": "r257",
+        "label": "no improvement"
+      },
+      {
+        "src": "r257",
+        "dst": "r258",
         "label": "no improvement"
       }
     ],
