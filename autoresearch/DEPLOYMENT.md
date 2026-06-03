@@ -38,7 +38,10 @@ dilute CAR more, so on pure backtested Calmar GLD-heavy/alone wins (3.47 > 3.20)
 is FORWARD ROBUSTNESS — insurance against GLD-specific decay/regime-shift, which the in-sample backtest can't
 price. DEPLOY by objective: **min-drawdown / robust → Calmar²-weighted (GLD 63%, MaxDD 3.9%)**; max-return/Calmar →
 GLD-heavy (but concentrated in one asset's decay risk). Recommended: the diversified Calmar²-book (capital
-preservation + GLD-decay insurance) — the durable GLD edge anchors it, the core cushions it. UUP and the buy-hold names are
+preservation + GLD-decay insurance) — the durable GLD edge anchors it, the core cushions it.
+**UUP EARNS ITS SEAT via decorrelation (measured 2026-06-04): with-UUP MaxDD 3.9% / Calmar 3.20 vs without-UUP
+MaxDD 4.3% / Calmar 3.14** — UUP cuts book drawdown despite its softening standalone edge (it's a negative-
+correlation insurance seat, not an alpha seat; keep it). The book is GLD-anchored + UUP-decorrelated + buy-hold-core. UUP and the buy-hold names are
 leak-UNAFFECTED; only GLD/SOXX
 (logdollar model strategies) moved on the leak fix.
 
