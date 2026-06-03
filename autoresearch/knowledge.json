@@ -2835,6 +2835,12 @@
         "type": "milestone",
         "phase": "GLD",
         "label": "R180 GLD KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +3.2216 (prev best +3.2026). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r181",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R181 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +3.2216 (prev best +3.2216). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4662,6 +4668,11 @@
         "src": "r179",
         "dst": "r180",
         "label": "new best"
+      },
+      {
+        "src": "r180",
+        "dst": "r181",
+        "label": "no improvement"
       }
     ],
     "running": []
