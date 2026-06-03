@@ -3278,6 +3278,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R250 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.42. -> Calmar +4.0977 (prev best +4.1884). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r251",
+        "type": "round",
+        "phase": "KRE",
+        "label": "R251 KRE DISCARD: Sample on log-dollar bars; ensemble of ker + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8942 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5454,6 +5460,11 @@
       {
         "src": "r249",
         "dst": "r250",
+        "label": "no improvement"
+      },
+      {
+        "src": "r250",
+        "dst": "r251",
         "label": "no improvement"
       }
     ],
