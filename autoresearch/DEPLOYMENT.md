@@ -42,10 +42,15 @@ buy-hold names are leak-UNAFFECTED; only GLD/SOXX (logdollar model strategies) m
   real-time `set_holdings`, with **rbuf warmup from history** (so a cold live start matches the backtest sizing).
   Same code in backtest and live; multi-file (<64k/file).
 - **The online predict path is proven** (`infer_online.py.tmpl`: p_live==p_saved ≤ 1e-6; `verify.py`: bars ≤ 1e-9).
-- **LIMITATION:** ensemble cells (e.g. GLD `ker+regime_gmm`) do **not** save an online model bundle, so only
-  SINGLE-labeler / buy-hold cells are live-deployable via this path today. Live-deploying GLD's best (ensemble)
-  champion needs ensemble-bundle support (a tracked follow-up); the single-labeler GLD `ker` cell deploys now
-  (weaker, ~1.0 leak-free).
+- **ENSEMBLES ARE NOW LIVE-DEPLOYABLE (2026-06-03).** The footer saves a multi-member `model_{cell}` bundle
+  (`{ensemble:true, members:[...]}`) for ensemble cells, and `live_trade.py.tmpl` loads every member and **averages
+  their calibrated+gated probs online** (mirroring the footer's ensemble), so the REAL edges (GLD `ker+regime_gmm`,
+  UUP `bgm+ker`) deploy directly — not just single-labeler fallbacks. **Verified end-to-end on QC:** the GLD ensemble
+  cell live-runs with `n_members:2`, warms from history (`warm_bars:594`), `err:None`, and trades (70 orders / 5-mo
+  smoke window). The single-member path is the same code with one member, still proven by `infer_online`.
+- **Warmup note:** `_HIST_DAYS=220` warms ~594 of the 820-bar feature window, so a cold LIVE start self-completes
+  warmup in the first ~6 weeks (no trades until full); bump `_HIST_DAYS`→~320 for an immediately-warm deploy. The
+  backtest warms before `set_start_date` via `self.history`, so this only affects a true cold live start.
 
 ## Caveats & risks
 - **Bull-market OOS.** 2023–26 was favorable; the book's edge is risk-reduction. Leverage amplifies tail risk the
