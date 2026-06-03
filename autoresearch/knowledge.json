@@ -1209,14 +1209,15 @@
       "dsr": 0.9249,
       "dsr_n_trials": 80,
       "dsr_survives_holm": false,
-      "evalue_oos": 6.38,
+      "evalue_oos": 4.56,
       "evalue_verdict": "weak (e>=1)",
       "real_calmar_leaky": 4.708,
       "leak_fixed_2026_06_03": true,
       "leak_note": "logdollar bar-threshold OOS-validity leak fixed: 4.708->2.7584 leak-free",
       "dsr_PRE_LEAK": 0.9249,
       "evalue_oos_PRE_LEAK": 6.38,
-      "psr_PRE_LEAK": 1.0
+      "psr_PRE_LEAK": 1.0,
+      "evalue_leak_free": true
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1318,8 +1319,9 @@
       "dsr": 0.6015,
       "dsr_n_trials": 52,
       "dsr_survives_holm": false,
-      "evalue_oos": 1.32,
-      "evalue_verdict": "weak (e>=1)"
+      "evalue_oos": 1.31,
+      "evalue_verdict": "weak (e>=1)",
+      "evalue_leak_free": true
     },
     "TIP": {
       "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1395,7 +1397,7 @@
       "dsr": 0.961,
       "dsr_n_trials": 43,
       "dsr_survives_holm": false,
-      "evalue_oos": 3.09,
+      "evalue_oos": 1.2,
       "evalue_verdict": "weak (e>=1)",
       "real_calmar_leaky": 3.025,
       "leak_fixed_2026_06_03": true,
@@ -1403,7 +1405,8 @@
       "significant_leaky": true,
       "dsr_PRE_LEAK": 0.961,
       "evalue_oos_PRE_LEAK": 3.09,
-      "psr_PRE_LEAK": 0.9987
+      "psr_PRE_LEAK": 0.9987,
+      "evalue_leak_free": true
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -5924,7 +5927,7 @@
       "STALE_PRE_LEAK_FIX": true,
       "stale_note": "computed on LEAKY logdollar champions (GLD 4.71/SOXX 3.02); superseded by the 2026-06-03 leak fix -> re-derive leak-free before trusting"
     },
-    "champion": "honest_book_2026_06_03",
+    "champion": "honest_book_leakfree_2026_06_03",
     "significant_only": {
       "calmar_daily": 2.9637,
       "mdd_pct": 3.95,
@@ -6213,6 +6216,29 @@
       "diversified_book_daily_corrected": 5.4,
       "STALE_PRE_LEAK_FIX": true,
       "stale_note": "computed on LEAKY logdollar champions (GLD 4.71/SOXX 3.02); superseded by the 2026-06-03 leak fix -> re-derive leak-free before trusting"
+    },
+    "honest_book_leakfree_2026_06_03": {
+      "members": [
+        "GLD",
+        "SOXX",
+        "UUP",
+        "TIP",
+        "DBC",
+        "HYG"
+      ],
+      "calmar": 4.153,
+      "mdd_pct": 2.22,
+      "sharpe": 2.581,
+      "cagr_pct": 9.2,
+      "scheme": "Calmar^2-weighted, gross<=1, LEAK-FREE (re-derived on leak-fixed GLD/SOXX series 2026-06-03)",
+      "note": "LEAK-FREE book: GLD 2.76 (lead edge) + UUP 1.30 + buy-hold diversifiers + decorrelation; SOXX edge GONE (0.71) but kept as a weak decorrelating member. Down from the leak-inflated 6.19 but still a strong diversified book.",
+      "leak_free": true,
+      "weighting_sweep": {
+        "equal": 3.44,
+        "calmar2": 4.15,
+        "calmar2_dsr": 4.07,
+        "inverse_variance": 3.72
+      }
     }
   }
 }

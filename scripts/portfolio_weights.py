@@ -11,7 +11,7 @@ CACHE = os.path.join(HERE, "autoresearch", "results", "series_cache.json")
 OUT = os.path.join(HERE, "autoresearch", "HONEST_AUDIT.md")
 
 NAMES = ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]
-CAL = {"GLD": 4.709, "SOXX": 3.025, "UUP": 1.296, "TIP": 1.146, "DBC": 0.912, "HYG": 1.828}
+CAL = {"GLD": 2.758, "SOXX": 0.807, "UUP": 1.296, "TIP": 1.146, "DBC": 0.912, "HYG": 1.828}
 DSR = {"GLD": 0.931, "SOXX": 0.959, "UUP": 0.600, "TIP": 1.0, "DBC": 1.0, "HYG": 1.0}  # buy-hold = no selection bias
 
 
