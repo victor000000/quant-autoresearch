@@ -469,6 +469,11 @@ class AutoresearchPipeline(QCAlgorithm):
             tr_m = bar_ts_np < np.datetime64(TRAIN_END)
             va_m = (bar_ts_np >= np.datetime64(TRAIN_END)) & (bar_ts_np < np.datetime64(VAL_END))
             te_m = (bar_ts_np >= np.datetime64(VAL_END)) & (bar_ts_np < np.datetime64(TEST_END))
+            try:
+                self.set_runtime_statistic("dbg_bars_" + str(axis),
+                    str(int(N)) + "/" + str(int(tr_m.sum())) + "/" + str(int(va_m.sum())) + "/" + str(int(te_m.sum())))
+            except Exception:
+                pass
             if tr_m.sum() < 500 or va_m.sum() < 50 or te_m.sum() < 50:
                 continue
 
