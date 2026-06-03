@@ -40,3 +40,21 @@ IWM      9   0.881  0.910   1.53  6.34e-02    0.000   0.390  partial (HC_BH>0)
 TLT     15   0.285  0.393   0.66  2.55e-01    0.000   0.000  FAILS (haircut ~0)
 ```
 
+
+## PBO-via-CSCV (GLD config-overfitting, Bailey-Borwein-LdP-Zhu 2014)
+
+Swept 9 comparable GLD configs (labeler variants; axis/sizing/thresh/ncomp fixed at champion), extracted each OOS return series, CSCV over 16 time-blocks (1000 partitions).
+
+```
+GLD PBO = 0.581   N_configs=9   T=223  -> HIGH PBO -> config-OVERFIT (IS-best tends OOS-below-median)
+full-sample OOS Sharpe by config (IS-best candidate = top):
+  ker+regime_gmm           +0.2828
+  ker                      +0.2797
+  ker+regime_gmm+accel     +0.2733
+  ker+trend_scan           +0.2695
+  ker+accel                +0.2679
+  ker+bgm                  +0.2459
+  regime_gmm               +0.2228
+  trend_scan               +0.1739
+  accel                    +0.1290
+```
