@@ -701,7 +701,9 @@ class VpinBarBuilder:
         self.theta = 0.0
         self.last_lc = None
         self.close_lc = None
-        self._rs = []          # trailing minute log-returns for online sigma
+        self._rs = []          # trailing minute log-returns ring for online sigma
+        self._ss = 0.0         # running SUM OF SQUARES of _rs (O(1) rolling variance — recomputing
+        #                        sum(x*x) every minute over ~1M minutes timed QC out; this is the fix)
 
     def update(self, ts, close, vol):
         if close <= 0 or vol <= 0:
@@ -711,10 +713,12 @@ class VpinBarBuilder:
         if self.last_lc is not None:
             r = lc - self.last_lc
             self._rs.append(r)
+            self._ss += r * r
             if len(self._rs) > self._SW:
-                self._rs.pop(0)
+                old = self._rs.pop(0)
+                self._ss -= old * old
             if len(self._rs) >= 20:
-                sigma = math.sqrt(sum(x * x for x in self._rs) / len(self._rs))
+                sigma = math.sqrt(self._ss / len(self._rs)) if self._ss > 0.0 else 0.0
                 if sigma > 1e-12:
                     z = r / sigma
                     f = 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))   # Phi(z): BVC buy fraction
@@ -1316,16 +1320,20 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         tr = _train_minute_mask(ts_arr)
         terms = np.full(len(c), np.nan)
         _rs = []
+        _ss = 0.0          # O(1) rolling sum-of-squares (matches the builder; avoids O(n*240) timeout)
         for i in range(len(c)):
             if not np.isfinite(ret[i]) or c[i] <= 0 or v[i] <= 0:
                 continue
-            _rs.append(float(ret[i]))
+            ri = float(ret[i])
+            _rs.append(ri)
+            _ss += ri * ri
             if len(_rs) > 240:
-                _rs.pop(0)
+                _old = _rs.pop(0)
+                _ss -= _old * _old
             if len(_rs) >= 20:
-                sg = math.sqrt(sum(x * x for x in _rs) / len(_rs))
+                sg = math.sqrt(_ss / len(_rs)) if _ss > 0.0 else 0.0
                 if sg > 1e-12:
-                    z = float(ret[i]) / sg
+                    z = ri / sg
                     f = 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
                     terms[i] = float(v[i]) * abs(2.0 * f - 1.0)
         keep = tr & np.isfinite(terms)
