@@ -3188,6 +3188,12 @@
         "type": "round",
         "phase": "QQQ",
         "label": "R235 QQQ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +1.2355 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r236",
+        "type": "round",
+        "phase": "SLV",
+        "label": "R236 SLV DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.30. -> Calmar +1.5410 (prev best +1.2631). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5289,6 +5295,11 @@
       {
         "src": "r234",
         "dst": "r235",
+        "label": "no improvement"
+      },
+      {
+        "src": "r235",
+        "dst": "r236",
         "label": "no improvement"
       }
     ],
