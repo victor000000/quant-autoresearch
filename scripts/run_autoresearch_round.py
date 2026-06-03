@@ -88,10 +88,11 @@ CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "TIP",   # TIPS / inflation-linked bonds — real-rate/inflation exposure, decorrelated book member (R124 lever)
           "SLV",   # silver
           "SPY",   # S&P 500 — broad large-cap up-drifter (user request; equity-index complex w/ QQQ/IWM)
-          "SOXX",  # semiconductors
-          "XBI",   # biotech — deep boom/bust drawdowns (persistent-drawdown thesis: SOXX-like tradeable cyclicality)
-          "KRE",
-          "ITB"]  # homebuilders — rate-cyclical, deep persistent drawdowns (2007-09/2022); distinct sector test of the trend-predictable-drawdown thesis   # regional banks — crisis-prone deep drawdowns (2023 SVB); persistent-drawdown candidate — cyclical, DEEP persistent drawdowns (more avoidable than QQQ V-recoveries; best trend-timing candidate) — precious-metal trend sibling of GLD; tests whether GLD's tradeable-trend edge (ker+trend_scan) generalizes to a sharper-moving metal (new-input probe)
+          "SOXX",  # semiconductors — CONFIRMED EDGE (ker+trend_scan 1.92, Bonferroni-significant): momentum-cyclical drawdowns are trend-predictable
+          "XBI",   # biotech — event-driven (FDA) jumps -> trend labels can't time -> NO edge
+          "KRE",   # regional banks — rate-trend edge but Bonferroni-FAIL -> provisional, NOT deployable
+          "ITB",   # homebuilders — rate-cyclical, mechanism shows (DA 9x lower) but Bonferroni-FAIL -> provisional
+          "SMH"]   # VanEck semis — pre-registered REPLICATION of the SOXX semis edge (different fund, same sector)
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
