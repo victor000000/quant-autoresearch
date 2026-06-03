@@ -375,3 +375,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T10:36:57,GLD,3.2216,GLD_logdollar_ker+trend_scan+accel_cdf_overlay_t0.40,B,GLD,logdollar,ker+trend_scan+accel,0.45,cdf_overlay,2.7785,2.0777,651,True,True,0.0,0.6907,0.5705,2.1509,1.8841,22.6778,710,True,False,completed,completed
 2026-06-03T10:43:04,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,logdollar,trend_scan,0.45,dd_overlay,0.6027,2.3715,263,True,True,0.1856,0.6811,0.582,1.0026,1.1886,48.1061,710,False,False,completed,completed
 2026-06-03T10:43:04,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,logdollar,ker+trend_scan+accel,0.4,dd_overlay,0.7293,4.5078,630,True,True,0.0,0.6654,0.541,1.0838,-0.0712,7.3067,710,True,False,completed,completed
+2026-06-03T10:49:08,SPY,0.0,,A,SPY,logdollar,always_long,0.45,cdf_overlay,1.3967,12.7817,695,True,True,0.1505,0.5,0.5,1.5174,0.0952,7.7553,710,False,False,completed,completed
+2026-06-03T10:49:08,SPY,0.0,,B,SPY,logdollar,ker+trend_scan+accel,0.4,cdf_overlay,1.472,2.4357,883,True,True,0.0,0.7885,0.5625,1.6878,0.2503,7.6173,710,True,False,completed,completed

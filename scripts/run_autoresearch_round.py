@@ -86,7 +86,9 @@ CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "DBC",   # broad commodities — DECORRELATED; improved the book 3.60->4.22 (R111)
           "UUP",   # US dollar — NEGATIVELY correlated w/ risk assets (risk-off hedge); decorrelation candidate
           "TIP",   # TIPS / inflation-linked bonds — real-rate/inflation exposure, decorrelated book member (R124 lever)
-          "SLV"]   # silver — precious-metal trend sibling of GLD; tests whether GLD's tradeable-trend edge (ker+trend_scan) generalizes to a sharper-moving metal (new-input probe)
+          "SLV",   # silver
+          "SPY",   # S&P 500 — broad large-cap up-drifter (user request; equity-index complex w/ QQQ/IWM)
+          "SOXX"]  # semiconductors — cyclical, DEEP persistent drawdowns (more avoidable than QQQ V-recoveries; best trend-timing candidate) — precious-metal trend sibling of GLD; tests whether GLD's tradeable-trend edge (ker+trend_scan) generalizes to a sharper-moving metal (new-input probe)
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")

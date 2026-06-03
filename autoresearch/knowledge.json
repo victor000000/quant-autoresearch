@@ -2889,6 +2889,12 @@
         "type": "round",
         "phase": "QQQ",
         "label": "R189 QQQ DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + accel; size dd_overlay, entry 0.40. -> Calmar +0.7293 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r190",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R190 SPY DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +1.4720 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4760,6 +4766,11 @@
       {
         "src": "r188",
         "dst": "r189",
+        "label": "no improvement"
+      },
+      {
+        "src": "r189",
+        "dst": "r190",
         "label": "no improvement"
       }
     ],
