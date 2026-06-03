@@ -3711,6 +3711,12 @@
         "type": "round",
         "phase": "EFA",
         "label": "R314 EFA DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +1.2531 (prev best +1.2856). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r315",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R315 SPY DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.3530 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6207,6 +6213,11 @@
       {
         "src": "r313",
         "dst": "r314",
+        "label": "no improvement"
+      },
+      {
+        "src": "r314",
+        "dst": "r315",
         "label": "no improvement"
       }
     ],

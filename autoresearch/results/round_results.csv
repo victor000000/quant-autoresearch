@@ -629,3 +629,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-04T02:17:26,XBI,0.0,,B,XBI,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-04T02:21:47,EFA,1.2856,EFA_logdollar_always_long_cdf_overlay_t0.45,A,EFA,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-04T02:21:47,EFA,1.2856,EFA_logdollar_always_long_cdf_overlay_t0.45,B,EFA,logdollar,bgm+sadf_explosive+ker,0.45,cdf_overlay,1.2531,1.3563,188,True,True,0.0,0.6664,0.64,1.2347,2.1736,24.5767,710,True,False,completed,completed
+2026-06-04T02:26:28,SPY,0.0,,A,SPY,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-04T02:26:28,SPY,0.0,,B,SPY,logdollar,bgm+sadf_explosive+ker,0.45,cdf_overlay,0.353,1.1859,115,True,True,0.0,0.8482,0.6215,0.4162,1.6077,54.6002,710,True,False,completed,completed
