@@ -3038,6 +3038,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R210 TLT DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long/short, vol-targeted, entry 0.50. -> Calmar -0.0235 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r211",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R211 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + causal-feature GMM regime labels; size long-only, vol-targeted, entry 0.40. -> Calmar +3.8984 (prev best +3.8984). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5014,6 +5020,11 @@
       {
         "src": "r209",
         "dst": "r210",
+        "label": "no improvement"
+      },
+      {
+        "src": "r210",
+        "dst": "r211",
         "label": "no improvement"
       }
     ],
