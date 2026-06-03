@@ -23,11 +23,13 @@ gold-timing edge, not a broad stack of edges.
 | SOXX | logdollar / ker+trend_scan+bgm | weak decorrelator — **edge GONE leak-free** (0.71 < buy-hold) | 0.71 |
 
 **Book (MEASURED 2026-06-04, real QC portfolio backtest of the stored champions, daily, gross=1.0):
-Calmar 3.20 — CAR 12.5% / MaxDD 3.9% — Sharpe 0.71, 1734 orders.** GLD-anchored (63% Calmar²-weight) +
-UUP bgm+ker (9%) + buy-hold core HYG/TIP/DBC (28%). HONEST CORRECTION: the book is **Calmar-strong / drawdown-
-efficient** (3.9% MaxDD) but **Sharpe-MODEST (0.71)** — well below GLD's individual 2.1 and the prior doc's
-optimistic weekly "~2.6"; the buy-hold dilution + decorrelation trade raw return-per-vol for capital preservation.
-The deployable value is low-drawdown compounding (Calmar 3.20), not a high Sharpe. UUP and the buy-hold names are
+Calmar 3.20 — CAR 12.5% / MaxDD 3.9%, 1734 orders.** GLD-anchored (63% Calmar²-weight) + UUP bgm+ker (9%) +
+buy-hold core HYG/TIP/DBC (28%). **Trust the Calmar (3.20) — CAR 12.5% / MaxDD 3.9% is internally consistent.**
+⚠️ The QC-reported Sharpe (0.71) is NOT trustworthy here: it implies ~17.6% vol (12.5/0.71), which is impossible
+alongside a 3.9% MaxDD (17.6%-vol over 17y would see 20-40% drawdowns) — a portfolio-replay computation artifact
+(flat/partial-cash periods deflating the daily-return Sharpe), not a real modest Sharpe. So drop the prior
+optimistic weekly "Sharpe ~2.6" claim too — report the book on its CONSISTENT metric: low-drawdown compounding,
+**Calmar ~3.2 / MaxDD ~3.9% / CAR ~12.5%**. UUP and the buy-hold names are
 leak-UNAFFECTED; only GLD/SOXX
 (logdollar model strategies) moved on the leak fix.
 
