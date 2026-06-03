@@ -3585,6 +3585,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R293 GLD DISCARD: Sample on log-dollar bars; ker; size dd_overlay, entry 0.40. -> Calmar +1.3889 (prev best +3.4716). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r294",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R294 QQQ DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.45. -> Calmar +1.2685 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5976,6 +5982,11 @@
       {
         "src": "r292",
         "dst": "r293",
+        "label": "no improvement"
+      },
+      {
+        "src": "r293",
+        "dst": "r294",
         "label": "no improvement"
       }
     ],
