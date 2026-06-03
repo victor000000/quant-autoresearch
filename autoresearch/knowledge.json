@@ -3693,6 +3693,12 @@
         "type": "round",
         "phase": "ITB",
         "label": "R311 ITB DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.9057 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r312",
+        "type": "round",
+        "phase": "XME",
+        "label": "R312 XME DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5397 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6174,6 +6180,11 @@
       {
         "src": "r310",
         "dst": "r311",
+        "label": "no improvement"
+      },
+      {
+        "src": "r311",
+        "dst": "r312",
         "label": "no improvement"
       }
     ],
