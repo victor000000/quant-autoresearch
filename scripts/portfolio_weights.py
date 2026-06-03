@@ -11,8 +11,11 @@ CACHE = os.path.join(HERE, "autoresearch", "results", "series_cache.json")
 OUT = os.path.join(HERE, "autoresearch", "HONEST_AUDIT.md")
 
 NAMES = ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]
-CAL = {"GLD": 2.758, "SOXX": 0.807, "UUP": 1.296, "TIP": 1.146, "DBC": 0.912, "HYG": 1.828}
-DSR = {"GLD": 0.931, "SOXX": 0.959, "UUP": 0.600, "TIP": 1.0, "DBC": 1.0, "HYG": 1.0}  # buy-hold = no selection bias
+# UPDATED 2026-06-04 to the leak-free, this-session-improved edges: GLD trend_leg+regime_gmm 3.47
+# (was ker+regime_gmm; +38%) and UUP bgm+sadf_explosive+ker 1.85 (was bgm+ker 1.30; +42%, permute-real,
+# provisional/Bonferroni-boundary). SOXX leak-free ~0.81 (edge GONE; kept only as a weak decorrelator).
+CAL = {"GLD": 3.47, "SOXX": 0.807, "UUP": 1.85, "TIP": 1.146, "DBC": 0.912, "HYG": 1.828}
+DSR = {"GLD": 0.931, "SOXX": 0.959, "UUP": 0.600, "TIP": 1.0, "DBC": 1.0, "HYG": 1.0}  # buy-hold = no selection bias; GLD/UUP DSR are STALE (pre-leak/pre-trend_leg/pre-sadf) — re-derivation needs leak-free trials
 
 
 def main():
