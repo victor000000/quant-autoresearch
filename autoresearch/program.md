@@ -40,12 +40,18 @@ Detectors: trend-scan / change-point / clustering — **NOT HMM.** Aim Calmar > 
 - **Durable > lucky:** drift/long-biased edges persist; two-sided timing with val_auc≈0.5 decays. A/B every new method vs the champion.
 - **New methods help only where there's structure** (val_auc>0.6). On val_auc≈0.5 drifters no method beats buy-hold — don't grind them.
 
-## honest state (2026-06-03, very late) — CONVERGED + mechanistically understood
+## honest state (2026-06-03, very late) — mechanistically understood; gold is multi-structure
 Durable single-ticker alpha = **3 confirmed edges** (Bonferroni-significant + permute-validated, deployable):
-**GLD `ker+trend_scan+accel` 3.22** · **SOXX `ker+trend_scan` 1.92** (semis; found via universe expansion) ·
-**UUP `bgm+ker` 1.30**. Plus **SOXX is FRAGILE** (SMH sister-fund replication FAILED → fund/path-specific, lowest
-confidence). Everything else = buy-hold (event-driven, V-recovery, or mean-reverting up-drift). Provisional/un-crowned:
-KRE/ITB (permute-pass but Bonferroni-FAIL).
+**GLD `ker+trend_scan+regime_gmm` 3.90** (logdollar; trend+REGIME HYBRID — adding regime_gmm to the trend core
+beat the old 3.22, +21%; threshold-robust 3.64–3.90, the most trustworthy crown) · **SOXX `ker+trend_scan` 1.92**
+(logdollar; FRAGILE — SMH sister-fund replication FAILED → fund-specific, though temporally robust/not decaying) ·
+**UUP `bgm+ker` 1.30** (IMBALANCE axis; regime edge). Everything else = buy-hold. Provisional/un-crowned: KRE/ITB
+(permute-pass but Bonferroni-FAIL). SLV lead DEAD (logdollar+t0.30-specific, axis-fragile, hybrid hurts it).
+
+**GOLD IS UNIQUELY MULTI-STRUCTURE** (key 2026-06-03 find): gold has BOTH trend AND safe-haven-REGIME structure, so
+the trend+regime hybrid (`+regime_gmm`) lifts it +21%. The hybrid is GOLD-SPECIFIC — `regime_gmm` is degenerate or
+craters on every other name (SOXX/SLV/HYG/TLT/TIP/DBC) because they have at most ONE mechanism. Edge type AND axis
+are asset-intrinsic: GLD/SOXX edges live on logdollar (information clock), UUP on imbalance (order-flow microstructure).
 
 **THE governing rule (explains every result): two edge MECHANISMS, each needs its own labeler, edge type is asset-intrinsic.**
 1. **TREND-MOMENTUM** (`ker+trend_scan`): wins ⟺ drawdowns are MOMENTUM-CYCLICAL / trend-predictable AND trimming
