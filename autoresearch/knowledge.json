@@ -2871,6 +2871,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R186 TLT DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.45. -> Calmar -0.0923 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r187",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R187 IWM DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.45. -> Calmar +0.2962 (prev best +0.5496). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4727,6 +4733,11 @@
       {
         "src": "r185",
         "dst": "r186",
+        "label": "no improvement"
+      },
+      {
+        "src": "r186",
+        "dst": "r187",
         "label": "no improvement"
       }
     ],
