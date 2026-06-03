@@ -678,7 +678,7 @@ def run_round(argv):
             # buy-hold baseline: knowledge['buyhold'], else an always_long arm in THIS round.
             _bh = knowledge.get("buyhold", {}).get(target, {}).get("calmar")
             if _bh is None:
-                _alrows = [r for r in rows if "always_long" in (r.get("cell", "") or "")]
+                _alrows = [r for r in rows if r.get("labeler") == "always_long"]
                 _bh = _alrows[0]["real_calmar"] if _alrows else None
             if _bh is not None:
                 _bh = _f(_bh)

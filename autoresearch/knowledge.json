@@ -1346,10 +1346,33 @@
         "thresh": 0.4,
         "sizing": "cdf_overlay"
       }
+    },
+    "KRE": {
+      "cell": "KRE_logdollar_ker+trend_scan_cdf_overlay_t0.40",
+      "real_calmar": 0.8229,
+      "real_cagr": 4.855,
+      "real_mdd": 5.9,
+      "real_da": 8.9365,
+      "real_sharpe": 1.009,
+      "trades": 474,
+      "g2_pass": true,
+      "round": 42,
+      "source": "tournament",
+      "psr": 0.9721,
+      "n_trials": 4,
+      "significant": false,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "KRE",
+        "axis": "logdollar",
+        "labeler": "ker+trend_scan",
+        "thresh": 0.4,
+        "sizing": "cdf_overlay"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 41,
+  "last_round": 42,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2942,6 +2965,18 @@
         "type": "round",
         "phase": "XBI",
         "label": "R194 XBI DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +0.4429 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r195",
+        "type": "round",
+        "phase": "KRE",
+        "label": "R195 KRE DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +0.8229 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r196",
+        "type": "milestone",
+        "phase": "KRE",
+        "label": "R196 KRE KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +0.8229 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4839,6 +4874,16 @@
         "src": "r193",
         "dst": "r194",
         "label": "no improvement"
+      },
+      {
+        "src": "r194",
+        "dst": "r195",
+        "label": "no improvement"
+      },
+      {
+        "src": "r195",
+        "dst": "r196",
+        "label": "new best"
       }
     ],
     "running": []
@@ -4882,6 +4927,9 @@
     },
     "SPY": {
       "calmar": 1.3967
+    },
+    "KRE": {
+      "calmar": 0.6267
     }
   },
   "top_insights": [
