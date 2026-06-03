@@ -338,6 +338,104 @@ def generate_labels_bgm(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best_labels, best_cfg, best_horizon
 
 
+def _jump_viterbi(z, centroids, lam):
+    """Viterbi DP: assign each row of z to a state minimizing sum ||z-centroid||^2 + lam*(state changes).
+    The lam term is the JUMP PENALTY -> persistent regimes. O(Nn*K^2), K small."""
+    Nn = z.shape[0]
+    K = centroids.shape[0]
+    cost = ((z[:, None, :] - centroids[None, :, :]) ** 2).sum(axis=2)   # Nn x K
+    off = lam * (1.0 - np.eye(K))                                       # off[k,j] = lam if j!=k else 0
+    dp = cost[0].copy()
+    back = np.zeros((Nn, K), dtype=np.int64)
+    for i in range(1, Nn):
+        m = dp[None, :] + off                                          # m[k,j] = dp_prev[j] + jump
+        j = m.argmin(axis=1)
+        dp = cost[i] + m[np.arange(K), j]
+        back[i] = j
+    states = np.zeros(Nn, dtype=np.int64)
+    states[-1] = int(dp.argmin())
+    for i in range(Nn - 1, 0, -1):
+        states[i - 1] = back[i, states[i]]
+    return states
+
+
+def _jump_fit(z, tr_mask, K, lam, n_iter=6):
+    """Coordinate descent for the Statistical Jump Model: alternate Viterbi assignment with a
+    centroid M-step fit on TRAIN rows only (leak-safe). Returns the full state sequence or None."""
+    tr_idx = np.where(tr_mask)[0]
+    if len(tr_idx) < K:
+        return None
+    step = max(1, len(tr_idx) // K)
+    pick = [min(i * step, len(tr_idx) - 1) for i in range(K)]
+    cents = z[tr_idx[pick]].astype(float).copy()
+    for _ in range(n_iter):
+        st = _jump_viterbi(z, cents, lam)
+        newc = cents.copy()
+        for k in range(K):
+            mk = tr_mask & (st == k)
+            if mk.any():
+                newc[k] = z[mk].mean(axis=0)
+        if np.allclose(newc, cents):
+            cents = newc
+            break
+        cents = newc
+    return _jump_viterbi(z, cents, lam)
+
+
+def generate_labels_jump_model(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[50, 100]):
+    """Statistical Jump Model (Shu & Mulvey 2024, arXiv:2402.05272) — PERSISTENT-regime label, mined
+    2026-06-03. Penalized k-means: cluster a per-bar regime feature [fwd_ret, fwd_vol] into K states with
+    an explicit JUMP PENALTY (lambda) on state TRANSITIONS, via coordinate descent (Viterbi assignment +
+    TRAIN-fit centroid M-step). The jump penalty yields PERSISTENT regimes (no per-bar flip-flop) — the
+    key difference from `bgm`, which clusters the forward-return distribution memorylessly. The up-state
+    (TRAIN highest mean fwd_ret) -> label 1, else 0. Centroids + state-direction fit on TRAIN; the forward
+    feature defines only the TARGET (G3-ok). Tests whether persistence beats bgm on regime assets (UUP).
+    Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for fk in horizons:
+        if fk not in fwd_ret:
+            continue
+        sel = (~np.isnan(fwd_ret[fk])) & fv
+        idx = np.where(sel)[0]
+        if len(idx) < 200:
+            continue
+        fr = fwd_ret[fk][sel]
+        fvol = fwd_vol[fk][sel]
+        feat = np.column_stack([fr, fvol]).astype(float)
+        tr_sub = tr_m[sel]
+        if int(tr_sub.sum()) < 100:
+            continue
+        mu = feat[tr_sub].mean(axis=0)
+        sd = feat[tr_sub].std(axis=0) + 1e-9
+        z = (feat - mu) / sd                                # standardized on TRAIN
+        base = float(np.mean(np.sum(z[tr_sub] ** 2, axis=1))) + 1e-9   # per-bar cost scale
+        for K in (2, 3):
+            for lam_mult in (0.0, 3.0):                      # 0 = plain k-means, 3*base = persistent
+                st = _jump_fit(z, tr_sub, K, lam_mult * base)
+                if st is None:
+                    continue
+                tr_st = st[tr_sub]
+                tr_fr = fr[tr_sub]
+                means = [float(tr_fr[tr_st == k].mean()) if (tr_st == k).any() else -1e18 for k in range(K)]
+                up = int(np.argmax(means))
+                y = np.full(N, -1, dtype=int)
+                y[idx] = (st == up).astype(int)
+                ly = y >= 0
+                tx = fv & ly & tr_m
+                vx = fv & ly & va_m
+                if tx.sum() < 100 or vx.sum() < 20:
+                    continue
+                bal = float(y[tx].mean())
+                if 0.2 < bal < 0.8:
+                    score = min(bal, 1 - bal)
+                    if score > best_score:
+                        best_score, best, best_cfg, best_h = score, y, f"jump_f{fk}_K{K}_lam{lam_mult}", fk
+    if best is None:
+        return None, "jump_model_no_balanced", None
+    return best, best_cfg, best_h
+
+
 # --------------------------------------------------------------------------- #
 # Featured: Agglomerative (Ward)                                              #
 # --------------------------------------------------------------------------- #
@@ -1797,6 +1895,7 @@ LABELERS = {
     "carry": generate_labels_carry_uniform,
     "tertile": generate_labels_tertile,
     "bgm": generate_labels_bgm,
+    "jump_model": generate_labels_jump_model,         # Statistical Jump Model — PERSISTENT regimes (new, non-HMM)
     "agglomerative": generate_labels_agglomerative,
     "triple_barrier": generate_labels_triple_barrier,
     "triple_barrier_tight": generate_labels_triple_barrier_tight,
@@ -1815,7 +1914,7 @@ LABELERS = {
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
     "accel", "ker", "trend_leg", "sharpe_scan", "calmar_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
-    "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
+    "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
 ]

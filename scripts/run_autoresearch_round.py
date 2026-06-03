@@ -120,7 +120,7 @@ VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalan
 VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
                   "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon",
-                  "regime_gmm", "cusum_regime", "dc_trend", "dc_reversal", "crash_ahead",
+                  "regime_gmm", "cusum_regime", "jump_model", "dc_trend", "dc_reversal", "crash_ahead",
                   "trend_scan", "ker", "trend_leg", "accel", "sharpe_scan", "calmar_scan", "mfe_mae", "revert", "turn_scan", "perment", "hmm", "always_long"]
 VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto"]
 
