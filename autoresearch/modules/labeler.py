@@ -1662,6 +1662,71 @@ def generate_labels_sharpe_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_calmar_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                horizons=[40, 80]):
+    """Drawdown-adjusted forward-trend label — UNSUPERVISED, non-HMM. Mined 2026-06-03; targets the
+    DEPLOYED objective (Calmar) directly. For horizon H: net = lc[t+H]-lc[t]; walk the forward path and
+    track the DIRECTION-AWARE adverse excursion — for an up move the worst peak-to-trough DRAWDOWN, for a
+    down move the worst trough-to-peak RUN-UP. CMR = |net| / (adverse + eps): a clean trend (large net,
+    small counter-move) scores high in EITHER direction. Orthogonal to sharpe_scan (symmetric vol denom —
+    penalizes ALL variance) and ker (path-efficiency |net|/gross): Calmar penalizes only the DOWNSIDE of
+    the realized direction, which is exactly what dd_overlay sizing + the Calmar objective reward. Label 1
+    if net>0 and CMR>=cut, 0 if net<=0 and CMR>=cut, -1 (ignore) if choppy. Cut = TRAIN quantile of CMR.
+    Forward info defines only the TARGET (G3-ok). Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    eps = 1e-6
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H:
+            continue
+        cmr = np.full(N, np.nan)
+        net = np.full(N, np.nan)
+        for t in range(N - H):
+            start = lc[t]
+            peak = start
+            trough = start
+            maxdd = 0.0     # worst peak-to-trough (long-side adverse)
+            maxru = 0.0     # worst trough-to-peak (short-side adverse)
+            for j in range(t + 1, t + H + 1):
+                p = lc[j]
+                if p > peak:
+                    peak = p
+                if p < trough:
+                    trough = p
+                dd = peak - p
+                ru = p - trough
+                if dd > maxdd:
+                    maxdd = dd
+                if ru > maxru:
+                    maxru = ru
+            nt = lc[t + H] - start
+            adverse = maxdd if nt > 0 else maxru
+            net[t] = nt
+            cmr[t] = abs(nt) / (adverse + eps)
+        trsel = tr_m & fv & np.isfinite(cmr)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.4, 0.5, 0.6, 0.7):
+            cut = float(np.quantile(cmr[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            clean = fv & np.isfinite(cmr) & (cmr >= cut)
+            y[clean & (net > 0)] = 1
+            y[clean & (net <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"calmar_scan_H{H}_q{q}_cut{round(cut,3)}", H
+    if best is None:
+        return None, "calmar_scan_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_mfe_mae(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                             horizons=[20, 40, 80]):
     """Forward EXCURSION-ASYMMETRY label — UNSUPERVISED, non-HMM. Over horizon H the path
@@ -1721,6 +1786,7 @@ LABELERS = {
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
     "trend_leg": generate_labels_trend_leg,           # Wang's flagship connected-leg trend SEGMENTATION (new, non-HMM)
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
+    "calmar_scan": generate_labels_calmar_scan,       # drawdown-adjusted forward-trend (new, non-HMM; targets Calmar/downside)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
@@ -1748,7 +1814,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "calmar_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
