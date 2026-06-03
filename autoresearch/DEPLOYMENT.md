@@ -9,8 +9,9 @@ The deliverable: a diversified, **leak-free** ETF book. Real OOS (2023-08 → 20
 > buy-hold. **The numbers below are the honest leak-free re-validation.**
 
 ## The honest deployable book (leak-free)
-Calmar²-weighted, gross ≤ 1. The book's value is **diversification + risk-reduction**, NOT a stack of strong
-single-ticker timing edges (there is essentially ONE modest genuine timing edge, on gold).
+Calmar²-weighted (durability-adjusted: favor GLD), gross ≤ 1. The book's value is **two real single-ticker edges
+(GLD durable, UUP real-but-softening) on a diversified buy-hold core** — risk-reduction + a strong, decay-healthy
+gold-timing edge, not a broad stack of edges.
 
 | ETF | strategy | role | leak-free Calmar |
 |-----|----------|------|-----------------:|
@@ -47,17 +48,26 @@ upgrade 2.51→3.47 lifts the book somewhat). UUP and the buy-hold names are lea
 > only 134 orders, MDD 1.5%). At a conservative ~5bp (top-liquid ETFs, real spreads ~1-2bp) the honest deployable book
 > is **GLD ~2.9 + UUP ~1.5** + buy-hold diversifiers. Genuinely deployable net-of-cost.
 
-## What is actually real (read this before trusting the book)
-- **GLD is a genuine but MODEST edge.** Leak-free Calmar **reproducibly 2.51** ≈ gold buy-hold (~2.0) **+ ~0.5 real
-  label-timing alpha**. The alpha is **permute-confirmed** (shuffling TRAIN labels drops GLD below buy-hold), so
-  it is real signal — but most of the deployable value is just gold exposure. Deterministic + band-robust
-  (0.03→2.51, 0.05→2.49); the earlier 2.76 was a one-off anomaly.
+## What is actually real (read this before trusting the book) — current, post-leak, post-2026-06 edges
+- **GLD is the DURABLE edge — `trend_leg`+regime_gmm 3.47.** Wang's segmentation labeler beat ker (+38%); the
+  alpha is **permute-confirmed** (collapses below gold buy-hold under label-shuffle), reproducible EXACTLY 3.4716,
+  **online-proven** (1.4e-8), cost-survives (~2.9 @5bp), and crucially **decay-HEALTHY** (early→late Sharpe
+  1.84→2.30, strengthening). Decomposition: ~2.0 gold buy-hold + ~1.16 real label-timing alpha. Gold-specific
+  (does not generalize to SLV/SOXX). **This is the most trustworthy forward edge — weight conviction here.**
+- **UUP is REAL but FORWARD-FRAGILE — `bgm`+`sadf_explosive`+`ker` 1.85.** sadf's explosive-regime detection adds
+  to the dollar's order-flow regime (+42%); permute-confirmed (→−0.09 = pure label alpha), online-proven (6e-9),
+  cost-survives (~1.5 @5bp). BUT **decay-STALE** (early→late Sharpe 2.67→0.74): the headline 1.85 is concentrated
+  in the early explosive-dollar era (2014-15); recent-regime alpha ~0.74. **Deploy with tempered expectations and
+  reduced conviction** — it earns its book seat as much for decorrelation as for standalone forward alpha. Also
+  PROVISIONAL on multiple-testing (Bonferroni-boundary at N=72, this session's search burden).
 - **Most of the book is buy-hold.** HYG/TIP/DBC are `always_long` (no timing); they earn their seat by
   decorrelation, not edge. The book beats a passive equal-weight basket on **risk-adjusted** terms (smoother,
   lower drawdown), not on raw CAGR.
 - **SOXX's "edge" was the leak.** Leak-free 0.71 < its ~1.33 buy-hold — kept only as a weak decorrelator.
-- **Durable single-ticker alpha is even scarcer than the pre-leak research claimed** — the leak was carrying
-  much of the apparent edge. This is the honest bottom line.
+- **Honest bottom line:** TWO real single-ticker edges (GLD durable, UUP real-but-softening), both validated across
+  permute + online + cost + decay lenses; everything else is buy-hold. Durable alpha is scarce + asset-intrinsic;
+  the leak-free, multiple-testing-honest reality is a strong-and-durable gold edge + a softening dollar edge + a
+  diversified buy-hold core. **Conviction weighting: GLD > UUP** (durability-adjusted).
 
 ## Live deployment
 - `templates/live_trade.py.tmpl` (`orchestrator.render_live_trade`) runs the FROZEN model from ObjectStore fully
