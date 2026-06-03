@@ -3645,6 +3645,12 @@
         "type": "round",
         "phase": "DBC",
         "label": "R303 DBC DISCARD: Sample on log-dollar bars; hurst_persist; size long-only, vol-targeted, entry 0.45. -> Calmar +0.1645 (prev best +0.9119). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r304",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R304 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + trend_leg; size long-only, vol-targeted, entry 0.50. -> Calmar +1.6800 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6086,6 +6092,11 @@
       {
         "src": "r302",
         "dst": "r303",
+        "label": "no improvement"
+      },
+      {
+        "src": "r303",
+        "dst": "r304",
         "label": "no improvement"
       }
     ],
