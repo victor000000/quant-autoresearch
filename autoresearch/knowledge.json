@@ -2784,6 +2784,12 @@
         "type": "round",
         "phase": "TLT",
         "label": "R171 TLT DISCARD: Sample on kyle; trend_scan; size long/short, vol-targeted, entry 0.45. -> Calmar -0.0583 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r172",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R172 UUP DISCARD: Sample on kyle; ker; size long-only, vol-targeted, entry 0.50. -> Calmar +0.1255 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4565,6 +4571,11 @@
       {
         "src": "r170",
         "dst": "r171",
+        "label": "no improvement"
+      },
+      {
+        "src": "r171",
+        "dst": "r172",
         "label": "no improvement"
       }
     ],

@@ -339,3 +339,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T08:44:56,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,B,UUP,imbalance,bgm+ker,0.5,dd_overlay,1.2394,2.2106,207,True,True,0.0,0.9311,0.8757,1.1447,-0.1545,8.2788,710,False,False,completed,completed
 2026-06-03T08:52:37,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,A,TLT,logdollar,mfe_mae,0.45,ls_overlay,-0.2664,26.3215,490,True,True,1.221,0.6393,0.5163,-0.5905,-0.3492,7.4901,710,False,False,completed,completed
 2026-06-03T08:52:37,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,B,TLT,kyle,trend_scan,0.45,ls_overlay,-0.0583,21.6864,173,True,True,0.9853,0.6995,0.3833,-0.1038,-0.2079,4.8094,710,True,False,completed,completed
+2026-06-03T08:59:23,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,A,UUP,kyle,ker,0.5,cdf_overlay,0.1255,15.9397,493,True,True,1.6135,0.8562,0.5338,0.2978,-1.2352,10.8008,710,True,False,completed,completed
+2026-06-03T08:59:23,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,B,UUP,imbalance,mfe_mae,0.5,cdf_overlay,0.3862,6.4193,64,False,False,1.9247,0.7715,0.2843,0.6217,-0.5485,4.7882,710,False,False,completed,completed
