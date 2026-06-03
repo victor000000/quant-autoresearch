@@ -3296,6 +3296,12 @@
         "type": "milestone",
         "phase": "GLD",
         "label": "R253 GLD KEEP: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.5454 (prev best +4.1884). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r254",
+        "type": "round",
+        "phase": "SOXX",
+        "label": "R254 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6197 (prev best +3.0248). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5488,6 +5494,11 @@
         "src": "r252",
         "dst": "r253",
         "label": "new best"
+      },
+      {
+        "src": "r253",
+        "dst": "r254",
+        "label": "no improvement"
       }
     ],
     "running": []
