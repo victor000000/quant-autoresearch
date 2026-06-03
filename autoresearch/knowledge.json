@@ -3657,6 +3657,12 @@
         "type": "round",
         "phase": "UUP",
         "label": "R305 UUP DISCARD: Sample on jump; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +0.1296 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r306",
+        "type": "round",
+        "phase": "HYG",
+        "label": "R306 HYG DISCARD: Sample on log-dollar bars; crash_ahead; size crashveto, entry 0.50. -> Calmar +1.4565 (prev best +1.8276). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6108,6 +6114,11 @@
       {
         "src": "r304",
         "dst": "r305",
+        "label": "no improvement"
+      },
+      {
+        "src": "r305",
+        "dst": "r306",
         "label": "no improvement"
       }
     ],
