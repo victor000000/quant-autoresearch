@@ -19,7 +19,7 @@ _WARMUP = 820            # >= max feature window (800) + margin
 _TRAIL = 840             # bars of trailing log-close fed to build_feats
 _VOL_FAST = 10
 _VOL_SLOW = 60
-_HIST_DAYS = 2400        # minute history pulled at start to warm bars + features + rbuf (>= TRAIN span margin)
+_HIST_DAYS = 220         # minute history to warm bars+features+rbuf (820 bars ~= 30 trading days; ample, fast)
 
 
 def _size(p, thresh, sizing, rbuf):
