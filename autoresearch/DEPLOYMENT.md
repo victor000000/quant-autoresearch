@@ -15,7 +15,7 @@ single-ticker timing edges (there is essentially ONE modest genuine timing edge,
 | ETF | strategy | role | leak-free Calmar |
 |-----|----------|------|-----------------:|
 | GLD | logdollar / **trend_leg**+regime_gmm / dd_overlay (band 0.03) | **the one real model edge** (gold trend timing) — UPGRADED 2026-06-03 | **3.47** |
-| UUP | imbalance / bgm+ker / cdf_overlay | dollar-regime edge (leak-unaffected; statistically fragile) | 1.30 |
+| UUP | imbalance / bgm+**sadf_explosive**+ker / cdf_overlay | dollar-regime edge + explosive-regime (UPGRADED 2026-06-04, provisional) | **1.85** |
 | HYG | logdollar / always_long | credit carry (buy-hold) | 1.83 |
 | TIP | logdollar / always_long | inflation/duration carry (buy-hold) | 1.15 |
 | DBC | logdollar / always_long | commodities decorrelator (buy-hold) | 0.91 |
