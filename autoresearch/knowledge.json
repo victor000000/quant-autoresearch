@@ -2802,6 +2802,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R174 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + mfe_mae; size long-only, vol-targeted, entry 0.40. -> Calmar +2.5036 (prev best +3.2026). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r175",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R175 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of ker + mfe_mae; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5126 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4598,6 +4604,11 @@
       {
         "src": "r173",
         "dst": "r174",
+        "label": "no improvement"
+      },
+      {
+        "src": "r174",
+        "dst": "r175",
         "label": "no improvement"
       }
     ],
