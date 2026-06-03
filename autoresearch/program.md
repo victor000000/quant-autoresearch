@@ -42,7 +42,7 @@ Detectors: trend-scan / change-point / clustering — **NOT HMM.** Aim Calmar > 
 
 ## honest state (2026-06-03, very late) — mechanistically understood; gold is multi-structure
 Durable single-ticker alpha = **3 confirmed edges** (Bonferroni-significant + permute-validated, deployable):
-**GLD `ker+trend_scan+regime_gmm` 3.90** (logdollar; trend+REGIME HYBRID — adding regime_gmm to the trend core
+**GLD `ker+trend_scan+regime_gmm` + `dd_overlay` 4.02** (logdollar; trend+REGIME HYBRID + drawdown-aware sizing — adding regime_gmm to the trend core
 beat the old 3.22, +21%; threshold-robust 3.64–3.90, the most trustworthy crown) · **SOXX `ker+trend_scan` 1.92**
 (logdollar; FRAGILE — SMH sister-fund replication FAILED → fund-specific, though temporally robust/not decaying) ·
 **UUP `bgm+ker` 1.30** (IMBALANCE axis; regime edge). Everything else = buy-hold. Provisional/un-crowned: KRE/ITB
