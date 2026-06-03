@@ -1200,7 +1200,10 @@
         "labeler": "ker+regime_gmm",
         "thresh": 0.4,
         "sizing": "dd_overlay"
-      }
+      },
+      "dsr": 0.9249,
+      "dsr_n_trials": 80,
+      "dsr_survives_holm": false
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1297,8 +1300,8 @@
       },
       "status": "REAL EDGE 1.30 (imbalance bgm+ker). meta-labeling tested: triple_barrier_meta -0.26 / tight_meta +0.19, both non-deployable (gate over-filters to 62-71 trades). ker/accel/meta all tried -> 1.30 optimal.",
       "ceilinged": true,
-      "dsr": 0.5999,
-      "dsr_n_trials": 48,
+      "dsr": 0.6015,
+      "dsr_n_trials": 52,
       "dsr_survives_holm": false
     },
     "TIP": {
@@ -1370,8 +1373,8 @@
         "thresh": 0.5,
         "sizing": "cdf_overlay"
       },
-      "dsr": 0.9594,
-      "dsr_n_trials": 39,
+      "dsr": 0.961,
+      "dsr_n_trials": 43,
       "dsr_survives_holm": false
     }
   },
