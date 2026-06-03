@@ -40,13 +40,24 @@ Detectors: trend-scan / change-point / clustering — **NOT HMM.** Aim Calmar > 
 - **Durable > lucky:** drift/long-biased edges persist; two-sided timing with val_auc≈0.5 decays. A/B every new method vs the champion.
 - **New methods help only where there's structure** (val_auc>0.6). On val_auc≈0.5 drifters no method beats buy-hold — don't grind them.
 
-## honest state (2026-06-03, late)
-Durable single-ticker alpha is **scarce** — two edges survive re-validation + deflation + the permuted-label control:
-**GLD `ker+trend_scan+accel` 3.22** (gold's tradeable trend; the `accel` curvature label was added in a 3-WAY
-ensemble — unlocked by multi-file render — and beat the old 2-way 3.20) and **UUP `bgm+ker` 1.30** (dollar regime,
-optimal as 2-way). Everything else is buy-hold drift (QQQ/EEM/EFA/HYG/TIP/DBC/XLE/IWM/SLV) or no-edge (TLT). Both
-edges are PERMUTE-VALIDATED real (collapse to ~buy-hold under label shuffle). The deployable book is a downstream
-combination of these champions, not the research target.
+## honest state (2026-06-03, very late) — CONVERGED + mechanistically understood
+Durable single-ticker alpha = **3 confirmed edges** (Bonferroni-significant + permute-validated, deployable):
+**GLD `ker+trend_scan+accel` 3.22** · **SOXX `ker+trend_scan` 1.92** (semis; found via universe expansion) ·
+**UUP `bgm+ker` 1.30**. Plus **SOXX is FRAGILE** (SMH sister-fund replication FAILED → fund/path-specific, lowest
+confidence). Everything else = buy-hold (event-driven, V-recovery, or mean-reverting up-drift). Provisional/un-crowned:
+KRE/ITB (permute-pass but Bonferroni-FAIL).
+
+**THE governing rule (explains every result): two edge MECHANISMS, each needs its own labeler, edge type is asset-intrinsic.**
+1. **TREND-MOMENTUM** (`ker+trend_scan`): wins ⟺ drawdowns are MOMENTUM-CYCLICAL / trend-predictable AND trimming
+   costs < MaxDD it saves → GLD ✓, SOXX ✓; SLV near-miss (mechanism fires, 20× less DD, but Calmar just under BH);
+   FAILS on event/shock-driven (XLE oil, XBI FDA, DBC commodities → 0.05–0.3) and V-recovery up-drifters (QQQ/SPY → trims).
+2. **REGIME** (`bgm`): wins on macro-regime OSCILLATION → UUP ✓ (dollar). The trend core gets only 0.55 on UUP.
+Each labeler FAILS on the other's asset. `revert` (mean-reversion) captures signal on TLT/IWM/EEM but never beats their up-drift.
+
+**Honesty gates (all earn their keep):** permute control (excess-over-buyhold collapse — caught SPY's fake drift-edge) ·
+Bonferroni significance (demoted KRE/ITB) · REPLICATION (SMH exposed SOXX fragility — the deepest lesson: in-sample
+gates don't catch fund/path-specificity, only replication does). **Single-ticker search is CONVERGED + explained;
+the high-value move now is decay-monitoring GLD/UUP, not more searching (each round adds multiple-testing burden).**
 
 **Ensemble DEPTH is asset-specific:** a 3rd label helps only where the 2-way left orthogonal structure — and only
 a SAME-FAMILY label (GLD: +accel, a trend-shape label like ker/trend_scan, won; +cusum_regime/+sharpe_scan diluted;
