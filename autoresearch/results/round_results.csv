@@ -583,3 +583,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T23:13:39,GLD,3.4716,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,trend_leg+accel+regime_gmm,0.4,dd_overlay,3.0037,5.6792,787,True,True,0.0,0.8021,0.702,2.0171,-0.3576,6.7133,710,False,False,completed,completed
 2026-06-03T23:23:55,GLD,3.4716,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,A,GLD,logdollar,trend_leg+sadf_explosive+regime_gmm,0.4,dd_overlay,3.0973,5.2729,670,True,True,0.0,0.8665,0.6164,2.071,-0.2264,6.2858,710,True,False,completed,completed
 2026-06-03T23:23:55,GLD,3.4716,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,sadf_explosive+regime_gmm,0.4,dd_overlay,2.5032,7.0987,783,True,True,0.0,0.8818,0.6052,1.8043,-0.2599,6.2162,710,False,False,completed,completed
+2026-06-03T23:31:32,FXY,0.0,,A,FXY,imbalance,bgm+ker,0.4,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
+2026-06-03T23:31:32,FXY,0.0,,B,FXY,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
