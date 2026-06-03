@@ -105,21 +105,42 @@ class LiveTrade(QCAlgorithm):
             self.ok = False
             return
         self.builder = cls(float(mb["bar_thresh"]))
-        self.mean = np.array(mb["scaler_mean"], dtype=float)
-        self.scale = np.array(mb["scaler_scale"], dtype=float)
-        self.kept = np.array(mb["kept_idx"], dtype=int)
-        self.cal_x = np.array(mb.get("cal_x", []), dtype=float)
-        self.cal_y = np.array(mb.get("cal_y", []), dtype=float)
-        self.best_iter = int(mb.get("best_iter", 0) or 0)
         self.nfeat = int(mb.get("n_features", 0) or 0)
-        self.booster = xgb.Booster()
-        self.booster.load_model(bytearray(mb["booster"], "utf-8"))
-        self.is_meta = bool(mb.get("meta"))
-        if self.is_meta:
-            self.meta_booster = xgb.Booster()
-            self.meta_booster.load_model(bytearray(mb["meta_booster"], "utf-8"))
-            self.meta_gate = float(mb.get("meta_gate", 0.0))
+        # ENSEMBLE (real edges GLD ker+regime_gmm / UUP bgm+ker) OR single-labeler. Load each member;
+        # the online prediction AVERAGES the members' calibrated+gated probs (mirrors footer's ensemble).
+        raw_members = mb["members"] if mb.get("ensemble") else [mb]
+        self.members = [self._load_member(b) for b in raw_members]
+        self.set_runtime_statistic("n_members", str(len(self.members)))
         self._warm_from_history()
+
+    def _load_member(self, b):
+        booster = xgb.Booster()
+        booster.load_model(bytearray(b["booster"], "utf-8"))
+        m = {"mean": np.array(b["scaler_mean"], dtype=float),
+             "scale": np.array(b["scaler_scale"], dtype=float),
+             "kept": np.array(b["kept_idx"], dtype=int),
+             "cal_x": np.array(b.get("cal_x", []), dtype=float),
+             "cal_y": np.array(b.get("cal_y", []), dtype=float),
+             "best_iter": int(b.get("best_iter", 0) or 0),
+             "booster": booster, "is_meta": bool(b.get("meta")), "meta_booster": None, "meta_gate": 0.0}
+        if m["is_meta"]:
+            mbst = xgb.Booster(); mbst.load_model(bytearray(b["meta_booster"], "utf-8"))
+            m["meta_booster"] = mbst; m["meta_gate"] = float(b.get("meta_gate", 0.0))
+        return m
+
+    def _predict_member(self, m, row):
+        x = ((row - m["mean"]) / m["scale"])[m["kept"]]
+        dm = xgb.DMatrix(x.reshape(1, -1))
+        if m["best_iter"] > 0:
+            praw = float(m["booster"].predict(dm, iteration_range=(0, m["best_iter"] + 1))[0])
+        else:
+            praw = float(m["booster"].predict(dm)[0])
+        p = float(np.interp(praw, m["cal_x"], m["cal_y"])) if len(m["cal_x"]) >= 2 else praw
+        if m["is_meta"]:
+            pmeta = float(m["meta_booster"].predict(dm)[0])
+            if pmeta < 0.5:
+                p = m["meta_gate"]
+        return p
 
     def _warm_from_history(self):
         # Build bars + feature buffer + rbuf from real history so the FIRST live bar already has a warm
@@ -151,11 +172,6 @@ class LiveTrade(QCAlgorithm):
             n_warm += 1
         self.set_runtime_statistic("warm_bars", str(n_warm))
         self.set_runtime_statistic("warm_rbuf", str(len(self._rbuf)))
-
-    def _calibrate(self, p):
-        if len(self.cal_x) >= 2:
-            return float(np.interp(p, self.cal_x, self.cal_y))
-        return float(p)
 
     def on_data(self, slice):
         if not self.ok:
@@ -195,17 +211,8 @@ class LiveTrade(QCAlgorithm):
                 self._rbuf.append(lc - self._last_bar_lc)
             self._last_bar_lc = lc
             return
-        x = ((row - self.mean) / self.scale)[self.kept]
-        dm = xgb.DMatrix(x.reshape(1, -1))
-        if self.best_iter > 0:
-            praw = float(self.booster.predict(dm, iteration_range=(0, self.best_iter + 1))[0])
-        else:
-            praw = float(self.booster.predict(dm)[0])
-        p = self._calibrate(praw)
-        if self.is_meta:
-            pmeta = float(self.meta_booster.predict(dm)[0])
-            if pmeta < 0.5:
-                p = self.meta_gate
+        # AVERAGE the members' calibrated+gated probs (single-labeler => one member; mirrors footer ensemble).
+        p = float(np.mean([self._predict_member(m, row) for m in self.members]))
         # CAUSAL sizing: decide from the warm rbuf, THEN append this bar's realized return.
         w = _size(float(p), self.thresh, self.sizing, self._rbuf)
         if abs(w) < 0.01:

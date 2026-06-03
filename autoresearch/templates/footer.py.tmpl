@@ -516,7 +516,7 @@ class AutoresearchPipeline(QCAlgorithm):
                 else:
                     labeler_registry = ({only_label: labeler_registry[only_label]}
                                         if only_label in labeler_registry else {})
-            _ens_preds, _ens_tauc, _ens_vauc = [], [], []
+            _ens_preds, _ens_tauc, _ens_vauc, _ens_bundles = [], [], [], []
             for label_name, label_fn in labeler_registry.items():
                 try:
                     y, label_cfg, _ = label_fn(
@@ -543,6 +543,7 @@ class AutoresearchPipeline(QCAlgorithm):
                     _ens_preds.append(test_preds)
                     _ens_tauc.append(train_auc)
                     _ens_vauc.append(val_auc)
+                    _ens_bundles.append(_bundle)     # sub-model bundle for the ONLINE ensemble (live deploy)
                     continue
                 aucdiv = abs(train_auc - val_auc)
 
@@ -635,6 +636,31 @@ class AutoresearchPipeline(QCAlgorithm):
                 cells.append({"key": ekey, "axis": axis, "label": ename, "synth_cal": 0.0,
                               "val_da": 0.0, "train_auc": round(e_tauc, 4), "val_auc": round(e_vauc, 4),
                               "aucdiv": round(abs(e_tauc - e_vauc), 4), "n_trades": len(ens_list)})
+                # ENSEMBLE ONLINE BUNDLE (2026-06-03): save the sub-model bundles + bar params so the live/
+                # online path can reproduce the AVERAGED calibrated prediction online (load each member, run it,
+                # average). Without this, ensemble champions (the real edges: GLD ker+regime_gmm, UUP bgm+ker) had
+                # NO online bundle and could not be live-deployed. Guarded; never breaks the cell save above.
+                try:
+                    _mem = [b for b in _ens_bundles if (b is not None and "booster" in b and not b.get("constant_long"))]
+                    if len(_mem) >= 2 and axis in BUILDER_CLASSES:
+                        _emb = _make_builder(axis, close, vol, ts_arr, TARGET_BARS)
+                        _ebthr = builder_threshold(_emb) if _emb is not None else None
+                        if _ebthr is not None:
+                            _eb = {"ensemble": True, "constant_long": False, "members": _mem,
+                                   "thresh": float(thresh), "sizing": sizing, "rebal_band": float(CONFIG["rebal_band"]),
+                                   "bar_type": axis, "bar_thresh": float(_ebthr), "target_bars": int(TARGET_BARS),
+                                   "n_features": int(_mem[0].get("n_features", 0) or 0),
+                                   "val_end": str(VAL_END), "test_end": str(TEST_END)}
+                            self.object_store.save(ekey.replace("/cell_", "/model_"), json.dumps(_eb))
+                            try:
+                                self.set_runtime_statistic("hb_ens_bundle", str(len(_mem)))
+                            except Exception:
+                                pass
+                except Exception as _ee:
+                    try:
+                        self.set_runtime_statistic("hb_ens_bundle_err", str(_ee)[:80])
+                    except Exception:
+                        pass
                 best_key = ekey
                 best_cal = 0.0
                 best_tauc = e_tauc
