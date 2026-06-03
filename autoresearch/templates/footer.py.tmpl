@@ -87,6 +87,15 @@ def _size(p, thresh, sizing, rbuf):
             slow = float(np.std(rbuf[-min(m, _VOL_SLOW):]))
             if fast > 1e-9:
                 b *= float(min(1.0, max(0.6, slow / fast)))
+    if sizing == "dd_overlay":          # drawdown-aware: throttle the bet when the asset is
+        m = len(rbuf)                   # underwater vs its recent rolling peak (causal, rbuf only)
+        if m >= _VOL_FAST + 2:
+            win = np.asarray(rbuf[-min(m, _VOL_SLOW):], dtype=float)
+            cum = np.cumsum(win)                       # recent log-equity of the asset
+            dd = float(cum[-1] - float(np.max(cum)))   # <= 0: current log DD from recent peak
+            ref = 3.0 * float(np.std(win)) * math.sqrt(len(win))   # vol-normalized DD scale (~3σ)
+            if ref > 1e-9:
+                b *= float(min(1.0, max(0.5, 1.0 + dd / ref)))     # 1.0 at peak -> 0.5 floor when deep
     return b
 
 

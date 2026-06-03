@@ -1422,10 +1422,65 @@ def generate_labels_sharpe_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_mfe_mae(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                            horizons=[20, 40, 80]):
+    """Forward EXCURSION-ASYMMETRY label — UNSUPERVISED, non-HMM. Over horizon H the path
+    from t rewards a long by MFE = max(lc[t..t+H]) - lc[t] and punishes it by
+    MAE = lc[t] - min(lc[t..t+H]). asym = (MFE - MAE)/(MFE + MAE) in [-1,1] measures how much
+    the PATH pays a long before it hurts — orthogonal to net-move (ker/sharpe_scan), OLS slope
+    (trend_scan) and curvature (accel): two bars with the SAME net move differ in whether price
+    ran for you first or drew down first (path quality a holder actually feels). Label 1 if
+    asym>=cut (path favoured up), 0 if asym<=-cut (path favoured down), -1 (ignore) if symmetric.
+    cut = TRAIN quantile of |asym| (balances the set). Forward info defines only the TARGET
+    (G3-ok); the supervised model predicts it from past-only features. Sweeps H and q."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H:
+            continue
+        base = lc[:N - H]
+        fmax = base.copy()                              # forward rolling max/min over [t, t+H]
+        fmin = base.copy()                              # basic-numpy (no stride_tricks): H+1 passes
+        for k in range(1, H + 1):
+            seg = lc[k:k + (N - H)]
+            fmax = np.maximum(fmax, seg)
+            fmin = np.minimum(fmin, seg)
+        mfe = fmax - base                               # >= 0 max favorable excursion
+        mae = base - fmin                               # >= 0 max adverse excursion
+        asym = np.full(N, np.nan)
+        denom = mfe + mae
+        with np.errstate(divide="ignore", invalid="ignore"):
+            asym[:N - H] = np.where(denom > 1e-12, (mfe - mae) / denom, np.nan)
+        trsel = tr_m & fv & np.isfinite(asym)
+        if int(trsel.sum()) < 100:
+            continue
+        aa = np.abs(asym)
+        for q in (0.3, 0.4, 0.5, 0.6):
+            cut = float(np.quantile(aa[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            fin = fv & np.isfinite(asym)
+            y[fin & (asym >= cut)] = 1
+            y[fin & (asym <= -cut)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"mfe_mae_H{H}_q{q}_cut{round(cut, 3)}", H
+    if best is None:
+        return None, "mfe_mae_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
+    "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
     "dc_reversal": generate_labels_dc_reversal,
@@ -1449,7 +1504,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "sharpe_scan", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "sharpe_scan", "mfe_mae", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",

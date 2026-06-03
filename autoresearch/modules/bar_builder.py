@@ -123,6 +123,38 @@ class VolBarBuilder:
         return None
 
 
+class KyleImpactBarBuilder:
+    """Price-impact / illiquidity bar (NEW, microstructure axis): accumulate
+    |delta log-close| / sqrt(volume) — price MOVE per unit sqrt-liquidity (a Kyle-lambda /
+    Amihud-illiquidity flavour). Emits FAST when price moves on THIN volume (high price
+    impact == likely informed flow) and SLOWLY when heavy volume barely moves price.
+    Orthogonal to the SIZE axes: vol bars weight ret^2*sqrt(vol) and dollar bars weight
+    close*vol (both speed up on size); this speeds up on IMPACT-per-size, a distinct clock.
+    O(1) incremental so the batch build and the online infer are byte-exact; the threshold
+    is auto-calibrated from TRAIN minutes only (causal, see _make_builder)."""
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.cum = 0.0
+        self.last_lc = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0 or vol <= 0:
+            return None
+        lc = math.log(close)
+        if self.last_lc is not None:
+            contrib = abs(lc - self.last_lc) / math.sqrt(vol)
+            if contrib > 0:
+                self.cum += contrib
+        self.last_lc = lc
+        self.close_lc = lc
+        if self.cum >= self.thresh:
+            self.cum = 0.0
+            return {"ts_close": ts, "log_close": self.close_lc}
+        return None
+
+
 class RangeBarBuilder:
     """Range bar: emit when price moves >= threshold % from the last emission.
 
@@ -556,7 +588,7 @@ class DirectionalChangeBarBuilder:
 
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -570,6 +602,7 @@ AXES = {
     "fracdiff": FracDiffBarBuilder,
     "dc": DirectionalChangeBarBuilder,
     "zcusum": ZCusumBarBuilder,
+    "kyle": KyleImpactBarBuilder,
 }
 
 
@@ -1001,6 +1034,23 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
             return None
         return DirectionalChangeBarBuilder(delta)
 
+    if bar_type == "kyle":
+        # Price-impact clock. Per-minute impact = |log-return| / sqrt(volume). Threshold =
+        # TRAIN average impact x full valid count / target_bars (same rate-on-TRAIN-then-scale
+        # recipe as dollar/logdollar; a full-series SUM would leak OOS impact into bar bounds).
+        c = np.asarray(close, dtype=float)
+        v = np.asarray(vol, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            imp = np.abs(ret) / np.sqrt(np.where(v > 0, v, np.nan))
+        valid = (c > 0) & (v > 0) & np.isfinite(imp)
+        keep = tr & valid
+        if not np.any(keep):
+            return None
+        total = float(np.mean(imp[keep])) * int(np.sum(valid))
+        return KyleImpactBarBuilder(_safe_thresh(total, target_bars))
+
     # Default / unknown -> volatility bar (Wang's workhorse axis).
     # Threshold = TRAIN average per-minute vol term x full count / target_bars.
     # The per-minute realized-vol term is averaged over TRAIN minutes only (causal);
@@ -1033,7 +1083,7 @@ BUILDER_CLASSES = {
     "range": RangeBarBuilder, "logdollar": LogDollarBarBuilder,
     "imbalance": DollarImbalanceBarBuilder, "tickimb": TickImbalanceBarBuilder,
     "volumeimb": VolumeImbalanceBarBuilder, "dc": DirectionalChangeBarBuilder,
-    "zcusum": ZCusumBarBuilder,
+    "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
 }
 
 
