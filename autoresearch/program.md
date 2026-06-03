@@ -26,6 +26,7 @@ Real OOS backtest is **online, leak-free, model-only-from-QC-ObjectStore.** `inf
 saved predictions + causal `_size`); every `.fit` is in `footer.py` on TRAIN(+embargoed VAL) only; test enters
 only via predict. Proven: `verify.py` bars ≤1e-9, `infer_online.py` p_live==p_saved ≤1e-6. Features past-only,
 thresholds TRAIN-only. Don't trust a champion until its `infer_online` shows preds_match=1.
+**REGRESSION GUARD (2026-06-03, after the logdollar/kyle leak):** `tests/test_bar_threshold_leak.py` (numpy-free, CI-runnable) asserts every bar-threshold scaling is TRAIN-masked/OOS-invariant and forbids the `np.sum(valid)` full-series-count leak signature. Negative-tested (catches the leak if reintroduced). RUN IT after any bar_builder.py change.
 
 ## wang's backbone
 Resample off the clock → label **unsupervised** (the label may look ahead; causality lives in the supervised
