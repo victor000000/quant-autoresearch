@@ -135,3 +135,18 @@ Wider band → fewer trades → less cost drag. Net Calmar @ 5bp slippage (curre
 ```
 
 Best net band = 0.08 → net Calmar 3.971 (637 orders); +14% vs current 0.01 band at 5bp. WORTH widening (cuts cost drag).
+
+## SOXX rebalance dead-band tuning (net-of-5bp-cost objective)
+
+Wider band → fewer trades → less cost drag. Net Calmar @ 5bp slippage (current band = 0.01):
+
+```
+  band  netCalmar  orders  CAGR%
+  0.01      2.776     575   8.88
+  0.02      2.865     296   8.88
+  0.03      2.697     229   8.90
+  0.05      3.000     179   9.00  <- best
+  0.08      2.691     125   9.42
+```
+
+Best net band = 0.05 → net Calmar 3.000 (179 orders); +8% vs current 0.01 band at 5bp. WORTH widening (cuts cost drag).

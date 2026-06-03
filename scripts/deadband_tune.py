@@ -12,7 +12,11 @@ sys.path.insert(0, "autoresearch/harness")
 from harness.orchestrator import render_infer_cell
 from harness.qc_client import submit_and_wait
 
-TK, CELL = "GLD", "logdollar_ker_x_regime_gmm_dd_overlay_t40_n15"
+_DEFAULTS = {"GLD": "logdollar_ker_x_regime_gmm_dd_overlay_t40_n15",
+             "SOXX": "logdollar_ker_x_trend_scan_x_bgm_cdf_overlay_t50",
+             "UUP": "imbalance_bgm_x_ker_cdf_overlay_t50"}
+TK = sys.argv[1] if len(sys.argv) > 1 else "GLD"
+CELL = sys.argv[2] if len(sys.argv) > 2 else _DEFAULTS[TK]
 SLIP = 0.0005  # 5 bp realistic slippage — optimize the NET objective
 BANDS = [0.01, 0.02, 0.03, 0.05, 0.08]   # 0.01 = current (control)
 
@@ -38,7 +42,7 @@ def main():
     rows = []
     for band in BANDS:
         code = base.replace(BAND_SRC, f'abs(w - self._cur_w) > {band}', 1)
-        print(f"[GLD] dead-band {band} @ 5bp ...", flush=True)
+        print(f"[{TK}] dead-band {band} @ 5bp ...", flush=True)
         bt, status = submit_and_wait(code, f"band_{int(band*1000)}", timeout_s=300)
         if status != "completed":
             print(f"  band {band} failed: {status}"); rows.append((band, None, None, None)); continue
@@ -48,7 +52,7 @@ def main():
 
     best = max((r for r in rows if r[1] is not None), key=lambda r: r[1], default=None)
     OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "autoresearch", "HONEST_AUDIT.md")
-    lines = ["", "## GLD rebalance dead-band tuning (net-of-5bp-cost objective)", "",
+    lines = ["", f"## {TK} rebalance dead-band tuning (net-of-5bp-cost objective)", "",
              "Wider band → fewer trades → less cost drag. Net Calmar @ 5bp slippage (current band = 0.01):", "", "```",
              f"{'band':>6s} {'netCalmar':>10s} {'orders':>7s} {'CAGR%':>6s}"]
     print("\n" + lines[-1])
@@ -65,7 +69,7 @@ def main():
                      f"{'+' if gain>=0 else ''}{gain:.0f}% vs current 0.01 band at 5bp. "
                      f"{'WORTH widening (cuts cost drag).' if gain > 3 else 'current band ~optimal; cost drag is intrinsic.'}")
     prev = open(OUT).read() if os.path.exists(OUT) else ""
-    m = "## GLD rebalance dead-band tuning"
+    m = f"## {TK} rebalance dead-band tuning"
     if m in prev:
         prev = prev[:prev.index(m)].rstrip() + "\n"
     open(OUT, "w").write(prev + "\n".join(lines) + "\n")
