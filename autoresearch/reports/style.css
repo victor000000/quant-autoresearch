@@ -163,10 +163,8 @@ button:hover{color:var(--accent);border-color:var(--accent-line);background:#0e1
 .hyps-nl ol{margin:0;padding-left:1.2rem;color:var(--ink-2)}
 .hyps-nl li{margin:.3rem 0;font-size:.95rem;line-height:1.5}
 
-/* ===== readability floor: smallest text = 18px (user directive) ===== */
-.nav,.hero .eyebrow,.pill,.stat .k,.stat .sub,thead th,td.small,.small,
-details.cg-details>summary,.cg-count,button,.cfg-nl,.hyps-nl .hyps-lbl,.hyps-nl li,
-.lb-tag,.rsum,.hchip,.ev,.idetail,.inum,.lb-sum,.tab,.kpi .k{font-size:1rem!important}
+/* keep readable body text at 1rem, but let labels/numbers keep their own scale */
+.nav,.small,td.small,.rsum,.idetail,.glossary li,.act p,.hchip{font-size:1rem!important}
 code,section.causalgraph span[style]{font-size:1em!important}
 /* ensure wide tables & long cell strings show properly, never clipped */
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r-sm)}
@@ -264,3 +262,39 @@ section.intro p b{color:#fff}
 .glossary ul{margin:0;padding:.2em 1.4em 1em 2.1em;display:grid;gap:.45rem}
 .glossary li{color:var(--ink-2);font-size:1.02rem;line-height:1.55}
 .glossary li b{color:var(--ink)}
+
+/* ===== champion hero band ===== */
+.champions{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:0 0 1.2rem}
+@media(max-width:1000px){.champions{grid-template-columns:1fr 1fr}}
+.champ{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:1.1rem 1.25rem;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.champ.edge{border-color:var(--accent-line);box-shadow:var(--glow)}
+.champ.edge::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.champ.book::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--pos)}
+.champ.muted{opacity:.72}
+.ctag{font:600 .72rem/1 "JetBrains Mono",monospace;letter-spacing:.12em;color:var(--faint);text-transform:uppercase}
+.cname{font:600 1.35rem/1.2 "Space Grotesk",sans-serif;color:var(--ink);margin:.5rem 0 .3rem}
+.csub{font:500 .95rem/1 "IBM Plex Sans",sans-serif;color:var(--mut)}
+.cnum{font:700 2.6rem/1 "JetBrains Mono",monospace;color:var(--accent);font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:.4rem}
+.champ.book .cnum{color:var(--pos)} .champ.muted .cnum{color:var(--mut);font-size:1.6rem}
+.cunit{font:600 .8rem/1 "JetBrains Mono",monospace;color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
+.cnote{margin-top:.5rem;font:500 .95rem/1.4 "IBM Plex Sans",sans-serif;color:var(--ink-2)}
+
+/* ===== significance word-badge + collapsed buy-hold fold ===== */
+.sigbadge{font:600 .92rem/1 "JetBrains Mono",monospace;padding:.28em .7em;border-radius:999px;white-space:nowrap}
+.sigbadge.holds{color:var(--pos);background:var(--pos-soft);border:1px solid var(--pos-line)}
+.sigbadge.luck{color:var(--amber);background:var(--amber-soft);border:1px solid var(--amber-line)}
+.sigbadge.na{color:var(--mut);background:var(--bg-2);border:1px solid var(--line)}
+.cellid{cursor:help;opacity:.6} td.recipe .rgloss{margin-top:0}
+/* "what each asset rewards" map: plain-English reward + data-derived verdict badge */
+table.charmap td.rewards{color:var(--ink-2);font:500 1rem/1.45 "IBM Plex Sans",sans-serif;max-width:42ch}
+.vbadge{font:600 .9rem/1 "JetBrains Mono",monospace;padding:.28em .7em;border-radius:999px;white-space:nowrap}
+.vbadge.v-edge{color:var(--pos);background:var(--pos-soft);border:1px solid var(--pos-line)}
+.vbadge.v-soft{color:var(--amber);background:var(--amber-soft);border:1px solid var(--amber-line)}
+.vbadge.v-none{color:var(--mut);background:var(--bg-2);border:1px solid var(--line)}
+details.bhfold{margin-top:1rem;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--bg-2);overflow:hidden}
+details.bhfold>summary{cursor:pointer;list-style:none;padding:.8em 1.1em;
+  font:600 1rem/1.3 "JetBrains Mono",monospace;color:var(--mut);user-select:none}
+details.bhfold>summary::before{content:"+ ";color:var(--accent)}
+details.bhfold[open]>summary::before{content:"– "}
+details.bhfold table{border-radius:0;border-left:0;border-right:0;border-bottom:0}

@@ -19,11 +19,28 @@ KJ = os.path.join(R, "..", "knowledge.json")
 PROG = os.path.join(R, "..", "program.md")
 STATUS = os.path.join(R, "status.json")
 ROUND_CSV = os.path.join(R, "..", "results", "round_results.csv")
-TICKERS = ["TLT", "IWM", "QQQ", "EEM", "GLD", "HYG", "XLE"]
+TICKERS = ["TLT", "IWM", "QQQ", "EEM", "GLD", "HYG", "XLE", "EFA", "DBC", "UUP", "TIP", "SLV"]
 CHARACTER = {
-    "TLT": "mean-reverter · rates", "IWM": "small-cap · reversals", "QQQ": "pure trender",
-    "EEM": "two-sided · EM", "GLD": "strong trender · gold", "HYG": "strong trender · credit",
-    "XLE": "noisy trender · energy",
+    "TLT": "long bonds · rates", "IWM": "small-cap equity", "QQQ": "big-cap tech",
+    "EEM": "emerging markets", "GLD": "gold", "HYG": "high-yield credit", "XLE": "energy",
+    "EFA": "developed ex-US", "DBC": "broad commodities", "UUP": "US dollar",
+    "TIP": "inflation-linked bonds", "SLV": "silver",
+}
+# What SIGNAL each asset rewards — the edge type our ML can (or can't) extract from it.
+# Plain-English, one phrase. Pairs with the data-derived verdict badge in _charmap_html.
+REWARDS = {
+    "GLD": "clean gold trends — ML times entries (real edge)",
+    "UUP": "dollar-regime shifts — ML reads the macro state (real edge)",
+    "TLT": "rate-driven swings — tradeable in-sample, but the timing decays out-of-sample",
+    "EEM": "two-sided EM swings — structure exists but doesn't convert to durable profit",
+    "XLE": "noisy energy trends — a slim edge, right at the buy-hold ceiling",
+    "QQQ": "a long secular uptrend — best captured by simply holding",
+    "HYG": "credit carry / grind-higher — holding beats timing",
+    "EFA": "developed-market beta — holding beats timing",
+    "DBC": "commodity beta — no learnable timing signal",
+    "TIP": "inflation + duration carry — holding beats timing",
+    "IWM": "small-cap beta — no learnable timing signal",
+    "SLV": "silver beta — no learnable timing signal (gold's edge doesn't transfer)",
 }
 G1_CALMAR = 3.0
 G2_TRADES = 80
@@ -76,6 +93,10 @@ def derive(K):
     for etf, v in pe.items():
         cal = _f(v.get("real_calmar"))
         bc = _f((bh.get(etf, {}) or {}).get("calmar"))
+        if bc is None:  # SLV: parse "buy-hold 1.26" from status
+            m = re.search(r"buy-hold\s+([0-9.]+)", v.get("status", "") or "")
+            if m:
+                bc = _f(m.group(1))
         edge = (cal - bc) if (cal is not None and bc is not None) else None
         lt, ltc, lttip = leak_trust(etf, v)
         cfg = v.get("config", {}) or {}
@@ -83,11 +104,14 @@ def derive(K):
         rows.append({
             "etf": etf, "calmar": cal, "cagr": _f(v.get("real_cagr")), "mdd": _f(v.get("real_mdd")),
             "da": _f(v.get("real_da")), "trades": v.get("trades"), "buyhold": bc, "edge": edge,
-            "sharpe": _f(v.get("sharpe")), "psr": _f(v.get("psr")), "n_trials": v.get("n_trials"),
+            "sharpe": _f(v.get("sharpe") if v.get("sharpe") is not None else v.get("real_sharpe")),
+            "val_auc": _f(v.get("val_auc_reval") if v.get("val_auc_reval") is not None else v.get("val_auc")),
+            "psr": _f(v.get("psr")), "n_trials": v.get("n_trials"),
             "significant": sig,
             "g1": (cal is not None and cal > G1_CALMAR), "g2": (v.get("trades") or 0) > G2_TRADES,
             "leak": lt, "leak_cls": ltc, "leak_tip": lttip, "cell": v.get("cell", ""),
             "character": CHARACTER.get(etf, ""),
+            "rewards": REWARDS.get(etf, ""),
             "recipe": describe_cfg(cfg) if cfg else "",
             "series": normalize_series(K, etf),
         })
@@ -109,12 +133,14 @@ def scoreboard(K, rows):
                         if re.match(r"round_(\d+)", os.path.basename(f))] or [0])
         n_keep = sum(1 for f in glob.glob(os.path.join(R, "round_*.html"))
                      if "KEEP" in (open(f).read()[:400].upper()))
-    best = max((r for r in rows if r["edge"] is not None), key=lambda r: r["edge"], default=None)
     g1 = sum(1 for r in rows if r["g1"])
+    n_edge = sum(1 for r in rows if (r["edge"] or 0) > 0.05 and r["g2"])  # real, traded edges
+    n_sig = sum(1 for r in rows if r.get("significant") is True)
     return {
-        "rounds": n_rounds, "keeps": n_keep, "etfs": len(rows),
-        "best_edge": (f'{best["etf"]} +{best["edge"]:.2f}' if best else "—"),
-        "g1_pass": g1, "g1_total": len(rows),
+        "rounds": n_rounds, "edges": n_edge,
+        "best_calmar": max((r["calmar"] or 0) for r in rows) if rows else 0,
+        "n_sig": n_sig, "n_assessed": sum(1 for r in rows if r.get("significant") is not None),
+        "keeps": n_keep, "etfs": len(rows), "g1_pass": g1, "g1_total": len(rows),
     }
 
 
@@ -259,56 +285,86 @@ def _num(v, fmt, suf=""):
     return f'<td class="num">{format(v, fmt)}{suf}</td>'
 
 
-def _leaderboard_html(rows):
-    body = ""
-    for r in rows:
-        gates = (f'<span class="gatechip {"pass" if r["g1"] else "fail"}">G1</span>'
-                 f'<span class="gatechip {"pass" if r["g2"] else "fail"}">G2</span>')
-        leak = f'<span class="leakbadge {r["leak_cls"]}" title="{r["leak_tip"]}">{r["leak"]}</span>'
-        sig = r.get("significant")
-        if sig is True:
-            sigb = f'<span class="leakbadge" title="PSR {r.get("psr")} clears Bonferroni 1-0.05/{r.get("n_trials")}">✓ sig</span>'
-        elif sig is False:
-            sigb = f'<span class="leakbadge untrusted" title="PSR {r.get("psr")} below Bonferroni 1-0.05/{r.get("n_trials")} trials — selection bias">⚠ not sig</span>'
-        else:
-            sigb = ""
-        cal = r["calmar"]
-        calcell = f'<td class="num metric {"pos" if (cal or 0) > 0 else "neg"}">{cal:+.4f}</td>' if cal is not None else '<td class="num">—</td>'
-        body += (
-            f'<tr data-etf="{r["etf"]}">'
-            f'<td class="etf"><b>{r["etf"]}</b><span class="char">{r["character"]}</span></td>'
-            f'{calcell}'
-            f'{_edgebar(r["edge"], r["edge_w"])}'
-            f'<td class="num spk">{_spark(r["series"])}</td>'
-            f'{_num(r["cagr"], ".1f", "%")}{_num(r["mdd"], ".1f", "%")}{_num(r["da"], ".2f")}{_num(r["sharpe"], ".2f")}'
-            f'<td class="num">{r["trades"] if r["trades"] is not None else "—"}</td>'
-            f'<td>{gates}</td><td>{leak}<br>{sigb}</td>'
-            f'<td class="recipe"><code>{r["cell"]}</code><div class="rgloss">{r["recipe"]}</div></td>'
-            f'</tr>')
+def _row_html(r):
+    sig = r.get("significant")
+    if sig is True:
+        sigb = f'<span class="sigbadge holds" title="PSR {r.get("psr")} clears the Bonferroni bar over {r.get("n_trials")} trials">holds up</span>'
+    elif sig is False:
+        sigb = f'<span class="sigbadge luck" title="PSR {r.get("psr")} below the Bonferroni bar over {r.get("n_trials")} trials — likely selection bias">likely luck</span>'
+    else:
+        sigb = '<span class="sigbadge na">not assessed</span>'
+    cal = r["calmar"]
+    calcell = f'<td class="num metric {"pos" if (cal or 0) > 0 else "neg"}">{cal:+.2f}</td>' if cal is not None else '<td class="num">—</td>'
     return (
-        '<table id="lb"><thead><tr>'
-        '<th data-k="etf" data-t="s">ETF</th>'
-        '<th data-k="calmar" data-t="n" class="num sorted-desc">Calmar</th>'
-        '<th data-k="edge" data-t="n" class="num">edge vs B&amp;H</th>'
-        '<th class="num">Calmar history</th>'
-        '<th data-k="cagr" data-t="n" class="num">CAGR</th>'
-        '<th data-k="mdd" data-t="n" class="num">MDD</th>'
-        '<th data-k="da" data-t="n" class="num">DA</th>'
-        '<th data-k="sharpe" data-t="n" class="num">Sharpe</th>'
-        '<th data-k="trades" data-t="n" class="num">trades</th>'
-        '<th class="num">gates</th><th>trust / significance</th><th>recipe (cell · plain English)</th>'
-        '</tr></thead><tbody>' + body + '</tbody></table>')
+        f'<tr data-etf="{r["etf"]}">'
+        f'<td class="etf"><b>{r["etf"]}</b><span class="char">{r["character"]}</span></td>'
+        f'{calcell}'
+        f'{_edgebar(r["edge"], r["edge_w"])}'
+        f'<td class="num spk">{_spark(r["series"])}</td>'
+        f'{_num(r["sharpe"], ".2f")}'
+        f'{_num(r["val_auc"], ".2f")}'
+        f'<td class="num">{r["trades"] if r["trades"] is not None else "—"}</td>'
+        f'<td>{sigb}</td>'
+        f'<td class="recipe"><div class="rgloss">{r["recipe"]}</div>'
+        f'<code class="cellid" title="{r["cell"]}">id</code></td>'
+        f'</tr>')
+
+
+def _lb_table(rows, tid):
+    return ('<table id="' + tid + '"><thead><tr>'
+            '<th data-k="etf" data-t="s">ETF</th>'
+            '<th data-k="calmar" data-t="n" class="num sorted-desc" title="annual return ÷ worst drawdown">Calmar</th>'
+            '<th data-k="edge" data-t="n" class="num" title="Calmar minus simply buying &amp; holding">vs. buy &amp; hold</th>'
+            '<th class="num" title="Calmar across this ETF\'s tested recipes">history</th>'
+            '<th data-k="sharpe" data-t="n" class="num" title="return per unit of volatility">Sharpe</th>'
+            '<th data-k="val_auc" data-t="n" class="num" title="learnable structure — ~0.5 = none, &gt;0.6 = real signal">signal</th>'
+            '<th data-k="trades" data-t="n" class="num">trades</th>'
+            '<th title="does the edge hold up after correcting for how many strategies we tried?">significance</th>'
+            '<th>recipe</th>'
+            '</tr></thead><tbody>' + ''.join(_row_html(r) for r in rows) + '</tbody></table>')
+
+
+def _leaderboard_html(rows):
+    edges = [r for r in rows if (r["edge"] or 0) > 0.05]
+    drift = [r for r in rows if r not in edges]
+    return (_lb_table(edges, "lb")
+            + '<details class="bhfold"><summary>Buy &amp; hold — no durable edge (' + str(len(drift)) + ' assets)</summary>'
+            + _lb_table(drift, "lbbh") + '</details>')
+
+
+def _reward_verdict(r):
+    """Plain-English verdict on whether this asset rewards ML — derived from the live data,
+    not hardcoded. Keys on whether the champion is an actual ML model vs just buy-and-hold
+    (always_long => edge==0, the model only holds), then on how far it beats buy-and-hold.
+    Note: the raw `significant` flag alone is unreliable here — an always_long champion can
+    pass the deflation test on buy-hold returns (e.g. HYG) without being an ML edge."""
+    al = "always_long" in (r.get("cell", "") or "")
+    edge = r.get("edge") or 0.0
+    cal = r.get("calmar") or 0.0
+    if al:
+        return ("no ML edge — best held passively", "v-none")
+    if cal > 0 and (r.get("significant") is True or edge >= 0.5):
+        return ("real ML edge", "v-edge")
+    if cal > 0 and edge >= 0.15:
+        return ("modest ML edge over buy &amp; hold", "v-soft")
+    return ("no durable ML edge", "v-none")
 
 
 def _charmap_html(rows):
     body = ""
     for r in rows:
-        cfg = None
-        body += (f'<tr><td><b>{r["etf"]}</b></td><td>{r["character"]}</td>'
-                 f'<td class="num metric">{r["calmar"]:+.2f}</td>'
-                 f'<td class="recipe"><code>{r["cell"]}</code></td></tr>')
-    return ('<table class="charmap"><thead><tr><th>ETF</th><th>character</th>'
-            '<th class="num">Calmar</th><th>winning recipe</th></tr></thead><tbody>'
+        verdict, vcls = _reward_verdict(r)
+        va = r.get("val_auc")
+        vacell = f'{va:.2f}' if va is not None else "—"
+        body += (f'<tr><td><b>{r["etf"]}</b><span class="char">{r["character"]}</span></td>'
+                 f'<td class="rewards">{r.get("rewards", "")}</td>'
+                 f'<td><span class="vbadge {vcls}">{verdict}</span></td>'
+                 f'<td class="num" title="validation AUC — ~0.5 = no learnable structure, &gt;0.6 = real signal">{vacell}</td>'
+                 f'<td class="num metric {"pos" if (r["calmar"] or 0) > 0 else "neg"}">{r["calmar"]:+.2f}</td></tr>')
+    return ('<table class="charmap"><thead><tr><th>asset</th>'
+            '<th>what it rewards</th><th>verdict</th>'
+            '<th class="num" title="learnable structure: ~0.5 none, &gt;0.6 real">signal</th>'
+            '<th class="num">Calmar</th></tr></thead><tbody>'
             + body + '</tbody></table>')
 
 
@@ -393,10 +449,10 @@ def _ledger_html_csv(rounds):
 
 
 def _scoreboard_html(sb):
-    return ('<div class="kpi"><div class="k">rounds</div><div class="v">' + str(sb.get("rounds", 0)) + '</div></div>'
-            '<div class="kpi"><div class="k">kept</div><div class="v pos">' + str(sb.get("keeps", 0)) + '</div></div>'
-            '<div class="kpi"><div class="k">ETFs</div><div class="v">' + str(sb.get("etfs", 0)) + '</div></div>'
-            '<div class="kpi"><div class="k">best edge</div><div class="v acc">' + str(sb.get("best_edge", "—")) + '</div></div>')
+    return ('<div class="kpi"><div class="k">edges found</div><div class="v acc">' + str(sb.get("edges", 0)) + '</div></div>'
+            '<div class="kpi"><div class="k">best Calmar</div><div class="v pos">' + f'{sb.get("best_calmar",0):.2f}' + '</div></div>'
+            '<div class="kpi"><div class="k">survive deflation</div><div class="v">' + f'{sb.get("n_sig",0)}/{sb.get("n_assessed",0)}' + '</div></div>'
+            '<div class="kpi"><div class="k">rounds</div><div class="v">' + str(sb.get("rounds", 0)) + '</div></div>')
 
 
 def _portfolio_html(K):
@@ -429,7 +485,7 @@ def _intro_html(K):
     and how to read the jargon. No stale hardcoded claims — pulls from the live champion book."""
     pe = K.get("per_etf_best") or {}
     gld = (pe.get("GLD") or {}).get("real_calmar"); uup = (pe.get("UUP") or {}).get("real_calmar")
-    edges = (f'<b>GLD</b> (gold trend-following, Calmar ~{gld}) and <b>UUP</b> (US-dollar regime, ~{uup})'
+    edges = (f'<b>GLD</b> (gold trend-following, Calmar {gld:.2f}) and <b>UUP</b> (US-dollar regime, {uup:.2f})'
              if (gld and uup) else 'a small handful of assets')
     return (
         '<section class="block intro" id="intro"><h2>What this is</h2>'
@@ -450,6 +506,39 @@ def _intro_html(K):
         'tried (a guard against luck/overfitting). A weak edge that was lucky over a short window is rejected.</li>'
         '<li><b>Recipe / cell</b> = the exact pipeline that produced a result: '
         '<code>asset · bar-clock · labeling-method · sizing · threshold</code>.</li></ul></details></section>')
+
+
+def _champions_html(K):
+    pe = K.get("per_etf_best") or {}
+
+    def cal(t):
+        c = _f((pe.get(t) or {}).get("real_calmar"))
+        return f"{c:.2f}" if c is not None else "—"
+    pf = K.get("portfolio") or {}
+    book = pf.get(pf.get("champion", "")) or {}
+    bc = book.get("calmar")
+    bc = f"{bc:.2f}" if isinstance(bc, (int, float)) else "—"
+    n_drift = sum(1 for v in pe.values()
+                  if (v.get("config") or {}).get("labeler") == "always_long")
+    return (
+        '<section class="champions" id="champions">'
+        f'<div class="champ edge"><div class="ctag">REAL ML EDGE</div>'
+        f'<div class="cname">GLD <span class="csub">gold trend-following</span></div>'
+        f'<div class="cnum">{cal("GLD")}<span class="cunit">Calmar</span></div>'
+        f'<div class="cnote">✓ survives the multiple-testing gate</div></div>'
+        f'<div class="champ edge"><div class="ctag">REAL ML EDGE</div>'
+        f'<div class="cname">UUP <span class="csub">US-dollar regime</span></div>'
+        f'<div class="cnum">{cal("UUP")}<span class="cunit">Calmar</span></div>'
+        f'<div class="cnote">vs. 0.42 buy-and-hold</div></div>'
+        f'<div class="champ muted"><div class="ctag">NO DURABLE EDGE</div>'
+        f'<div class="cname">{n_drift} others <span class="csub">best held passively</span></div>'
+        f'<div class="cnum">—<span class="cunit">buy &amp; hold</span></div>'
+        f'<div class="cnote">timing edges decayed out-of-sample</div></div>'
+        f'<div class="champ book"><div class="ctag">DEPLOYABLE BOOK</div>'
+        f'<div class="cname">5-ETF book <span class="csub">decorrelated</span></div>'
+        f'<div class="cnum">{bc}<span class="cunit">Calmar</span></div>'
+        f'<div class="cnote">GLD·HYG·TIP·UUP·DBC · MaxDD {book.get("mdd_pct","—")}%</div></div>'
+        '</section>')
 
 
 def _latest_callout(csv_rounds):
@@ -481,10 +570,7 @@ def build_html():
         graph = net_html("cgmain", gn, ge, cg.get("phases", []), height=560, zoom=False)
     except Exception:
         graph = '<p class="small">(causal graph unavailable)</p>'
-    n_cells_round = max([v.get("round") for v in (K.get("cells", {}) or {}).values()
-                         if isinstance(v.get("round"), int)] or [0])
-    stale = (f'live: r{scoreboard(K, rows)["rounds"]} (status) · cells thru r{n_cells_round} · '
-             f'last_round meta={K.get("last_round","?")}')
+    nrounds = scoreboard(K, rows)["rounds"]
     head = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width, initial-scale=1">'
             '<title>Autoresearch — research console</title>'
@@ -495,17 +581,17 @@ def build_html():
            '<span class="chapnav"><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
            '<a href="#story">story</a><a href="#insights">insights</a><a href="#graph">graph</a>'
            '<a href="#rounds">rounds</a><a href="program.md">program.md</a><a href="deployment.md">deploy</a></span>'
-           f'<span class="stale" id="stale">{stale}</span><span class="clock" id="clock"></span></div>')
+           f'<span class="stale" id="stale">live · {nrounds} rounds</span><span class="clock" id="clock"></span></div>')
     hero = ('<section class="statushero"><div class="block" id="nowrunning"><h2><span class="idledot"></span>'
             'Status</h2><p class="small">loading…</p></div>'
             '<div class="block scoreboard" id="scoreboard">' + _scoreboard_html(data["scoreboard"]) + '</div></section>'
-            '<div class="verdict" id="verdict">' + data["verdict"] + '</div>'
             + _latest_callout(csv_rounds))
     lb = (f'<section class="block" id="leaderboard"><h2>Leaderboard — real OOS, leak-free</h2>'
           f'<div class="tablewrap">{_leaderboard_html(rows)}</div>'
-          '<p class="small">Calmar=CAGR/MaxDD (higher better) · CAGR=compounding annual return · MDD=max drawdown · '
-          'DA=drawdown-area (lower MDD/DA better) · edge=Calmar−buy&amp;hold · sparkline=Calmar across this ETF\'s '
-          f'cells · gates: G1 Calmar&gt;{G1_CALMAR:g}, G2 trades&gt;{G2_TRADES}. Click a header to sort.</p></section>')
+          '<p class="small"><b>Calmar</b>=annual return ÷ worst drawdown (higher is better) · '
+          '<b>vs. buy &amp; hold</b>=Calmar minus simply holding the ETF · <b>history</b>=Calmar across this ETF\'s '
+          'tested recipes · <b>significance</b>=does the edge survive correcting for how many strategies we tried. '
+          'Click a header to sort.</p></section>')
     cmap = (f'<section class="block" id="map"><h2>What each asset rewards</h2>'
             '<p class="small">The hard-won lesson: <b>durable machine-learned edges are scarce.</b> Only '
             '<b>GLD</b> (gold trend-following) and <b>UUP</b> (dollar regime) beat buy-and-hold in a way that '
@@ -535,7 +621,7 @@ def build_html():
               '<button class="fchip" data-f="discard">DISCARD</button></div>'
               f'{ledger_body}'
               '<button class="showall" id="showall">show all rounds</button></section>')
-    return (head + '<div class="dash">' + nav + _intro_html(K) + hero + lb + cmap + story + insights + graph_sec + ledger
+    return (head + '<div class="dash">' + nav + _intro_html(K) + _champions_html(K) + hero + lb + cmap + story + insights + graph_sec + ledger
             + '</div><script>' + CONSOLE_JS + '</script></body></html>')
 
 
@@ -590,10 +676,10 @@ async function poll(){
     }
     var sb=d.scoreboard||{};
     var sbel=document.getElementById('scoreboard');
-    if(sbel)sbel.innerHTML='<div class="kpi"><div class="k">rounds</div><div class="v">'+(sb.rounds||0)+'</div></div>'+
-      '<div class="kpi"><div class="k">kept</div><div class="v pos">'+(sb.keeps||0)+'</div></div>'+
-      '<div class="kpi"><div class="k">ETFs</div><div class="v">'+(sb.etfs||0)+'</div></div>'+
-      '<div class="kpi"><div class="k">best edge</div><div class="v acc">'+(sb.best_edge||'—')+'</div></div>';
+    if(sbel)sbel.innerHTML='<div class="kpi"><div class="k">edges found</div><div class="v acc">'+(sb.edges||0)+'</div></div>'+
+      '<div class="kpi"><div class="k">best Calmar</div><div class="v pos">'+(+(sb.best_calmar||0)).toFixed(2)+'</div></div>'+
+      '<div class="kpi"><div class="k">survive deflation</div><div class="v">'+(sb.n_sig||0)+'/'+(sb.n_assessed||0)+'</div></div>'+
+      '<div class="kpi"><div class="k">rounds</div><div class="v">'+(sb.rounds||0)+'</div></div>';
     var ve=document.getElementById('verdict'); if(ve)ve.textContent=d.verdict||'';
     var st=document.getElementById('stale'); // keep server stale text
   }catch(e){ if(el)el.className='block'; var p=el&&el.querySelector('p'); }
