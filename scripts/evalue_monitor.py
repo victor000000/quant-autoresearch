@@ -51,9 +51,10 @@ def betting_eprocess(returns, lam_max=LAM_MAX):
         s += r; s2 += r * r; n += 1
     # decay heuristic: did the e-process grow in the FIRST half but stall/shrink in the SECOND?
     h = len(path) // 2
-    grow_early = path[h] / path[0]
-    grow_late = path[-1] / max(1e-12, path[h])
-    decay = (grow_early > 2.0) and (grow_late < 1.0)   # was accumulating, now not
+    # DECAY = genuinely alive by the midpoint (e-process reached real evidence, e>=5) BUT the recent
+    # half stopped accumulating (added <10%). Requiring e>=5 (not mere 2x growth) avoids false-flagging
+    # never-alive noise series whose early capital wandered up by luck.
+    decay = (path[h] >= 5.0) and (path[-1] < path[h] * 1.1)
     return K, path, decay
 
 

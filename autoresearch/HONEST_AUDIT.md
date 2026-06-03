@@ -40,3 +40,20 @@ IWM      9   0.881  0.910   1.53  6.34e-02    0.000   0.390  partial (HC_BH>0)
 TLT     15   0.285  0.393   0.66  2.55e-01    0.000   0.000  FAILS (haircut ~0)
 ```
 
+
+## Anytime-valid e-value monitor (peeking-robust; supersedes p-value/DSR re-checks)
+
+H0: mean return <= 0 (edge dead). E-value >= 20 = significant at 0.05, VALID under continuous
+monitoring (re-check anytime; merge re-validations by MULTIPLICATION). Testing-by-betting (WSR 2023).
+
+```
+champ    e-value  AV p=1/e        verdict  decay?
+GLD         6.80    0.1470    weak (e>=1)  holding
+SOXX        3.27    0.3057    weak (e>=1)  holding
+UUP         1.31    0.7627    weak (e>=1)  holding
+TIP         1.58    0.6324    weak (e>=1)  holding
+DBC         1.26    0.7947    weak (e>=1)  holding
+HYG         2.51    0.3982    weak (e>=1)  holding
+```
+
+Anytime-valid: unlike DSR/p-values, these e-values stay honest no matter how many times we re-check as the OOS window grows. Next re-validation just MULTIPLIES the new e-value in.
