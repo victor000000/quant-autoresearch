@@ -93,7 +93,8 @@ CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "KRE",   # regional banks — rate-trend edge but Bonferroni-FAIL -> provisional, NOT deployable
           "ITB",   # homebuilders — rate-cyclical, mechanism shows (DA 9x lower) but Bonferroni-FAIL -> provisional
           "SMH",   # VanEck semis — pre-registered REPLICATION of the SOXX semis edge (different fund, same sector)
-          "XME"]   # metals & miners — cyclical commodity producers; DIFFERENT sector test of the SOXX trend-predictable-drawdown mechanism (not a semis sibling)
+          "XME",   # metals & miners — cyclical commodity producers; DIFFERENT sector test of the SOXX trend-predictable-drawdown mechanism (not a semis sibling)
+          "FXY"]   # Japanese yen — NEW MECHANISM CLASS (FX policy-driven regime; Aug-2024 carry unwind): does UUP dollar-regime edge generalize to a distinct currency?
 
 KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
 HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
