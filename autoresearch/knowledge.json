@@ -3086,6 +3086,12 @@
         "type": "round",
         "phase": "DBC",
         "label": "R218 DBC DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +0.9119 (prev best +0.9119). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r219",
+        "type": "round",
+        "phase": "SOXX",
+        "label": "R219 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + multi-horizon trend labels; size long-only, vol-targeted, entry 0.40. -> Calmar +1.7263 (prev best +1.9162). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5102,6 +5108,11 @@
       {
         "src": "r217",
         "dst": "r218",
+        "label": "no improvement"
+      },
+      {
+        "src": "r218",
+        "dst": "r219",
         "label": "no improvement"
       }
     ],
