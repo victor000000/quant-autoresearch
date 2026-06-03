@@ -93,3 +93,19 @@ inverse-variance     6.068   5.34    0.88   3.330     50%
 ```
 
 UUP↔GLD corr = -0.22, UUP↔SOXX corr = -0.07 → LOW correlation confirms UUP decorrelates the trend edges (earns its book seat despite individual fragility).
+
+## Per-champion yearly robustness (cached OOS series, zero backtests)
+
+Annualized Sharpe by calendar year — is each edge CONSISTENT or one-year-CONCENTRATED?
+
+```
+name      2023    2024    2025    2026   consistency
+GLD       0.46    1.98    3.31   -0.10   3/4 yrs +, mixed
+SOXX      0.81    0.32    1.97    2.96   4/4 yrs +, CONSISTENT
+UUP      -0.50    2.45    0.61    0.72   3/4 yrs +, mixed
+TIP       0.78    0.42    1.37    1.19   4/4 yrs +, CONSISTENT
+DBC      -0.89    0.21    0.62    2.34   3/4 yrs +, mixed
+HYG       1.69    1.32    1.85    0.61   4/4 yrs +, CONSISTENT
+```
+
+Read: GLD/SOXX positive across (nearly) all years = consistent, not one-year artifacts; UUP's regime edge is lumpier (regime-dependent) — consistent with its statistical fragility.
