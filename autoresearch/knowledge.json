@@ -2847,6 +2847,12 @@
         "type": "round",
         "phase": "UUP",
         "label": "R182 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker + accel; size long-only, vol-targeted, entry 0.50. -> Calmar +1.1791 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r183",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R183 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + CUSUM change-point regime labels; size long-only, vol-targeted, entry 0.40. -> Calmar +2.6458 (prev best +3.2216). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4683,6 +4689,11 @@
       {
         "src": "r181",
         "dst": "r182",
+        "label": "no improvement"
+      },
+      {
+        "src": "r182",
+        "dst": "r183",
         "label": "no improvement"
       }
     ],
