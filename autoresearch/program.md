@@ -40,7 +40,23 @@ Detectors: trend-scan / change-point / clustering — **NOT HMM.** Aim Calmar > 
 - **Durable > lucky:** drift/long-biased edges persist; two-sided timing with val_auc≈0.5 decays. A/B every new method vs the champion.
 - **New methods help only where there's structure** (val_auc>0.6). On val_auc≈0.5 drifters no method beats buy-hold — don't grind them.
 
-## honest state (2026-06-03, very late) — mechanistically understood; gold is multi-structure
+## ⚠️ CRITICAL LEAK CORRECTION (2026-06-03, adversarial re-investigation) — headline edges were INFLATED
+A user-requested deep adversarial leak hunt (workflow `leak-online-live-investigation`) + manual verification
+FOUND a MATERIAL look-ahead leak the prior 13-agent audit missed: the **`logdollar` (champion axis) and `kyle`**
+bar-thresholds scaled the TRAIN-fit rate by `int(np.sum(valid))` = the count of valid minutes over the **FULL
+series (incl. OOS)**. The OOS period (2021–2026) has LOWER valid-minute density than TRAIN, so the leak set a
+LOWER threshold → FINER bars → more bars → an INFLATED Calmar. Fixed (leak-free): extrapolate TRAIN valid-density
+to the full length (`train_valid/train_total * len(c)`), OOS-invariant + TRAIN-only. **RE-VALIDATED IMPACT: GLD
+4.71 → 2.76 · SOXX 3.02 → 0.71 (≈ buy-hold — SOXX edge largely GONE leak-free).** UUP (imbalance axis) is NOT
+affected by this leak. LESSONS: (1) the headline `logdollar` numbers below were leak-inflated and must be read as
+the LEAK-FREE values; (2) the edge is also bar-coarseness-FRAGILE (a 4.71→2.76 swing from a threshold change =
+overfit-to-bar-realization signal); (3) in-sample/code audits (incl. the prior 13-agent one and this workflow's
+own agents, who ALSO misread an unrelated rbuf detail) can MISS leaks — only re-running with the fix reveals impact.
+**ACTION REQUIRED: re-validate the ENTIRE logdollar leaderboard leak-free; treat GLD ~2.76 as the one surviving
+single-ticker edge and SOXX/others as suspect until re-run.** The honest book + all DSR/e-value/cost numbers below
+were computed on the LEAKY champions and are now superseded for logdollar names.
+
+## honest state (2026-06-03, very late) — mechanistically understood; gold is multi-structure [SUPERSEDED by the leak correction above for logdollar names]
 Durable single-ticker alpha = **3 confirmed edges** (Bonferroni-significant + permute-validated, deployable):
 **GLD `ker+regime_gmm`+`dd_overlay` n=15 = 4.55 (reducer width n_components=15 was the latest lever; arc 3.20->3.22->3.90->4.02->4.19->4.55, six improvements from "fixed" dimensions)** (logdollar; trend+REGIME HYBRID + drawdown-aware sizing — adding regime_gmm to the trend core
 beat the old 3.22, +21%; threshold-robust 3.64–3.90, the most trustworthy crown) · **SOXX `ker+trend_scan+bgm` t0.50 = 3.02** (logdollar; semis ARE multi-structure — trend+REGIME via bgm; +43% over the old 1.92; the SMH sister-fund replication failed on the pure-trend version → fund-specificity caveat stands) ·
