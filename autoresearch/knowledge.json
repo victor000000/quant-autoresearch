@@ -6038,7 +6038,11 @@
         "plus_SOXX": 6.19,
         "UUP_to_SOXX_swap": 6.11,
         "drop_UUP": 5.15
-      }
+      },
+      "calmar_weekly_optimistic": 6.19,
+      "calmar_daily_corrected": 5.38,
+      "mdd_pct_daily_corrected": 2.34,
+      "granularity_note": "weekly-chart MaxDD understates daily by ~1.15x (per-name vs QC real_mdd); compositional rankings unaffected (relative). Honest daily Calmar ~5.4, MaxDD ~2.3%, Sharpe ~3.0."
     }
   }
 }
