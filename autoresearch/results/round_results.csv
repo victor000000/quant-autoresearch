@@ -383,3 +383,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T11:02:52,SOXX,0.0,,B,SOXX,logdollar,ker+trend_scan,0.4,cdf_overlay,1.9162,9.0133,610,True,True,0.0,0.684,0.5288,1.3826,2.3882,32.4311,710,True,False,completed,completed
 2026-06-03T11:09:28,SOXX,0.0,,A,SOXX,logdollar,ker+trend_scan,0.4,cdf_overlay,1.9162,9.0133,610,True,True,0.0,0.684,0.5288,1.3826,2.3882,32.4311,710,True,True,completed,completed
 2026-06-03T11:09:28,SOXX,0.0,,B,SOXX,logdollar,ker+trend_scan+accel,0.4,cdf_overlay,1.5576,10.4327,960,True,True,0.0,0.6727,0.523,1.3548,1.3657,19.1003,710,False,False,completed,completed
+2026-06-03T11:15:07,XBI,0.0,,A,XBI,logdollar,always_long,0.45,cdf_overlay,0.4429,63.8349,968,True,True,-0.2724,0.5,0.5,0.6663,-0.0955,4.6492,710,True,False,completed,completed
+2026-06-03T11:15:07,XBI,0.0,,B,XBI,logdollar,ker+trend_scan,0.4,cdf_overlay,-0.0055,15.4226,628,True,True,0.0,0.8144,0.5533,-0.003,-0.4598,9.9224,710,False,False,completed,completed
