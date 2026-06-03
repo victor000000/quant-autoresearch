@@ -3507,6 +3507,12 @@
         "type": "round",
         "phase": "XLE",
         "label": "R278 XLE DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, vol-targeted, entry 0.30. -> Calmar +1.3484 (prev best +0.8588). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r279",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R279 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +2.5141 (prev best +2.7584). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5823,6 +5829,11 @@
       {
         "src": "r277",
         "dst": "r278",
+        "label": "no improvement"
+      },
+      {
+        "src": "r278",
+        "dst": "r279",
         "label": "no improvement"
       }
     ],
