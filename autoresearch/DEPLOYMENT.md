@@ -22,8 +22,13 @@ gold-timing edge, not a broad stack of edges.
 | DBC | logdollar / always_long | commodities decorrelator (buy-hold) | 0.91 |
 | SOXX | logdollar / ker+trend_scan+bgm | weak decorrelator — **edge GONE leak-free** (0.71 < buy-hold) | 0.71 |
 
-**Book: Calmar² ≈ 4.15+, MaxDD ~2.2%, Sharpe ~2.6** (weekly-resolution; net-of-realistic-cost lower; GLD's
-upgrade 2.51→3.47 lifts the book somewhat). UUP and the buy-hold names are leak-UNAFFECTED; only GLD/SOXX
+**Book (MEASURED 2026-06-04, real QC portfolio backtest of the stored champions, daily, gross=1.0):
+Calmar 3.20 — CAR 12.5% / MaxDD 3.9% — Sharpe 0.71, 1734 orders.** GLD-anchored (63% Calmar²-weight) +
+UUP bgm+ker (9%) + buy-hold core HYG/TIP/DBC (28%). HONEST CORRECTION: the book is **Calmar-strong / drawdown-
+efficient** (3.9% MaxDD) but **Sharpe-MODEST (0.71)** — well below GLD's individual 2.1 and the prior doc's
+optimistic weekly "~2.6"; the buy-hold dilution + decorrelation trade raw return-per-vol for capital preservation.
+The deployable value is low-drawdown compounding (Calmar 3.20), not a high Sharpe. UUP and the buy-hold names are
+leak-UNAFFECTED; only GLD/SOXX
 (logdollar model strategies) moved on the leak fix.
 
 > **GLD CHAMPION UPGRADED 2026-06-03: ker+regime_gmm 2.51 → `trend_leg`+regime_gmm 3.47.** Wang's flagship
