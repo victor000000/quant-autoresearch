@@ -36,6 +36,11 @@ upgrade 2.51→3.47 lifts the book somewhat). UUP and the buy-hold names are lea
 > Permute-PASS (→−0.09 = pure label alpha), reproducible EXACTLY, **online-proven** (3 members, `preds_match=1`,
 > `6e-09`). PROVISIONAL: fails Bonferroni at N=72 by a hair (0.9972 vs 0.99931) = this session's cumulative search
 > burden, not a fake edge (the permute control is the decisive real-vs-artifact test, and it passes). Dollar-specific.
+> ⚠️ **DECAY CAVEAT (deploy with tempered expectations): the UUP sadf edge is TEMPORALLY FRONT-LOADED** — early→late
+> OOS Sharpe **2.67 → 0.74** (STALE). The +42% is concentrated in the early explosive-dollar era (2014-15) that sadf
+> targets; recent-regime alpha is weak (~0.74 Sharpe). Real (permute-confirmed) but the headline 1.85 OVERSTATES the
+> forward edge. CONTRAST: GLD trend_leg 3.47 is decay-HEALTHY (early→late 1.84→2.30, strengthening) = the more
+> trustworthy forward edge. Weight conviction accordingly: GLD durable, UUP real-but-softening.
 
 > **NET-OF-COST (2026-06-04 cost-stress, explicit slippage; the pipeline uses optimistic QC defaults):** both edges
 > SURVIVE realistic costs. GLD 3.47 → **2.86 @5bp** → 2.26 @10bp. UUP 1.85 → **1.54 @5bp** → 1.16 @10bp (cost-EFFICIENT:
