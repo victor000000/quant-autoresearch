@@ -1368,9 +1368,64 @@ def generate_labels_accel(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_sharpe_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                horizons=[20, 40, 80]):
+    """Risk-adjusted forward-trend label — UNSUPERVISED, non-HMM. For horizon H the forward
+    Sharpe = (lc[t+H]-lc[t]) / (per-bar vol * sqrt(H)): a move measured RELATIVE TO its own
+    volatility. Orthogonal to KER (path-efficiency |net|/gross), trend_scan (OLS t-stat) and
+    accel (curvature) — a move can be efficient yet low-Sharpe (large but choppy-vol) or vice
+    versa. Label 1 if |Sharpe|>=cut and up, 0 if down, -1 (ignore) if weak. Cut = TRAIN quantile
+    of |Sharpe| (balances the set). Forward info defines only the TARGET (G3-ok); the supervised
+    model predicts it from past-only features. Sweeps H and q. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    dl = np.diff(lc, prepend=lc[0])                  # per-bar move; dl[i]=lc[i]-lc[i-1]
+    cdl = np.cumsum(dl)                              # O(1) window sum (== net move)
+    cdl2 = np.cumsum(dl * dl)                        # O(1) window sum-of-squares (for vol)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H:
+            continue
+        idx = np.arange(N - H)
+        net_v = lc[idx + H] - lc[idx]
+        s1 = cdl[idx + H] - cdl[idx]
+        s2 = cdl2[idx + H] - cdl2[idx]
+        mean = s1 / H
+        var = np.maximum(s2 / H - mean * mean, 0.0)
+        denom = np.sqrt(var) * float(np.sqrt(H))    # forward-window return vol
+        shp = np.full(N, np.nan)
+        net = np.full(N, np.nan)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            shp[idx] = np.where(denom > 1e-12, net_v / denom, np.nan)
+        net[idx] = net_v
+        trsel = tr_m & fv & np.isfinite(shp)
+        if int(trsel.sum()) < 100:
+            continue
+        ashp = np.abs(shp)
+        for q in (0.4, 0.5, 0.6, 0.7):
+            cut = float(np.quantile(ashp[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            clean = fv & np.isfinite(shp) & (ashp >= cut)
+            y[clean & (net > 0)] = 1
+            y[clean & (net <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"sharpe_scan_H{H}_q{q}_cut{round(cut,3)}", H
+    if best is None:
+        return None, "sharpe_scan_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
+    "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
     "dc_reversal": generate_labels_dc_reversal,
@@ -1394,7 +1449,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "sharpe_scan", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
