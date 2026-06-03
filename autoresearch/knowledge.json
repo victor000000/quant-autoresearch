@@ -3597,6 +3597,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R295 IWM DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.45. -> Calmar +0.6280 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r296",
+        "type": "round",
+        "phase": "SOXX",
+        "label": "R296 SOXX DISCARD: Sample on log-dollar bars; ensemble of trend_leg + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6213 (prev best +0.8074). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5998,6 +6004,11 @@
       {
         "src": "r294",
         "dst": "r295",
+        "label": "no improvement"
+      },
+      {
+        "src": "r295",
+        "dst": "r296",
         "label": "no improvement"
       }
     ],
