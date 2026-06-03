@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""HONEST BOOK RE-DERIVATION. The deployed champion book (decorr_calmarsq, 2026-06-02) predates BOTH
+the SOXX discovery (06-03, the most DSR-robust crown 0.959) and the honesty audits (UUP fragile).
+This extracts each candidate's REAL OOS return series read-only and recomputes portfolio metrics under
+several compositions/weights to answer: should SOXX be IN, and should UUP stay?
+
+Series cached to autoresearch/results/series_cache.json (ts->equity) so re-runs are cheap.
+"""
+import sys, os, json, math
+sys.path.insert(0, ".")
+sys.path.insert(0, "autoresearch")
+sys.path.insert(0, "autoresearch/harness")
+sys.path.insert(0, "scripts")
+from harness.orchestrator import render_train_config, render_infer_cell
+from harness.qc_client import submit_and_wait, _qc_post
+from harness.constants import QC_PROJECT_ID
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE = os.path.join(HERE, "autoresearch", "results", "series_cache.json")
+OUT = os.path.join(HERE, "autoresearch", "HONEST_AUDIT.md")
+
+# candidate members: (cfg for train, ObjectStore cell, champion Calmar for weighting)
+MEMBERS = {
+    "GLD":  (dict(ticker="GLD", axis="logdollar", labeler="ker+regime_gmm", thresh=0.40, sizing="dd_overlay", n_components=15), "logdollar_ker_x_regime_gmm_dd_overlay_t40_n15", 4.545),
+    "SOXX": (dict(ticker="SOXX", axis="logdollar", labeler="ker+trend_scan+bgm", thresh=0.50, sizing="cdf_overlay"), "logdollar_ker_x_trend_scan_x_bgm_cdf_overlay_t50", 3.025),
+    "UUP":  (dict(ticker="UUP", axis="imbalance", labeler="bgm+ker", thresh=0.50, sizing="cdf_overlay"), "imbalance_bgm_x_ker_cdf_overlay_t50", 1.296),
+    "HYG":  (dict(ticker="HYG", axis="logdollar", labeler="always_long", thresh=0.55, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t55", 1.828),
+    "TIP":  (dict(ticker="TIP", axis="logdollar", labeler="always_long", thresh=0.45, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t45", 1.146),
+    "DBC":  (dict(ticker="DBC", axis="logdollar", labeler="always_long", thresh=0.45, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t45", 0.912),
+}
+CAL = {k: v[2] for k, v in MEMBERS.items()}
+
+
+def equity_map(bid):
+    r = _qc_post("/backtests/chart/read", {"projectId": QC_PROJECT_ID, "backtestId": bid,
+                 "name": "Strategy Equity", "count": 5000, "start": 0, "end": 2000000000})
+    if not r.get("success"):
+        return {}
+    vals = ((r.get("chart") or {}).get("series") or {}).get("Equity", {}).get("values") or []
+    return {str(int(row[0])): float(row[-1]) for row in vals if isinstance(row, list) and len(row) >= 2 and row[-1] > 0}
+
+
+def get_series(name):
+    cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
+    if name in cache and len(cache[name]) > 50:
+        return cache[name]
+    cfg, cell, _ = MEMBERS[name]
+    print(f"[{name}] train ...", flush=True)
+    tcode, extra = render_train_config(cfg)
+    _, st = submit_and_wait(tcode, f"book_{name}_train", timeout_s=540, extra_files=extra)
+    if st != "completed":
+        print(f"[{name}] train failed: {st}"); return None
+    print(f"[{name}] infer ...", flush=True)
+    bt, st2 = submit_and_wait(render_infer_cell(name, cell), f"book_{name}_infer", timeout_s=300)
+    if st2 != "completed":
+        print(f"[{name}] infer failed: {st2}"); return None
+    em = equity_map(bt.get("backtestId"))
+    if len(em) < 50:
+        print(f"[{name}] series too short ({len(em)})"); return None
+    cache[name] = em
+    json.dump(cache, open(CACHE, "w"))
+    print(f"[{name}] cached {len(em)} pts", flush=True)
+    return em
+
+
+def metrics(port_rets, ppy):
+    eq = [1.0]
+    for r in port_rets:
+        eq.append(eq[-1] * (1.0 + r))
+    peak, mdd = eq[0], 0.0
+    for v in eq:
+        peak = max(peak, v)
+        mdd = max(mdd, (peak - v) / peak)
+    yrs = len(port_rets) / ppy
+    cagr = eq[-1] ** (1.0 / yrs) - 1.0 if yrs > 0 and eq[-1] > 0 else 0.0
+    m = sum(port_rets) / len(port_rets)
+    sd = (sum((x - m) ** 2 for x in port_rets) / (len(port_rets) - 1)) ** 0.5
+    sharpe = m / sd * math.sqrt(ppy) if sd > 1e-12 else 0.0
+    calmar = cagr / mdd if mdd > 1e-6 else 0.0
+    return dict(calmar=calmar, cagr=cagr * 100, mdd=mdd * 100, sharpe=sharpe)
+
+
+def book(series, ts, names, scheme="cal2"):
+    w = {n: (CAL[n] ** 2 if scheme == "cal2" else 1.0) for n in names}
+    s = sum(w.values())
+    w = {n: w[n] / s for n in names}
+    port = []
+    for i in range(1, len(ts)):
+        r = 0.0
+        for n in names:
+            c1, c0 = series[n][ts[i]], series[n][ts[i - 1]]
+            r += w[n] * (c1 / c0 - 1.0 if c0 > 0 else 0.0)
+        port.append(r)
+    return port, w
+
+
+def main():
+    series = {}
+    for n in MEMBERS:
+        s = get_series(n)
+        if s:
+            series[n] = s
+    if len(series) < 4:
+        print("too few series"); return
+    common = sorted(set.intersection(*[set(s.keys()) for s in series.values()]), key=lambda x: int(x))
+    span = (int(common[-1]) - int(common[0])) / (365.25 * 86400.0)
+    ppy = len(common) / span
+    print(f"\n{len(common)} common timestamps, ppy~{ppy:.1f}, members={list(series.keys())}\n", flush=True)
+    avail = set(series.keys())
+    COMPS = [
+        ("current decorr core (GLD/UUP/TIP/DBC/HYG)", ["GLD", "UUP", "TIP", "DBC", "HYG"]),
+        ("+ SOXX added (6)", ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]),
+        ("UUP -> SOXX swap", ["GLD", "SOXX", "TIP", "DBC", "HYG"]),
+        ("drop UUP (4)", ["GLD", "TIP", "DBC", "HYG"]),
+        ("robust crowns + diversifiers, no UUP", ["GLD", "SOXX", "HYG", "TIP", "DBC"]),
+    ]
+    lines = ["", "## Honest book re-derivation (real OOS series; decorr champion predates SOXX + audits)", "",
+             f"Weights ∝ Calmar² (the deployed scheme), gross=1, on {len(common)}-pt common OOS grid.", "", "```",
+             f"{'composition':44s} {'Calmar':>7s} {'CAGR%':>6s} {'MaxDD%':>7s} {'Sharpe':>7s}"]
+    print(f"{'composition':44s} {'Calmar':>7s} {'CAGR%':>6s} {'MaxDD%':>7s} {'Sharpe':>7s}")
+    for label, names in COMPS:
+        names = [n for n in names if n in avail]
+        if len(names) < 2:
+            continue
+        port, w = book(series, common, names, "cal2")
+        m = metrics(port, ppy)
+        row = f"{label:44s} {m['calmar']:7.3f} {m['cagr']:6.2f} {m['mdd']:7.2f} {m['sharpe']:7.3f}"
+        print(row, flush=True)
+        lines.append(row)
+    lines.append("```")
+    prev = open(OUT).read() if os.path.exists(OUT) else ""
+    marker = "## Honest book re-derivation"
+    if marker in prev:
+        prev = prev[:prev.index(marker)].rstrip() + "\n"
+    open(OUT, "w").write(prev + "\n".join(lines) + "\n")
+    print("\nwritten:", OUT)
+
+
+if __name__ == "__main__":
+    main()
