@@ -333,3 +333,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T01:31:22,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,B,GLD,logdollar,ker+trend_scan,0.44,cdf_overlay,2.9867,2.5403,596,True,True,0.0,0.7167,0.5937,2.2659,2.1389,24.3842,710,True,False,completed,completed
 2026-06-03T01:34:27,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,A,GLD,logdollar,ker+trend_scan,0.43,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,Runtime Error,?
 2026-06-03T01:34:27,GLD,3.2026,GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40,B,GLD,logdollar,ker+trend_scan,0.44,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,Runtime Error,?
+2026-06-03T08:31:48,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,A,TLT,logdollar,sharpe_scan,0.4,ls_overlay,-0.1494,39.3118,592,True,True,1.3932,0.9216,0.5331,-0.2597,-0.6175,13.557,710,False,False,completed,completed
+2026-06-03T08:31:48,TLT,-0.0387,TLT_logdollar_trend_scan_ls_overlay_t0.45,B,TLT,logdollar,sharpe_scan+trend_scan,0.4,ls_overlay,-0.1269,30.059,696,True,True,0.0,0.8238,0.5727,-0.2151,-0.3179,6.9218,710,True,False,completed,completed
