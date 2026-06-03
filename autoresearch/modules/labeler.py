@@ -1463,6 +1463,70 @@ def generate_labels_turn_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_perment(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                            horizons=[20, 40, 80]):
+    """INFO-THEORETIC predictability label — permutation entropy (Bandt-Pompe 2002), UNSUPERVISED,
+    non-HMM. For horizon H, take the forward log-price window, embed it into consecutive ORDINAL
+    triples (d=3), histogram the 6 ordinal patterns, and compute normalized Shannon (permutation)
+    entropy PE in [0,1]: LOW PE = an ordinally STRUCTURED / predictable forward path, HIGH PE = random
+    chop. Trade only the structured windows (PE <= TRAIN-quantile cut), labelled by the SIGN of the
+    terminal forward move (1=up / 0=down); -1 (ignore) when PE is high. Distinct from `ker` (which
+    reads MAGNITUDE path-efficiency): PE reads ORDINAL pattern only, so it can KEEP a volatile-but-
+    monotone climb that ker's net/gross ratio rejects (low ker, low PE). Forward info is the TARGET
+    only (G3-ok); the supervised model predicts it from past-only features. Sweeps H and the quantile;
+    picks the most TRAIN-balanced. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    d = 3
+    logd = math.log(6.0)                                # log(d!) for d=3, the PE normalizer
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H + 1 or H < d + 1:
+            continue
+        M = N - H
+        seg = np.empty((M, H), dtype=float)             # seg[t,k] = lc[t+1+k], k=0..H-1
+        for k in range(H):
+            seg[:, k] = lc[k + 1:k + 1 + M]
+        terminal = seg[:, -1] - lc[:M]                  # forward net move
+        counts = np.zeros((M, 8), dtype=np.float64)     # 8 comparison-codes (6 are valid orderings)
+        for j in range(H - d + 1):
+            a = seg[:, j]
+            b = seg[:, j + 1]
+            c = seg[:, j + 2]
+            code = ((a < b).astype(int) << 2) | ((a < c).astype(int) << 1) | (b < c).astype(int)
+            for cc in range(8):
+                counts[:, cc] += (code == cc)
+        tot = counts.sum(axis=1)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            p = counts / np.where(tot[:, None] > 0, tot[:, None], np.nan)
+            ent = -np.nansum(np.where(p > 0, p * np.log(p), 0.0), axis=1)
+        pe = np.full(N, np.nan)
+        pe[:M] = ent / logd                             # normalized permutation entropy ~[0,1]
+        term_full = np.full(N, np.nan)
+        term_full[:M] = terminal
+        trsel = tr_m & fv & np.isfinite(pe)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.3, 0.4, 0.5):
+            cut = float(np.quantile(pe[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            structured = fv & np.isfinite(pe) & (pe <= cut) & np.isfinite(term_full)
+            y[structured & (term_full > 0)] = 1
+            y[structured & (term_full <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"perment_H{H}_q{q}_cut{round(cut, 3)}", H
+    if best is None:
+        return None, "perment_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_sharpe_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                                 horizons=[20, 40, 80]):
     """Risk-adjusted forward-trend label — UNSUPERVISED, non-HMM. For horizon H the forward
@@ -1578,6 +1642,7 @@ LABELERS = {
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
+    "perment": generate_labels_perment,               # permutation-entropy predictability (new, non-HMM, info-theoretic; ordinal structure)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
     "dc_reversal": generate_labels_dc_reversal,
@@ -1601,7 +1666,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "sharpe_scan", "mfe_mae", "revert", "turn_scan", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "sharpe_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",

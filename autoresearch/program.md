@@ -92,7 +92,16 @@ genuinely *new method*, tested on the weakest names:
   extremum-TIMING / reversal label — the "edges resolve at turning points" insight tried as a TARGET: deployable +
   balanced on UUP but loses 0.36 (solo 0.18) vs `bgm+ker` 1.30. MECHANISM: local micro-reversal timing ≠ UUP's MACRO
   regime oscillation, which bgm's distributional clustering already captures. LESSON: the resolution insight is about
-  where to SAMPLE the clock (a bar-axis property), NOT a labeling target). Untried: info-theoretic.
+  where to SAMPLE the clock (a bar-axis property), NOT a labeling target); `perment` (INFO-THEORETIC: permutation
+  entropy / Bandt-Pompe ordinal predictability — trade only ordinally-structured forward windows by sign. The "info-
+  theoretic" frontier item: VALID with real standalone signal (SOXX solo 1.24, `ker+perment` pair 1.98 — best new-label
+  near-miss) but REDUNDANT, below champion `ker+trend_scan+bgm` 3.02. MECHANISM: ordinal-entropy predictability ⊂ what
+  trend_scan(slope-sig)+ker(efficiency)+bgm(regime) already capture; a weaker cousin of the trend-predictability family).
+  **NEW-LABEL FRONTIER BROADLY MAPPED** — every DISTINCT forward-window readout now built (slope, efficiency, curvature,
+  magnitude, trail-sign, extremum-timing, risk-adj, regime, tail, ordinal-entropy); none beats the per-asset champion.
+  Combined with the closed bar-axis lever, the two PRIORITY new-method modules are now exhausted. **PIVOT (per deep-
+  research review): the high-value work is now decay-monitoring + honesty infra (DSR/PBO multiple-testing, survival
+  analysis for alpha decay), NOT more method-building** — each new method adds multiple-testing burden for ~0 edge.
 - **ensemble composition** (now cheap — multi-file unblocked 3-way+): same-family 3rd labels on a structured
   champion. GLD/UUP 3-way mapped; deeper combos = diminishing/overfit.
 - secondary: new **features** (non-crowding), **reducers** (vs corr-20), **sizers** (`dd_overlay` tried, lost on UUP).
