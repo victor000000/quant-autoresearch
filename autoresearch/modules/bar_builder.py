@@ -586,9 +586,52 @@ class DirectionalChangeBarBuilder:
         return None
 
 
+class RunBarBuilder:
+    """Custom axis: RUN-PERSISTENCE bars. Accumulate |log-return| WITHIN a directional
+    run; RESET the accumulator whenever the move sign flips; emit a bar when the within-run
+    accumulation >= threshold. This is the DUAL of `dc` (which samples at REVERSALS, dense
+    in chop): the run clock fires on SUSTAINED one-direction runs — dense during persistent
+    trends, silent during choppy two-sided action — so it isolates exactly the momentum
+    structure the ker/trend_scan labelers exploit. A trend-momentum asset (GLD/SOXX) should
+    get a cleaner trend signal off this clock than off a notional clock (logdollar) that
+    samples chop and trend alike. Threshold fit on TRAIN by simulation (causal, see
+    _fit_run_axis); the builder itself fits nothing — it only consumes the frozen threshold.
+    """
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.theta = 0.0
+        self.sign = 0.0
+        self.last_lc = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None      # break the run chain across invalid prints
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.last_lc is None:
+            self.last_lc = lc
+            return None
+        d = lc - self.last_lc
+        self.last_lc = lc
+        s = 1.0 if d > 0 else (-1.0 if d < 0 else self.sign)
+        if s != self.sign and self.sign != 0.0:
+            self.theta = abs(d)      # sign flip -> start a fresh run
+        else:
+            self.theta += abs(d)
+        if s != 0.0:
+            self.sign = s
+        if self.theta >= self.thresh:
+            self.theta = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -603,6 +646,7 @@ AXES = {
     "dc": DirectionalChangeBarBuilder,
     "zcusum": ZCusumBarBuilder,
     "kyle": KyleImpactBarBuilder,
+    "run": RunBarBuilder,
 }
 
 
@@ -906,6 +950,58 @@ def _fit_fracdiff_axis(close, vol, ts_arr, target_bars):
     return thresh, w
 
 
+def _fit_run_axis(close, vol, ts_arr, target_bars):
+    """TRAIN-fit the run-bar magnitude threshold by simulation (causal). Accumulate
+    |log-return| WITHIN a directional run (reset on sign flip); emit when the within-run
+    accumulation >= thresh. Reset-on-flip wastes sub-threshold run magnitude, so there is no
+    clean closed form (unlike the imbalance axes) -> binary-search the threshold on TRAIN
+    minutes so the TRAIN emission count matches the TRAIN share of target_bars. Fit on TRAIN
+    only; applied forward unchanged."""
+    c = np.asarray(close, dtype=float)
+    ret = _minute_log_returns(c)
+    tr = _train_minute_mask(ts_arr)
+    r = ret[tr & np.isfinite(ret)]
+    if len(r) < 200:
+        return None
+    sigma = float(np.std(r))
+    if not np.isfinite(sigma) or sigma <= 0:
+        return None
+    target_train = max(50.0, float(target_bars) * (len(r) / max(1, len(c))))
+    ar = np.abs(r)
+    sr = np.sign(r)
+
+    def emit_count(thresh):
+        theta = 0.0
+        sign = 0.0
+        n = 0
+        for i in range(len(r)):
+            s = sr[i]
+            if s == 0.0:
+                s = sign
+            if s != sign and sign != 0.0:
+                theta = ar[i]
+            else:
+                theta += ar[i]
+            if s != 0.0:
+                sign = s
+            if theta >= thresh:
+                theta = 0.0
+                n += 1
+        return n
+
+    lo, hi = sigma * 0.5, sigma * 300.0
+    for _ in range(22):                       # binary search: higher thresh -> fewer bars
+        mid = 0.5 * (lo + hi)
+        if emit_count(mid) > target_train:
+            lo = mid
+        else:
+            hi = mid
+    thresh = 0.5 * (lo + hi)
+    if not np.isfinite(thresh) or thresh <= 0:
+        return None
+    return thresh
+
+
 def _make_builder(bar_type, close, vol, ts_arr, target_bars):
     """Instantiate the right Builder with an auto-calibrated threshold."""
     if bar_type == "dollar":
@@ -1051,6 +1147,12 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         total = float(np.mean(imp[keep])) * int(np.sum(valid))
         return KyleImpactBarBuilder(_safe_thresh(total, target_bars))
 
+    if bar_type == "run":
+        thresh = _fit_run_axis(close, vol, ts_arr, target_bars)
+        if thresh is None:
+            return None
+        return RunBarBuilder(thresh)
+
     # Default / unknown -> volatility bar (Wang's workhorse axis).
     # Threshold = TRAIN average per-minute vol term x full count / target_bars.
     # The per-minute realized-vol term is averaged over TRAIN minutes only (causal);
@@ -1084,6 +1186,7 @@ BUILDER_CLASSES = {
     "imbalance": DollarImbalanceBarBuilder, "tickimb": TickImbalanceBarBuilder,
     "volumeimb": VolumeImbalanceBarBuilder, "dc": DirectionalChangeBarBuilder,
     "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
+    "run": RunBarBuilder,
 }
 
 

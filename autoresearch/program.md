@@ -74,8 +74,13 @@ cross-asset edge needs a 2-symbol *pairs* strategy, which violates single-ticker
 
 **Open frontier — new bar axis / new unsupervised label (the two priority modules).** The remaining alpha is a
 genuinely *new method*, tested on the weakest names:
-- new **bar axes** (priority) — how you sample the clock. Built: `kyle` (price-impact/illiquidity, no win). Untried:
-  run-length, spectral.
+- new **bar axes** (priority) — how you sample the clock. Built: `kyle` (price-impact/illiquidity, no win); `run`
+  (run-PERSISTENCE / trend clock, dual of `dc`: accumulate |logret| within a directional run, reset on sign flip,
+  emit on sustained runs — built clean, emits the right bar count on GLD 1558≈1546, but the trend edge COLLAPSES:
+  GLD 4.55→0.80, SOXX 3.02→2.27. MECHANISM: the run clock is SILENT during chop / at turning points = exactly where
+  `ker+trend_scan` resolves its EXITS, so MaxDD balloons 6%→16%. A trend clock UNDER-samples the drawdown-onsets the
+  trend edge must time; `dc`/`logdollar` sample those → win. LESSON: sample where the edge RESOLVES, not where the
+  trend IS). Untried: spectral.
 - new **unsupervised labels** (priority) — what you call "up". Built: `ker` ✓ + `accel` ✓ (ensemble-win on GLD);
   `sharpe_scan`/`mfe_mae` valid, no win (mfe_mae gold-specific 2.5). Untried: reversal-timing, info-theoretic.
 - **ensemble composition** (now cheap — multi-file unblocked 3-way+): same-family 3rd labels on a structured
