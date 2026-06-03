@@ -86,67 +86,10 @@ DBC      0.23  0.02 -0.05 -0.07  1.00  0.01
 HYG      0.17  0.43 -0.31  0.54  0.01  1.00
 
 scheme              Calmar  CAGR%  MaxDD%  Sharpe   UUP_wt
-equal                4.563   8.68    1.90   2.535     17%
-Calmar^2             6.192  12.59    2.03   3.039      5%
-Calmar^2 x DSR       6.149  12.68    2.06   3.032      3%
-inverse-variance     6.068   5.34    0.88   3.330     50%
+equal                4.565   8.70    1.90   2.536     17%
+Calmar^2             6.194  12.79    2.06   3.028      4%
+Calmar^2 x DSR       6.153  12.88    2.09   3.022      3%
+inverse-variance     6.057   5.34    0.88   3.331     50%
 ```
 
 UUP↔GLD corr = -0.22, UUP↔SOXX corr = -0.07 → LOW correlation confirms UUP decorrelates the trend edges (earns its book seat despite individual fragility).
-
-## Per-champion yearly robustness (cached OOS series, zero backtests)
-
-Annualized Sharpe by calendar year — is each edge CONSISTENT or one-year-CONCENTRATED?
-
-```
-name      2023    2024    2025    2026   consistency
-GLD       0.46    1.98    3.31   -0.10   3/4 yrs +, mixed
-SOXX      0.81    0.32    1.97    2.96   4/4 yrs +, CONSISTENT
-UUP      -0.50    2.45    0.61    0.72   3/4 yrs +, mixed
-TIP       0.78    0.42    1.37    1.19   4/4 yrs +, CONSISTENT
-DBC      -0.89    0.21    0.62    2.34   3/4 yrs +, mixed
-HYG       1.69    1.32    1.85    0.61   4/4 yrs +, CONSISTENT
-```
-
-Read: GLD/SOXX positive across (nearly) all years = consistent, not one-year artifacts; UUP's regime edge is lumpier (regime-dependent) — consistent with its statistical fragility.
-
-## Transaction-cost stress (explicit slippage; pipeline default = none)
-
-Calmar after re-running each crown's infer (same decisions) with explicit per-fill slippage:
-
-```
-crown  default      5bp     10bp   erosion@10bp
-GLD      4.545    3.478    2.461     46%
-SOXX     3.025    2.776    2.551     16%
-UUP      1.296    1.000    0.734     43%
-```
-
-## GLD rebalance dead-band tuning (net-of-5bp-cost objective)
-
-Wider band → fewer trades → less cost drag. Net Calmar @ 5bp slippage (current band = 0.01):
-
-```
-  band  netCalmar  orders  CAGR%
-  0.01      3.478    1546  13.22
-  0.02      3.609    1256  13.35
-  0.03      3.637    1070  13.46
-  0.05      3.844     837  13.84
-  0.08      3.971     637  13.90  <- best
-```
-
-Best net band = 0.08 → net Calmar 3.971 (637 orders); +14% vs current 0.01 band at 5bp. WORTH widening (cuts cost drag).
-
-## SOXX rebalance dead-band tuning (net-of-5bp-cost objective)
-
-Wider band → fewer trades → less cost drag. Net Calmar @ 5bp slippage (current band = 0.01):
-
-```
-  band  netCalmar  orders  CAGR%
-  0.01      2.776     575   8.88
-  0.02      2.865     296   8.88
-  0.03      2.697     229   8.90
-  0.05      3.000     179   9.00  <- best
-  0.08      2.691     125   9.42
-```
-
-Best net band = 0.05 → net Calmar 3.000 (179 orders); +8% vs current 0.01 band at 5bp. WORTH widening (cuts cost drag).
