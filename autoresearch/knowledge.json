@@ -3437,6 +3437,18 @@
         "type": "milestone",
         "phase": "GLD",
         "label": "R272 GLD KEEP: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.7079 (prev best +4.5454). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r273",
+        "type": "round",
+        "phase": "SOXX",
+        "label": "R273 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +3.0248 (prev best +3.0248). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r274",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R274 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +1.2958 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5724,6 +5736,16 @@
         "src": "r271",
         "dst": "r272",
         "label": "new best"
+      },
+      {
+        "src": "r272",
+        "dst": "r273",
+        "label": "no improvement"
+      },
+      {
+        "src": "r273",
+        "dst": "r274",
+        "label": "no improvement"
       }
     ],
     "running": []
@@ -6073,6 +6095,41 @@
       "calmar_daily_corrected": 5.38,
       "mdd_pct_daily_corrected": 2.34,
       "granularity_note": "weekly-chart MaxDD understates daily by ~1.15x (per-name vs QC real_mdd); compositional rankings unaffected (relative). Honest daily Calmar ~5.4, MaxDD ~2.3%, Sharpe ~3.0."
+    },
+    "honest_deployable_netcost_2026_06_03": {
+      "note": "REAL deployable book at realistic 5bp slippage WITH deployed dead-bands. Gross headlines are optimistic ~20-30%. These are the numbers to trust for deployment.",
+      "per_champion": {
+        "GLD": {
+          "gross_calmar": 4.71,
+          "deployed_band": 0.03,
+          "net5bp_calmar": 3.64,
+          "orders": 1070
+        },
+        "SOXX": {
+          "gross_calmar": 3.02,
+          "deployed_band": 0.02,
+          "net5bp_calmar": 2.87,
+          "orders": 296
+        },
+        "UUP": {
+          "gross_calmar": 1.3,
+          "deployed_band": 0.01,
+          "net5bp_calmar": 1.0,
+          "orders": 146
+        }
+      },
+      "gross_headlines": {
+        "GLD": 4.71,
+        "SOXX": 3.02,
+        "UUP": 1.3
+      },
+      "net5bp_with_deployed_bands": {
+        "GLD": 3.64,
+        "SOXX": 2.87,
+        "UUP": 1.0
+      },
+      "diversified_book_gross": 6.19,
+      "diversified_book_daily_corrected": 5.4
     }
   }
 }
