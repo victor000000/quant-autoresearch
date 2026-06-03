@@ -3675,6 +3675,12 @@
         "type": "round",
         "phase": "EEM",
         "label": "R308 EEM DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +1.9080 (prev best +1.2930). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r309",
+        "type": "round",
+        "phase": "KRE",
+        "label": "R309 KRE DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.6283 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6141,6 +6147,11 @@
       {
         "src": "r307",
         "dst": "r308",
+        "label": "no improvement"
+      },
+      {
+        "src": "r308",
+        "dst": "r309",
         "label": "no improvement"
       }
     ],
