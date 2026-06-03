@@ -71,3 +71,25 @@ UUP -> SOXX swap                               6.107  13.10    2.14   2.993
 drop UUP (4)                                   5.145  14.36    2.79   2.675
 robust crowns + diversifiers, no UUP           6.107  13.10    2.14   2.993
 ```
+
+## Book weighting robustness + decorrelation (cached series, zero backtests)
+
+Return correlation matrix (OOS): is UUP's regime edge decorrelated from the GLD/SOXX trend edges?
+
+```
+corr      GLD  SOXX   UUP   TIP   DBC   HYG
+GLD      1.00  0.12 -0.22  0.22  0.23  0.17
+SOXX     0.12  1.00 -0.07  0.03  0.02  0.43
+UUP     -0.22 -0.07  1.00 -0.27 -0.05 -0.31
+TIP      0.22  0.03 -0.27  1.00 -0.07  0.54
+DBC      0.23  0.02 -0.05 -0.07  1.00  0.01
+HYG      0.17  0.43 -0.31  0.54  0.01  1.00
+
+scheme              Calmar  CAGR%  MaxDD%  Sharpe   UUP_wt
+equal                4.563   8.68    1.90   2.535     17%
+Calmar^2             6.192  12.59    2.03   3.039      5%
+Calmar^2 x DSR       6.149  12.68    2.06   3.032      3%
+inverse-variance     6.068   5.34    0.88   3.330     50%
+```
+
+UUP↔GLD corr = -0.22, UUP↔SOXX corr = -0.07 → LOW correlation confirms UUP decorrelates the trend edges (earns its book seat despite individual fragility).
