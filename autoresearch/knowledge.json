@@ -3398,6 +3398,12 @@
         "type": "round",
         "phase": "SOXX",
         "label": "R265 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + perment; size long-only, vol-targeted, entry 0.50. -> Calmar +1.9815 (prev best +3.0248). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r266",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R266 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size long-only, vol-targeted, entry 0.40. -> Calmar +4.1519 (prev best +4.5454). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5649,6 +5655,11 @@
       {
         "src": "r264",
         "dst": "r265",
+        "label": "no improvement"
+      },
+      {
+        "src": "r265",
+        "dst": "r266",
         "label": "no improvement"
       }
     ],
