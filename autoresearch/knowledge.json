@@ -1325,31 +1325,31 @@
       "status": "DRIFTER (buy-hold 1.26). GLD's tradeable-trend edge does NOT generalize: ker+trend_scan timing 1.19 < buy-hold 1.26 (val_auc 0.5, no structure). GLD's edge is idiosyncratic to gold, not a precious-metals property."
     },
     "SOXX": {
-      "cell": "SOXX_logdollar_ker+trend_scan_cdf_overlay_t0.40",
-      "real_calmar": 1.9162,
-      "real_cagr": 12.455,
-      "real_mdd": 6.5,
-      "real_da": 9.0133,
-      "real_sharpe": 1.383,
-      "trades": 610,
+      "cell": "SOXX_logdollar_ker+trend_scan+bgm_cdf_overlay_t0.45",
+      "real_calmar": 2.7348,
+      "real_cagr": 13.127,
+      "real_mdd": 4.8,
+      "real_da": 6.0498,
+      "real_sharpe": 1.558,
+      "trades": 748,
       "g2_pass": true,
-      "round": 41,
+      "round": 46,
       "source": "tournament",
-      "psr": 0.994,
-      "n_trials": 6,
+      "psr": 0.9981,
+      "n_trials": 20,
       "significant": true,
       "leak_fixed": true,
       "config": {
         "ticker": "SOXX",
         "axis": "logdollar",
-        "labeler": "ker+trend_scan",
-        "thresh": 0.4,
+        "labeler": "ker+trend_scan+bgm",
+        "thresh": 0.45,
         "sizing": "cdf_overlay"
       }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 45,
+  "last_round": 46,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -3128,6 +3128,12 @@
         "type": "round",
         "phase": "SOXX",
         "label": "R225 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.40. -> Calmar +2.5036 (prev best +1.9162). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r226",
+        "type": "milestone",
+        "phase": "SOXX",
+        "label": "R226 SOXX KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.45. -> Calmar +2.7348 (prev best +1.9162). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5180,6 +5186,11 @@
         "src": "r224",
         "dst": "r225",
         "label": "no improvement"
+      },
+      {
+        "src": "r225",
+        "dst": "r226",
+        "label": "new best"
       }
     ],
     "running": []
