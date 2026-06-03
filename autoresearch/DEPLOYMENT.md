@@ -31,6 +31,17 @@ upgrade 2.51→3.47 lifts the book somewhat). UUP and the buy-hold names are lea
 > 3.4716**, and **proven online** (ensemble `preds_match=1`, `max_pred_diff=1.4e-08`). Decomposition: 3.47 = ~2.0
 > gold buy-hold + ~1.16 real label-timing alpha (>2× ker's ~0.5). Gold-specific (does not generalize to SLV).
 
+> **UUP CHAMPION UPGRADED 2026-06-04: bgm+ker 1.30 → `bgm`+`sadf_explosive`+`ker` 1.85** (+42%, lower drawdown).
+> sadf's explosive-regime detection (the dollar's 2014-15/2022 surges) ADDS to the order-flow regime edge.
+> Permute-PASS (→−0.09 = pure label alpha), reproducible EXACTLY, **online-proven** (3 members, `preds_match=1`,
+> `6e-09`). PROVISIONAL: fails Bonferroni at N=72 by a hair (0.9972 vs 0.99931) = this session's cumulative search
+> burden, not a fake edge (the permute control is the decisive real-vs-artifact test, and it passes). Dollar-specific.
+
+> **NET-OF-COST (2026-06-04 cost-stress, explicit slippage; the pipeline uses optimistic QC defaults):** both edges
+> SURVIVE realistic costs. GLD 3.47 → **2.86 @5bp** → 2.26 @10bp. UUP 1.85 → **1.54 @5bp** → 1.16 @10bp (cost-EFFICIENT:
+> only 134 orders, MDD 1.5%). At a conservative ~5bp (top-liquid ETFs, real spreads ~1-2bp) the honest deployable book
+> is **GLD ~2.9 + UUP ~1.5** + buy-hold diversifiers. Genuinely deployable net-of-cost.
+
 ## What is actually real (read this before trusting the book)
 - **GLD is a genuine but MODEST edge.** Leak-free Calmar **reproducibly 2.51** ≈ gold buy-hold (~2.0) **+ ~0.5 real
   label-timing alpha**. The alpha is **permute-confirmed** (shuffling TRAIN labels drops GLD below buy-hold), so

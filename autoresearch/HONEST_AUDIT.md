@@ -56,3 +56,13 @@ HYG         2.51    0.3982    weak (e>=1)  holding
 ```
 
 Anytime-valid: unlike DSR/p-values, these e-values stay honest no matter how many times we re-check as the OOS window grows. Next re-validation just MULTIPLIES the new e-value in.
+
+## Transaction-cost stress (explicit slippage; pipeline default = none)
+
+Calmar after re-running each crown's infer (same decisions) with explicit per-fill slippage:
+
+```
+crown  default      5bp     10bp   erosion@10bp
+GLD      3.472    2.857    2.258     35%
+UUP      1.847    1.541    1.159     37%
+```
