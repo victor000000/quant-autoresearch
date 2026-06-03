@@ -3032,6 +3032,12 @@
         "type": "round",
         "phase": "HYG",
         "label": "R209 HYG DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +1.8276 (prev best +1.8276). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r210",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R210 TLT DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long/short, vol-targeted, entry 0.50. -> Calmar -0.0235 (prev best -0.0387). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5003,6 +5009,11 @@
       {
         "src": "r208",
         "dst": "r209",
+        "label": "no improvement"
+      },
+      {
+        "src": "r209",
+        "dst": "r210",
         "label": "no improvement"
       }
     ],
