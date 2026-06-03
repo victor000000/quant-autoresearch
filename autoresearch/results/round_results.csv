@@ -393,3 +393,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T11:32:34,ITB,0.0,,B,ITB,logdollar,ker+trend_scan,0.4,cdf_overlay,0.1668,12.5094,440,True,True,0.0,0.7007,0.55,0.2252,0.1969,14.3399,710,True,True,completed,completed
 2026-06-03T11:40:20,SMH,0.0,,A,SMH,logdollar,always_long,0.45,cdf_overlay,1.8846,39.6059,979,True,True,0.123,0.5,0.5,1.5444,-0.2555,4.5427,710,True,False,completed,completed
 2026-06-03T11:40:20,SMH,0.0,,B,SMH,logdollar,ker+trend_scan,0.4,cdf_overlay,1.0922,18.1002,569,True,True,0.0,0.6621,0.5468,1.3315,-0.1371,9.2895,710,False,False,completed,completed
+2026-06-03T11:44:13,EEM,1.293,EEM_logdollar_always_long_always_long_t0.50,A,EEM,logdollar,revert,0.5,ls_overlay,-0.2695,93.0868,721,True,True,-0.4441,1.0,1.0,-0.3614,-0.231,6.0988,710,False,False,completed,completed
+2026-06-03T11:44:13,EEM,1.293,EEM_logdollar_always_long_always_long_t0.50,B,EEM,logdollar,revert,0.45,cdf_overlay,0.6711,12.8614,459,True,True,-0.3805,1.0,1.0,0.686,-0.2574,10.4313,710,True,False,completed,completed

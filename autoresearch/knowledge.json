@@ -2966,6 +2966,12 @@
         "type": "round",
         "phase": "SMH",
         "label": "R198 SMH DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +1.8846 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r199",
+        "type": "round",
+        "phase": "EEM",
+        "label": "R199 EEM DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.45. -> Calmar +0.6711 (prev best +1.2930). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4882,6 +4888,11 @@
       {
         "src": "r197",
         "dst": "r198",
+        "label": "no improvement"
+      },
+      {
+        "src": "r198",
+        "dst": "r199",
         "label": "no improvement"
       }
     ],
