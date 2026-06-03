@@ -3669,6 +3669,12 @@
         "type": "round",
         "phase": "HYG",
         "label": "R307 HYG DISCARD: Sample on log-dollar bars; Bayesian-GMM regime labels; size dd_overlay, entry 0.45. -> Calmar +0.0000 (prev best +1.8276). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r308",
+        "type": "round",
+        "phase": "EEM",
+        "label": "R308 EEM DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +1.9080 (prev best +1.2930). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6130,6 +6136,11 @@
       {
         "src": "r306",
         "dst": "r307",
+        "label": "no improvement"
+      },
+      {
+        "src": "r307",
+        "dst": "r308",
         "label": "no improvement"
       }
     ],
