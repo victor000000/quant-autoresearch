@@ -1132,7 +1132,14 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         keep = tr & valid
         if not np.any(keep):
             return None
-        total = float(np.mean(np.log1p(dv[keep]))) * int(np.sum(valid))
+        # LEAK FIX (2026-06-03 adversarial audit): the count multiplier must be OOS-INVARIANT yet
+        # preserve the intended bar coarseness. int(np.sum(valid)) (full-series valid count) LEAKED OOS
+        # validity; plain len(c) (all minutes incl. invalid) is OOS-invariant but OVER-counts when many
+        # minutes are invalid, changing coarseness. Correct fix: extrapolate the TRAIN valid DENSITY to
+        # the full length — full_valid_est = (TRAIN valid / TRAIN minutes) * len(c). TRAIN-only (no OOS),
+        # and == np.sum(valid) when the valid fraction is stable across the split.
+        _trc = max(1, int(np.sum(tr)))
+        total = float(np.mean(np.log1p(dv[keep]))) * (int(np.sum(keep)) * len(c) / _trc)
         return LogDollarBarBuilder(_safe_thresh(total, target_bars))
 
     if bar_type == "zcusum":
@@ -1238,7 +1245,10 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         keep = tr & valid
         if not np.any(keep):
             return None
-        total = float(np.mean(imp[keep])) * int(np.sum(valid))
+        # LEAK FIX (2026-06-03 adversarial audit): OOS-invariant TRAIN-valid-density extrapolation
+        # (not int(np.sum(valid)) which leaked OOS validity, nor plain len(c) which changes coarseness). See logdollar.
+        _trc = max(1, int(np.sum(tr)))
+        total = float(np.mean(imp[keep])) * (int(np.sum(keep)) * len(c) / _trc)
         return KyleImpactBarBuilder(_safe_thresh(total, target_bars))
 
     if bar_type == "run":
