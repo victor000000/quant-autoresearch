@@ -3579,6 +3579,12 @@
         "type": "round",
         "phase": "FXY",
         "label": "R292 FXY DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r293",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R293 GLD DISCARD: Sample on log-dollar bars; ker; size dd_overlay, entry 0.40. -> Calmar +1.3889 (prev best +3.4716). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5965,6 +5971,11 @@
       {
         "src": "r291",
         "dst": "r292",
+        "label": "no improvement"
+      },
+      {
+        "src": "r292",
+        "dst": "r293",
         "label": "no improvement"
       }
     ],
