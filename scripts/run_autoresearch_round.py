@@ -116,7 +116,7 @@ def _write_status(**kw):
     except Exception:
         pass
 
-VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin"]
+VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump"]
 VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
                   "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon",

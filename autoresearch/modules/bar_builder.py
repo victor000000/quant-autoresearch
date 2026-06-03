@@ -731,9 +731,55 @@ class VpinBarBuilder:
         return None
 
 
+class JumpBarBuilder:
+    """Custom axis: Lee-Mykland JUMP-DETECTION clock (Lee & Mykland 2008, Rev. Financial Studies). Mined
+    2026-06-04. Emit a bar ONLY when a statistically-significant JUMP occurs — when the current return,
+    standardized by a LOCAL bipower-variation volatility, exceeds a threshold (|r|/sigma_bipower >= thresh).
+    Bars therefore CLUSTER at the explosive / discontinuous moves (the dollar's 2014-15/2022 surges that
+    sadf showed carry UUP's edge) and are silent during diffusive chop — a fundamentally different sampling
+    than the volume/flow/info clocks. Bipower vol = (pi/2)*mean(|r_{j-1}||r_j|) over a trailing window
+    (jump-robust). O(1) per minute (running product-sum ring — the vpin O(n) timeout lesson). The threshold
+    is a TRAIN quantile of |L| (in _make_builder) targeting ~target_bars -> scalar -> BUILDER_CLASSES-compatible.
+    """
+
+    _K = 60   # trailing window for the bipower local-vol estimate
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.last_lc = None
+        self.close_lc = None
+        self._prev_ar = None     # previous |log-return|
+        self._prods = []         # ring of consecutive products |r_{j-1}|*|r_j|
+        self._psum = 0.0         # running sum of _prods (O(1) bipower)
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None      # break the return chain across invalid prints
+            return None
+        lc = math.log(close)
+        emit = None
+        if self.last_lc is not None:
+            ar = abs(lc - self.last_lc)
+            if self._prev_ar is not None and len(self._prods) >= 20:
+                bv = (math.pi / 2.0) * self._psum / len(self._prods)
+                sigma = math.sqrt(bv) if bv > 0.0 else 0.0
+                if sigma > 1e-12 and ar / sigma >= self.thresh:
+                    emit = {"ts_close": ts, "log_close": lc}
+            if self._prev_ar is not None:
+                p = self._prev_ar * ar
+                self._prods.append(p)
+                self._psum += p
+                if len(self._prods) > self._K:
+                    self._psum -= self._prods.pop(0)
+            self._prev_ar = ar
+        self.last_lc = lc
+        self.close_lc = lc
+        return emit
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -751,6 +797,7 @@ AXES = {
     "run": RunBarBuilder,
     "spectral": SpectralCycleBarBuilder,
     "vpin": VpinBarBuilder,
+    "jump": JumpBarBuilder,
 }
 
 
@@ -1342,6 +1389,43 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         total = float(np.mean(terms[keep])) * len(c)       # TRAIN rate x full length (OOS-invariant)
         return VpinBarBuilder(_safe_thresh(total, target_bars))
 
+    if bar_type == "jump":
+        # Lee-Mykland JUMP clock. Standardize each return by an O(1) trailing bipower vol; |L|=|r|/sigma.
+        # The emission threshold is the TRAIN quantile of |L| at (1 - target_bars/len) so ~target_bars of
+        # the most jump-like minutes emit. TRAIN-only distribution (leak-safe); a single scalar (the
+        # builder recomputes sigma online, identical to replay). matches the JumpBarBuilder math exactly.
+        c = np.asarray(close, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        Lstat = np.full(len(c), np.nan)
+        _prev = None
+        _prods = []
+        _psum = 0.0
+        for i in range(len(c)):
+            if not np.isfinite(ret[i]) or c[i] <= 0:
+                continue
+            ar = abs(float(ret[i]))
+            if _prev is not None and len(_prods) >= 20:
+                bv = (math.pi / 2.0) * _psum / len(_prods)
+                sg = math.sqrt(bv) if bv > 0.0 else 0.0
+                if sg > 1e-12:
+                    Lstat[i] = ar / sg
+            if _prev is not None:
+                p = _prev * ar
+                _prods.append(p)
+                _psum += p
+                if len(_prods) > 60:
+                    _psum -= _prods.pop(0)
+            _prev = ar
+        keep = tr & np.isfinite(Lstat)
+        if int(np.sum(keep)) < 200:
+            return None
+        q = max(0.0, min(0.999, 1.0 - float(target_bars) / max(1, len(c))))
+        thresh = float(np.quantile(Lstat[keep], q))         # TRAIN-quantile jump threshold (OOS-invariant)
+        if not np.isfinite(thresh) or thresh <= 0:
+            return None
+        return JumpBarBuilder(thresh)
+
     if bar_type == "run":
         thresh = _fit_run_axis(close, vol, ts_arr, target_bars)
         if thresh is None:
@@ -1388,7 +1472,7 @@ BUILDER_CLASSES = {
     "volumeimb": VolumeImbalanceBarBuilder, "dc": DirectionalChangeBarBuilder,
     "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder, "spectral": SpectralCycleBarBuilder,
-    "vpin": VpinBarBuilder,
+    "vpin": VpinBarBuilder, "jump": JumpBarBuilder,
 }
 
 
