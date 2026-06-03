@@ -3639,6 +3639,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R302 GLD DISCARD: Sample on log-dollar bars; ensemble of hurst_persist + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +2.8174 (prev best +3.4716). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r303",
+        "type": "round",
+        "phase": "DBC",
+        "label": "R303 DBC DISCARD: Sample on log-dollar bars; hurst_persist; size long-only, vol-targeted, entry 0.45. -> Calmar +0.1645 (prev best +0.9119). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6075,6 +6081,11 @@
       {
         "src": "r301",
         "dst": "r302",
+        "label": "no improvement"
+      },
+      {
+        "src": "r302",
+        "dst": "r303",
         "label": "no improvement"
       }
     ],
