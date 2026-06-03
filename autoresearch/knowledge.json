@@ -3410,6 +3410,12 @@
         "type": "round",
         "phase": "SOXX",
         "label": "R267 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.50. -> Calmar +1.9881 (prev best +3.0248). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r268",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R268 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.1108 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5671,6 +5677,11 @@
       {
         "src": "r266",
         "dst": "r267",
+        "label": "no improvement"
+      },
+      {
+        "src": "r267",
+        "dst": "r268",
         "label": "no improvement"
       }
     ],
