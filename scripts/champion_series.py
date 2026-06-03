@@ -22,13 +22,11 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(HERE, "autoresearch", "CHAMPION_DECAY.md")
 
 # (cfg for train-render, ObjectStore cell key for infer-render)
-CHAMPS = [
-    ({"ticker": "GLD", "axis": "logdollar", "labeler": "ker+regime_gmm", "thresh": 0.4,
-      "sizing": "dd_overlay", "n_components": 15}, "logdollar_ker_x_regime_gmm_dd_overlay_t40_n15"),
-    ({"ticker": "SOXX", "axis": "logdollar", "labeler": "ker+trend_scan+bgm", "thresh": 0.5,
-      "sizing": "cdf_overlay"}, "logdollar_ker_x_trend_scan_x_bgm_cdf_overlay_t50"),
-    ({"ticker": "UUP", "axis": "imbalance", "labeler": "bgm+ker", "thresh": 0.5,
-      "sizing": "cdf_overlay"}, "imbalance_bgm_x_ker_cdf_overlay_t50"),
+CHAMPS = [   # the 2026-06 leak-free, this-session edges (updated 2026-06-04) — decay/consistency check
+    ({"ticker": "GLD", "axis": "logdollar", "labeler": "trend_leg+regime_gmm", "thresh": 0.4,
+      "sizing": "dd_overlay", "n_components": 15, "rebal_band": 0.03}, "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3"),
+    ({"ticker": "UUP", "axis": "imbalance", "labeler": "bgm+sadf_explosive+ker", "thresh": 0.5,
+      "sizing": "cdf_overlay"}, "imbalance_bgm_x_sadf_explosive_x_ker_cdf_overlay_t50"),
 ]
 
 
