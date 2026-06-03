@@ -554,6 +554,22 @@ def _append_round_results(rows, weakest, prev_best, winner, kept):
             })
 
 
+def _run_one_config(target, cfg, tag="permval"):
+    """Train+infer ONE config end-to-end (reusing the round's QC machinery) and return its
+    result row. Used by the standing permuted-label GATE to validate a KEEP. Returns None
+    if the train or infer leg fails to complete."""
+    code, extra = render_train_config(cfg)
+    tlabel = f"{tag}_{target}_train"
+    tr = run_pool([(tlabel, code, extra)]).get(tlabel, {})
+    if not str(tr.get("status", "")).startswith("Completed"):
+        return None
+    cell = (f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}"
+            f"_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else ""))
+    ilabel = f"{tag}_{target}_infer"
+    ir = run_pool([(ilabel, render_infer_cell(cfg["ticker"], cell))]).get(ilabel, {})
+    return _extract_result(tag.upper(), tr, ir, cfg)
+
+
 # ===========================================================================
 # MAIN ROUND
 # ===========================================================================
@@ -638,6 +654,27 @@ def run_round(argv):
     _beats = bool(winner is not None and _is_deployable(winner) and winner["real_calmar"] > prev_cal)
     kept = bool(_beats and winner["real_calmar"] > 0 and _vauc > 0.52 and _defl_ok)
 
+    # ---- STANDING PERMUTED-LABEL GATE (honesty harness) ----
+    # A real edge must COLLAPSE when the TRAIN labels are shuffled. Re-run the winner with
+    # permute_labels=True (distinct _perm cell, leak-safe); if the permuted Calmar holds at
+    # >=60% of the real Calmar, the "edge" survives label-destruction => it's a drift/sizing/
+    # leak artifact, NOT label signal -> do NOT crown it. Runs only on a tentative KEEP (rare).
+    _perm_note = ""
+    if kept:
+        _wcfg = dict(cfg_by_name[winner["name"]]); _wcfg["permute_labels"] = True
+        print(f"\n[{_now()}] PERMUTE-GATE: re-running {target} winner with SHUFFLED train labels (must collapse)...")
+        _pv = _run_one_config(target, _wcfg)
+        if _pv is None:
+            _perm_note = " · permute-gate: control run did not complete (KEEP held — validate manually)"
+        else:
+            _pc = _f(_pv.get("real_calmar", 0.0)); _rc = _f(winner.get("real_calmar", 0.0))
+            if _pc >= 0.6 * _rc:
+                kept = False
+                _perm_note = (f" · PERMUTE-GATE FAILED: permuted Calmar {_pc:+.4f} >= 60% of real {_rc:+.4f} "
+                              f"— edge survives label-shuffle = ARTIFACT, not crowned")
+            else:
+                _perm_note = f" · permute-gate PASS: permuted {_pc:+.4f} << real {_rc:+.4f} (real label signal)"
+
     # ---- PRINT clear comparison ----
     print("\n" + "=" * 84)
     print(f"COMPARISON — ETF {target}  (prev best Calmar={prev_cal:+.4f}, cell={prev_best.get('cell')})")
@@ -663,8 +700,8 @@ def run_round(argv):
                                            winner.get("real_kurt"), winner.get("n_days"), _nt)
             winner["_psr"], winner["_sig"], winner["_ntrials"] = _psr, _sig, _nt
             print(f"VERDICT: KEEP — beats {target} prev best ({winner['real_calmar']:+.4f} > {prev_cal:+.4f}), "
-                  f"Calmar>0, val_auc {_vauc:.3f}>0.52, survives deflation (best-of-{_defl_n} noise {_defl_bench}). "
-                  f"per_etf_best[{target}] updated.")
+                  f"Calmar>0, val_auc {_vauc:.3f}>0.52, survives deflation (best-of-{_defl_n} noise {_defl_bench})"
+                  f"{_perm_note}. per_etf_best[{target}] updated.")
             if _psr is not None:
                 print(f"  TRIALS-ADJUSTED TRUST: Sharpe {winner.get('real_sharpe')}, PSR {_psr}, "
                       f"N_trials {_nt}, Bonferroni {'PASS — significant' if _sig else 'FAIL — selection-bias-suspect (edge not trials-significant)'}")
@@ -677,6 +714,8 @@ def run_round(argv):
                 reasons.append(f"val_auc {_vauc:.3f}<=0.52 (window/path artifact, not an edge)")
             if not _defl_ok:
                 reasons.append(f"FAILS deflation (best-of-{_defl_n}-trials noise {_defl_bench}; selection-bias artifact)")
+            if "PERMUTE-GATE FAILED" in _perm_note:
+                reasons.append(_perm_note.split("·")[-1].strip())
             print(f"VERDICT: DISCARD — winner {winner['real_calmar']:+.4f} beats prev best {prev_cal:+.4f} "
                   f"but FAILS the honest keep-gate: {', '.join(reasons)}.")
         elif _is_deployable(winner):
