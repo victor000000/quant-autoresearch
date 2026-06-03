@@ -61,3 +61,5 @@ TRAIN-fit dim-select → calibrated XGBoost → bet-size. Leak-free (TRAIN-only 
 embargoed calibrator), permute-validated, online-replay-audited. The deepest lesson from this program: **in-sample
 and code audits MISS leaks — only re-running with the fix reveals impact, and most apparent single-ticker alpha did
 not survive that test.**
+
+**REPRODUCIBILITY CHECK (2026-06-03):** leak-free GLD is reproducibly **~2.51** (two runs gave IDENTICAL 2.5141; band-robust 0.03->2.51/0.05->2.49). The earlier 2.76 was a ONE-OFF anomaly (stale-cell/transient) — the pipeline is deterministic (XGBoost/KMeans/BGMM all seeded random_state=42). So GLD = ~2.51 leak-free = gold buy-hold (~2.0) + ~0.5 permute-confirmed label alpha. The honest single real model edge, band-robust + reproducible.

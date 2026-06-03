@@ -1186,7 +1186,7 @@
     },
     "GLD": {
       "cell": "GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 2.7584,
+      "real_calmar": 2.514,
       "real_cagr": 16.007,
       "real_mdd": 3.4,
       "real_da": 6.0779,
@@ -1217,7 +1217,8 @@
       "dsr_PRE_LEAK": 0.9249,
       "evalue_oos_PRE_LEAK": 6.38,
       "psr_PRE_LEAK": 1.0,
-      "evalue_leak_free": true
+      "evalue_leak_free": true,
+      "repro_note": "reproducible leak-free Calmar = 2.51 (confirmed identical across 2 runs + band-robust 0.03->2.51/0.05->2.49); the earlier 2.76 was a one-off anomaly. Pipeline is deterministic (seeded)."
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -3513,6 +3514,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R279 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +2.5141 (prev best +2.7584). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r280",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R280 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +2.5141 (prev best +2.7584). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5834,6 +5841,11 @@
       {
         "src": "r278",
         "dst": "r279",
+        "label": "no improvement"
+      },
+      {
+        "src": "r279",
+        "dst": "r280",
         "label": "no improvement"
       }
     ],

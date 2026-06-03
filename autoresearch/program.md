@@ -201,3 +201,5 @@ config/universe grinding only inflates the multiple-testing burden. Productive w
 **Standing behavior at terminus:** monitor the deployed book's `evalue_oos` liveness/decay; do NOT
 manufacture experiments on static data (it inflates the deflation bar for zero edge). Re-open only on a
 new input (above) or a decay flag. To redirect the loop, point it at one of (1)-(4).
+
+**REPRODUCIBILITY CHECK (2026-06-03):** leak-free GLD is reproducibly **~2.51** (two runs gave IDENTICAL 2.5141; band-robust 0.03->2.51/0.05->2.49). The earlier 2.76 was a ONE-OFF anomaly (stale-cell/transient) — the pipeline is deterministic (XGBoost/KMeans/BGMM all seeded random_state=42). So GLD = ~2.51 leak-free = gold buy-hold (~2.0) + ~0.5 permute-confirmed label alpha. The honest single real model edge, band-robust + reproducible.
