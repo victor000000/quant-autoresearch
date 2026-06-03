@@ -1904,6 +1904,91 @@ def generate_labels_sadf_explosive(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vo
     return best, best_cfg, best_h
 
 
+def _dfa_hurst(w):
+    """Detrended-Fluctuation-Analysis Hurst exponent of a window (Peng 1994). Higher = more PERSISTENT
+    (trending / long-memory); lower = anti-persistent (mean-reverting). The absolute scale is irrelevant
+    here (the labeler gates on a TRAIN quantile of H), only the relative ordering matters. Manual linear
+    detrend (no polyfit) for speed."""
+    n = len(w)
+    if n < 8:
+        return 0.5
+    z = np.cumsum(w - w.mean())
+    scales = [max(4, n // 8), max(5, n // 4), max(6, n // 2)]
+    logs, logf = [], []
+    for s in scales:
+        if s < 4 or s > n:
+            continue
+        nseg = n // s
+        if nseg < 1:
+            continue
+        x = np.arange(s, dtype=float)
+        xm = x.mean()
+        sxx = float(((x - xm) ** 2).sum())
+        if sxx < 1e-12:
+            continue
+        rms = []
+        for i in range(nseg):
+            seg = z[i * s:(i + 1) * s]
+            sm = seg.mean()
+            slope = float(((x - xm) * (seg - sm)).sum()) / sxx
+            resid = seg - (slope * (x - xm) + sm)
+            rms.append(math.sqrt(float((resid * resid).mean())))
+        if rms:
+            logs.append(math.log(s))
+            logf.append(math.log(sum(rms) / len(rms) + 1e-12))
+    if len(logs) < 2:
+        return 0.5
+    la = np.asarray(logs)
+    fa = np.asarray(logf)
+    lm = la.mean()
+    sxx2 = float(((la - lm) ** 2).sum())
+    if sxx2 < 1e-12:
+        return 0.5
+    return float(((la - lm) * (fa - fa.mean())).sum()) / sxx2
+
+
+def generate_labels_hurst_persist(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[80, 160]):
+    """Forward FRACTAL-PERSISTENCE label (DFA Hurst; Hurst 1951, Peng 1994) — mined 2026-06-04. Directly
+    targets PERSISTENCE (the durability property the session's durable edge, trend_leg→gold, exhibits):
+    label the forward windows that are most PERSISTENT (high DFA-Hurst = clean long-memory directional move,
+    multi-scale) by their net direction. Distinct from ker (endpoint efficiency), trend_leg (segmentation),
+    sharpe_scan (vol-ratio): Hurst is a MULTI-SCALE fluctuation exponent. Label 1 if H_exp>=cut and net>0,
+    0 if persistent-down, -1 (ignore) if non-persistent/choppy. cut = TRAIN quantile of H_exp (so the absolute
+    DFA scale is irrelevant). Forward window = TARGET only (G3-ok). Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H:
+            continue
+        hexp = np.full(N, np.nan)
+        net = np.full(N, np.nan)
+        for t in range(N - H):
+            hexp[t] = _dfa_hurst(lc[t + 1:t + H + 1])
+            net[t] = lc[t + H] - lc[t]
+        trsel = tr_m & fv & np.isfinite(hexp)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.4, 0.5, 0.6):
+            cut = float(np.quantile(hexp[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            persist = fv & np.isfinite(hexp) & (hexp >= cut)
+            y[persist & (net > 0)] = 1
+            y[persist & (net <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"hurst_H{H}_q{q}", H
+    if best is None:
+        return None, "hurst_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_mfe_mae(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                             horizons=[20, 40, 80]):
     """Forward EXCURSION-ASYMMETRY label — UNSUPERVISED, non-HMM. Over horizon H the path
@@ -1965,6 +2050,7 @@ LABELERS = {
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
     "calmar_scan": generate_labels_calmar_scan,       # drawdown-adjusted forward-trend (new, non-HMM; targets Calmar/downside)
     "sadf_explosive": generate_labels_sadf_explosive, # Supremum-ADF EXPLOSIVE/bubble regime (new, non-HMM; novel signal)
+    "hurst_persist": generate_labels_hurst_persist,   # DFA forward fractal-PERSISTENCE (new, non-HMM; multi-scale)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
@@ -1993,7 +2079,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "calmar_scan", "sadf_explosive", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
