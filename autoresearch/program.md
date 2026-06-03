@@ -80,7 +80,13 @@ genuinely *new method*, tested on the weakest names:
   GLD 4.55→0.80, SOXX 3.02→2.27. MECHANISM: the run clock is SILENT during chop / at turning points = exactly where
   `ker+trend_scan` resolves its EXITS, so MaxDD balloons 6%→16%. A trend clock UNDER-samples the drawdown-onsets the
   trend edge must time; `dc`/`logdollar` sample those → win. LESSON: sample where the edge RESOLVES, not where the
-  trend IS). Untried: spectral.
+  trend IS); `spectral` (dominant-CYCLE clock: band-pass EMA-diff oscillator, emit on zero-crossings — dense in
+  oscillation, sparse in trend — built clean, emits PLENTY of bars on UUP 506 vs 146, but the edge COLLAPSES
+  1.30→0.26, MaxDD explodes 8.5×. MECHANISM: UUP's edge is ORDER-FLOW imbalance microstructure; the cycle clock
+  DISCARDS the order-flow info and "dense in oscillation" = dense in NOISE for a microstructure edge). **NEW-BAR-AXIS
+  FRONTIER EXHAUSTED** — kyle/run/spectral all built + A/B'd, ALL lose to the asset-intrinsic champion axes
+  (logdollar=info clock for trend; imbalance=order-flow for UUP). The bar AXIS is asset-intrinsic; the custom-axis
+  lever is CLOSED. Don't build more axes — champions already sit on the right clock.
 - new **unsupervised labels** (priority) — what you call "up". Built: `ker` ✓ + `accel` ✓ (ensemble-win on GLD);
   `sharpe_scan`/`mfe_mae`/`revert`/`turn_scan` valid, no win (mfe_mae gold-specific 2.5; `turn_scan` = forward V/Λ
   extremum-TIMING / reversal label — the "edges resolve at turning points" insight tried as a TARGET: deployable +

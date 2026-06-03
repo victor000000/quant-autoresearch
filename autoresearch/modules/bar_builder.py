@@ -629,9 +629,55 @@ class RunBarBuilder:
         return None
 
 
+class SpectralCycleBarBuilder:
+    """Custom axis: SPECTRAL / dominant-CYCLE clock. Maintain a causal band-pass oscillator
+    bp = EMA_fast(logprice) - EMA_slow(logprice) (a MACD-type filter that isolates one frequency
+    band of the price path); emit a bar at each ZERO-CROSSING of bp — i.e. each completed half-cycle
+    of the dominant oscillation in that band. DENSE during oscillation / regime churn, SPARSE during
+    clean trends: the spectral DUAL of the magnitude/flow clocks. Built for regime-OSCILLATING assets
+    (UUP/dollar) whose edge lives in the cycle, not the drift. The fast EMA span is fit on TRAIN by
+    simulation (causal, see _fit_spectral_axis); slow = 4*fast. The builder consumes only the frozen
+    span (stored as .thresh so builder_threshold/verify-replay work uniformly).
+    """
+
+    _SLOW_RATIO = 4.0
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)                  # fast EMA span (uniform 'thresh' slot)
+        slow = self.thresh * self._SLOW_RATIO
+        self.af = 2.0 / (self.thresh + 1.0)
+        self.as_ = 2.0 / (slow + 1.0)
+        self.ef = None
+        self.es = None
+        self.last_bp = 0.0
+        self.started = False
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.ef is None:
+            self.ef = lc
+            self.es = lc
+            return None
+        self.ef += self.af * (lc - self.ef)
+        self.es += self.as_ * (lc - self.es)
+        bp = self.ef - self.es
+        crossed = (bp > 0 and self.last_bp <= 0) or (bp < 0 and self.last_bp >= 0)
+        prev = self.last_bp
+        self.last_bp = bp
+        if bp != 0.0:
+            self.started = True
+        if crossed and self.started and prev != 0.0:
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -647,6 +693,7 @@ AXES = {
     "zcusum": ZCusumBarBuilder,
     "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder,
+    "spectral": SpectralCycleBarBuilder,
 }
 
 
@@ -1002,6 +1049,53 @@ def _fit_run_axis(close, vol, ts_arr, target_bars):
     return thresh
 
 
+def _fit_spectral_axis(close, vol, ts_arr, target_bars):
+    """TRAIN-fit the spectral clock's fast EMA span by simulation (causal). Count zero-crossings of
+    the band-pass oscillator bp = EMA_fast - EMA_4*fast over TRAIN log-prices; a larger span = slower
+    oscillator = FEWER crossings, so binary-search the span so the TRAIN crossing count matches the
+    TRAIN share of target_bars. The span (a frequency-band choice) is the only fitted param and is
+    frozen forward — fit on TRAIN minutes only, applied unchanged (causal)."""
+    c = np.asarray(close, dtype=float)
+    tr = _train_minute_mask(ts_arr)
+    lc = np.log(c[tr & (c > 0)])
+    if len(lc) < 200:
+        return None
+    target_train = max(50.0, float(target_bars) * (len(lc) / max(1, len(c))))
+
+    def cross_count(fast):
+        slow = fast * SpectralCycleBarBuilder._SLOW_RATIO
+        af = 2.0 / (fast + 1.0)
+        a_s = 2.0 / (slow + 1.0)
+        ef = lc[0]
+        es = lc[0]
+        last = 0.0
+        started = False
+        n = 0
+        for i in range(1, len(lc)):
+            ef += af * (lc[i] - ef)
+            es += a_s * (lc[i] - es)
+            bp = ef - es
+            crossed = (bp > 0 and last <= 0) or (bp < 0 and last >= 0)
+            if crossed and started and last != 0.0:
+                n += 1
+            if bp != 0.0:
+                started = True
+            last = bp
+        return n
+
+    lo, hi = 2.0, max(16.0, (len(lc) / max(1.0, target_train)) * 8.0)
+    for _ in range(20):                       # binary search: larger span -> fewer bars
+        mid = 0.5 * (lo + hi)
+        if cross_count(mid) > target_train:
+            lo = mid
+        else:
+            hi = mid
+    fast = 0.5 * (lo + hi)
+    if not np.isfinite(fast) or fast < 1.0:
+        return None
+    return fast
+
+
 def _make_builder(bar_type, close, vol, ts_arr, target_bars):
     """Instantiate the right Builder with an auto-calibrated threshold."""
     if bar_type == "dollar":
@@ -1153,6 +1247,12 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
             return None
         return RunBarBuilder(thresh)
 
+    if bar_type == "spectral":
+        fast = _fit_spectral_axis(close, vol, ts_arr, target_bars)
+        if fast is None:
+            return None
+        return SpectralCycleBarBuilder(fast)
+
     # Default / unknown -> volatility bar (Wang's workhorse axis).
     # Threshold = TRAIN average per-minute vol term x full count / target_bars.
     # The per-minute realized-vol term is averaged over TRAIN minutes only (causal);
@@ -1186,7 +1286,7 @@ BUILDER_CLASSES = {
     "imbalance": DollarImbalanceBarBuilder, "tickimb": TickImbalanceBarBuilder,
     "volumeimb": VolumeImbalanceBarBuilder, "dc": DirectionalChangeBarBuilder,
     "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
-    "run": RunBarBuilder,
+    "run": RunBarBuilder, "spectral": SpectralCycleBarBuilder,
 }
 
 
