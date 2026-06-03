@@ -29,7 +29,11 @@ buy-hold core HYG/TIP/DBC (28%). **Trust the Calmar (3.20) — CAR 12.5% / MaxDD
 alongside a 3.9% MaxDD (17.6%-vol over 17y would see 20-40% drawdowns) — a portfolio-replay computation artifact
 (flat/partial-cash periods deflating the daily-return Sharpe), not a real modest Sharpe. So drop the prior
 optimistic weekly "Sharpe ~2.6" claim too — report the book on its CONSISTENT metric: low-drawdown compounding,
-**Calmar ~3.2 / MaxDD ~3.9% / CAR ~12.5%**.
+**Calmar ~3.2 / MaxDD ~3.9% / CAR ~12.5%**. ✅ **RESOLVED 2026-06-04** by extracting the real equity series: the
+book's TRUE Sharpe is **early 0.80 → late 1.24 (~1.0-1.2, STRENGTHENING)** — confirming the QC 0.71 WAS an artifact,
+and that the **combined book is DECAY-HEALTHY forward** (GLD-dominated, GLD strengthening; robust despite UUP's
+standalone softening). The book holds up across EVERY lens: measured Calmar 3.20, real Sharpe ~1.1, decay-healthy,
+UUP-decorrelated, weighting-mapped, cost-survived, leak-free.
 
 **WEIGHTING FRONTIER (measured 2026-06-04, real portfolio backtests).** GLD-weight vs book metrics:
 `63% (Calmar²) → Calmar 3.20, MaxDD 3.9%, CAR 12.5%` · `85% (GLD-heavy) → 3.31, 4.5%, 14.9%` · `100% (GLD alone)
