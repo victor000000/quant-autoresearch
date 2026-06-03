@@ -3062,6 +3062,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R214 GLD DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of ker + trend_scan + causal-feature GMM regime labels; size long-only, vol-targeted, entry 0.40. -> Calmar +0.8728 (prev best +3.8984). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r215",
+        "type": "round",
+        "phase": "TIP",
+        "label": "R215 TIP DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +1.1463 (prev best +1.1463). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5058,6 +5064,11 @@
       {
         "src": "r213",
         "dst": "r214",
+        "label": "no improvement"
+      },
+      {
+        "src": "r214",
+        "dst": "r215",
         "label": "no improvement"
       }
     ],
