@@ -2895,6 +2895,12 @@
         "type": "round",
         "phase": "SPY",
         "label": "R190 SPY DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +1.4720 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r191",
+        "type": "round",
+        "phase": "SOXX",
+        "label": "R191 SOXX DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +1.5576 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4771,6 +4777,11 @@
       {
         "src": "r189",
         "dst": "r190",
+        "label": "no improvement"
+      },
+      {
+        "src": "r190",
+        "dst": "r191",
         "label": "no improvement"
       }
     ],
