@@ -2984,6 +2984,12 @@
         "type": "round",
         "phase": "SLV",
         "label": "R201 SLV DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.45. -> Calmar +1.2631 (prev best +1.2631). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r202",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R202 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +1.2958 (prev best +1.2958). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4915,6 +4921,11 @@
       {
         "src": "r200",
         "dst": "r201",
+        "label": "no improvement"
+      },
+      {
+        "src": "r201",
+        "dst": "r202",
         "label": "no improvement"
       }
     ],
