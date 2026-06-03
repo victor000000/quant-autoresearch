@@ -175,18 +175,22 @@ def render_verify(ticker, axis):
 
 
 def render_infer_online(ticker, cell):
-    """Render the FROZEN-MODEL ONLINE infer + cross-check for one cell: bar_builder +
-    features modules + the infer_online template. Loads the model bundle, rebuilds
-    bars+features+model ONLINE from origin, asserts p_live == p_saved."""
-    bb = read_module("bar_builder.py")
+    """Render the FROZEN-MODEL ONLINE infer + cross-check for one cell. MULTI-FILE
+    (bar_builder.py separate, like render_live_trade / the train render) so main.py stays
+    under QC's 64k-char-per-file limit (the single-file form hit 69k -> upload reject).
+    main.py = imports + features + infer_online body, importing BUILDER_CLASSES from the
+    separate bar_builder.py. Loads the model bundle, rebuilds bars+features+model ONLINE
+    from origin, asserts p_live == p_saved. Returns (main_code, {"bar_builder.py": bb_code})."""
     ff = read_module("features.py")
     with open(os.path.join(TEMPLATES_DIR, "infer_online.py.tmpl")) as f:
         it = f.read()
-    code = ("from AlgorithmImports import *\nimport json\nimport math\nimport numpy as np\n"
-            "import pandas as pd\nimport xgboost as xgb\n\n"
-            "# === bar_builder.py ===\n" + bb + "\n\n# === features.py ===\n" + ff
-            + "\n\n# === infer_online ===\n" + it)
-    return code.replace("__TICKER__", str(ticker)).replace("__CELL__", str(cell))
+    main = ("from AlgorithmImports import *\nimport json\nimport math\nimport numpy as np\n"
+            "import pandas as pd\nimport xgboost as xgb\n"
+            "import bar_builder as _bbmod\n_bbmod.TRAIN_END = None\nfrom bar_builder import BUILDER_CLASSES\n\n"
+            "# === features.py ===\n" + ff + "\n\n# === infer_online ===\n" + it)
+    main = main.replace("__TICKER__", str(ticker)).replace("__CELL__", str(cell))
+    bb = "TRAIN_END = None\n" + read_module("bar_builder.py")
+    return _minify(main), {"bar_builder.py": _minify(bb)}
 
 
 def render_live_trade(ticker, cell):
