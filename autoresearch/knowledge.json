@@ -1165,30 +1165,27 @@
       "ceilinged": true
     },
     "GLD": {
-      "cell": "GLD_logdollar_ker+trend_scan_cdf_overlay_t0.40",
-      "real_calmar": 3.2026,
-      "real_cagr": 9.928,
-      "real_mdd": 3.1,
-      "real_da": 2.8484,
-      "real_sharpe": 2.317,
-      "trades": 704,
+      "cell": "GLD_logdollar_ker+trend_scan+accel_cdf_overlay_t0.40",
+      "real_calmar": 3.2216,
+      "real_cagr": 8.054,
+      "real_mdd": 2.5,
+      "real_da": 2.6096,
+      "real_sharpe": 2.232,
+      "trades": 790,
       "g2_pass": true,
-      "round": 37,
+      "round": 40,
       "source": "tournament",
       "psr": 1.0,
-      "n_trials": 18,
+      "n_trials": 44,
       "significant": true,
       "leak_fixed": true,
       "config": {
         "ticker": "GLD",
         "axis": "logdollar",
-        "labeler": "ker+trend_scan",
+        "labeler": "ker+trend_scan+accel",
         "thresh": 0.4,
         "sizing": "cdf_overlay"
-      },
-      "val_auc_reval": 0.594,
-      "status": "REAL EDGE 3.20 (logdollar ker+trend_scan @0.40). Squeezed: ker WON (2.16->3.20); accel 2.75, meta 1.72 (deployable but weaker), ensemble-axes all lose. KER is the optimum. OPTIMAL across labels/ensembles/axes/methods.",
-      "ceilinged": true
+      }
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1329,7 +1326,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 39,
+  "last_round": 40,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -2832,6 +2829,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R179 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + trend_scan; size long-only, vol-targeted, entry 0.40. -> Calmar +3.2026 (prev best +3.2026). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r180",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R180 GLD KEEP: Sample on log-dollar bars; ensemble of ker + trend_scan + accel; size long-only, vol-targeted, entry 0.40. -> Calmar +3.2216 (prev best +3.2026). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -4654,6 +4657,11 @@
         "src": "r178",
         "dst": "r179",
         "label": "no improvement"
+      },
+      {
+        "src": "r179",
+        "dst": "r180",
+        "label": "new best"
       }
     ],
     "running": []
