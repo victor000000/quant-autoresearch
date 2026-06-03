@@ -3537,6 +3537,12 @@
         "type": "milestone",
         "phase": "GLD",
         "label": "R285 GLD KEEP: Sample on log-dollar bars; ensemble of trend_leg + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +3.4716 (prev best +2.5140). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r286",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R286 GLD DISCARD: Sample on log-dollar bars; ensemble of trend_leg + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +3.4716 (prev best +3.4716). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5889,6 +5895,11 @@
         "src": "r284",
         "dst": "r285",
         "label": "new best"
+      },
+      {
+        "src": "r285",
+        "dst": "r286",
+        "label": "no improvement"
       }
     ],
     "running": []
