@@ -153,7 +153,8 @@ def render_train_config(config):
               .replace("__THRESH__", repr(float(config["thresh"])))
               .replace("__SIZING__", str(config["sizing"]))
               .replace("__MAXDEPTH__", str(int(config.get("max_depth", 3))))
-              .replace("__PERMUTE__", "1" if config.get("permute_labels") else "0"))
+              .replace("__PERMUTE__", "1" if config.get("permute_labels") else "0")
+              .replace("__NCOMP__", str(int(config.get("n_components", 20)))))
     # Separate bar_builder.py file: standalone (TRAIN_END default None -> injected by main).
     bb = "TRAIN_END = None\n" + read_module("bar_builder.py")
     return _minify(script), {"bar_builder.py": _minify(bb)}

@@ -1166,17 +1166,17 @@
     },
     "GLD": {
       "cell": "GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 4.1884,
-      "real_cagr": 12.984,
-      "real_mdd": 3.1,
-      "real_da": 5.32,
-      "real_sharpe": 2.518,
-      "trades": 1353,
+      "real_calmar": 4.5454,
+      "real_cagr": 15.909,
+      "real_mdd": 3.5,
+      "real_da": 6.1405,
+      "real_sharpe": 2.634,
+      "trades": 1546,
       "g2_pass": true,
-      "round": 48,
+      "round": 49,
       "source": "tournament",
       "psr": 1.0,
-      "n_trials": 68,
+      "n_trials": 78,
       "significant": true,
       "leak_fixed": true,
       "config": {
@@ -1349,7 +1349,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 48,
+  "last_round": 49,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -3284,6 +3284,18 @@
         "type": "round",
         "phase": "KRE",
         "label": "R251 KRE DISCARD: Sample on log-dollar bars; ensemble of ker + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8942 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r252",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R252 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +0.0000 (prev best +4.1884). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r253",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R253 GLD KEEP: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.5454 (prev best +4.1884). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5466,6 +5478,16 @@
         "src": "r250",
         "dst": "r251",
         "label": "no improvement"
+      },
+      {
+        "src": "r251",
+        "dst": "r252",
+        "label": "no improvement"
+      },
+      {
+        "src": "r252",
+        "dst": "r253",
+        "label": "new best"
       }
     ],
     "running": []

@@ -499,3 +499,7 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-03T15:17:36,GLD,4.1884,GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,ker+regime_gmm,0.42,dd_overlay,4.0977,4.9705,1300,True,True,0.0,0.8138,0.7179,2.5382,0.5079,5.7554,710,True,False,completed,completed
 2026-06-03T15:21:41,KRE,0.0,,A,KRE,logdollar,ker+bgm,0.45,cdf_overlay,0.7313,10.0618,666,True,True,0.0,0.7433,0.5905,0.7757,1.4666,14.0068,710,False,False,completed,completed
 2026-06-03T15:21:41,KRE,0.0,,B,KRE,logdollar,ker+bgm,0.5,cdf_overlay,0.8942,6.0048,499,True,True,0.0,0.7433,0.5905,0.9222,1.5973,15.1127,710,True,False,completed,completed
+2026-06-03T15:24:35,GLD,4.1884,GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40,A,GLD,logdollar,ker+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,crash,?
+2026-06-03T15:24:35,GLD,4.1884,GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,ker+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,crash,?
+2026-06-03T15:30:23,GLD,4.1884,GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40,A,GLD,logdollar,ker+regime_gmm,0.4,dd_overlay,1.8112,9.7031,994,True,True,0.0,0.9046,0.8184,1.6305,0.4469,8.341,710,False,False,completed,completed
+2026-06-03T15:30:23,GLD,4.1884,GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,ker+regime_gmm,0.4,dd_overlay,4.5454,6.1405,1546,True,True,0.0,0.8246,0.7405,2.634,0.5778,5.8792,710,True,True,completed,completed
