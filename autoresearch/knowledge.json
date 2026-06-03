@@ -997,7 +997,10 @@
       "real_skew": -0.1693,
       "real_kurt": 5.4363,
       "ceilinged": true,
-      "status": "CEILINGED \u2014 trend_scan 1.02 / KER 0.89 < buy-hold 1.24; tech up-trender, timing trims upside. Buy-hold 1.24 deployable champion."
+      "status": "CEILINGED \u2014 trend_scan 1.02 / KER 0.89 < buy-hold 1.24; tech up-trender, timing trims upside. Buy-hold 1.24 deployable champion.",
+      "dsr": 0.8762,
+      "dsr_n_trials": 11,
+      "dsr_survives_holm": false
     },
     "IWM": {
       "config": {
@@ -1022,7 +1025,10 @@
       "real_kurt": 7.2458,
       "n_trials": 48,
       "psr": 0.8978,
-      "ceilinged": true
+      "ceilinged": true,
+      "dsr": 0.717,
+      "dsr_n_trials": 9,
+      "dsr_survives_holm": false
     },
     "EEM": {
       "cell": "EEM_logdollar_always_long_always_long_t0.50",
@@ -1056,7 +1062,10 @@
       "n_days": 710,
       "real_skew": -0.1107,
       "real_kurt": 6.702,
-      "ceilinged": true
+      "ceilinged": true,
+      "dsr": 0.3908,
+      "dsr_n_trials": 8,
+      "dsr_survives_holm": false
     },
     "XLE": {
       "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
@@ -1093,7 +1102,10 @@
       "real_skew": -0.2919,
       "real_kurt": 5.6787,
       "ceilinged": true,
-      "status": "CEILINGED \u2014 tertile/bgm/trend_scan/KER all fail deflation (floor 1.36, 37 trials); KER val_auc 0.42 confirms NO learnable structure (asset-driven ceiling, not a method gap). Honest champion = buy-hold 0.64."
+      "status": "CEILINGED \u2014 tertile/bgm/trend_scan/KER all fail deflation (floor 1.36, 37 trials); KER val_auc 0.42 confirms NO learnable structure (asset-driven ceiling, not a method gap). Honest champion = buy-hold 0.64.",
+      "dsr": 0.7364,
+      "dsr_n_trials": 6,
+      "dsr_survives_holm": false
     },
     "HYG": {
       "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
@@ -1162,7 +1174,10 @@
       "real_skew": 0.3961,
       "real_kurt": 8.7013,
       "exhausted_out": true,
-      "ceilinged": true
+      "ceilinged": true,
+      "dsr": 0.3895,
+      "dsr_n_trials": 16,
+      "dsr_survives_holm": false
     },
     "GLD": {
       "cell": "GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40",
@@ -1185,7 +1200,10 @@
         "labeler": "ker+regime_gmm",
         "thresh": 0.4,
         "sizing": "dd_overlay"
-      }
+      },
+      "dsr": 0.9311,
+      "dsr_n_trials": 72,
+      "dsr_survives_holm": false
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1253,7 +1271,10 @@
       "real_skew": -0.3954,
       "real_kurt": 6.1746,
       "ceilinged": true,
-      "status": "CEILINGED \u2014 5 method-families (trend_scan/KER/bgm/cusum_regime/tertile) all < buy-hold 0.91; commodity up-drifter, timing misses upside. Buy-hold 0.91 deployable champion."
+      "status": "CEILINGED \u2014 5 method-families (trend_scan/KER/bgm/cusum_regime/tertile) all < buy-hold 0.91; commodity up-drifter, timing misses upside. Buy-hold 0.91 deployable champion.",
+      "dsr": 0.6706,
+      "dsr_n_trials": 7,
+      "dsr_survives_holm": false
     },
     "UUP": {
       "cell": "UUP_imbalance_bgm+ker_cdf_overlay_t0.50",
@@ -1278,7 +1299,10 @@
         "sizing": "cdf_overlay"
       },
       "status": "REAL EDGE 1.30 (imbalance bgm+ker). meta-labeling tested: triple_barrier_meta -0.26 / tight_meta +0.19, both non-deployable (gate over-filters to 62-71 trades). ker/accel/meta all tried -> 1.30 optimal.",
-      "ceilinged": true
+      "ceilinged": true,
+      "dsr": 0.5999,
+      "dsr_n_trials": 48,
+      "dsr_survives_holm": false
     },
     "TIP": {
       "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1322,7 +1346,10 @@
       "g2_pass": true,
       "val_auc": 0.5,
       "ceilinged": true,
-      "status": "DRIFTER (buy-hold 1.26). GLD's tradeable-trend edge does NOT generalize: ker+trend_scan timing 1.19 < buy-hold 1.26 (val_auc 0.5, no structure). GLD's edge is idiosyncratic to gold, not a precious-metals property."
+      "status": "DRIFTER (buy-hold 1.26). GLD's tradeable-trend edge does NOT generalize: ker+trend_scan timing 1.19 < buy-hold 1.26 (val_auc 0.5, no structure). GLD's edge is idiosyncratic to gold, not a precious-metals property.",
+      "dsr": 0.9409,
+      "dsr_n_trials": 16,
+      "dsr_survives_holm": false
     },
     "SOXX": {
       "cell": "SOXX_logdollar_ker+trend_scan+bgm_cdf_overlay_t0.50",
@@ -1345,7 +1372,10 @@
         "labeler": "ker+trend_scan+bgm",
         "thresh": 0.5,
         "sizing": "cdf_overlay"
-      }
+      },
+      "dsr": 0.9594,
+      "dsr_n_trials": 39,
+      "dsr_survives_holm": false
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
