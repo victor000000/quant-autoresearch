@@ -1069,7 +1069,7 @@
     },
     "XLE": {
       "cell": "XLE_logdollar_tertile_cdf_overlay_t0.30",
-      "real_calmar": 0.8588,
+      "real_calmar": 1.3484,
       "real_cagr": 7.214,
       "real_mdd": 8.4,
       "real_da": 16.7259,
@@ -1105,7 +1105,10 @@
       "status": "CEILINGED \u2014 tertile/bgm/trend_scan/KER all fail deflation (floor 1.36, 37 trials); KER val_auc 0.42 confirms NO learnable structure (asset-driven ceiling, not a method gap). Honest champion = buy-hold 0.64.",
       "dsr": 0.7364,
       "dsr_n_trials": 6,
-      "dsr_survives_holm": false
+      "dsr_survives_holm": false,
+      "real_calmar_leaky": 0.8588,
+      "leak_fixed_2026_06_03": true,
+      "leak_note": "leak SUPPRESSED XLE: 0.86->1.35 leak-free (leak adds variance, not uniform inflation)"
     },
     "HYG": {
       "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
@@ -1138,7 +1141,9 @@
       "real_skew": 0.457,
       "real_kurt": 8.1525,
       "ceilinged": true,
-      "status": "CEILINGED \u2014 trend_scan 0.05 / cusum_regime 0.91 << buy-hold 1.83; credit carry beats timing. Buy-hold 1.83 deployable champion."
+      "status": "CEILINGED \u2014 trend_scan 0.05 / cusum_regime 0.91 << buy-hold 1.83; credit carry beats timing. Buy-hold 1.83 deployable champion.",
+      "evalue_oos": 2.51,
+      "evalue_verdict": "weak (e>=1)"
     },
     "TLT": {
       "cell": "TLT_logdollar_trend_scan_ls_overlay_t0.45",
@@ -1181,7 +1186,7 @@
     },
     "GLD": {
       "cell": "GLD_logdollar_ker+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 4.7079,
+      "real_calmar": 2.7584,
       "real_cagr": 16.007,
       "real_mdd": 3.4,
       "real_da": 6.0779,
@@ -1203,7 +1208,12 @@
       },
       "dsr": 0.9249,
       "dsr_n_trials": 80,
-      "dsr_survives_holm": false
+      "dsr_survives_holm": false,
+      "evalue_oos": 6.38,
+      "evalue_verdict": "weak (e>=1)",
+      "real_calmar_leaky": 4.708,
+      "leak_fixed_2026_06_03": true,
+      "leak_note": "logdollar bar-threshold OOS-validity leak fixed: 4.708->2.7584 leak-free"
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1274,7 +1284,9 @@
       "status": "CEILINGED \u2014 5 method-families (trend_scan/KER/bgm/cusum_regime/tertile) all < buy-hold 0.91; commodity up-drifter, timing misses upside. Buy-hold 0.91 deployable champion.",
       "dsr": 0.6706,
       "dsr_n_trials": 7,
-      "dsr_survives_holm": false
+      "dsr_survives_holm": false,
+      "evalue_oos": 1.26,
+      "evalue_verdict": "weak (e>=1)"
     },
     "UUP": {
       "cell": "UUP_imbalance_bgm+ker_cdf_overlay_t0.50",
@@ -1302,7 +1314,9 @@
       "ceilinged": true,
       "dsr": 0.6015,
       "dsr_n_trials": 52,
-      "dsr_survives_holm": false
+      "dsr_survives_holm": false,
+      "evalue_oos": 1.32,
+      "evalue_verdict": "weak (e>=1)"
     },
     "TIP": {
       "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1336,7 +1350,9 @@
       "real_skew": 0.675,
       "real_kurt": 7.7273,
       "ceilinged": true,
-      "status": "CEILINGED \u2014 trend_scan/bgm both G2-FAIL (45/13 trades<80) + < buy-hold 1.15. Low-vol inflation bond: timing under-trades (same as TLT). Buy-hold 1.15 deployable champion."
+      "status": "CEILINGED \u2014 trend_scan/bgm both G2-FAIL (45/13 trades<80) + < buy-hold 1.15. Low-vol inflation bond: timing under-trades (same as TLT). Buy-hold 1.15 deployable champion.",
+      "evalue_oos": 1.58,
+      "evalue_verdict": "weak (e>=1)"
     },
     "SLV": {
       "cell": "SLV_logdollar_always_long_cdf_overlay_t0.50",
@@ -1353,7 +1369,7 @@
     },
     "SOXX": {
       "cell": "SOXX_logdollar_ker+trend_scan+bgm_cdf_overlay_t0.50",
-      "real_calmar": 3.0248,
+      "real_calmar": 0.8074,
       "real_cagr": 9.377,
       "real_mdd": 3.1,
       "real_da": 3.5785,
@@ -1375,7 +1391,12 @@
       },
       "dsr": 0.961,
       "dsr_n_trials": 43,
-      "dsr_survives_holm": false
+      "dsr_survives_holm": false,
+      "evalue_oos": 3.09,
+      "evalue_verdict": "weak (e>=1)",
+      "real_calmar_leaky": 3.025,
+      "leak_fixed_2026_06_03": true,
+      "leak_note": "logdollar bar-threshold OOS-validity leak fixed: 3.025->0.8074 leak-free"
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -3452,6 +3473,30 @@
         "type": "round",
         "phase": "UUP",
         "label": "R274 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +1.2958 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r275",
+        "type": "round",
+        "phase": "FXY",
+        "label": "R275 FXY DISCARD: Sample on signed-dollar imbalance (directional) bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r276",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R276 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +2.7584 (prev best +4.7079). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r277",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R277 GLD DISCARD: Sample on log-dollar bars; ensemble of ker + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +2.7584 (prev best +4.7079). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r278",
+        "type": "round",
+        "phase": "XLE",
+        "label": "R278 XLE DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, vol-targeted, entry 0.30. -> Calmar +1.3484 (prev best +0.8588). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -5748,6 +5793,26 @@
       {
         "src": "r273",
         "dst": "r274",
+        "label": "no improvement"
+      },
+      {
+        "src": "r274",
+        "dst": "r275",
+        "label": "no improvement"
+      },
+      {
+        "src": "r275",
+        "dst": "r276",
+        "label": "no improvement"
+      },
+      {
+        "src": "r276",
+        "dst": "r277",
+        "label": "no improvement"
+      },
+      {
+        "src": "r277",
+        "dst": "r278",
         "label": "no improvement"
       }
     ],
