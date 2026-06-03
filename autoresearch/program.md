@@ -43,14 +43,11 @@ Detectors: trend-scan / change-point / clustering — **NOT HMM.** Aim Calmar > 
 ## honest state (2026-06-03, very late) — mechanistically understood; gold is multi-structure
 Durable single-ticker alpha = **3 confirmed edges** (Bonferroni-significant + permute-validated, deployable):
 **GLD `ker+trend_scan+regime_gmm` + `dd_overlay` 4.02** (logdollar; trend+REGIME HYBRID + drawdown-aware sizing — adding regime_gmm to the trend core
-beat the old 3.22, +21%; threshold-robust 3.64–3.90, the most trustworthy crown) · **SOXX `ker+trend_scan` 1.92**
-(logdollar; FRAGILE — SMH sister-fund replication FAILED → fund-specific, though temporally robust/not decaying) ·
+beat the old 3.22, +21%; threshold-robust 3.64–3.90, the most trustworthy crown) · **SOXX `ker+trend_scan+bgm` 2.73** (logdollar; semis ARE multi-structure — trend+REGIME via bgm; +43% over the old 1.92; the SMH sister-fund replication failed on the pure-trend version → fund-specificity caveat stands) ·
 **UUP `bgm+ker` 1.30** (IMBALANCE axis; regime edge). Everything else = buy-hold. Provisional/un-crowned: KRE/ITB
 (permute-pass but Bonferroni-FAIL). SLV lead DEAD (logdollar+t0.30-specific, axis-fragile, hybrid hurts it).
 
-**GOLD IS UNIQUELY MULTI-STRUCTURE** (key 2026-06-03 find): gold has BOTH trend AND safe-haven-REGIME structure, so
-the trend+regime hybrid (`+regime_gmm`) lifts it +21%. The hybrid is GOLD-SPECIFIC — `regime_gmm` is degenerate or
-craters on every other name (SOXX/SLV/HYG/TLT/TIP/DBC) because they have at most ONE mechanism. Edge type AND axis
+**MANY assets are MULTI-STRUCTURE; the REGIME DETECTOR is asset-specific** (key 2026-06-03 find, corrects an earlier 'gold-unique' claim): gold→`regime_gmm` (+21%→4.02), semis→`bgm` (+43%→2.73), dollar→`bgm`. Using the WRONG detector looks degenerate (regime_gmm on semis=no-op), which is why I'd wrongly called names 'pure-trend'. bgm-regime cuts drawdowns broadly on cyclical assets (IWM/EEM show it) but only crowns where the CAGR/DA balance is right (SOXX). `dd_overlay` sizing is GOLD-specific (its slow/persistent drawdowns; hurts semis' V-recoveries). Edge type AND axis
 are asset-intrinsic: GLD/SOXX edges live on logdollar (information clock), UUP on imbalance (order-flow microstructure).
 
 **THE governing rule (explains every result): two edge MECHANISMS, each needs its own labeler, edge type is asset-intrinsic.**
