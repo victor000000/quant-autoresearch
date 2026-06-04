@@ -47,8 +47,7 @@ monitoring (re-check anytime; merge re-validations by MULTIPLICATION). Testing-b
 
 ```
 champ    e-value  AV p=1/e        verdict  decay?
-GLD         4.56    0.2193    weak (e>=1)  holding
-SOXX        1.20    0.8362    weak (e>=1)  holding
+GLD         4.98    0.2010    weak (e>=1)  holding
 UUP         1.31    0.7627    weak (e>=1)  holding
 TIP         1.58    0.6324    weak (e>=1)  holding
 DBC         1.26    0.7947    weak (e>=1)  holding
@@ -56,14 +55,3 @@ HYG         2.51    0.3982    weak (e>=1)  holding
 ```
 
 Anytime-valid: unlike DSR/p-values, these e-values stay honest no matter how many times we re-check as the OOS window grows. Next re-validation just MULTIPLIES the new e-value in.
-
-## Transaction-cost stress (explicit slippage; pipeline default = none)
-
-Calmar after re-running each crown's infer (same decisions) with explicit per-fill slippage:
-
-```
-crown  default      5bp     10bp   erosion@10bp
-GLD      4.022    3.431    2.834     30%
-UUP      1.847    1.541    1.159     37%
-IWM      0.665    0.610    0.575     13%
-```
