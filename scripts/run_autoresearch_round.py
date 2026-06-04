@@ -448,6 +448,9 @@ def _validate_cfg(cfg):
     cfg["n_components"] = int(cfg.get("n_components", 20))            # optional reducer-width lever (default 20)
     if not (5 <= cfg["n_components"] <= 60):
         raise ValueError(f"n_components {cfg['n_components']} must be in [5,60]")
+    cfg["reduce"] = str(cfg.get("reduce", "correlation"))            # Wang ④ dim-reduce lever (default correlation)
+    if cfg["reduce"] not in ("correlation", "infogain", "variance", "autoencoder"):
+        raise ValueError(f"reduce {cfg['reduce']!r} must be correlation|infogain|variance|autoencoder")
     cfg["rebal_band"] = float(cfg.get("rebal_band", 0.01))           # optional net-of-cost dead-band lever (default 0.01)
     if not (0.0 <= cfg["rebal_band"] <= 0.20):
         raise ValueError(f"rebal_band {cfg['rebal_band']} must be in [0.0,0.20]")
@@ -642,7 +645,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}") + ("" if not cfg.get("horizons") else "_hz" + "x".join(str(int(h)) for h in cfg["horizons"]))   # config-unique; dot- AND plus-free (QC ObjectStore path); _perm = falsification, _b = dead-band, _hz = intraday-horizon cell
+            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}") + ("" if not cfg.get("horizons") else "_hz" + "x".join(str(int(h)) for h in cfg["horizons"])) + ("" if cfg.get("reduce","correlation")=="correlation" else "_ig" if cfg.get("reduce")=="infogain" else "_rd"+str(cfg.get("reduce")))   # config-unique; dot- AND plus-free (QC ObjectStore path); _perm = falsification, _b = dead-band, _hz = intraday-horizon, _ig = Wang info-gain reduce cell
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")

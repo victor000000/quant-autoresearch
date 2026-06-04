@@ -88,9 +88,14 @@ def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005, thresh=0.45):
     return cal, trades, float(np.sum(strat_rets)), mdd, ann, da
 
 
-def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20):
+def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20, y_train=None):
     """Module ④: Dimensionality reduction — variance + correlation + top-K cap, OR a
-    NONLINEAR AUTOENCODER (Wang ⑥ first-public: linear vs non-linear dim-reduce)."""
+    NONLINEAR AUTOENCODER (Wang ⑥ first-public: linear vs non-linear dim-reduce), OR
+    Wang's INFORMATION-GAIN selection (top-K by mutual-info with the TRAIN label, not
+    variance — label-RELEVANT, fixes the corr-filter's label-agnostic crowding that
+    made added features hurt). y_train (TRAIN labels) is required for infogain; the
+    selection is computed on TRAIN only and the kept_idx is frozen + applied to val/test
+    (same leak-safe contract as the correlation path)."""
     F = X_train.shape[1]; variances = np.var(X_train, axis=0)
     if method == "autoencoder":
         # Bottleneck autoencoder (sklearn MLP, no torch): fit X->X on TRAIN, then use the
@@ -112,7 +117,7 @@ def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20):
             method = "correlation"                   # degrade gracefully to the linear path
     kept = np.ones(F, dtype=bool)
     if method == "variance": kept &= variances > 0.01
-    elif method == "correlation":
+    elif method in ("correlation", "infogain"):
         kept &= variances > 1e-6; kept_idx = np.where(kept)[0]
         if len(kept_idx) > 1:
             corr = np.abs(np.corrcoef(X_train[:, kept_idx].T))
@@ -123,6 +128,19 @@ def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20):
                 to_remove.add(orig_i if variances[orig_i] < variances[orig_j] else orig_j)
             for idx in to_remove: kept[idx] = False
     kept_idx = np.where(kept)[0]
+    # Wang INFORMATION-GAIN top-K: select the n_components MOST label-relevant survivors
+    # by mutual information with the TRAIN label (vs the variance top-K below). TRAIN-only
+    # (X_train, y_train) -> kept_idx frozen for val/test = leak-safe. Falls through to the
+    # variance cap if MI is unavailable or y_train is missing.
+    if method == "infogain" and y_train is not None and len(kept_idx) > n_components:
+        try:
+            from sklearn.feature_selection import mutual_info_classif
+            yt = np.asarray(y_train).astype(int)
+            mi = mutual_info_classif(X_train[:, kept_idx], yt, random_state=42)
+            top_k = kept_idx[np.argsort(mi)[-n_components:]]
+            kept = np.zeros(F, dtype=bool); kept[top_k] = True; kept_idx = np.where(kept)[0]
+        except Exception:
+            pass
     if len(kept_idx) > n_components:
         top_k = kept_idx[np.argsort(variances[kept_idx])[-n_components:]]
         kept = np.zeros(F, dtype=bool); kept[top_k] = True; kept_idx = np.where(kept)[0]

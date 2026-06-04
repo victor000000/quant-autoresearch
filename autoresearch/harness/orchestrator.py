@@ -156,7 +156,8 @@ def render_train_config(config):
               .replace("__PERMUTE__", "1" if config.get("permute_labels") else "0")
               .replace("__NCOMP__", str(int(config.get("n_components", 20))))
               .replace("__REBALBAND__", repr(float(config.get("rebal_band", 0.01))))
-              .replace("__HORIZONS__", json.dumps(config.get("horizons"))))   # intraday horizons override (or null)
+              .replace("__HORIZONS__", json.dumps(config.get("horizons")))   # intraday horizons override (or null)
+              .replace("__REDUCE__", str(config.get("reduce", "correlation"))))   # Wang ④ dim-reduce method (correlation|infogain)
     # Separate bar_builder.py file: standalone (TRAIN_END default None -> injected by main).
     bb = "TRAIN_END = None\n" + read_module("bar_builder.py")
     return _minify(script), {"bar_builder.py": _minify(bb)}
