@@ -3759,6 +3759,24 @@
         "type": "round",
         "phase": "TLT",
         "label": "R322 TLT DISCARD: Sample on log-dollar bars; trend_leg; size long/short, vol-targeted, entry 0.45. -> Calmar +0.4894 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r323",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R323 TLT DISCARD: Sample on log-dollar bars; ker; size long/short, vol-targeted, entry 0.45. -> Calmar +0.1968 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r324",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R324 TLT DISCARD: Sample on log-dollar bars; changepoint; size long/short, vol-targeted, entry 0.45. -> Calmar -0.1555 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r325",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R325 TLT DISCARD: Sample on log-dollar bars; trend_leg; size long/short, vol-targeted, entry 0.45. -> Calmar +0.4894 (prev best -0.0387). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6295,6 +6313,21 @@
       {
         "src": "r321",
         "dst": "r322",
+        "label": "no improvement"
+      },
+      {
+        "src": "r322",
+        "dst": "r323",
+        "label": "no improvement"
+      },
+      {
+        "src": "r323",
+        "dst": "r324",
+        "label": "no improvement"
+      },
+      {
+        "src": "r324",
+        "dst": "r325",
         "label": "no improvement"
       }
     ],
