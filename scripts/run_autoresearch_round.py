@@ -103,6 +103,18 @@ RESULTS_DIR = os.path.join(AR, "results")
 ROUND_RESULTS_CSV = os.path.join(RESULTS_DIR, "round_results.csv")
 STATUS_JSON = os.path.join(AR, "reports", "status.json")
 
+# Universe-screening (2026-06-04, user "explore the 311 ETFs, find which fit"): allow any
+# QC-CONFIRMED ETF (results/etf_qc_confirmed_pre2009.csv), not just CORE_7. Still a whitelist
+# (typo-safe, QC-data-confirmed), just the full 311-name universe instead of the curated core.
+def _confirmed_etfs():
+    try:
+        import csv as _csv
+        p = os.path.join(RESULTS_DIR, "etf_qc_confirmed_pre2009.csv")
+        return {r["Ticker"].strip() for r in _csv.DictReader(open(p)) if r.get("Ticker", "").strip()}
+    except Exception:
+        return set()
+CONFIRMED_ETFS = _confirmed_etfs()
+
 
 def _write_status(**kw):
     """Merge-update reports/status.json so the dashboard's live poller shows real
@@ -441,8 +453,8 @@ def _validate_cfg(cfg):
     for k in req:
         if k not in cfg:
             raise ValueError(f"CONFIG missing key '{k}': {cfg}")
-    if cfg["ticker"] not in CORE_7:
-        raise ValueError(f"ticker {cfg['ticker']!r} not in CORE_7 {CORE_7}")
+    if cfg["ticker"] not in CORE_7 and cfg["ticker"] not in CONFIRMED_ETFS:
+        raise ValueError(f"ticker {cfg['ticker']!r} not in CORE_7 nor the {len(CONFIRMED_ETFS)} QC-confirmed ETFs")
     if cfg["axis"] not in VALID_AXES:
         raise ValueError(f"axis {cfg['axis']!r} not in {VALID_AXES}")
     # labeler may be a single name OR a "+"-joined ENSEMBLE (⑦), e.g. "triple_barrier+bgm".
