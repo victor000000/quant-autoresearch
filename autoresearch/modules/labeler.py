@@ -1450,7 +1450,9 @@ def generate_labels_trend_leg(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     Returns (labels, cfg, horizon)."""
     N = len(lc)
     trr = lr[tr_m & np.isfinite(lr)]
-    sigma = float(np.std(trr)) if trr.size > 50 else float(np.std(lr[np.isfinite(lr)]))
+    # fallback is dead code under the footer's >=500-TRAIN-bar guard, but keep it TRAIN-masked
+    # too (defensive: a full-series std here would be an OOS-inclusive leak if ever reached).
+    sigma = float(np.std(trr)) if trr.size > 50 else (float(np.std(trr)) if trr.size > 1 else 1e-4)
     if not np.isfinite(sigma) or sigma <= 0:
         return None, "trend_leg_degenerate", None
     best, best_cfg, best_score, best_h = None, "", -1.0, None
@@ -1760,6 +1762,86 @@ def generate_labels_sharpe_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_ofsc(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                         horizons=[50, 100, 200]):
+    """Order-flow SERIAL-CORRELATION label — UNSUPERVISED, non-HMM, info-flow class (AFML Ch.19.6.5;
+    Toth, Eisler, Lillo, Kockelkoren & Bouchaud 2011). Targets the one signal class none of the built
+    flow methods touch: every built order-flow method (imbalance/tickimb/volumeimb/vpin) is a bar AXIS
+    that NETS signed flow and discards its serial dependence. Here the forward tick-rule sign sequence
+    f_j = sign(lr_j) over the window [t+1, t+H] is read for its PERSISTENCE P = mean of the lag-1..5
+    CENTERED autocorrelations: P>0 = persistent directional flow (informed / order-splitting), P<0 =
+    mean-reverting chop, P~0 = unstructured noise. Orthogonal to the trend/regime labelers, which read
+    price-PATH geometry (efficiency / OLS slope / segmentation) and ignore the sign sequence's own serial
+    structure. Label 1 if P>=cut and net>0 (persistent up-flow), 0 if P>=cut and net<=0, -1 (ignore) if
+    P<cut (no flow persistence = unlearnable). cut = TRAIN quantile of P (balances the set). Forward info
+    defines only the TARGET (G3-ok); the supervised model predicts P-regime+direction from past-only
+    features. O(1)-per-window via per-lag cumsum (no recompute). Sweeps H and q. Returns (labels, cfg, H)."""
+    N = len(lc)
+    s = np.sign(lr).astype(float)                       # tick-rule sign of bar returns (0 stays 0)
+    cs = np.concatenate([[0.0], np.cumsum(s)])          # O(1) window sum of signs
+    cs2 = np.concatenate([[0.0], np.cumsum(s * s)])     # O(1) window sum of sign^2
+    KMAX = 5
+    prodcs = {}                                         # per-lag cumsum of s_j * s_{j+k}
+    for k in range(1, KMAX + 1):
+        pk = s[:-k] * s[k:]
+        prodcs[k] = np.concatenate([[0.0], np.cumsum(pk)])
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H:
+            continue
+        lo = np.arange(N - H)
+        hi = lo + H
+        acc = np.zeros(N - H)                            # sum of finite lag-k autocorrs
+        cnt = np.zeros(N - H)                            # count of finite lags
+        for k in range(1, KMAX + 1):
+            n = H - k
+            if n <= 5:
+                continue
+            sumA = cs[hi - k] - cs[lo]                   # A = s[lo:hi-k]
+            sumB = cs[hi] - cs[lo + k]                   # B = s[lo+k:hi]
+            sumA2 = cs2[hi - k] - cs2[lo]
+            sumB2 = cs2[hi] - cs2[lo + k]
+            sumAB = prodcs[k][hi - k] - prodcs[k][lo]    # sum_j s_j s_{j+k} over the window
+            mA = sumA / n
+            mB = sumB / n
+            cov = sumAB / n - mA * mB
+            vA = np.maximum(sumA2 / n - mA * mA, 0.0)
+            vB = np.maximum(sumB2 / n - mB * mB, 0.0)
+            den = np.sqrt(vA * vB)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                ak = np.where(den > 1e-12, cov / den, np.nan)
+            good = np.isfinite(ak)
+            acc[good] += ak[good]
+            cnt[good] += 1.0
+        P = np.full(N, np.nan)
+        net = np.full(N, np.nan)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            P[lo] = np.where(cnt > 0, acc / np.maximum(cnt, 1.0), np.nan)
+        net[lo] = lc[lo + H] - lc[lo]
+        trsel = tr_m & fv & np.isfinite(P)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.4, 0.5, 0.6):
+            cut = float(np.quantile(P[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            pers = fv & np.isfinite(P) & (P >= cut)
+            y[pers & (net > 0)] = 1
+            y[pers & (net <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"ofsc_H{H}_q{q}_cut{round(cut, 3)}", H
+    if best is None:
+        return None, "ofsc_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_calmar_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                                 horizons=[40, 80]):
     """Drawdown-adjusted forward-trend label — UNSUPERVISED, non-HMM. Mined 2026-06-03; targets the
@@ -2048,6 +2130,7 @@ LABELERS = {
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
     "trend_leg": generate_labels_trend_leg,           # Wang's flagship connected-leg trend SEGMENTATION (new, non-HMM)
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
+    "ofsc": generate_labels_ofsc,                     # order-flow SERIAL-CORRELATION / flow-persistence (new, non-HMM, info-flow class)
     "calmar_scan": generate_labels_calmar_scan,       # drawdown-adjusted forward-trend (new, non-HMM; targets Calmar/downside)
     "sadf_explosive": generate_labels_sadf_explosive, # Supremum-ADF EXPLOSIVE/bubble regime (new, non-HMM; novel signal)
     "hurst_persist": generate_labels_hurst_persist,   # DFA forward fractal-PERSISTENCE (new, non-HMM; multi-scale)
@@ -2079,7 +2162,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",

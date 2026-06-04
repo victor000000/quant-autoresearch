@@ -3717,6 +3717,12 @@
         "type": "round",
         "phase": "SPY",
         "label": "R315 SPY DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.3530 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r316",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R316 TLT DISCARD: Sample on tick-imbalance bars; ofsc; size long/short, vol-targeted, entry 0.50. -> Calmar +0.0543 (prev best -0.0387). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6218,6 +6224,11 @@
       {
         "src": "r314",
         "dst": "r315",
+        "label": "no improvement"
+      },
+      {
+        "src": "r315",
+        "dst": "r316",
         "label": "no improvement"
       }
     ],
