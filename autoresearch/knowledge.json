@@ -3876,6 +3876,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R341 GLD DISCARD: Sample on log-dollar bars; ensemble of trend_leg + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r342",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R342 IWM DISCARD: Sample on log-dollar bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.6653 (prev best +0.5496). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6507,6 +6513,11 @@
       {
         "src": "r340",
         "dst": "r341",
+        "label": "no improvement"
+      },
+      {
+        "src": "r341",
+        "dst": "r342",
         "label": "no improvement"
       }
     ],

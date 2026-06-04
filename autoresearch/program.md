@@ -327,3 +327,22 @@ high-MI-but-UNPROFITABLE. **THIRD high-val_auc/LOW-Calmar "predictable-not-profi
 FIXED a latent driver cell-key bug (parallel-path key now appends _fr to match _PSUF; verified base reproduced
 4.0218 + rich got a distinct 2.55, so base/rich legs read distinct cells). Next: test the lever where the trend
 edge has HEADROOM (IWM 0.665) not the saturated GLD. See [[new-methods-characterized]].
+
+**features=rich DISCARD on IWM too → lever helps NOWHERE; EXHAUSTIVE SATURATION (8 experiments/run, 0 wins).**
+Tested the rich lever where the trend edge has headroom (IWM provisional 0.665, decay-healthy). A (base): reproduced
+**0.6653** (val_auc 0.555 — IWM provisional re-validated, still deflation-FAIL/provisional); B (rich): **0.5969**
+(val_auc **0.5916 — HIGHER**, DA 6.47→**14.20 = drawdown DOUBLED**). DISCARD — same exact signature as GLD: rich
+features RAISE val_auc but LOWER Calmar + balloon drawdown. **`features=rich` HELPS NOWHERE** (saturated GLD ✗,
+headroom IWM ✗) → fully characterized, the VR trend-persistence features are universally high-MI-but-unprofitable
+under IG. **5TH consecutive high-val_auc/LOW-Calmar negative this run.** ── **SATURATION VERDICT (honest, evidence-
+backed): this session-run = 8 experiments, 0 wins** (SOXX-revival, Wang-ladder, sliced_wasserstein ×2, rich-VR ×2,
++ the decay re-validation): every regime/trend SWAP loses to the incumbent, every 3rd label dilutes, every
+learnability-adding lever hits the **label-relevance ≠ profit-relevance** wall. The single-ticker × fixed-universe ×
+method/lever frontier is now EXHAUSTIVELY confirmed saturated (consistent with the program's standing terminus).
+Per terminus guidance, STOP manufacturing method experiments (each inflates the deflation bar for ~0 EV). The
+durable deliverable stands: **GLD 4.02 (trend_leg+regime_gmm+IG, decay-HEALTHY 1.92→2.52, re-validated bit-exact
+3×)** + UUP 1.85 (regime, STALE) + IWM 0.665 (provisional) + buy-hold diversifiers. Productive progress REQUIRES a
+NEW INPUT (new data modality / mechanism-class universe / cross-asset pairs / intraday — see FRONTIER §). New
+permanent capabilities built this run: `sliced_wasserstein` label, `features=rich` lever, + a driver cell-key bug
+fix. Pivot the loop to deployed-book monitoring + re-derivation, not more method probes. See
+[[new-methods-characterized]], [[frontier-converged-terminus]].
