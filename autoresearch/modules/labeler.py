@@ -1919,6 +1919,73 @@ def generate_labels_bde_cusum(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_changepoint(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                horizons=[40, 80, 150]):
+    """Mean-shift CHANGE-POINT label — UNSUPERVISED, non-HMM. Wang's EXPLICITLY PREFERRED labeler
+    ("还不如直接用change point" — he rejects triple-barrier and dislikes the OLS-t trend_scan). For the
+    forward window finds the single split m* that maximizes the standardized mean-shift of per-bar moves
+    (CUSUM-of-mean: |mean(seg2)-mean(seg1)| * sqrt(m(H-m)/H) / pooled_std), then labels by the POST-CHANGE
+    regime direction (sign of seg2 mean) — distinct from trend_leg (reversal zig-zag), bde_cusum (recursive-
+    residual break) and trend_scan (OLS t-stat): it pins WHERE the drift regime shifts and reads the NEW
+    regime. Label 1 if cp_stat>=cut and post-change up, 0 if down, -1 (ignore) if cp_stat<cut (no clear
+    shift). cut = TRAIN quantile of cp_stat (balances). Forward window = TARGET (G3-ok). O(H)-per-window via
+    cumsum running means. Sweeps H and q. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    dl = np.diff(lc, prepend=lc[0])                       # per-bar move; dl[i]=lc[i]-lc[i-1]
+    cdl = np.concatenate([[0.0], np.cumsum(dl)])          # cdl[k]=sum dl[0..k-1]
+    cdl2 = np.concatenate([[0.0], np.cumsum(dl * dl)])
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H + 2:
+            continue
+        nwin = N - H
+        t = np.arange(nwin)
+        w_lo = t + 1                                      # forward window dl[t+1 .. t+H]
+        w_hi = t + 1 + H
+        tot = cdl[w_hi] - cdl[w_lo]
+        gmean = tot / H
+        sse = (cdl2[w_hi] - cdl2[w_lo]) - 2.0 * gmean * tot + H * gmean * gmean   # sum (dl-gmean)^2
+        psd = np.sqrt(np.maximum(sse / H, 1e-18))
+        stat = np.zeros(nwin)
+        argm = np.full(nwin, H // 2)
+        for m in range(3, H - 2):
+            c_m = cdl[w_lo + m] - cdl[w_lo]               # sum of first m moves
+            m1 = c_m / m
+            m2 = (tot - c_m) / (H - m)
+            d = np.abs(m2 - m1) * float(np.sqrt(m * (H - m) / H)) / psd
+            better = d > stat
+            stat = np.where(better, d, stat)
+            argm = np.where(better, m, argm)
+        c_am = cdl[w_lo + argm] - cdl[w_lo]
+        seg2 = (tot - c_am) / np.maximum(H - argm, 1)     # post-change segment mean (the NEW regime)
+        cp = np.full(N, np.nan)
+        s2 = np.full(N, np.nan)
+        cp[t] = stat
+        s2[t] = seg2
+        trsel = tr_m & fv & np.isfinite(cp)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.5, 0.6, 0.7):
+            cut = float(np.quantile(cp[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            strong = fv & np.isfinite(cp) & (cp >= cut)
+            y[strong & (s2 > 0)] = 1
+            y[strong & (s2 <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"changepoint_H{H}_q{q}_cut{round(cut, 3)}", H
+    if best is None:
+        return None, "changepoint_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_calmar_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                                 horizons=[40, 80]):
     """Drawdown-adjusted forward-trend label — UNSUPERVISED, non-HMM. Mined 2026-06-03; targets the
@@ -2243,6 +2310,7 @@ LABELERS = {
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
     "ofsc": generate_labels_ofsc,                     # order-flow SERIAL-CORRELATION / flow-persistence (new, non-HMM, info-flow class)
     "bde_cusum": generate_labels_bde_cusum,           # Brown-Durbin-Evans recursive-CUSUM structural-BREAK / trend-onset (new, non-HMM)
+    "changepoint": generate_labels_changepoint,       # Wang-PREFERRED mean-shift CHANGE-POINT (post-change regime direction; new, non-HMM)
     "tleg_fast": generate_labels_tleg_fast,           # Wang trend-strength ladder: trend_leg @ H=20 (fast/fine trend)
     "tleg_mid": generate_labels_tleg_mid,             # Wang trend-strength ladder: trend_leg @ H=60 (mid trend)
     "tleg_slow": generate_labels_tleg_slow,           # Wang trend-strength ladder: trend_leg @ H=150 (slow/coarse trend)
@@ -2280,7 +2348,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
