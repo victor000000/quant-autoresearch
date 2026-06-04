@@ -360,3 +360,24 @@ GLD/UUP/IWM/TIP/DBC/HYG, Calmar²-weighted = Calmar 4.617 / MaxDD 2.46% / Sharpe
 haircut ~1.15× → Calmar ~4.0, MaxDD ~2.8%). The relative conclusions (+IWM best, drop-UUP worse) hold on the common
 grid. This is the productive terminus deliverable — the deployable book now reflects the session's one real win
 (GLD 4.02) and swaps the leak-dead SOXX for the decay-healthy IWM. See [[portfolio-endpoint]].
+
+**COST-STRESS on CURRENT crowns (2026-06-04, cost_stress.py → HONEST_AUDIT.md) — all SURVIVE realistic costs; the
+new GLD IG crown is MORE cost-robust than the old.** Re-ran each current crown's infer (pure replay, same decisions)
+with explicit per-fill slippage: **GLD 4.022→3.431(5bp)→2.834(10bp, −30%)** · UUP 1.847→1.541→1.159(−37%) · IWM
+0.665→0.610→0.575(−13%, most robust). KEY: the new GLD crown (trend_leg+regime_gmm+IG, rebal_band=0.03, **602
+orders**) erodes only −30%@10bp vs the OLD GLD champion's −46% (**1546 orders**) — the IG config + 0.03 dead-band
+MATERIALLY improved cost-robustness (fewer, less-noisy trades; the dead-band lever's cost benefit, now quantified on
+the deployed crown). At a conservative 5bp (liquid ETFs, real spreads ~1–2bp) the whole book HOLDS: GLD 3.43, UUP
+1.54, IWM 0.61 — all positive + deployable. Net-of-5bp deployable book ≈ Calmar ~4.0 weekly / ~3.4 daily.
+
+**═══ LOOP COMPLETE ON CURRENT INPUTS (2026-06-04). ═══** This run delivered: (1) the GLD IG crown 3.47→**4.02**
+(the one real win, decay-HEALTHY + re-validated bit-exact 3× + cost-robust), (2) exhaustive method-frontier
+saturation proof (8 experiments, 0 wins — every swap loses, every 3rd-label dilutes, every learnability-lever hits
+the label-relevance≠profit-relevance wall), (3) two new permanent capabilities (`sliced_wasserstein` label,
+`features=rich` lever) + a driver cell-key fix, (4) the refreshed deployable book GLD/UUP/IWM/TIP/DBC/HYG (SOXX
+dropped leak-dead, IWM added), (5) ALL robustness lenses re-run on the current crowns (decay ✓, book-rederive ✓,
+cost-stress ✓). The single-ticker × fixed-universe × method/lever space is comprehensively explored and the
+deployable answer is finalized. **Productive further research REQUIRES a NEW INPUT** — new data modality
+(options-IV/skew, ETF flows, macro surprises, credit spreads) · new mechanism-class universe (vol-carry, rate-curve,
+FX-carry) · cross-asset PAIRS · intraday holding (FRONTIER §). Until one is provided, the loop is in
+monitoring/consolidation; the deployed book is the answer. See [[frontier-converged-terminus]], [[portfolio-endpoint]].

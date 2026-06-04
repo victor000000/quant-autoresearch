@@ -63,19 +63,7 @@ Calmar after re-running each crown's infer (same decisions) with explicit per-fi
 
 ```
 crown  default      5bp     10bp   erosion@10bp
-GLD      3.472    2.857    2.258     35%
+GLD      4.022    3.431    2.834     30%
 UUP      1.847    1.541    1.159     37%
-```
-
-## Honest book re-derivation (real OOS series; decorr champion predates SOXX + audits)
-
-Weights ∝ Calmar² (the deployed scheme), gross=1, on 224-pt common OOS grid.
-
-```
-composition                                   Calmar  CAGR%  MaxDD%  Sharpe
-prior core (GLD/UUP/TIP/DBC/HYG)               4.609  11.51    2.50   2.454
-+ IWM added (6)                                4.617  11.36    2.46   2.460
-drop UUP, keep IWM                             4.519  12.06    2.67   2.405
-GLD + diversifiers only (no UUP/IWM)           4.511  12.24    2.71   2.399
-both alpha names (GLD/UUP/IWM)                 5.061  12.46    2.46   2.254
+IWM      0.665    0.610    0.575     13%
 ```

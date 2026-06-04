@@ -18,9 +18,10 @@ from harness.qc_client import submit_and_wait
 ANCHOR = 'self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol'
 INJECT = ANCHOR + '\n        self.securities[self.sym].set_slippage_model(ConstantSlippageModel(%s))'
 
-CROWNS = [   # the 2026-06 leak-free, this-session edges (updated 2026-06-04)
-    ("GLD", "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3", 3.472),
+CROWNS = [   # the 2026-06 leak-free CURRENT crowns (updated 2026-06-04: GLD IG crown 4.02, IWM provisional)
+    ("GLD", "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3_ig", 4.022),
     ("UUP", "imbalance_bgm_x_sadf_explosive_x_ker_cdf_overlay_t50", 1.847),
+    ("IWM", "logdollar_trend_leg_cdf_overlay_t45_ig", 0.665),
 ]
 SLIP = [0.0005, 0.0010]  # 5 bp, 10 bp per fill
 
