@@ -58,15 +58,22 @@ def main():
     for r in todo:
         tk = r["Ticker"].strip()
         ac = r.get("Asset_Class", "?")
-        trend = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "trend_leg+regime_gmm",
-                            "thresh": 0.40, "sizing": "dd_overlay", "reduce": "infogain",
-                            "n_components": 15, "rebal_band": 0.03})
+        # class-aware methodology: currencies fit the REGIME recipe (UUP: imbalance+bgm+ker);
+        # everything else gets the TREND recipe (GLD: logdollar+trend_leg+regime_gmm). leg B is
+        # always_long = buy-hold either way, so every ETF still gets its baseline.
+        if ac == "Currency":
+            method = json.dumps({"ticker": tk, "axis": "imbalance", "labeler": "bgm+ker",
+                                "thresh": 0.50, "sizing": "cdf_overlay"})
+        else:
+            method = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "trend_leg+regime_gmm",
+                                "thresh": 0.40, "sizing": "dd_overlay", "reduce": "infogain",
+                                "n_components": 15, "rebal_band": 0.03})
         buyhold = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "always_long",
                              "thresh": 0.50, "sizing": "cdf_overlay"})
         log.write(f"SCREEN {tk} ({ac})\n")
         log.flush()
         try:
-            subprocess.run(["python3", DRIVER, trend, buyhold], cwd=HERE, timeout=1000,
+            subprocess.run(["python3", DRIVER, method, buyhold], cwd=HERE, timeout=1000,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
             log.write(f"ERR {tk}: {e}\n")
