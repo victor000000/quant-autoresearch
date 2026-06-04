@@ -797,7 +797,11 @@ def run_round(argv):
             "n_trials": winner.get("_ntrials"),
             "significant": winner.get("_sig"),
             "leak_fixed": True,
-            "config": {k: winner[k] for k in ("ticker", "axis", "labeler", "thresh", "sizing")},
+            # full config incl. optional levers (max_depth/n_components/rebal_band/reduce/permute_labels/
+            # horizons) so the crown is REPRODUCIBLE — the prior version dropped them (lost reduce=infogain etc.).
+            "config": {k: winner[k] for k in ("ticker", "axis", "labeler", "thresh", "sizing",
+                       "max_depth", "n_components", "rebal_band", "reduce", "permute_labels", "horizons")
+                       if k in winner},
         }
         knowledge["per_etf_best"] = per_etf_best
         knowledge["last_round"] = new_round

@@ -1186,17 +1186,17 @@
     },
     "GLD": {
       "cell": "GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 3.4716,
-      "real_cagr": 13.192,
-      "real_mdd": 3.8,
-      "real_da": 7.1199,
-      "real_sharpe": 2.125,
-      "trades": 826,
+      "real_calmar": 4.0218,
+      "real_cagr": 13.674,
+      "real_mdd": 3.4,
+      "real_da": 8.0552,
+      "real_sharpe": 2.169,
+      "trades": 602,
       "g2_pass": true,
-      "round": 51,
+      "round": 52,
       "source": "tournament",
-      "psr": 0.9997,
-      "n_trials": 100,
+      "psr": 0.9998,
+      "n_trials": 114,
       "significant": true,
       "leak_fixed": true,
       "config": {
@@ -1204,7 +1204,10 @@
         "axis": "logdollar",
         "labeler": "trend_leg+regime_gmm",
         "thresh": 0.4,
-        "sizing": "dd_overlay"
+        "sizing": "dd_overlay",
+        "n_components": 15,
+        "rebal_band": 0.03,
+        "reduce": "infogain"
       }
     },
     "EFA": {
@@ -1398,7 +1401,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 51,
+  "last_round": 52,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -3831,6 +3834,18 @@
         "type": "round",
         "phase": "XME",
         "label": "R334 XME DISCARD: Sample on log-dollar bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5338 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r335",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R335 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + sadf_explosive + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +1.8473 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r336",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R336 GLD KEEP: Sample on log-dollar bars; ensemble of trend_leg + causal-feature GMM regime labels; size dd_overlay, entry 0.40. -> Calmar +4.0218 (prev best +3.4716). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6428,6 +6443,16 @@
         "src": "r333",
         "dst": "r334",
         "label": "no improvement"
+      },
+      {
+        "src": "r334",
+        "dst": "r335",
+        "label": "no improvement"
+      },
+      {
+        "src": "r335",
+        "dst": "r336",
+        "label": "new best"
       }
     ],
     "running": []

@@ -23,8 +23,10 @@ OUT = os.path.join(HERE, "autoresearch", "CHAMPION_DECAY.md")
 
 # (cfg for train-render, ObjectStore cell key for infer-render)
 CHAMPS = [   # the 2026-06 leak-free, this-session edges (updated 2026-06-04) — decay/consistency check
+    # GLD IG crown (2026-06-04): reduce=infogain LIFTED GLD 3.47->4.02 (+16%), full KEEP (deflation+permute PASS).
     ({"ticker": "GLD", "axis": "logdollar", "labeler": "trend_leg+regime_gmm", "thresh": 0.4,
-      "sizing": "dd_overlay", "n_components": 15, "rebal_band": 0.03}, "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3"),
+      "sizing": "dd_overlay", "n_components": 15, "rebal_band": 0.03, "reduce": "infogain"},
+     "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3_ig"),
     ({"ticker": "UUP", "axis": "imbalance", "labeler": "bgm+sadf_explosive+ker", "thresh": 0.5,
       "sizing": "cdf_overlay"}, "imbalance_bgm_x_sadf_explosive_x_ker_cdf_overlay_t50"),
     # IWM trend_leg+IG (2026-06-04): the Wang IG lever's permute-real beats-buy-hold edge (deflation-boundary
