@@ -243,3 +243,16 @@ GLD 3.47 → 4.02.** Lesson: IG helps the single-trend-label component (GLD's tr
 NOT pure-regime ensembles (UUP); and on a STRONG edge the IG lift CLEARS deflation into a deployable crown.
 The autonomous structured-IG call — after the weak space was exhausted + the user said do-it-automatically —
 delivered the session's biggest result. Validate decay next.
+
+**SOXX IG-REVIVAL = NO EDGE (2026-06-04) — IG AMPLIFIES a real edge, CAN'T MANUFACTURE one.** Tested whether the
+two newest winning levers (`trend_leg` labeler + `reduce=infogain`) revive the leak-killed semis trend crown
+(3.02 pre-leak → 0.81 leak-free; SOXX is the only OTHER name where the trend mechanism was ever a crown, so the
+natural IG-frontier generalization test). A: `trend_leg+bgm`+IG = **1.7355** (val_auc 0.490); B: `trend_leg`+IG =
+**2.6348** (val_auc 0.477) — both CRUSH 0.81 on raw Calmar BUT **driver DISCARD: val_auc 0.49/0.48 ≤ 0.52
+(coin-flip model = no learnable structure) + Bonferroni FAIL (PSR 0.9987, N=52, selection-suspect).** The juicy
+Calmar is drift/sizing PATH-LUCK, not alpha — the val_auc+deflation gate correctly rejects a high-Calmar/no-skill
+config (exactly what the honesty harness exists for). **CONFIRMS the leak correction: the semis trend edge is
+genuinely LEAK-DEAD, not recoverable by a better method.** Re-proven lesson: IG/trend_leg LIFT a real trend edge
+where val_auc>0.6 (GLD 0.735→4.02) but CANNOT create one where the model is at chance (SOXX 0.48). The IG frontier
+is NARROW — crowns GLD-trend, helps IWM (provisional), fails on every drifter (DBC/KRE/XME) + leak-dead SOXX.
+See [[infogain-lever-validated]], [[material-logdollar-leak]].
