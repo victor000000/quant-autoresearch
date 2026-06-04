@@ -498,8 +498,9 @@ class AutoresearchPipeline(QCAlgorithm):
                 pass
 
             _rich = (CONFIG.get("features") == "rich")
+            _ts = (CONFIG.get("features") == "termstruct")
             try:
-                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich)
+                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts)
             except NameError:
                 continue
             except TypeError:

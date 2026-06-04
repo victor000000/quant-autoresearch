@@ -33,7 +33,7 @@ def sample_entropy(x, m=2, r_factor=0.2, max_comp=40):
     return -math.log((A / tA) / (B / tB)) if tA > 0 and tB > 0 else 0.0
 
 
-def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False):
+def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False):
     """Build feature matrix from log-close and log-return arrays.
 
     Args:
@@ -152,5 +152,20 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False):
                 var_k = pd.Series(kret).rolling(W, min_periods=W).var()
                 vr = var_k / (k * var_1 + 1e-12)
                 feats.append((vr - 1.0).astype(np.float32).to_numpy())
+
+    # CROSS-ASSET TERM-STRUCTURE features (opt-in, single-ticker: we still trade only the primary asset; spy_lc here
+    # is a SECOND maturity of the SAME underlying — e.g. VIXY(short) vs VIXM(mid) VIX futures). The log-ratio
+    # lc-spy_lc tracks contango (<0, vol decay) vs backwardation (>0, vol stress/spike) = the vol-REGIME signal that
+    # is EXOGENOUS to the asset's own price (the wall the price-only vol probes hit). Offset-invariant transforms
+    # (z-score, change) carry the signal; the raw level has an arbitrary share-price offset (IG drops it). Causal.
+    if termstruct and spy_lc is not None and len(spy_lc) == N:
+        ratio = pd.Series(lc - spy_lc)                    # log(primary/secondary) ~ term-structure slope
+        feats.append((lc - spy_lc).astype(np.float32))    # raw level (offset-confounded; IG may drop)
+        for W in [20, 60, 200]:
+            m = ratio.rolling(W, min_periods=W).mean()
+            s = ratio.rolling(W, min_periods=W).std()
+            feats.append(((ratio - m) / (s + 1e-9)).astype(np.float32).to_numpy())   # z-scored term structure (regime)
+        for W in [10, 40]:
+            feats.append((ratio - ratio.shift(W)).astype(np.float32).to_numpy())     # term-structure CHANGE (roll dynamics)
 
     return np.column_stack(feats).astype(np.float32)

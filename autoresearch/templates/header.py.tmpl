@@ -6,7 +6,7 @@ import json, math, numpy as np, pandas as pd
 from datetime import datetime, timedelta
 
 TICKER = "__TICKER__"
-CROSS_ASSET = "SPY"  # Market benchmark for cross-asset features
+CROSS_ASSET = {"VIXY": "VIXM"}.get(TICKER, "SPY")  # cross-asset FEATURE series (single-ticker: we trade only TICKER). VIXY->VIXM = VIX term-structure (short vs mid futures = contango/backwardation, the vol-regime signal). Default SPY.
 TARGET_BARS = 15000
 _TRAIN_SPLITS = {"IWM": 2018}
 _train_year = _TRAIN_SPLITS.get(TICKER, 2021)
@@ -84,4 +84,4 @@ CONFIG = {
 # Cell-key suffix for the permuted-label control (distinct cell -> never overwrites a champion).
 # Precomputed as a plain name so f-string keys stay simple (no nested conditional/quotes, which
 # QC's Python rejects after ast.unparse re-emits the f-string).
-_PSUF = ("_perm" if CONFIG["permute_labels"] else "") + ("" if CONFIG["n_components"] == 20 else "_n" + str(CONFIG["n_components"])) + ("" if CONFIG["rebal_band"] == 0.01 else "_b" + str(int(round(CONFIG["rebal_band"] * 100)))) + ("" if CONFIG["horizons"] is None else "_hz" + "x".join(str(_h) for _h in CONFIG["horizons"])) + ("" if CONFIG["reduce"] == "correlation" else "_ig" if CONFIG["reduce"] == "infogain" else "_rd" + str(CONFIG["reduce"])) + ("" if CONFIG["features"] == "base" else "_fr")
+_PSUF = ("_perm" if CONFIG["permute_labels"] else "") + ("" if CONFIG["n_components"] == 20 else "_n" + str(CONFIG["n_components"])) + ("" if CONFIG["rebal_band"] == 0.01 else "_b" + str(int(round(CONFIG["rebal_band"] * 100)))) + ("" if CONFIG["horizons"] is None else "_hz" + "x".join(str(_h) for _h in CONFIG["horizons"])) + ("" if CONFIG["reduce"] == "correlation" else "_ig" if CONFIG["reduce"] == "infogain" else "_rd" + str(CONFIG["reduce"])) + ("" if CONFIG["features"] == "base" else "_fr" if CONFIG["features"] == "rich" else "_ts" if CONFIG["features"] == "termstruct" else "_fx")
