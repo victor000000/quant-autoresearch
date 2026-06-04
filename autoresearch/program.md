@@ -283,3 +283,18 @@ strengthening late-Sharpes; the half-window read is the reliable one and cleanly
 edges from the 1 STALE regime edge.) ACTIONABLE: GLD 4.02 is the trustworthy deployable crown; UUP's DECAYING
 regime edge MOTIVATES seeking a FRESH orthogonal regime signal → next experiment builds `sliced_wasserstein`
 (optimal-transport / tail-aware regime label), the regime-side analog of how sadf added before.
+
+**sliced_wasserstein (OT regime) DISCARD on UUP — VALID + highly LEARNABLE but PREDICTABLE-NOT-PROFITABLE
+(jump_model redux).** Built the tail-aware optimal-transport regime labeler (W1 k-medians on sorted forward-return
+DISTRIBUTIONS; commit a24beac) and solo-first raced on UUP. **TRAINS CLEANLY** (build correct, first end-to-end QC
+execution). A (solo): Calmar 0.765, **val_auc 0.807**, 77 trades (G2-fail); B (`bgm+sliced_wasserstein`): Calmar
+0.9606, **val_auc 0.894**, 125 trades. **DISCARD** (0.96 < UUP 1.30; and 0.96 < bgm-ALONE 1.11 → sliced_w DILUTES
+bgm). KEY: val_auc 0.81–0.89 is VERY HIGH (the OT regime is highly LEARNABLE — past features strongly predict the
+distribution-regime) yet Calmar is LOW = **PREDICTABLE-NOT-PROFITABLE**, the exact jump_model failure mode
+(predictable persistent/distribution regimes ≠ profitable DIRECTION; the OT clustering separates calm/crash by
+vol-distribution shape, predictable from past vol but not directionally tradeable). So sliced_wasserstein joins
+jump_model: a NEW regime IMPLEMENTATION that LEARNS well but loses to bgm's directional distributional clustering →
+the regime readout space is SATURATED for UUP. (Mirror of SOXX's high-Calmar/low-val_auc path-luck; here
+low-Calmar/high-val_auc predictable-unprofitable — the two opposite ways the val_auc+Calmar gates jointly catch a
+non-edge.) Build is a permanent leak-safe capability. Next: test on GLD (tail-awareness most relevant to gold's
+drawdowns/Calmar denominator). See [[new-methods-characterized]].
