@@ -3819,6 +3819,18 @@
         "type": "round",
         "phase": "KRE",
         "label": "R332 KRE DISCARD: Sample on log-dollar bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5080 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r333",
+        "type": "round",
+        "phase": "ITB",
+        "label": "R333 ITB DISCARD: Sample on log-dollar bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.0362 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r334",
+        "type": "round",
+        "phase": "XME",
+        "label": "R334 XME DISCARD: Sample on log-dollar bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5338 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6405,6 +6417,16 @@
       {
         "src": "r331",
         "dst": "r332",
+        "label": "no improvement"
+      },
+      {
+        "src": "r332",
+        "dst": "r333",
+        "label": "no improvement"
+      },
+      {
+        "src": "r333",
+        "dst": "r334",
         "label": "no improvement"
       }
     ],
