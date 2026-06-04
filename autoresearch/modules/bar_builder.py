@@ -947,9 +947,51 @@ class AmihudBarBuilder:
         return None
 
 
+class DrawdownOnsetBarBuilder:
+    """Custom axis: DRAWDOWN-ONSET clock (peak-to-trough giveback sampler). Running max of log-close
+    (rmax = peak); dd = rmax - lc (>= 0); add ONLY the INCREMENT contrib = max(0, dd - dd_prev) to cum;
+    emit at threshold. ONE-SIDED asymmetric: SILENT on grind-up (dd 0/shrinking), TICKS DENSELY during
+    retracement — bars cluster at peak-to-trough givebacks (where the trend edge RESOLVES, not where the
+    trend is — the run/spectral gap). Distinct geometry: run=within-trend magnitude, dc=symmetric
+    reversals. O(1) scalars, pure path-function of log-close (no volume), single scalar threshold ->
+    BUILDER_CLASSES byte-exact replay. Invalid prints reset the running-max chain (fit==replay)."""
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.rmax = None
+        self.dd_prev = 0.0
+        self.cum = 0.0
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.rmax = None
+            self.dd_prev = 0.0
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        emit = None
+        if self.rmax is None:
+            self.rmax = lc
+            self.dd_prev = 0.0
+            return None
+        if lc > self.rmax:
+            self.rmax = lc
+        dd = self.rmax - lc
+        contrib = dd - self.dd_prev
+        if contrib < 0.0:
+            contrib = 0.0
+        self.cum += contrib
+        self.dd_prev = dd
+        if self.cum >= self.thresh:
+            self.cum = 0.0
+            emit = {"ts_close": ts, "log_close": lc}
+        return emit
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -971,6 +1013,7 @@ AXES = {
     "volofvol": VolOfVolBarBuilder,
     "wavelet": WaveletBarBuilder,
     "amihud": AmihudBarBuilder,
+    "ddonset": DrawdownOnsetBarBuilder,
 }
 
 
@@ -1680,6 +1723,40 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         total = float(np.mean(contrib[keep])) * (int(np.sum(keep)) * len(c) / _trc)
         return AmihudBarBuilder(_safe_thresh(total, target_bars))
 
+    if bar_type == "ddonset":
+        # DRAWDOWN-ONSET clock. Per-minute term = max(0, dd - dd_prev), dd = running-peak drawdown of
+        # log-close (SAME path-function the builder replays online). Threshold = TRAIN mean of that giveback
+        # increment x full length / target_bars (rate-on-TRAIN-then-scale, OOS-invariant). Causal scalars.
+        c = np.asarray(close, dtype=float)
+        tr = _train_minute_mask(ts_arr)
+        terms = np.full(len(c), np.nan)
+        rmax = None
+        dd_prev = 0.0
+        for i in range(len(c)):
+            ci = c[i]
+            if not np.isfinite(ci) or ci <= 0:
+                rmax = None
+                dd_prev = 0.0
+                continue
+            lc_val = math.log(ci)
+            if rmax is None:
+                rmax = lc_val
+                dd_prev = 0.0
+                continue
+            if lc_val > rmax:
+                rmax = lc_val
+            dd = rmax - lc_val
+            contrib = dd - dd_prev
+            if contrib < 0.0:
+                contrib = 0.0
+            terms[i] = contrib
+            dd_prev = dd
+        keep = tr & np.isfinite(terms)
+        if int(np.sum(keep)) < 200:
+            return None
+        total = float(np.mean(terms[keep])) * len(c)   # TRAIN rate x full length (OOS-invariant)
+        return DrawdownOnsetBarBuilder(_safe_thresh(total, target_bars))
+
     if bar_type == "run":
         thresh = _fit_run_axis(close, vol, ts_arr, target_bars)
         if thresh is None:
@@ -1727,7 +1804,7 @@ BUILDER_CLASSES = {
     "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder, "spectral": SpectralCycleBarBuilder,
     "vpin": VpinBarBuilder, "jump": JumpBarBuilder,
-    "volofvol": VolOfVolBarBuilder, "wavelet": WaveletBarBuilder, "amihud": AmihudBarBuilder,
+    "volofvol": VolOfVolBarBuilder, "wavelet": WaveletBarBuilder, "amihud": AmihudBarBuilder, "ddonset": DrawdownOnsetBarBuilder,
 }
 
 
