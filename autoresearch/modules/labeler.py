@@ -2440,6 +2440,97 @@ def generate_labels_sortino_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_transfer_entropy_dir(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                         horizons=[50, 100, 200]):
+    """Schreiber TRANSFER-ENTROPY directed self-prediction label (Schreiber 2000) — info-theoretic,
+    UNSUPERVISED, non-HMM. Symbolize the forward bar-return window into 3 SIGN-TERTILES (TRAIN-frozen
+    edges), measure 1-lag self-transfer-entropy TE = the EXTRA info the preceding symbol carries about
+    the next beyond lag-2 (asymmetric, conditional-MI = NONLINEAR directed momentum-coherence). Distinct
+    from ofsc (LINEAR symmetric autocorr) and perment (unconditional ordinal entropy). Trade only coherent
+    windows (TE >= TRAIN-q), labeled by NET forward sign; cut + tertile edges TRAIN-only; forward window =
+    TARGET only. O(N*H) bincount. Sweeps H/q, keeps most TRAIN-balanced. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    L2 = math.log(2.0)
+    for H in horizons:
+        if N <= H + 1 or H < 6:
+            continue
+        M = N - H
+        seg = np.empty((M, H), dtype=float)
+        for k in range(H):
+            seg[:, k] = lr[k + 1:k + 1 + M]
+        net = np.full(N, np.nan)
+        net[:M] = lc[H:H + M] - lc[:M]
+        tr_rows = tr_m[:M] & fv[:M]
+        if int(tr_rows.sum()) < 50:
+            continue
+        train_vals = seg[tr_rows].ravel()
+        train_vals = train_vals[np.isfinite(train_vals)]
+        if train_vals.size < 500:
+            continue
+        e1 = float(np.quantile(train_vals, 1.0 / 3.0))
+        e2 = float(np.quantile(train_vals, 2.0 / 3.0))
+        if not (e1 < e2):
+            continue
+        sym = np.zeros((M, H), dtype=np.int64)
+        sym[seg > e1] = 1
+        sym[seg > e2] = 2
+        te = np.full(N, np.nan)
+        for t in range(M):
+            row = sym[t]
+            xm1 = row[0:H - 2]
+            x0 = row[1:H - 1]
+            x1 = row[2:H]
+            code3 = (x1 * 9) + (x0 * 3) + xm1
+            c3 = np.bincount(code3, minlength=27).astype(np.float64).reshape(3, 3, 3)
+            tot = c3.sum()
+            if tot < 1.0:
+                te[t] = 0.0
+                continue
+            p3 = c3 / tot
+            p_x0_xm1 = p3.sum(axis=0)
+            p_xm1 = p3.sum(axis=(0, 1))
+            p_x1_xm1 = p3.sum(axis=1)
+            val = 0.0
+            for a in range(3):
+                for b in range(3):
+                    for c in range(3):
+                        pj = p3[a, b, c]
+                        if pj <= 0.0:
+                            continue
+                        d1 = p_x0_xm1[b, c]
+                        d2 = p_xm1[c]
+                        d3 = p_x1_xm1[a, c]
+                        if d1 <= 0.0 or d2 <= 0.0 or d3 <= 0.0:
+                            continue
+                        ratio = (pj / d1) / (d3 / d2)
+                        if ratio > 0.0:
+                            val += pj * (math.log(ratio) / L2)
+            te[t] = val if val > 0.0 else 0.0
+        trsel = tr_m & fv & np.isfinite(te)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.4, 0.5, 0.6):
+            cut = float(np.quantile(te[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            coh = fv & np.isfinite(te) & (te >= cut) & np.isfinite(net)
+            y[coh & (net > 0)] = 1
+            y[coh & (net <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"te_dir_H{H}_q{q}", H
+    if best is None:
+        return None, "te_dir_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
@@ -2459,6 +2550,7 @@ LABELERS = {
     "hurst_persist": generate_labels_hurst_persist,   # DFA forward fractal-PERSISTENCE (new, non-HMM; multi-scale)
     "sliced_wasserstein": generate_labels_sliced_wasserstein,  # tail-aware OPTIMAL-TRANSPORT regime (W1 k-medians on sorted forward windows; new, non-HMM)
     "sortino_scan": generate_labels_sortino_scan,     # DOWNSIDE-deviation-adjusted forward trend (Calmar-aligned; new, non-HMM)
+    "transfer_entropy_dir": generate_labels_transfer_entropy_dir,  # Schreiber TRANSFER-ENTROPY directed self-prediction (nonlinear conditional-MI; new, non-HMM)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
@@ -2487,7 +2579,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",

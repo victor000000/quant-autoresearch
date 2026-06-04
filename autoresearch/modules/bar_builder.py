@@ -917,9 +917,39 @@ class WaveletBarBuilder:
         return None
 
 
+class AmihudBarBuilder:
+    """Amihud (2002) ILLIQUIDITY clock (NEW microstructure axis): contrib = |delta log-close| /
+    (close * volume) * 1e9 — price MOVE per unit DOLLAR turnover (1e9 keeps the accumulator sane).
+    Emits FAST on low-notional-high-impact (news-driven, illiquid) minutes, SLOWLY on heavy-notional
+    minutes. DISTINCT from `kyle` (|dlc|/sqrt(volume), sqrt-SHARE Kyle-lambda): Amihud's denominator
+    is LINEAR DOLLAR VOLUME — fires on TLT's low-notional FOMC/CPI minutes the sqrt-share clocks
+    under-sample. O(1) incremental, single scalar threshold -> BUILDER_CLASSES byte-exact replay."""
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.cum = 0.0
+        self.last_lc = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0 or vol <= 0:
+            return None
+        lc = math.log(close)
+        if self.last_lc is not None:
+            contrib = abs(lc - self.last_lc) / (close * vol) * 1e9
+            if contrib > 0:
+                self.cum += contrib
+        self.last_lc = lc
+        self.close_lc = lc
+        if self.cum >= self.thresh:
+            self.cum = 0.0
+            return {"ts_close": ts, "log_close": self.close_lc}
+        return None
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -940,6 +970,7 @@ AXES = {
     "jump": JumpBarBuilder,
     "volofvol": VolOfVolBarBuilder,
     "wavelet": WaveletBarBuilder,
+    "amihud": AmihudBarBuilder,
 }
 
 
@@ -1631,6 +1662,24 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         total = float(np.mean(terms[keep])) * len(c)       # TRAIN rate x full length (OOS-invariant)
         return WaveletBarBuilder(_safe_thresh(total, target_bars))
 
+    if bar_type == "amihud":
+        # Amihud (2002) illiquidity clock. contrib = |log-return| / (close*volume) * 1e9. Threshold =
+        # TRAIN avg contrib x OOS-invariant TRAIN-valid-density-extrapolated full count / target_bars
+        # (the 2026-06-03 leak-fix form: NOT int(np.sum(valid)) which leaked OOS validity).
+        c = np.asarray(close, dtype=float)
+        v = np.asarray(vol, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            contrib = np.abs(ret) / (c * v) * 1e9
+        valid = (c > 0) & (v > 0) & np.isfinite(contrib)
+        keep = tr & valid
+        if not np.any(keep):
+            return None
+        _trc = max(1, int(np.sum(tr)))
+        total = float(np.mean(contrib[keep])) * (int(np.sum(keep)) * len(c) / _trc)
+        return AmihudBarBuilder(_safe_thresh(total, target_bars))
+
     if bar_type == "run":
         thresh = _fit_run_axis(close, vol, ts_arr, target_bars)
         if thresh is None:
@@ -1678,7 +1727,7 @@ BUILDER_CLASSES = {
     "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder, "spectral": SpectralCycleBarBuilder,
     "vpin": VpinBarBuilder, "jump": JumpBarBuilder,
-    "volofvol": VolOfVolBarBuilder, "wavelet": WaveletBarBuilder,
+    "volofvol": VolOfVolBarBuilder, "wavelet": WaveletBarBuilder, "amihud": AmihudBarBuilder,
 }
 
 
