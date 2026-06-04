@@ -3972,6 +3972,18 @@
         "type": "round",
         "phase": "TIP",
         "label": "R357 TIP DISCARD: Sample on log-dollar bars; transfer_entropy_dir; size long-only, vol-targeted, entry 0.45. -> Calmar +0.2525 (prev best +1.1463). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r358",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R358 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r359",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R359 IWM DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.6653 (prev best +0.5496). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6683,6 +6695,16 @@
       {
         "src": "r356",
         "dst": "r357",
+        "label": "no improvement"
+      },
+      {
+        "src": "r357",
+        "dst": "r358",
+        "label": "no improvement"
+      },
+      {
+        "src": "r358",
+        "dst": "r359",
         "label": "no improvement"
       }
     ],
