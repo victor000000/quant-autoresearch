@@ -346,3 +346,17 @@ NEW INPUT (new data modality / mechanism-class universe / cross-asset pairs / in
 permanent capabilities built this run: `sliced_wasserstein` label, `features=rich` lever, + a driver cell-key bug
 fix. Pivot the loop to deployed-book monitoring + re-derivation, not more method probes. See
 [[new-methods-characterized]], [[frontier-converged-terminus]].
+
+**DEPLOYED BOOK RE-DERIVED with current crowns (2026-06-04, portfolio_rederive.py → HONEST_AUDIT.md) — IWM replaces
+leak-dead SOXX, the GLD 4.02 crown lifts the book.** The deployed book was stale (predated the GLD 3.47→4.02 IG
+crown + still listed leak-dead SOXX). Re-derived on real OOS series (Calmar²-weighted, the deployed scheme) with
+current crowns [GLD 4.02 trend_leg+regime_gmm+IG · UUP 1.30 gated bgm+ker · IWM 0.665 provisional decay-healthy +
+TIP/DBC/HYG buy-hold diversifiers] on the 224-pt ~weekly grid: prior core GLD/UUP/TIP/DBC/HYG = 4.609 · **+IWM (6)
+= 4.617** (Calmar↑ + MaxDD 2.50→2.46% + Sharpe 2.460 = STRICT marginal WIN — IWM earns the decorrelation seat SOXX
+vacated) · drop-UUP-keep-IWM = 4.519 (UUP STILL earns its seat: decorrelation > standalone staleness, the recurring
+nuance) · GLD+diversifiers-only = 4.511 (worst — the alpha names add value) · both-alpha-concentrated GLD/UUP/IWM =
+5.061 Calmar but lowest Sharpe 2.254 (concentration trades risk-adj for raw Calmar). **REFRESHED DEPLOYABLE BOOK =
+GLD/UUP/IWM/TIP/DBC/HYG, Calmar²-weighted = Calmar 4.617 / MaxDD 2.46% / Sharpe 2.46** (~weekly grid; honest daily
+haircut ~1.15× → Calmar ~4.0, MaxDD ~2.8%). The relative conclusions (+IWM best, drop-UUP worse) hold on the common
+grid. This is the productive terminus deliverable — the deployable book now reflects the session's one real win
+(GLD 4.02) and swaps the leak-dead SOXX for the decay-healthy IWM. See [[portfolio-endpoint]].

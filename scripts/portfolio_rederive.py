@@ -20,10 +20,13 @@ CACHE = os.path.join(HERE, "autoresearch", "results", "series_cache.json")
 OUT = os.path.join(HERE, "autoresearch", "HONEST_AUDIT.md")
 
 # candidate members: (cfg for train, ObjectStore cell, champion Calmar for weighting)
+# Updated 2026-06-04 to CURRENT leak-free crowns: GLD trend_leg+regime_gmm+IG 4.02 (was old pre-leak
+# ker+regime_gmm 4.545); SOXX REMOVED (leak-dead ~0.81, ~buy-hold); IWM trend_leg+IG 0.665 ADDED
+# (provisional, decay-healthy, decorrelation candidate). UUP = gated bgm+ker 1.30 (sadf 1.85 is STALE/front-loaded).
 MEMBERS = {
-    "GLD":  (dict(ticker="GLD", axis="logdollar", labeler="ker+regime_gmm", thresh=0.40, sizing="dd_overlay", n_components=15), "logdollar_ker_x_regime_gmm_dd_overlay_t40_n15", 4.545),
-    "SOXX": (dict(ticker="SOXX", axis="logdollar", labeler="ker+trend_scan+bgm", thresh=0.50, sizing="cdf_overlay"), "logdollar_ker_x_trend_scan_x_bgm_cdf_overlay_t50", 3.025),
+    "GLD":  (dict(ticker="GLD", axis="logdollar", labeler="trend_leg+regime_gmm", thresh=0.40, sizing="dd_overlay", n_components=15, rebal_band=0.03, reduce="infogain"), "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3_ig", 4.022),
     "UUP":  (dict(ticker="UUP", axis="imbalance", labeler="bgm+ker", thresh=0.50, sizing="cdf_overlay"), "imbalance_bgm_x_ker_cdf_overlay_t50", 1.296),
+    "IWM":  (dict(ticker="IWM", axis="logdollar", labeler="trend_leg", thresh=0.45, sizing="cdf_overlay", reduce="infogain"), "logdollar_trend_leg_cdf_overlay_t45_ig", 0.665),
     "HYG":  (dict(ticker="HYG", axis="logdollar", labeler="always_long", thresh=0.55, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t55", 1.828),
     "TIP":  (dict(ticker="TIP", axis="logdollar", labeler="always_long", thresh=0.45, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t45", 1.146),
     "DBC":  (dict(ticker="DBC", axis="logdollar", labeler="always_long", thresh=0.45, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t45", 0.912),
@@ -108,11 +111,11 @@ def main():
     print(f"\n{len(common)} common timestamps, ppy~{ppy:.1f}, members={list(series.keys())}\n", flush=True)
     avail = set(series.keys())
     COMPS = [
-        ("current decorr core (GLD/UUP/TIP/DBC/HYG)", ["GLD", "UUP", "TIP", "DBC", "HYG"]),
-        ("+ SOXX added (6)", ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]),
-        ("UUP -> SOXX swap", ["GLD", "SOXX", "TIP", "DBC", "HYG"]),
-        ("drop UUP (4)", ["GLD", "TIP", "DBC", "HYG"]),
-        ("robust crowns + diversifiers, no UUP", ["GLD", "SOXX", "HYG", "TIP", "DBC"]),
+        ("prior core (GLD/UUP/TIP/DBC/HYG)", ["GLD", "UUP", "TIP", "DBC", "HYG"]),
+        ("+ IWM added (6)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG"]),
+        ("drop UUP, keep IWM", ["GLD", "IWM", "TIP", "DBC", "HYG"]),
+        ("GLD + diversifiers only (no UUP/IWM)", ["GLD", "TIP", "DBC", "HYG"]),
+        ("both alpha names (GLD/UUP/IWM)", ["GLD", "UUP", "IWM"]),
     ]
     lines = ["", "## Honest book re-derivation (real OOS series; decorr champion predates SOXX + audits)", "",
              f"Weights ∝ Calmar² (the deployed scheme), gross=1, on {len(common)}-pt common OOS grid.", "", "```",
