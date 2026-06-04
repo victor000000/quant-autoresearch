@@ -270,3 +270,16 @@ trend_leg signal GLD's edge relies on — gold wants ONE focused trend label + r
 ladder suits his Chinese-commodity stronger trend-persistence, not US gold). **The #1 Wang lever is now CLOSED on
 the structured name.** Meta-pattern re-confirmed: on GLD-trend a BETTER single trend labeler wins (trend_leg>ker),
 but MORE trend labels (ensemble/ladder/3rd-label) always dilute. See [[wang-investigation]].
+
+**GLD 4.02 CROWN IS DECAY-HEALTHY (2026-06-04, champion_series.py on real OOS equity) — the session's biggest
+result is FORWARD-DURABLE.** Full current-book decay snapshot (early→late Sharpe on the real OOS return series):
+**GLD `trend_leg+regime_gmm`+IG 4.02: 1.92→2.52 = HOLDING (STRENGTHENING)** — the IG crown is NOT temporally
+front-loaded; the +16% IG lift persists into late OOS → the crown is trustworthy (the flagged "validate decay next"
+follow-up, now PASSED, on top of the bit-exact re-validation). **UUP `bgm+sadf+ker` 1.85: 2.67→0.74 = STALE**
+(re-confirms front-loading — the explosive-dollar episodes sadf targets are early-OOS; the 1.85 headline overstates
+the forward edge). **IWM `trend_leg`+IG 0.665: 0.63→1.31 = HOLDING (strengthening)** — the provisional IG edge is
+durable. (Page-Hinkley/CUSUM fire 5–10% in on all three = over-sensitive defaults, contradicted by GLD/IWM's
+strengthening late-Sharpes; the half-window read is the reliable one and cleanly separates the 2 HOLDING trend/IG
+edges from the 1 STALE regime edge.) ACTIONABLE: GLD 4.02 is the trustworthy deployable crown; UUP's DECAYING
+regime edge MOTIVATES seeking a FRESH orthogonal regime signal → next experiment builds `sliced_wasserstein`
+(optimal-transport / tail-aware regime label), the regime-side analog of how sadf added before.
