@@ -57,6 +57,16 @@ def _size(p, thresh, sizing, rbuf):
             ref = 3.0 * float(np.std(win)) * math.sqrt(len(win))   # vol-normalized DD scale (~3σ)
             if ref > 1e-9:
                 b *= float(min(1.0, max(0.5, 1.0 + dd / ref)))     # 1.0 at peak -> 0.5 floor when deep
+    if sizing == "ddbreaker":           # dd_overlay smooth throttle + HARD circuit-breaker (flat on
+        m = len(rbuf)                   # extreme DD frac<0.4) to cut the tail MaxDD. Causal (rbuf only).
+        if m >= _VOL_FAST + 2:
+            win = np.asarray(rbuf[-min(m, _VOL_SLOW):], dtype=float)
+            cum = np.cumsum(win)
+            dd = float(cum[-1] - float(np.max(cum)))
+            ref = 3.0 * float(np.std(win)) * math.sqrt(len(win))
+            if ref > 1e-9:
+                frac = 1.0 + dd / ref
+                b = 0.0 if frac < 0.4 else b * float(min(1.0, max(0.4, frac)))
     return b
 
 TICKER = "__TICKER__"
