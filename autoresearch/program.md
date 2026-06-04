@@ -381,3 +381,18 @@ deployable answer is finalized. **Productive further research REQUIRES a NEW INP
 (options-IV/skew, ETF flows, macro surprises, credit spreads) · new mechanism-class universe (vol-carry, rate-curve,
 FX-carry) · cross-asset PAIRS · intraday holding (FRONTIER §). Until one is provided, the loop is in
 monitoring/consolidation; the deployed book is the answer. See [[frontier-converged-terminus]], [[portfolio-endpoint]].
+
+**sortino_scan (downside-deviation trend label) DISCARD on GLD — a WEAKER core than trend_leg (NOT the learnability
+trap).** Built the Calmar-aligned downside-deviation core label (commit 0a4018d; profit-aligned by design — downside
+deviation IS the Calmar denominator) and raced solo + with regime. A (sortino+regime_gmm+IG) = **3.20** (val_auc
+0.71 — regime_gmm carries it); B (sortino SOLO+IG) = **1.18, val_auc 0.495 (~CHANCE — sortino has almost no
+standalone trend structure)**. DISCARD (3.20 < 4.02). UNLIKE the prior 5 high-val_auc/low-Calmar negatives, sortino's
+solo val_auc is LOW — it's simply a WEAKER trend readout than trend_leg (solo val_auc ~0.76), joining calmar_scan
+(2.93) as a downside-cousin that loses to trend_leg's segmentation. **GLD's trend core is DEFINITIVELY trend_leg** —
+now beaten 7 cousins (ker / calmar_scan / sortino_scan / accel / sharpe_scan / tleg-ladder / sadf). **═══ 9 EXPERIMENTS
+THIS RUN, 0 WINS; 3 new methods BUILT (sliced_wasserstein, features=rich, sortino_scan), all DISCARD. ═══** The
+method/lever frontier is CONCLUSIVELY dead across every angle (better-core, orthogonal-ADD, 3rd-label, reducer-slot,
+feature-set, downside-aligned-core). Each further probe RAISES the deflation bar (now N≈72) for ~0 EV — the program's
+explicit anti-manufacturing warning. AUTONOMOUS DECISION (not stalling): HOLD — stop manufacturing method probes on
+static data; the deployable book (GLD 4.02 / UUP / IWM / diversifiers, cost-robust) is the finished answer. Re-open
+ONLY on a NEW INPUT (data modality / mechanism-class universe / pairs / intraday). See [[frontier-converged-terminus]].
