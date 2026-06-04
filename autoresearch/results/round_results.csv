@@ -691,3 +691,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-04T13:56:17,GLD,4.0218,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,sortino_scan,0.4,dd_overlay,1.1759,7.2895,169,True,True,0.1344,0.7231,0.495,1.4478,-1.1993,13.2451,710,False,False,completed,completed
 2026-06-04T14:04:11,VIXY,0.0,,A,VIXY,logdollar,bgm+ker,0.5,ls_overlay,0.0383,71.5341,1322,True,True,0.0,0.8393,0.5565,0.1728,-1.8666,21.4057,710,True,False,completed,completed
 2026-06-04T14:04:11,VIXY,0.0,,B,VIXY,logdollar,trend_leg,0.5,ls_overlay,0.0368,45.3762,603,True,True,0.949,0.7695,0.5339,0.1622,-1.6804,16.9939,710,False,False,completed,completed
+2026-06-04T14:18:06,VIXY,0.0,,A,VIXY,logdollar,sadf_explosive+ker,0.45,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8284,0.4655,0.0,0.0,0.0,0,True,False,completed,completed
+2026-06-04T14:18:06,VIXY,0.0,,B,VIXY,logdollar,sadf_explosive,0.45,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8884,0.4455,0.0,0.0,0.0,0,False,False,completed,completed

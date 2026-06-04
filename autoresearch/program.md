@@ -412,3 +412,17 @@ spreads → violate single-ticker) or single-asset drifters (FXY already val_auc
 autonomously-reachable new directions are now ALSO exhausted; the remaining re-openers (cross-asset PAIRS, EXTERNAL
 alt-DATA) genuinely REQUIRE the user.** 10 experiments this run, 0 wins; the deployable book stands. See
 [[frontier-converged-terminus]].
+
+**VIXY mechanism-matched long-vol probe DISCARD (0 trades, val_auc <0.5) — DEFINITIVELY closes the vol class:
+spikes are EXOGENOUS.** Tested the gap from the first VIXY probe (which used generic methods on the short-carry
+side): `sadf_explosive` (explosive-regime detector, mechanism-MATCHED to vol spikes) on the LONG-vol (positive-skew)
+side. A (sadf+ker) / B (sadf solo), cdf_overlay: BOTH **val_auc 0.46/0.45 (BELOW chance)** → **0 trades** (the model
+never predicts a spike confidently enough to take a position). CONCLUSIVE: even the mechanism-matched explosiveness
+detector CANNOT predict VIXY's forward vol spikes from past price/volume — because vol spikes are EXOGENOUS/
+shock-driven (news/macro events), not internal price structure. So the vol class is now characterized across BOTH
+sides (short-carry: crash-dominated DA 71; long-timing: unpredictable val_auc <0.5) and BOTH labeler types (generic
+bgm/trend_leg AND mechanism-matched sadf). **Vol is genuinely UNCRACKABLE without external data** (VIX term
+structure, options flow, macro calendar). 11 experiments this run, 0 wins. **The one autonomously-reachable new
+direction is now DEFINITIVELY closed** — every remaining re-opener (external alt-DATA, cross-asset PAIRS) is
+confirmed to REQUIRE the user. The deployable book (GLD 4.02 / UUP / IWM / diversifiers, ~4.0 daily Calmar,
+robustness-complete, DEPLOYMENT.md finalized) is the finished answer. See [[frontier-converged-terminus]].
