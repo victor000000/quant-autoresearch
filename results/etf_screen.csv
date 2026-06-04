@@ -1,30 +1,33 @@
 ticker,asset_class,recipe,method_calmar,buyhold_calmar,edge,val_auc,trades,verdict,name
 BIL,Fixed Income,trend,30.43,0.0,30.43,0.918,2774,ARTIFACT(cash),State Street SPDR Bloomberg 1-3 Month T-
+DBA,Commodity,ker,2.382,1.025,1.358,0.499,168,NO-FIT,Invesco DB Agriculture Fund
+XOP,Commodity,regime,1.626,0.299,1.327,0.526,341,NO-FIT,State Street SPDR S&P Oil & Gas Explorat
+SHV,Fixed Income,changept,1.05,0.0,1.05,0.599,1913,ARTIFACT(cash),iShares 0–1 Year Treasury Bond ETF
+DJP,Commodity,ker,2.011,1.082,0.928,0.633,196,STRONG,iPath Bloomberg Commodity Index Total Re
+GSG,Commodity,sadf,1.921,1.005,0.916,0.655,216,STRONG,iShares S&P GSCI Commodity-Indexed Trust
 IAU,Commodity,trend,2.824,1.943,0.88,0.748,1014,STRONG,iShares Gold Trust
-DJP,Commodity,trend,1.677,1.082,0.595,0.805,236,STRONG,iPath Bloomberg Commodity Index Total Re
 UNG,Commodity,trend,0.0,-0.379,0.379,0.0,0,NO-FIT,"United States Natural Gas Fund, LP"
+LQD,Fixed Income,changept,0.975,0.608,0.367,0.516,176,NO-FIT,iShares iBoxx $ Investment Grade Corpora
+VNQ,Real Estate,sadf,0.698,0.426,0.272,0.567,26,NO-FIT,Vanguard Real Estate Index Fund ETF Shar
+FXF,Currency,ker,0.586,0.342,0.244,0.732,835,marginal,Invesco CurrencyShares Swiss Franc Trust
 WOOD,Commodity,trend,0.0,-0.233,0.233,0.0,0,NO-FIT,iShares Global Timber & Forestry ETF
-XOP,Commodity,trend,0.418,0.299,0.119,0.682,214,marginal,State Street SPDR S&P Oil & Gas Explorat
-XES,Commodity,trend,0.299,0.254,0.046,0.63,307,marginal,State Street SPDR S&P Oil & Gas Equipmen
+BIV,Fixed Income,sadf,0.843,0.635,0.207,0.78,307,marginal,Vanguard Intermediate-Term Bond Index Fu
+IGE,Commodity,sadf,1.0,0.816,0.183,0.378,148,NO-FIT,iShares North American Natural Resources
+XES,Commodity,changept,0.425,0.254,0.172,0.575,108,marginal,State Street SPDR S&P Oil & Gas Equipmen
+IEO,Commodity,sadf,0.593,0.471,0.122,0.639,94,marginal,iShares U.S. Oil & Gas Exploration & Pro
+MOO,Commodity,changept,0.048,-0.045,0.092,0.602,343,marginal,VanEck Agribusiness ETF
+FCG,Commodity,sadf,0.532,0.501,0.031,0.479,346,NO-FIT,First Trust Natural Gas ETF
+FXE,Currency,changept,0.518,0.513,0.005,0.549,82,NO-FIT,Invesco CurrencyShares Euro Currency Tru
+USO,Commodity,regime,0.884,0.937,-0.053,0.559,340,NO-FIT,"United States Oil Fund, LP"
 NLR,Commodity,trend,0.161,0.252,-0.091,nan,3292,NO-FIT,VanEck Uranium and Nuclear ETF
-MOO,Commodity,trend,-0.196,-0.045,-0.151,0.731,790,NO-FIT,VanEck Agribusiness ETF
-IEF,Fixed Income,trend,0.0,0.285,-0.285,0.0,0,NO-FIT,iShares 7-10 Year Treasury Bond ETF
+DBB,Commodity,ker,0.867,1.024,-0.157,0.629,664,NO-FIT,Invesco DB Base Metals Fund
+IEF,Fixed Income,changept,0.08,0.285,-0.205,0.522,127,NO-FIT,iShares 7-10 Year Treasury Bond ETF
+GDX,Commodity,changept,1.286,1.529,-0.243,0.532,451,NO-FIT,VanEck Gold Miners ETF
+VYM,Fixed Income,regime,1.241,1.56,-0.32,0.476,177,NO-FIT,Vanguard High Dividend Yield Index Fund 
 MUB,Fixed Income,trend,0.0,0.331,-0.331,0.0,0,NO-FIT,iShares National Muni Bond ETF
-FXF,Currency,regime,0.0,0.342,-0.342,0.0,0,NO-FIT,Invesco CurrencyShares Swiss Franc Trust
-VNQ,Real Estate,trend,0.0,0.426,-0.426,0.0,0,NO-FIT,Vanguard Real Estate Index Fund ETF Shar
-GSG,Commodity,trend,0.51,1.005,-0.495,0.742,389,NO-FIT,iShares S&P GSCI Commodity-Indexed Trust
-IGE,Commodity,trend,0.311,0.816,-0.505,0.77,551,NO-FIT,iShares North American Natural Resources
-FXE,Currency,regime,0.0,0.513,-0.513,0.0,0,NO-FIT,Invesco CurrencyShares Euro Currency Tru
-MBB,Fixed Income,trend,0.0,0.532,-0.532,0.0,0,NO-FIT,iShares MBS ETF
-FCG,Commodity,trend,-0.068,0.501,-0.569,0.779,72,NO-FIT,First Trust Natural Gas ETF
-LQD,Fixed Income,trend,0.0,0.608,-0.608,0.0,0,NO-FIT,iShares iBoxx $ Investment Grade Corpora
-BIV,Fixed Income,trend,0.0,0.635,-0.635,0.0,0,NO-FIT,Vanguard Intermediate-Term Bond Index Fu
+AGG,Fixed Income,sadf,0.266,0.699,-0.433,0.777,513,NO-FIT,iShares Core U.S. Aggregate Bond ETF
+MBB,Fixed Income,ker,0.065,0.532,-0.467,0.546,366,NO-FIT,iShares MBS ETF
 BND,Fixed Income,trend,0.0,0.644,-0.644,0.0,0,NO-FIT,Vanguard Total Bond Market Index Fund
-IEO,Commodity,trend,-0.185,0.471,-0.656,0.771,803,NO-FIT,iShares U.S. Oil & Gas Exploration & Pro
-AGG,Fixed Income,trend,0.0,0.699,-0.699,0.0,0,NO-FIT,iShares Core U.S. Aggregate Bond ETF
-DBA,Commodity,trend,0.287,1.025,-0.737,0.789,755,NO-FIT,Invesco DB Agriculture Fund
-USO,Commodity,trend,0.002,0.937,-0.935,0.747,437,NO-FIT,"United States Oil Fund, LP"
-DBB,Commodity,trend,-0.338,1.024,-1.362,0.762,699,NO-FIT,Invesco DB Base Metals Fund
-GDX,Commodity,trend,0.092,1.529,-1.437,0.762,766,NO-FIT,VanEck Gold Miners ETF
-VYM,Fixed Income,trend,0.0,1.56,-1.56,0.0,0,NO-FIT,Vanguard High Dividend Yield Index Fund 
-BSV,Fixed Income,trend,0.0,2.66,-2.66,0.0,0,NO-FIT,Vanguard Short-Term Bond Index Fund ETF 
+BSV,Fixed Income,sadf,0.45,2.66,-2.21,0.733,41,NO-FIT,Vanguard Short-Term Bond Index Fund ETF 
+IGSB,Fixed Income,ker,0.115,3.133,-3.018,0.58,33,NO-FIT,iShares 1-5 Year Investment Grade Corpor
+SHY,Fixed Income,trend,0.0,3.5,-3.5,0.0,0,NO-FIT,iShares 1-3 Year Treasury Bond ETF

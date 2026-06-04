@@ -52,7 +52,10 @@ for tk in done:
     # ARTIFACT guard: Calmar = CAGR/MaxDD blows up for cash-like / near-flat assets (T-bills, ultra-short
     # duration) whose MaxDD ~ 0 -> a "Calmar 30" is a division artifact, not a tradeable edge. No real ETF
     # edge exceeds ~4 (GLD). Flag implausibly high Calmar OR a flat buy-hold (cash) with a big "edge".
-    artifact = (mc >= 8.0) or (abs(bc) < 0.05 and mc > 3.0)
+    # cash/flat assets: buy-hold Calmar ~0 means near-zero MaxDD (the calmar calc clamps |mdd|<0.01 to 0),
+    # i.e. an ultra-short-Treasury / T-bill cash instrument. ANY positive method Calmar there is a
+    # near-zero-MaxDD division artifact on negligible absolute return -> NOT a real edge.
+    artifact = (mc >= 8.0) or (abs(bc) < 0.05 and mc > 0.5)
     if artifact:
         verdict = "ARTIFACT(cash)"
     elif mc > bc and va == va and va > 0.55 and tr > 80:
