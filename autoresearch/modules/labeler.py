@@ -2303,6 +2303,90 @@ def generate_labels_ker_slow(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, hor
     return generate_labels_ker(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[150])
 
 
+def generate_labels_sliced_wasserstein(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[60, 120]):
+    """Tail-aware OPTIMAL-TRANSPORT regime label (1-D sliced-Wasserstein k-medians) — mined 2026-06-04.
+    The non-HMM, non-Gaussian regime labeler the catalog flags as missing: clusters whole FORWARD return-window
+    DISTRIBUTIONS (tails/skew), not summary stats. For scalar returns the sliced-Wasserstein distance collapses
+    to the closed form W1(a,b)=mean|sort(a)-sort(b)| (sort-difference), and the W1 barycenter of a cluster is the
+    element-wise MEDIAN of its members' sorted windows -> k-medians on sorted windows = exact 1-D OT clustering.
+    Distinct from bgm/regime_gmm (Gaussian on [fwd_ret,|fwd_ret|]), agglomerative (Euclidean linkage),
+    cusum_regime (change-point): NONE uses a transport/distributional distance, which is what makes it tail-aware
+    (separates calm vs crash regimes Gaussian clustering blurs). Centroids + the regime->direction sign-map are
+    fit on TRAIN ONLY; each bar is assigned by its own forward window (TARGET only, G3-ok), exactly like bgm.
+    Sweeps H (window) and K in {2,3}; keeps the most TRAIN-balanced config. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    rng = np.random.RandomState(42)
+    for H in horizons:
+        if N <= H + 2:
+            continue
+        # sorted forward return windows W[t] = sort(lr[t+1 : t+1+H]); net = cumulative forward move.
+        W = np.full((N, H), np.nan)
+        net = np.full(N, np.nan)
+        for t in range(N - H - 1):
+            w = lr[t + 1:t + 1 + H]
+            if w.shape[0] == H and np.isfinite(w).all():
+                W[t] = np.sort(w)
+                net[t] = lc[t + H] - lc[t]
+        row_ok = np.isfinite(W).all(axis=1) & np.isfinite(net)
+        tr_fit = tr_m & fv & row_ok
+        if int(tr_fit.sum()) < 200:
+            continue
+        Wtr = W[tr_fit]
+        if Wtr.shape[0] > 2500:                          # bound the k-medians fitting compute
+            Wfit = Wtr[rng.choice(Wtr.shape[0], 2500, replace=False)]
+        else:
+            Wfit = Wtr
+        Wok = W[row_ok]
+        for K in (2, 3):
+            order = np.argsort(Wfit.mean(axis=1))        # deterministic init: K windows spread by mean
+            C = np.asarray([Wfit[order[int((j + 0.5) / K * (len(order) - 1))]] for j in range(K)], dtype=float)
+            for _ in range(8):                           # Lloyd iterations (W1 assign, median update)
+                d = np.empty((Wfit.shape[0], K))
+                for c in range(K):
+                    d[:, c] = np.abs(Wfit - C[c]).mean(axis=1)
+                asg = d.argmin(axis=1)
+                newC = C.copy()
+                for c in range(K):
+                    sel = asg == c
+                    if int(sel.sum()) >= 1:
+                        newC[c] = np.median(Wfit[sel], axis=0)   # W1 barycenter = elementwise median
+                if np.allclose(newC, C, atol=1e-12):
+                    break
+                C = newC
+            # assign EVERY row-ok bar to the frozen TRAIN centroids (per-centroid loop bounds memory)
+            regime = np.full(N, -1, dtype=int)
+            dok = np.empty((Wok.shape[0], K))
+            for c in range(K):
+                dok[:, c] = np.abs(Wok - C[c]).mean(axis=1)
+            regime[row_ok] = dok.argmin(axis=1)
+            # regime -> direction via TRAIN net mean ONLY (leak-safe sign map)
+            up = set()
+            for c in range(K):
+                sel = tr_m & fv & row_ok & (regime == c)
+                if int(sel.sum()) < 20:
+                    continue
+                if float(np.mean(net[sel])) > 0.0:
+                    up.add(c)
+            valid = fv & row_ok
+            y = np.full(N, -1, dtype=int)
+            y[valid] = 0
+            for c in up:
+                y[valid & (regime == c)] = 1
+            tx = fv & (y >= 0) & tr_m
+            vx = fv & (y >= 0) & va_m
+            if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"slicedW_H{H}_K{K}", H
+    if best is None:
+        return None, "slicedW_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
@@ -2320,6 +2404,7 @@ LABELERS = {
     "calmar_scan": generate_labels_calmar_scan,       # drawdown-adjusted forward-trend (new, non-HMM; targets Calmar/downside)
     "sadf_explosive": generate_labels_sadf_explosive, # Supremum-ADF EXPLOSIVE/bubble regime (new, non-HMM; novel signal)
     "hurst_persist": generate_labels_hurst_persist,   # DFA forward fractal-PERSISTENCE (new, non-HMM; multi-scale)
+    "sliced_wasserstein": generate_labels_sliced_wasserstein,  # tail-aware OPTIMAL-TRANSPORT regime (W1 k-medians on sorted forward windows; new, non-HMM)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
@@ -2348,7 +2433,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
