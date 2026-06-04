@@ -15,7 +15,9 @@ Run: python3 tests/test_bar_threshold_leak.py   (exit 0 = pass, 1 = fail)
 """
 import ast, os, sys, re
 
-BB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "autoresearch", "modules", "bar_builder.py")
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BB = os.path.join(_ROOT, "autoresearch", "modules", "bar_builder.py")
+FOOTER = os.path.join(_ROOT, "autoresearch", "templates", "footer.py.tmpl")
 
 # Names that are TRAIN-masked / OOS-invariant and therefore SAFE to feed a threshold.
 SAFE_TOKENS = ("keep", "tr", "_trc", "trsel", "trr", "trm", "sdt", "svt", "r[")  # train-masked subsets / counts
@@ -85,10 +87,20 @@ def main():
     if src.count("_train_minute_mask(") < 5:
         problems.append(f"_train_minute_mask called only {src.count('_train_minute_mask(')}x — expected per-axis masking.")
 
+    # 4. EMBARGO regression (2026-06-04 leak-hunt): the val/test embargo must cover the forward-label
+    #    horizon. A bare hardcoded `_EMBARGO = 200` lets a CONFIG['horizons']>200 override under-embargo
+    #    the boundary and bleed early-test labels into cal.fit/eval_set. Require it to be horizon-aware.
+    if os.path.exists(FOOTER):
+        fsrc = "\n".join(re.sub(r"#.*$", "", line) for line in open(FOOTER).read().splitlines())
+        if re.search(r"_EMBARGO\s*=\s*max\(\s*200\s*,", fsrc) is None:
+            problems.append("footer.py.tmpl _EMBARGO is not horizon-aware — expected "
+                            "`_EMBARGO = max(200, int(max(CONFIG.get('horizons') or [0])))` "
+                            "(a bare `_EMBARGO = 200` under-embargoes horizons>200 -> test-label leak).")
+
     if problems:
         fail(problems)
-    print("BAR-THRESHOLD LEAK GUARD: \033[92mPASS\033[0m — all threshold scalings TRAIN-masked / OOS-invariant; "
-          "no `np.sum(valid)` leak signature.")
+    print("LEAK GUARD: \033[92mPASS\033[0m — bar-threshold scalings TRAIN-masked / OOS-invariant (no `np.sum(valid)`); "
+          "embargo horizon-aware.")
     sys.exit(0)
 
 
