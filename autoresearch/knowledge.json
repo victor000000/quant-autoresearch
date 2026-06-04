@@ -3801,6 +3801,18 @@
         "type": "round",
         "phase": "DBC",
         "label": "R329 DBC DISCARD: Sample on log-dollar bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5873 (prev best +0.9119). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r330",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R330 IWM DISCARD: Sample on signed-dollar imbalance (directional) bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.7464 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r331",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R331 IWM DISCARD: Sample on signed-dollar imbalance (directional) bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.8344 (prev best +0.5496). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6372,6 +6384,16 @@
       {
         "src": "r328",
         "dst": "r329",
+        "label": "no improvement"
+      },
+      {
+        "src": "r329",
+        "dst": "r330",
+        "label": "no improvement"
+      },
+      {
+        "src": "r330",
+        "dst": "r331",
         "label": "no improvement"
       }
     ],
