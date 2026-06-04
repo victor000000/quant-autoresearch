@@ -3813,6 +3813,12 @@
         "type": "round",
         "phase": "IWM",
         "label": "R331 IWM DISCARD: Sample on signed-dollar imbalance (directional) bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.8344 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r332",
+        "type": "round",
+        "phase": "KRE",
+        "label": "R332 KRE DISCARD: Sample on log-dollar bars; trend_leg; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5080 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6394,6 +6400,11 @@
       {
         "src": "r330",
         "dst": "r331",
+        "label": "no improvement"
+      },
+      {
+        "src": "r331",
+        "dst": "r332",
         "label": "no improvement"
       }
     ],
