@@ -2,6 +2,18 @@
 
 The deliverable: a diversified, **leak-free** ETF book. Real OOS (2023-08 → 2026-06), QC project 31338454.
 
+> ✅ **CURRENT (2026-06-04, late) — supersedes the specifics below.** Two updates this session: (1) the GLD crown
+> advanced **3.47 → 4.02** via `reduce=infogain` (Wang information-gain feature selection on the trend_leg+regime_gmm
+> ensemble; full gated KEEP, decay-HEALTHY 1.92→2.52, re-validated bit-exact 3×, cost-robust). (2) leak-dead **SOXX
+> dropped**, decay-healthy **IWM** (trend_leg+IG, 0.665, provisional) added as the 6th decorrelation seat.
+> **REFRESHED DEPLOYABLE BOOK = GLD / UUP / IWM / TIP / DBC / HYG** (Calmar²-weighted) = **Calmar 4.617 / MaxDD 2.46% /
+> Sharpe 2.46** on the ~weekly grid (honest daily haircut ~1.15× → **~4.0 Calmar / ~2.8% MaxDD**); **net-of-5bp ≈
+> 3.4** (GLD 4.02→3.43@5bp on 602 orders — the IG config + 0.03 dead-band cut the noisy trades, MORE cost-robust
+> than the old GLD). The single-ticker method frontier is exhaustively saturated (10 experiments/run, 0 wins; new
+> methods sliced_wasserstein/features=rich/sortino_scan + a VIXY vol-class probe all DISCARD); the vol mechanism is
+> reachable but needs external data. The book below is the finished answer — further alpha needs a NEW INPUT
+> (alt-data / cross-asset pairs). See program.md tail + HONEST_AUDIT.md.
+
 > ⚠️ **This doc was fully revised after a MATERIAL look-ahead leak was found and fixed (2026-06-03).** A prior
 > version led with EEM 4.03 / book Calmar 4.22 / "byte-exact live-equivalent" — those numbers were **leak-inflated**
 > (the `logdollar`/`kyle` bar-thresholds scaled by a full-series OOS-inclusive minute count; see `program.md`
@@ -15,12 +27,13 @@ gold-timing edge, not a broad stack of edges.
 
 | ETF | strategy | role | leak-free Calmar |
 |-----|----------|------|-----------------:|
-| GLD | logdollar / **trend_leg**+regime_gmm / dd_overlay (band 0.03) | **the one real model edge** (gold trend timing) — UPGRADED 2026-06-03 | **3.47** |
-| UUP | imbalance / bgm+**sadf_explosive**+ker / cdf_overlay | dollar-regime edge + explosive-regime (UPGRADED 2026-06-04, provisional) | **1.85** |
+| GLD | logdollar / **trend_leg**+regime_gmm / dd_overlay (band 0.03) / **reduce=infogain, n15** | **the one real model edge** (gold trend timing) — **IG-UPGRADED 2026-06-04 (3.47→4.02)** | **4.02** |
+| UUP | imbalance / bgm+**sadf_explosive**+ker / cdf_overlay | dollar-regime edge + explosive-regime (provisional, decay-STALE) | **1.85** |
 | HYG | logdollar / always_long | credit carry (buy-hold) | 1.83 |
 | TIP | logdollar / always_long | inflation/duration carry (buy-hold) | 1.15 |
 | DBC | logdollar / always_long | commodities decorrelator (buy-hold) | 0.91 |
-| SOXX | logdollar / ker+trend_scan+bgm | weak decorrelator — **edge GONE leak-free** (0.71 < buy-hold) | 0.71 |
+| IWM | logdollar / **trend_leg** / cdf_overlay / **reduce=infogain** | small-cap trend timing (provisional, **decay-HEALTHY**) — **replaced leak-dead SOXX 2026-06-04** | 0.67 |
+| ~~SOXX~~ | ~~ker+trend_scan+bgm~~ | **DROPPED — edge was the leak** (0.81 ≈ buy-hold leak-free) | — |
 
 **Book (MEASURED 2026-06-04, real QC portfolio backtest of the stored champions, daily, gross=1.0):
 Calmar 3.20 — CAR 12.5% / MaxDD 3.9%, 1734 orders.** GLD-anchored (63% Calmar²-weight) + UUP bgm+ker (9%) +
