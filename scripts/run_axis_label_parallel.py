@@ -19,7 +19,7 @@ import os, sys, csv, time
 from datetime import datetime
 
 PROJECT_ROOT = "/home/ubuntu/lb"
-AR = os.path.join(PROJECT_ROOT, "autoresearch")
+AR = os.path.join(PROJECT_ROOT)
 if AR not in sys.path:
     sys.path.insert(0, AR)
 

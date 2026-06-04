@@ -18,8 +18,8 @@ from stats_rigor import Phi, Phinv
 
 PPY = 252.0
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CSV = os.path.join(HERE, "autoresearch", "results", "round_results.csv")
-OUT = os.path.join(HERE, "autoresearch", "HONEST_AUDIT.md")
+CSV = os.path.join(HERE, "results", "round_results.csv")
+OUT = os.path.join(HERE, "HONEST_AUDIT.md")
 
 
 def fnum(x):

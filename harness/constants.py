@@ -20,8 +20,8 @@ GATE_TRADES_MIN = 80        # OOS trade count must exceed this
 GATE_AUC_DIVERGENCE_MAX = 0.05  # |train_AUC - val_AUC| must be below this
 
 # === Rendering ===
-TEMPLATES_DIR = "/home/ubuntu/lb/autoresearch/templates"
-MODULES_DIR = "/home/ubuntu/lb/autoresearch/modules"
+TEMPLATES_DIR = "/home/ubuntu/lb/templates"
+MODULES_DIR = "/home/ubuntu/lb/modules"
 # lean_workspace is archived on this machine; use the standalone scripts dir instead.
 QC_SCRIPTS_DIR = "/home/ubuntu/lb/_autoresearch_scripts"
 

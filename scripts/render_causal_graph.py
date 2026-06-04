@@ -18,8 +18,8 @@ nodes/edges, then run this (with --inject) to regenerate + embed the up-to-date 
 import json, os, re, sys
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
-KJ = os.path.join(ROOT, "autoresearch", "knowledge.json")
-OUT = os.path.join(ROOT, "autoresearch", "reports", "causal_graph.html")
+KJ = os.path.join(ROOT, "knowledge.json")
+OUT = os.path.join(ROOT, "reports", "causal_graph.html")
 
 PHASE_TITLE = {"Landscape": "A · Landscape / the 6-round null",
                "TLT": "B · TLT (declining / two-sided)",

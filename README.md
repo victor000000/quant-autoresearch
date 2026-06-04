@@ -4,21 +4,22 @@ An autonomous ML quant-research loop (inspired by [karpathy/autoresearch](https:
 applied to ETF trading on QuantConnect. An agent edits the pipeline, backtests on QC, scores on **REAL
 out-of-sample Calmar + Drawdown Area**, keeps-if-better, and writes a tech report each round.
 
-**Start here:** [`autoresearch/program.md`](autoresearch/program.md) — the one-page contract (goal, what's
+**Start here:** [`program.md`](program.md) — the one-page contract (goal, what's
 editable, the loop, the rules).
 
 ## Layout
 
+The repo **root IS the project** (flattened 2026-06-04 — `autoresearch/` promoted to root). Note: the QuantConnect ObjectStore keys are still namespaced `autoresearch/{TICKER}/...` (a QC data path, deliberately unchanged).
+
 | Path | Purpose |
 |---|---|
-| `autoresearch/` | **The project.** |
-| `autoresearch/program.md` | The contract / instructions (read first). |
-| `autoresearch/harness/` | **LOCKED scorer** — `qc_client.py`, `orchestrator.py`, `evaluator.py` (gates G0–G4), `constants.py`. |
-| `autoresearch/templates/` | `header/footer/infer` rendered into the QC `main.py` (footer downstream + infer sizing are editable). |
-| `autoresearch/modules/` | **Editable pipeline** — `bar_builder.py` ① axis, `labeler.py` ② labels, `features.py` ③, `trainer.py` ④–⑧. |
-| `autoresearch/reports/` | **Per-round tech reports as HTML** (`round_N.html`, MathJax math) + `index.html` + `TEMPLATE.html`. |
-| `autoresearch/knowledge.json` · `techniques.json` | Shared memory (`per_etf_best`, findings, dead-ends, idea queue). |
-| `autoresearch/results.tsv` · `autoresearch/results/*.csv` | Result logs (`results/round_results.csv` + the axis-label CSVs). |
+| `program.md` | The contract / instructions (read first). |
+| `harness/` | **LOCKED scorer** — `qc_client.py`, `orchestrator.py`, `evaluator.py` (gates G0–G4), `constants.py`. |
+| `templates/` | `header/footer/infer` rendered into the QC `main.py` (footer downstream + infer sizing are editable). |
+| `modules/` | **Editable pipeline** — `bar_builder.py` ① axis, `labeler.py` ② labels, `features.py` ③, `trainer.py` ④–⑧. |
+| `reports/` | **Per-round tech reports as HTML** (`round_N.html`, MathJax math) + `index.html` + `TEMPLATE.html`. |
+| `knowledge.json` · `techniques.json` | Shared memory (`per_etf_best`, findings, dead-ends, idea queue). |
+| `results.tsv` · `results/*.csv` | Result logs (`results/round_results.csv` + the axis-label CSVs). |
 | `scripts/` | QC drivers: `run_autoresearch_round.py` (v2 tournament, 2-node A/B), `run_axis_label_parallel.py` (full sweep, 2-node), `run_axis_label_study.py` (serial), `_minify_check.py`; `diag/` scratch. |
 | `qc/` | QC Cloud API client + `.creds.json` (gitignored). |
 | `docs/research/` | Mined technique catalog + strategy-type spec. |
@@ -36,14 +37,14 @@ cd /home/ubuntu/lb
 python3 scripts/run_autoresearch_round.py \
   '{"ticker":"TLT","axis":"vol","labeler":"carry","thresh":0.55,"sizing":"binary"}' \
   '{"ticker":"TLT","axis":"dollar","labeler":"kmeans2stage","thresh":0.45,"sizing":"binary"}'
-# auto (pick weakest ETF from knowledge.json, read its two configs from autoresearch/hypotheses.json):
+# auto (pick weakest ETF from knowledge.json, read its two configs from hypotheses.json):
 python3 scripts/run_autoresearch_round.py
 ```
 
 A CONFIG is `{ticker, axis, labeler, thresh, sizing}` (`sizing ∈ ramp|binary|cdf_plain|cdf_overlay`); the driver
 renders one TRAIN → one INFER per hypothesis with the SAME thresh+sizing on VAL and OOS, then keeps the winner
 iff it is deployable (G2 trades>80, DA reported) and beats that ETF's current best. It logs both legs to
-`autoresearch/results/round_results.csv` and updates `knowledge.json.per_etf_best`; the HTML report + git commit
+`results/round_results.csv` and updates `knowledge.json.per_etf_best`; the HTML report + git commit
 are done per round by the human/opus. (The full-sweep driver `run_axis_label_parallel.py` is still available.)
 
 QC project 31338454; each backtest is hard-capped at 5 min (auto-deleted on overrun). Splits: train ≤ 2021-08,
@@ -55,4 +56,4 @@ Six rounds done. Per-ETF best **active** (>80-trade) real OOS Calmar (the v2 lea
 EEM 1.33 · HYG 1.26 · QQQ 1.10 · GLD 0.78 · XLE 0.72 · IWM 0.65 · **TLT −0.15** (weakest link → round-1 v2 target).
 Rounds 5–6 showed single-asset long-only ML ties buy-hold because the label is washed out (overlay) or reverts
 to always-long (overlay off); v2 attacks one ETF at a time with label-driven `binary` sizing so the model can go
-FLAT. No single ETF clears G1 > 3.0 yet. See `reports/index.html` and `autoresearch/knowledge.json`.
+FLAT. No single ETF clears G1 > 3.0 yet. See `reports/index.html` and `knowledge.json`.

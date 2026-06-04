@@ -7,8 +7,8 @@ to the WEIGHTING choice (equal / Calmar^2 / DSR-aware / inverse-variance), not a
 import json, os, math
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE = os.path.join(HERE, "autoresearch", "results", "series_cache.json")
-OUT = os.path.join(HERE, "autoresearch", "HONEST_AUDIT.md")
+CACHE = os.path.join(HERE, "results", "series_cache.json")
+OUT = os.path.join(HERE, "HONEST_AUDIT.md")
 
 NAMES = ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]
 # UPDATED 2026-06-04 to the leak-free, this-session-improved edges: GLD trend_leg+regime_gmm 3.47

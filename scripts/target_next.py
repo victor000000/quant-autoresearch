@@ -11,7 +11,7 @@ Usage:  python3 scripts/target_next.py            # weakest ETF
 """
 import json, os, sys
 
-KJ = os.path.join(os.path.dirname(__file__), "..", "autoresearch", "knowledge.json")
+KJ = os.path.join(os.path.dirname(__file__), "..", "knowledge.json")
 d = json.load(open(KJ))
 pe = d.get("per_etf_best", {})
 ranked = sorted(pe.items(), key=lambda kv: kv[1].get("real_calmar", 0))

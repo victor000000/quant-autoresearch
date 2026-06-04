@@ -12,8 +12,8 @@ align on common timestamps -> T x N returns matrix -> pbo_cscv (CSCV over 16 tim
 """
 import sys, os, math
 sys.path.insert(0, ".")
-sys.path.insert(0, "autoresearch")
-sys.path.insert(0, "autoresearch/harness")
+sys.path.insert(0, ".")
+sys.path.insert(0, "harness")
 sys.path.insert(0, "scripts")
 from harness.orchestrator import render_train_config, render_infer_cell
 from harness.qc_client import _qc_post
@@ -22,7 +22,7 @@ import run_autoresearch_round as R
 from stats_rigor import pbo_cscv, _sharpe
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(HERE, "autoresearch", "HONEST_AUDIT.md")
+OUT = os.path.join(HERE, "HONEST_AUDIT.md")
 
 BASE = dict(ticker="GLD", axis="logdollar", thresh=0.40, sizing="dd_overlay", n_components=15)
 LABELERS = ["ker+regime_gmm", "ker+trend_scan", "ker", "trend_scan", "regime_gmm",

@@ -3924,6 +3924,42 @@
         "type": "round",
         "phase": "QQQ",
         "label": "R349 QQQ DISCARD: Sample on volofvol; revert; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6905 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r350",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R350 UUP DISCARD: Sample on volofvol; Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5093 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r351",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R351 GLD DISCARD: Sample on wavelet; ker; size dd_overlay, entry 0.40. -> Calmar +1.3533 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r352",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R352 TLT DISCARD: Sample on amihud; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.50. -> Calmar +0.0000 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r353",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R353 TLT DISCARD: Sample on log-dollar bars; transfer_entropy_dir; size long/short, vol-targeted, entry 0.50. -> Calmar -0.0580 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r354",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R354 IWM DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + transfer_entropy_dir; size long-only, vol-targeted, entry 0.45. -> Calmar +0.4395 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r355",
+        "type": "round",
+        "phase": "SOXX",
+        "label": "R355 SOXX DISCARD: Sample on ddonset; ensemble of Kaufman efficiency-ratio labels + trend-scanning labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.3377 (prev best +0.8074). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6595,6 +6631,36 @@
       {
         "src": "r348",
         "dst": "r349",
+        "label": "no improvement"
+      },
+      {
+        "src": "r349",
+        "dst": "r350",
+        "label": "no improvement"
+      },
+      {
+        "src": "r350",
+        "dst": "r351",
+        "label": "no improvement"
+      },
+      {
+        "src": "r351",
+        "dst": "r352",
+        "label": "no improvement"
+      },
+      {
+        "src": "r352",
+        "dst": "r353",
+        "label": "no improvement"
+      },
+      {
+        "src": "r353",
+        "dst": "r354",
+        "label": "no improvement"
+      },
+      {
+        "src": "r354",
+        "dst": "r355",
         "label": "no improvement"
       }
     ],

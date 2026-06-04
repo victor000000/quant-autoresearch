@@ -30,7 +30,7 @@ from datetime import datetime
 
 # --- make the harness package importable (autoresearch/ has no __init__.py) ---
 PROJECT_ROOT = "/home/ubuntu/lb"
-AUTORESEARCH_DIR = os.path.join(PROJECT_ROOT, "autoresearch")
+AUTORESEARCH_DIR = os.path.join(PROJECT_ROOT)
 if AUTORESEARCH_DIR not in sys.path:
     sys.path.insert(0, AUTORESEARCH_DIR)
 

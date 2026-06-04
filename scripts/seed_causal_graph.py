@@ -11,7 +11,7 @@ Optional node flag running:true -> dashed (in-flight).
 """
 import json, os
 
-KJ = os.path.join(os.path.dirname(__file__), "..", "autoresearch", "knowledge.json")
+KJ = os.path.join(os.path.dirname(__file__), "..", "knowledge.json")
 
 # (id, type, phase, label)
 NODES = [

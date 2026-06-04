@@ -16,8 +16,8 @@ Run: python3 tests/test_bar_threshold_leak.py   (exit 0 = pass, 1 = fail)
 import ast, os, sys, re
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BB = os.path.join(_ROOT, "autoresearch", "modules", "bar_builder.py")
-FOOTER = os.path.join(_ROOT, "autoresearch", "templates", "footer.py.tmpl")
+BB = os.path.join(_ROOT, "modules", "bar_builder.py")
+FOOTER = os.path.join(_ROOT, "templates", "footer.py.tmpl")
 
 # Names that are TRAIN-masked / OOS-invariant and therefore SAFE to feed a threshold.
 SAFE_TOKENS = ("keep", "tr", "_trc", "trsel", "trr", "trm", "sdt", "svt", "r[")  # train-masked subsets / counts

@@ -10,8 +10,8 @@ rendered copy only.
 """
 import sys, os
 sys.path.insert(0, ".")
-sys.path.insert(0, "autoresearch")
-sys.path.insert(0, "autoresearch/harness")
+sys.path.insert(0, ".")
+sys.path.insert(0, "harness")
 from harness.orchestrator import render_infer_cell
 from harness.qc_client import submit_and_wait
 
@@ -56,7 +56,7 @@ def main():
             print(f"[{tk}] {slip*1e4:.0f}bp -> Calmar {c:.3f} (CAGR {cagr:.2f}%, MDD {mdd:.2f}%, {orders} orders)", flush=True)
         rows.append(res)
 
-    OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "autoresearch", "HONEST_AUDIT.md")
+    OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "HONEST_AUDIT.md")
     lines = ["", "## Transaction-cost stress (explicit slippage; pipeline default = none)", "",
              "Calmar after re-running each crown's infer (same decisions) with explicit per-fill slippage:", "", "```",
              f"{'crown':5s} {'default':>8s} {'5bp':>8s} {'10bp':>8s}   erosion@10bp"]

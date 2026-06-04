@@ -24,7 +24,7 @@ from .qc_client import submit_and_wait
 from .evaluator import evaluate
 
 PROJECT_ROOT = "/home/ubuntu/lb"
-AUTORESEARCH_DIR = os.path.join(PROJECT_ROOT, "autoresearch")
+AUTORESEARCH_DIR = os.path.join(PROJECT_ROOT)
 RESULTS_TSV = os.path.join(AUTORESEARCH_DIR, "results.tsv")
 KNOWLEDGE_JSON = os.path.join(AUTORESEARCH_DIR, "knowledge.json")
 TECHNIQUES_JSON = os.path.join(AUTORESEARCH_DIR, "techniques.json")

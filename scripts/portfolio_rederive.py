@@ -8,16 +8,16 @@ Series cached to autoresearch/results/series_cache.json (ts->equity) so re-runs 
 """
 import sys, os, json, math
 sys.path.insert(0, ".")
-sys.path.insert(0, "autoresearch")
-sys.path.insert(0, "autoresearch/harness")
+sys.path.insert(0, ".")
+sys.path.insert(0, "harness")
 sys.path.insert(0, "scripts")
 from harness.orchestrator import render_train_config, render_infer_cell
 from harness.qc_client import submit_and_wait, _qc_post
 from harness.constants import QC_PROJECT_ID
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE = os.path.join(HERE, "autoresearch", "results", "series_cache.json")
-OUT = os.path.join(HERE, "autoresearch", "HONEST_AUDIT.md")
+CACHE = os.path.join(HERE, "results", "series_cache.json")
+OUT = os.path.join(HERE, "HONEST_AUDIT.md")
 
 # candidate members: (cfg for train, ObjectStore cell, champion Calmar for weighting)
 # Updated 2026-06-04 to CURRENT leak-free crowns: GLD trend_leg+regime_gmm+IG 4.02 (was old pre-leak

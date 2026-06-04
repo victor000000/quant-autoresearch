@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from describe import describe_cfg, describe
 from render_causal_graph import net_html, vis_data, LEGEND
 
-R = os.path.join(os.path.dirname(__file__), "..", "autoresearch", "reports")
+R = os.path.join(os.path.dirname(__file__), "..", "reports")
 KJ = os.path.join(R, "..", "knowledge.json")
 PROG = os.path.join(R, "..", "program.md")
 STATUS = os.path.join(R, "status.json")

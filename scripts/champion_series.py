@@ -10,8 +10,8 @@ so the series is the real OOS equity curve.
 """
 import sys, os, json, math
 sys.path.insert(0, ".")
-sys.path.insert(0, "autoresearch")
-sys.path.insert(0, "autoresearch/harness")
+sys.path.insert(0, ".")
+sys.path.insert(0, "harness")
 sys.path.insert(0, "scripts")
 from harness.orchestrator import render_train_config, render_infer_cell
 from harness.qc_client import submit_and_wait, _qc_post
@@ -19,7 +19,7 @@ from harness.constants import QC_PROJECT_ID
 from decay_monitor import flag_decay, page_hinkley, cusum_meanshift
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(HERE, "autoresearch", "CHAMPION_DECAY.md")
+OUT = os.path.join(HERE, "CHAMPION_DECAY.md")
 
 # (cfg for train-render, ObjectStore cell key for infer-render)
 CHAMPS = [   # the 2026-06 leak-free, this-session edges (updated 2026-06-04) — decay/consistency check

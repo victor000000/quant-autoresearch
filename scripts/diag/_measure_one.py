@@ -3,7 +3,7 @@
 and does it complete within the 5-minute (300s) wall? Auto-deletes on timeout.
 This answers the per-axis-vs-per-cell architecture question before we build more."""
 import os, sys, time, json
-sys.path.insert(0, "/home/ubuntu/lb/autoresearch")
+sys.path.insert(0, "/home/ubuntu/lb")
 from harness.qc_client import submit_and_wait
 from harness.orchestrator import render_script
 

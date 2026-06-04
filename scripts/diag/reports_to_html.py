@@ -11,7 +11,7 @@ Output: autoresearch/reports/html/<name>.html  +  index.html
 """
 import os, re, html, glob
 
-REPORTS = "/home/ubuntu/lb/autoresearch/reports"
+REPORTS = "/home/ubuntu/lb/reports"
 OUT = os.path.join(REPORTS, "html")
 
 HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8">

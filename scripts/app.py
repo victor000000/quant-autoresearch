@@ -14,9 +14,9 @@ from flask import Flask, Response, send_from_directory
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-REPORTS = os.path.abspath(os.path.join(HERE, "..", "autoresearch", "reports"))
-PROGRAM = os.path.abspath(os.path.join(HERE, "..", "autoresearch", "program.md"))
-DEPLOY = os.path.abspath(os.path.join(HERE, "..", "autoresearch", "DEPLOYMENT.md"))
+REPORTS = os.path.abspath(os.path.join(HERE, "..", "reports"))
+PROGRAM = os.path.abspath(os.path.join(HERE, "..", "program.md"))
+DEPLOY = os.path.abspath(os.path.join(HERE, "..", "DEPLOYMENT.md"))
 from render_index import build_html   # live dashboard renderer
 
 app = Flask(__name__, static_folder=None)
