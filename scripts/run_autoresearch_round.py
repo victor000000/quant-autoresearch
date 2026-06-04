@@ -121,7 +121,9 @@ VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry di
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
                   "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon",
                   "regime_gmm", "cusum_regime", "jump_model", "dc_trend", "dc_reversal", "crash_ahead",
-                  "trend_scan", "ker", "trend_leg", "accel", "sharpe_scan", "ofsc", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "hmm", "always_long"]
+                  "trend_scan", "ker", "trend_leg", "accel", "sharpe_scan", "ofsc", "bde_cusum",
+                  "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow",
+                  "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "hmm", "always_long"]
 VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto"]
 
 # 2-node pool params (reused from run_axis_label_parallel.py).

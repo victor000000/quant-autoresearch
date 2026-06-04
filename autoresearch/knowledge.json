@@ -3723,6 +3723,18 @@
         "type": "round",
         "phase": "TLT",
         "label": "R316 TLT DISCARD: Sample on tick-imbalance bars; ofsc; size long/short, vol-targeted, entry 0.50. -> Calmar +0.0543 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r317",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R317 TLT DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + bde_cusum; size long/short, vol-targeted, entry 0.45. -> Calmar +0.1663 (prev best -0.0387). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r318",
+        "type": "round",
+        "phase": "TLT",
+        "label": "R318 TLT DISCARD: Sample on log-dollar bars; tleg_mid; size long/short, vol-targeted, entry 0.45. -> Calmar +0.1503 (prev best -0.0387). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6229,6 +6241,16 @@
       {
         "src": "r315",
         "dst": "r316",
+        "label": "no improvement"
+      },
+      {
+        "src": "r316",
+        "dst": "r317",
+        "label": "no improvement"
+      },
+      {
+        "src": "r317",
+        "dst": "r318",
         "label": "no improvement"
       }
     ],

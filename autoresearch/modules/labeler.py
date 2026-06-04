@@ -1842,6 +1842,83 @@ def generate_labels_ofsc(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_bde_cusum(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                              horizons=[100, 200]):
+    """Brown-Durbin-Evans recursive-CUSUM STRUCTURAL-BREAK label — UNSUPERVISED, non-HMM,
+    structural-break class (Brown, Durbin & Evans 1975 JRSS-B; AFML Ch.17.3.1). Fits an expanding
+    simple-linear OLS (y~a+b*j) to the forward log-price window and accumulates STANDARDIZED RECURSIVE
+    RESIDUALS into a CUSUM; a stable trend produces tiny residuals (no break), a trend ONSET / regime
+    change produces a large CUSUM excursion. break_stat = max|CUSUM|/sqrt(Nw) measures structural
+    instability. Distinct from the trend labelers (ker/trend_leg/sadf): those reward a SUSTAINED clean
+    move; BDE fires at the forecast-error instability of trend ONSET — orthogonal (a clean linear trend
+    scores LOW here, a flat->ramp scores HIGH). Label 1 if break_stat>=cut and net>0, 0 if break_stat>=cut
+    and net<=0, -1 (ignore) if break_stat<cut (stable, no break). cut = TRAIN quantile of break_stat
+    (balances). Recursive residuals + net are read off the forward window = the TARGET (G3-ok). Vectorized
+    O(Nw)-per-step across windows via per-step running sums. Sweeps H and q. Returns (labels, cfg, H)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H + 10:
+            continue
+        k0 = max(4, H // 10)
+        Nw = H - k0
+        nwin = N - H
+        x = np.arange(H, dtype=float)
+        rows = np.arange(nwin)
+        Y = lc[1 + rows[:, None] + np.arange(H)[None, :]]    # (nwin, H): Y[t,j]=lc[t+1+j]
+        cumY = np.cumsum(Y, axis=1)                          # cumY[:,s-1] = sum_{j<s} Y
+        cumXY = np.cumsum(x[None, :] * Y, axis=1)
+        csx = np.cumsum(x)
+        csx2 = np.cumsum(x * x)
+        Wmat = np.zeros((nwin, Nw))
+        for si in range(Nw):
+            s = k0 + si
+            n = float(s)
+            Sx = csx[s - 1]
+            Sxx = csx2[s - 1]
+            Sy = cumY[:, s - 1]
+            Sxy = cumXY[:, s - 1]
+            denom = n * Sxx - Sx * Sx
+            if abs(denom) < 1e-12:
+                continue
+            b = (n * Sxy - Sx * Sy) / denom
+            a = (Sy - b * Sx) / n
+            pred = a + b * x[s]
+            xbar = Sx / n
+            Sxx_c = Sxx - Sx * Sx / n
+            d = 1.0 / n + ((x[s] - xbar) ** 2) / Sxx_c if Sxx_c > 1e-12 else 1.0 / n
+            Wmat[:, si] = (Y[:, s] - pred) / float(np.sqrt(1.0 + d))
+        sig = np.sqrt(np.maximum(np.mean(Wmat * Wmat, axis=1), 1e-24))     # (nwin,) recursive-resid std
+        cusum = np.cumsum(Wmat, axis=1) / sig[:, None]
+        stat = np.max(np.abs(cusum), axis=1) / float(np.sqrt(Nw))         # break_stat per window
+        bstat = np.full(N, np.nan)
+        net = np.full(N, np.nan)
+        bstat[rows] = stat
+        net[rows] = lc[rows + H] - lc[rows]
+        trsel = tr_m & fv & np.isfinite(bstat)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.5, 0.6, 0.7):
+            cut = float(np.quantile(bstat[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            brk = fv & np.isfinite(bstat) & (bstat >= cut)
+            y[brk & (net > 0)] = 1
+            y[brk & (net <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if tx.sum() < 100 or vx.sum() < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"bde_cusum_H{H}_q{q}_cut{round(cut, 3)}", H
+    if best is None:
+        return None, "bde_cusum_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def generate_labels_calmar_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                                 horizons=[40, 80]):
     """Drawdown-adjusted forward-trend label — UNSUPERVISED, non-HMM. Mined 2026-06-03; targets the
@@ -2125,12 +2202,53 @@ def generate_labels_mfe_mae(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+# ===========================================================================
+# Wang's TREND-STRENGTH ENSEMBLE (in-rule lever, 2026-06-04). Wang's core
+# regime-adaptation trick: instead of crowning ONE labeler, ensemble the SAME
+# trend labeler swept across TREND-STRENGTH (his diff-order 5->9 = coarseness;
+# here the horizon H is the coarseness knob). Register fixed-strength variants
+# so "tleg_fast+tleg_mid+tleg_slow" trains a model per strength and AVERAGES
+# them via the existing "+"-ensemble path = implicit regime adaptation.
+# ===========================================================================
+# Explicit defs (NOT a closure factory) so the orchestrator's _prune_labelers AST pass
+# sees each as a FunctionDef and keeps generate_labels_trend_leg / _ker in the pruned render.
+def generate_labels_tleg_fast(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=None):
+    return generate_labels_trend_leg(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[20])
+
+
+def generate_labels_tleg_mid(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=None):
+    return generate_labels_trend_leg(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[60])
+
+
+def generate_labels_tleg_slow(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=None):
+    return generate_labels_trend_leg(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[150])
+
+
+def generate_labels_ker_fast(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=None):
+    return generate_labels_ker(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[20])
+
+
+def generate_labels_ker_mid(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=None):
+    return generate_labels_ker(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[60])
+
+
+def generate_labels_ker_slow(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=None):
+    return generate_labels_ker(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[150])
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
     "trend_leg": generate_labels_trend_leg,           # Wang's flagship connected-leg trend SEGMENTATION (new, non-HMM)
     "sharpe_scan": generate_labels_sharpe_scan,       # risk-adjusted forward-trend (new, non-HMM, vol-normalized)
     "ofsc": generate_labels_ofsc,                     # order-flow SERIAL-CORRELATION / flow-persistence (new, non-HMM, info-flow class)
+    "bde_cusum": generate_labels_bde_cusum,           # Brown-Durbin-Evans recursive-CUSUM structural-BREAK / trend-onset (new, non-HMM)
+    "tleg_fast": generate_labels_tleg_fast,           # Wang trend-strength ladder: trend_leg @ H=20 (fast/fine trend)
+    "tleg_mid": generate_labels_tleg_mid,             # Wang trend-strength ladder: trend_leg @ H=60 (mid trend)
+    "tleg_slow": generate_labels_tleg_slow,           # Wang trend-strength ladder: trend_leg @ H=150 (slow/coarse trend)
+    "ker_fast": generate_labels_ker_fast,             # Wang trend-strength ladder: ker @ H=20
+    "ker_mid": generate_labels_ker_mid,               # Wang trend-strength ladder: ker @ H=60
+    "ker_slow": generate_labels_ker_slow,             # Wang trend-strength ladder: ker @ H=150
     "calmar_scan": generate_labels_calmar_scan,       # drawdown-adjusted forward-trend (new, non-HMM; targets Calmar/downside)
     "sadf_explosive": generate_labels_sadf_explosive, # Supremum-ADF EXPLOSIVE/bubble regime (new, non-HMM; novel signal)
     "hurst_persist": generate_labels_hurst_persist,   # DFA forward fractal-PERSISTENCE (new, non-HMM; multi-scale)
@@ -2162,7 +2280,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
