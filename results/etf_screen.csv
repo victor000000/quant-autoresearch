@@ -1,0 +1,17 @@
+ticker,asset_class,recipe,method_calmar,buyhold_calmar,edge,val_auc,trades,verdict,name
+IAU,Commodity,trend,2.824,1.943,0.88,0.748,1014,STRONG,iShares Gold Trust
+DJP,Commodity,trend,1.677,1.082,0.595,0.805,236,STRONG,iPath Bloomberg Commodity Index Total Re
+UNG,Commodity,trend,0.0,-0.379,0.379,0.0,0,NO-FIT,"United States Natural Gas Fund, LP"
+XOP,Commodity,trend,0.418,0.299,0.119,0.682,214,marginal,State Street SPDR S&P Oil & Gas Explorat
+XES,Commodity,trend,0.299,0.254,0.046,0.63,307,marginal,State Street SPDR S&P Oil & Gas Equipmen
+NLR,Commodity,trend,0.161,0.252,-0.091,nan,3292,NO-FIT,VanEck Uranium and Nuclear ETF
+MOO,Commodity,trend,-0.196,-0.045,-0.151,0.731,790,NO-FIT,VanEck Agribusiness ETF
+FXF,Currency,regime,0.0,0.342,-0.342,0.0,0,NO-FIT,Invesco CurrencyShares Swiss Franc Trust
+GSG,Commodity,trend,0.51,1.005,-0.495,0.742,389,NO-FIT,iShares S&P GSCI Commodity-Indexed Trust
+IGE,Commodity,trend,0.311,0.816,-0.505,0.77,551,NO-FIT,iShares North American Natural Resources
+FXE,Currency,regime,0.0,0.513,-0.513,0.0,0,NO-FIT,Invesco CurrencyShares Euro Currency Tru
+FCG,Commodity,trend,-0.068,0.501,-0.569,0.779,72,NO-FIT,First Trust Natural Gas ETF
+IEO,Commodity,trend,-0.185,0.471,-0.656,0.771,803,NO-FIT,iShares U.S. Oil & Gas Exploration & Pro
+DBA,Commodity,trend,0.287,1.025,-0.737,0.789,755,NO-FIT,Invesco DB Agriculture Fund
+USO,Commodity,trend,0.002,0.937,-0.935,0.747,437,NO-FIT,"United States Oil Fund, LP"
+GDX,Commodity,trend,0.092,1.529,-1.437,0.762,766,NO-FIT,VanEck Gold Miners ETF
