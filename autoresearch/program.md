@@ -444,3 +444,20 @@ exogenous term-structure+IG) → the carry is REAL (positive expectancy) but fun
 term-structure-driven name later). **12 experiments this run, 0 wins. The autonomously-reachable frontier is now
 GENUINELY exhausted** — every remaining re-opener (PROPRIETARY alt-data: options order-flow/ETF flows; or cross-asset
 PAIRS) requires the user. The deployable book stands. See [[frontier-converged-terminus]].
+
+**HYG credit-spread (termstruct GENERALIZATION) DISCARD — degenerate labeler + structurally buy-hold-optimal; the
+cross-asset-curve sub-space yields NO reachable edge.** Generalized the term-structure capability to HYG→LQD (credit
+spread = high-yield vs investment-grade, a persistent/predictable exogenous signal on a benign-tail asset — the
+hoped-for "better than vol" profile). BOTH legs (A termstruct, B base) val_auc 0.0 / 0 trades = **bgm+ker DEGENERATED
+on HYG's smooth low-vol bars** (no balanced labels — the vpin-on-UUP failure mode; consistent with HYG always being a
+buy-hold member) → INCONCLUSIVE test of the credit signal. BUT structurally LOW-EV regardless: HYG is a CLEAN
+low-drawdown DRIFTER → buy-hold-OPTIMAL (program R124: timing a clean drifter SACRIFICES needed carry; exactly why
+HYG's crown is always_long 1.83). Even a perfect credit-stress signal can't beat the carry-sacrifice when there's
+little drawdown to cut. **So the cross-asset-curve sub-space has TWO failure modes spanning the reachable universe:
+crash-prone names (vol) = Calmar-INCOMPATIBLE (fat tail); clean drifters (HYG credit) = buy-hold-OPTIMAL
+(carry>timing).** The sweet spot (predictable signal + benign tail + timing-beats-carry) doesn't exist in the
+reachable single-ticker universe. The termstruct/cross-asset-curve CAPABILITY is permanent (VIXY→VIXM, HYG→LQD wired).
+**13 experiments this run, 0 wins. The reachable frontier — single-ticker methods, the vol mechanism class, AND the
+cross-asset-curve generalization — is now EXHAUSTIVELY explored from every angle.** Re-openers (PROPRIETARY alt-data:
+options order-flow/ETF flows; or cross-asset PAIRS) require the user. The deployable book (GLD 4.02 / UUP / IWM /
+diversifiers) is the finished answer. See [[frontier-converged-terminus]].
