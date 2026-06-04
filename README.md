@@ -23,9 +23,9 @@ The repo **root IS the project** (flattened 2026-06-04 — `autoresearch/` promo
 | `scripts/` | QC drivers: `run_autoresearch_round.py` (v2 tournament, 2-node A/B), `run_axis_label_parallel.py` (full sweep, 2-node), `run_axis_label_study.py` (serial), `_minify_check.py`; `diag/` scratch. |
 | `hypotheses.json` | Per-ticker queued configs the driver reads each round. |
 | `qc/` | QC Cloud API client + `.creds.json` (gitignored). |
-| `docs/analysis/` | Analysis writeups — `HONEST_AUDIT.md`, `BACKTEST_AUDIT.md`, `DEPLOYMENT.md`, `CHAMPION_DECAY.md`, `RESEARCH_REVIEW*.md`, `WANG_INVESTIGATION.md`. |
+| `docs/analysis/` | Analysis writeups — `HONEST_AUDIT.md`, `BACKTEST_AUDIT.md`, `DEPLOYMENT.md`, `CHAMPION_DECAY.md`, `RESEARCH_REVIEW*.md`. |
 | `docs/research/` · `docs/superpowers/` · `docs/legacy/` | Mined technique catalog + strategy spec · experiment design + specs · older session summaries. |
-| `refs/` | Reference material — `uni/`+`uni_yt/` (Wang course transcripts), `pdfs/` (AFML/MLAM/causal PDFs, gitignored), `qa_doc/` (Q&A). |
+| `refs/` | Reference material — `pdfs/` (AFML/MLAM/causal PDFs) and third-party course transcripts (`uni/`, `uni_yt/`, `qa_doc/`) are gitignored / excluded from the public repo. |
 | `scratch/` (gitignored) | `_archive/` (prior experiments, predecessor pipelines) + `data_cache/`. |
 
 **Root holds only:** the two entry docs (`README.md`, `program.md`), the operational state (`knowledge.json`, `techniques.json`, `hypotheses.json`, `results.tsv`), and the code/output dirs above. Everything else is grouped under `docs/`, `refs/`, `scratch/` (reorganized 2026-06-04).

@@ -111,3 +111,13 @@ _archive/
 scratch/
 refs/pdfs/
 results/etf_qc_confirmed_pre2009.csv
+
+# Third-party copyrighted course material — excluded from the public repo
+# (Whisper transcripts of uni 量化日记 bilibili/YouTube videos + course Q&A).
+# Purged from history on first publish; kept locally but never committed.
+refs/uni/
+refs/uni_yt/
+refs/qa_doc/wang_qa.tex
+docs/legacy/wang_qa.tex
+docs/legacy/wang_qa_questions.md
+docs/analysis/WANG_INVESTIGATION.md
