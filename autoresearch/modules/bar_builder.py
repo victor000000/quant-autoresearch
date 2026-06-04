@@ -843,9 +843,83 @@ class VolOfVolBarBuilder:
         return emit
 
 
+class WaveletBarBuilder:
+    """Custom axis: WAVELET multi-resolution ENERGY clock (a-trous / undecimated causal Haar
+    cascade, J=3). Mined 2026-06-04. Every built spectral-family axis is SINGLE-band: `spectral`
+    is a one-band EMA-difference ZERO-CROSSING timing clock and `vol`/`volofvol` clock a SINGLE
+    realised-variance scale. NONE decomposes the path into MULTIPLE resolutions. This axis runs the
+    a-trous (undecimated, shift-invariant) wavelet transform online and emits a bar when the
+    cumulative COARSE-SCALE detail ENERGY crosses a threshold, so bars CLUSTER at moves on the
+    trend/swing scale (period ~2^J minutes) and stay silent during fine high-frequency chop — the
+    multi-resolution DUAL of the magnitude/flow clocks, an orthogonal-ADD inside GLD's own logdollar
+    TREND mechanism ('sample where the trend/swing resolves, not the high-frequency chop').
+
+    a-trous cascade on the log-price s[t] = log(close[t]):
+        A_0[t] = s[t]
+        A_j[t] = 0.5 * (A_{j-1}[t] + A_{j-1}[t - 2^(j-1)])     for j = 1 .. J
+        D_J    = A_{J-1} - A_J            (coarsest detail band)
+    Only CURRENT/PAST taps (lags 1, 2, 4 for J=3) enter, so it is STRICTLY causal — the decimated
+    DWT would need future samples and would leak; the undecimated a-trous does NOT. The accumulator
+    sums D_J^2 (coarse-band energy). Past taps are held in a fixed-depth A-history ring per level
+    (max depth 2^(J-1) = 4 floats), so the transform is O(J) = O(3) per minute — a single scalar,
+    no per-minute O(window) recompute (the vpin/jump O(n) timeout lesson). The builder needs ONLY
+    the scalar threshold -> BUILDER_CLASSES-compatible (online byte-exact replay), no second fitted
+    param; the threshold is a rate-then-scale TRAIN fit (mean per-minute D_J^2 over TRAIN minutes x
+    full length / target_bars) in _make_builder — OOS-invariant. A genuinely multi-resolution signal,
+    not a reweighting of the first-order or single-band axes.
+    """
+
+    _J = 3   # cascade depth; coarse band ~ 2^J-minute swing scale
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.cum = 0.0
+        self.close_lc = None
+        # _hist[j] = recent A_j values (the INPUT to cascade level j+1), held to lag 2^j.
+        self._hist = [[] for _ in range(self._J)]
+        self._lag = [1 << j for j in range(self._J)]   # taps at 1, 2, 4
+
+    def _detail_sq(self, lc):
+        """Coarse-band detail energy D_J^2 at this minute; advances the A-history rings.
+        Pure scalar arithmetic on current/past taps only (strictly causal). The SAME method
+        path is used in _make_builder calibration, so the fit matches the replay bit-for-bit."""
+        a_in = lc                  # A_0[t]
+        a_jm1 = lc                 # becomes A_{J-1}[t] (input to the last level)
+        a_j = lc                   # becomes A_J[t] (output of the last level)
+        for j in range(self._J):
+            buf = self._hist[j]
+            lag = self._lag[j]
+            if len(buf) >= lag:
+                a_lag = buf[-lag]
+            elif buf:
+                a_lag = buf[0]      # warm-up: clamp to earliest known tap (deterministic)
+            else:
+                a_lag = a_in
+            a_out = 0.5 * (a_in + a_lag)    # A_{j+1}[t] = 0.5(A_j[t] + A_j[t-2^j])
+            buf.append(a_in)
+            if len(buf) > lag:
+                buf.pop(0)
+            a_jm1 = a_in
+            a_j = a_out
+            a_in = a_out
+        d_j = a_jm1 - a_j           # D_J = A_{J-1} - A_J
+        return d_j * d_j
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        self.cum += self._detail_sq(lc)
+        if self.cum >= self.thresh:
+            self.cum = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -865,6 +939,7 @@ AXES = {
     "vpin": VpinBarBuilder,
     "jump": JumpBarBuilder,
     "volofvol": VolOfVolBarBuilder,
+    "wavelet": WaveletBarBuilder,
 }
 
 
@@ -1493,6 +1568,69 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
             return None
         return JumpBarBuilder(thresh)
 
+    if bar_type == "volofvol":
+        # VOL-OF-VOL clock. Per-minute term = |v - prev_v|, v = log(bipower spot variance) over an
+        # O(1) trailing ring (the SAME math the builder replays online). Threshold = TRAIN mean of that
+        # per-minute |dv| x full length / target_bars (rate-on-TRAIN-then-scale, OOS-invariant; a
+        # full-series SUM would leak OOS vol-of-vol into bar bounds). The bipower estimate is causal
+        # (trailing products only). A single scalar -> BUILDER_CLASSES-compatible; the builder
+        # recomputes v online identically, so calibration matches replay byte-for-byte.
+        c = np.asarray(close, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        terms = np.full(len(c), np.nan)
+        _prev = None
+        _prods = []
+        _psum = 0.0
+        _prev_v = None
+        for i in range(len(c)):
+            if not np.isfinite(ret[i]) or c[i] <= 0:
+                continue
+            ar = abs(float(ret[i]))
+            if _prev is not None and len(_prods) >= 20:
+                bv = (math.pi / 2.0) * _psum / len(_prods)
+                if bv > 1e-300:
+                    v = math.log(bv)
+                    if _prev_v is not None:
+                        terms[i] = abs(v - _prev_v)
+                    _prev_v = v
+            if _prev is not None:
+                p = _prev * ar
+                _prods.append(p)
+                _psum += p
+                if len(_prods) > 60:
+                    _psum -= _prods.pop(0)
+            _prev = ar
+        keep = tr & np.isfinite(terms)
+        if int(np.sum(keep)) < 200:
+            return None
+        total = float(np.mean(terms[keep])) * len(c)       # TRAIN rate x full length (OOS-invariant)
+        return VolOfVolBarBuilder(_safe_thresh(total, target_bars))
+
+    if bar_type == "wavelet":
+        # WAVELET multi-resolution energy clock (a-trous causal Haar, J=3). Per-minute term =
+        # D_J^2, the coarse-band detail energy, computed by REPLAYING the builder's own _detail_sq
+        # method over the minute stream (the SAME code path the builder runs online -> the fit
+        # matches the replay bit-for-bit; no second numpy reimplementation that could drift).
+        # Threshold = TRAIN mean of that per-minute D_J^2 x full length / target_bars
+        # (rate-on-TRAIN-then-scale, OOS-invariant; a full-series SUM would leak OOS energy into bar
+        # bounds). The a-trous taps are current/past only (lags 1,2,4) so the term is strictly
+        # causal. A single scalar -> BUILDER_CLASSES-compatible (online byte-exact replay).
+        c = np.asarray(close, dtype=float)
+        tr = _train_minute_mask(ts_arr)
+        _wb = WaveletBarBuilder(1e300)            # sentinel thresh: never resets cum; pure term reader
+        terms = np.full(len(c), np.nan)
+        for i in range(len(c)):
+            ci = float(c[i])
+            if ci <= 0:
+                continue
+            terms[i] = _wb._detail_sq(math.log(ci))   # identical method path to the online builder
+        keep = tr & np.isfinite(terms)
+        if int(np.sum(keep)) < 200:
+            return None
+        total = float(np.mean(terms[keep])) * len(c)       # TRAIN rate x full length (OOS-invariant)
+        return WaveletBarBuilder(_safe_thresh(total, target_bars))
+
     if bar_type == "run":
         thresh = _fit_run_axis(close, vol, ts_arr, target_bars)
         if thresh is None:
@@ -1540,6 +1678,7 @@ BUILDER_CLASSES = {
     "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder, "spectral": SpectralCycleBarBuilder,
     "vpin": VpinBarBuilder, "jump": JumpBarBuilder,
+    "volofvol": VolOfVolBarBuilder, "wavelet": WaveletBarBuilder,
 }
 
 

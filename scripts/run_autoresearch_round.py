@@ -133,7 +133,7 @@ def _round_count():
     except Exception:
         return 0
 
-VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump"]
+VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet"]
 VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
                   "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon",

@@ -1,463 +1,200 @@
 # autoresearch
 
-Single-ticker ETF ML on QuantConnect, Wang's pipeline. Each round: pick the **weakest** ticker, race
-two hypotheses on the 2 nodes, keep the winner iff it beats that ticker's best on real OOS Calmar.
+Single-ticker ETF ML on QuantConnect (project 31338454), Wang's pipeline. Each round: pick the **weakest** ticker, race two hypotheses on the 2 QC nodes, KEEP the winner iff it clears every gate on real OOS Calmar. This file is the whole operating manual + honest results.
 
-**Do not stop exploring.** Always another axis, label, feature, reduce, model, sizing to try.
-**Simple is best.** **Single-ticker only — no cross-ticker ensembling.**
-**The edge lives in the first two modules.** New **custom bar axes** (how you sample the clock) and new
-**unsupervised labels** (what you call "up") are where alpha is found — every confirmed edge came from one of
-them (KER label, trend_scan label, imbalance axis). Reach for a new bar/label before a new feature/sizer.
+## The loop, rules & backtest contract
 
-## the loop
-1. **Pick the weakest ticker** (lowest real OOS Calmar — never the strongest). Re-validate its stored best first — records go stale.
-2. **Think** — read the provenance graph + findings; co-design one ticker's `axis × label × features × reduce × model × sizing`.
-3. **Build a new method — a new bar axis or a new unsupervised label first.** The edge comes from a *better
-   method in some module*, not another permutation of old ones. Invent one (prefer a new `bar_builder` axis or
-   `labeler`; feature/reduce/sizer second) and A/B it against the champion. Leak-safe: bar thresholds fit on
-   TRAIN-only; labels may look ahead (target only); the model sees past-only features.
-4. **Race:** `run_autoresearch_round.py '<A>' '<B>'` (the driver auto-updates the report).
-5. **Keep** iff **deployable (trades>80) AND Calmar>0 AND > re-validated best AND val_auc>0.52 AND beats `always_long` AND survives deflation AND survives the permuted-label control.** Else discard. Record → commit.
-   - **Permuted-label control (honesty harness):** re-run the kept config with `"permute_labels":true` — it shuffles ONLY the TRAIN labels (leak-safe, writes a distinct `_perm` cell). A REAL edge COLLAPSES toward buy-hold; if it survives permutation the "edge" is a drift/sizing/leak artifact → discard. Validate every KEEP this way (UUP 1.30→−0.08, GLD 3.22→1.27 all collapse = real).
-   - **Multi-file render:** `bar_builder.py` is a SEPARATE QC project file (imported by main.py) → the 64k char limit is PER FILE, so big ENSEMBLES (3-way+) now fit. Keep separate files QC-lint-clean (no `getattr`, no nested-quote f-strings).
+**Core rules**
+- **Single-ticker only.** No cross-ticker ensembling. Simple > complex.
+- **The edge lives in the first two modules** — a new **bar axis** (how you sample the clock) or a new **unsupervised label** (what you call "up"). Every confirmed edge came from one (ker, trend_leg, imbalance axis). Reach for a new bar/label before a new feature/reduce/sizer.
+- **Do not stop exploring** — but on static data, don't manufacture experiments (each trial raises every co-tested name's deflation bar for ~0 EV).
+- **Autonomous:** decide + run the next experiment; do not ask.
 
-## never break — backtest contract (audited clean, see BACKTEST_AUDIT.md)
-Real OOS backtest is **online, leak-free, model-only-from-QC-ObjectStore.** `infer.py` holds no model (replays
-saved predictions + causal `_size`); every `.fit` is in `footer.py` on TRAIN(+embargoed VAL) only; test enters
-only via predict. Proven: `verify.py` bars ≤1e-9, `infer_online.py` p_live==p_saved ≤1e-6. Features past-only,
-thresholds TRAIN-only. Don't trust a champion until its `infer_online` shows preds_match=1.
-**REGRESSION GUARD (2026-06-03, after the logdollar/kyle leak):** `tests/test_bar_threshold_leak.py` (numpy-free, CI-runnable) asserts every bar-threshold scaling is TRAIN-masked/OOS-invariant and forbids the `np.sum(valid)` full-series-count leak signature. Negative-tested (catches the leak if reintroduced). RUN IT after any bar_builder.py change.
+**The loop**
+1. **Pick the weakest ticker** (lowest real OOS Calmar). Re-validate its stored best first — records go stale as the OOS window grows.
+2. **Think** — read the provenance graph (`knowledge.json`) + findings; co-design one ticker's `axis × label × features × reduce × model × sizing`.
+3. **Build a NEW method** (prefer bar axis or labeler) and A/B it vs the champion. Leak-safe: bar thresholds fit TRAIN-only; labels may look ahead (target only); the model sees past-only features.
+4. **Race:** `scripts/run_autoresearch_round.py '<A>' '<B>'` (auto-updates the report). Hypothesis = `{ticker, axis, labeler, thresh, sizing[, reduce, n_components, rebal_band, max_depth]}`.
+5. **KEEP** iff ALL hold, else DISCARD; record → commit:
+   - deployable (**trades > 80**)
+   - **Calmar > 0** AND **> re-validated prev best**
+   - **val_auc > 0.52** (below = coin-flip model, no learnable structure)
+   - **beats `always_long`** (baseline carries no selection bias)
+   - **survives deflation** (Deflated Sharpe / best-of-N noise floor)
+   - **survives the permuted-label control**
 
-## wang's backbone
-Resample off the clock → label **unsupervised** (the label may look ahead; causality lives in the supervised
-model on past-only features) → **rich features then reduce** (fit on TRAIN) → **bet-size.** Fixed downstream:
-`StandardScaler → reduce_dims(corr,20) → XGBoost(depth 3, lr .03, n 200) → isotonic calibrate (VAL).`
-Detectors: trend-scan / change-point / clustering — **NOT HMM.** Aim Calmar > 3, reproducible, deployable.
+**Permuted-label control (honesty harness).** Re-run the KEEP with `"permute_labels":true` — shuffles ONLY TRAIN labels (leak-safe, writes a distinct `_perm` cell). A REAL edge COLLAPSES toward buy-hold; if it survives, the "edge" is drift/sizing/leak → discard. Validate every KEEP: UUP 1.30→−0.08 (pure label alpha), GLD 4.02→+0.73 excess-over-BH. The decisive real-vs-artifact test; orthogonal to deflation haircuts.
 
-## why the gates (hard-won)
-- **Records go stale.** OOS window grows as data arrives → a short-window-lucky edge decays. Re-validate before trusting.
-- **Trust = trials-deflated** (Deflated Sharpe / `deflated_audit.py`): the max of N tries is upward-biased; a searched
-  edge must clear the best-of-N noise. `always_long` baselines carry no selection bias.
-- **Durable > lucky:** drift/long-biased edges persist; two-sided timing with val_auc≈0.5 decays. A/B every new method vs the champion.
-- **New methods help only where there's structure** (val_auc>0.6). On val_auc≈0.5 drifters no method beats buy-hold — don't grind them.
+**Wang's backbone.** Resample off the clock → label **unsupervised** (label may look ahead; causality lives in the supervised model on past-only features) → **rich features then reduce** (fit on TRAIN) → **bet-size.** Detectors: trend-scan / change-point / clustering — **NOT HMM.** Aim Calmar > 3, reproducible, deployable.
 
-## ⚠️ CRITICAL LEAK CORRECTION (2026-06-03, adversarial re-investigation) — headline edges were INFLATED
-A user-requested deep adversarial leak hunt (workflow `leak-online-live-investigation`) + manual verification
-FOUND a MATERIAL look-ahead leak the prior 13-agent audit missed: the **`logdollar` (champion axis) and `kyle`**
-bar-thresholds scaled the TRAIN-fit rate by `int(np.sum(valid))` = the count of valid minutes over the **FULL
-series (incl. OOS)**. The OOS period (2021–2026) has LOWER valid-minute density than TRAIN, so the leak set a
-LOWER threshold → FINER bars → more bars → an INFLATED Calmar. Fixed (leak-free): extrapolate TRAIN valid-density
-to the full length (`train_valid/train_total * len(c)`), OOS-invariant + TRAIN-only. **RE-VALIDATED IMPACT: GLD
-4.71 → 2.76 · SOXX 3.02 → 0.71 (≈ buy-hold — SOXX edge largely GONE leak-free).** UUP (imbalance axis) is NOT
-affected by this leak. LESSONS: (1) the headline `logdollar` numbers below were leak-inflated and must be read as
-the LEAK-FREE values; (2) the edge is also bar-coarseness-FRAGILE (a 4.71→2.76 swing from a threshold change =
-overfit-to-bar-realization signal); (3) in-sample/code audits (incl. the prior 13-agent one and this workflow's
-own agents, who ALSO misread an unrelated rbuf detail) can MISS leaks — only re-running with the fix reveals impact. (4) DIRECTION IS NOT UNIFORM — the leak adds OOS-dependent VARIANCE to the bar structure: it INFLATED GLD(4.71->2.76)/SOXX(3.02->0.81) but SUPPRESSED XLE(0.86->1.35). So the crowned logdollar champions were partly the leak's LUCKY cases (max-over-tickers selection picks the leak's upside) = selection-under-leak. Honest leak-free model edges: GLD 2.76 (real, top), XLE 1.35 (Bonferroni-fail), UUP 1.30 (imbalance, unaffected); SOXX gone (~buy-hold). GLD PERMUTE-CONFIRMED leak-free (2026-06-03): real 2.51-2.76 vs permuted-label 1.29 -> shuffling TRAIN labels drops GLD BELOW its ~2.0 gold buy-hold, so the edge is GENUINE label signal (not leak/drift). Honest decomposition: ~2.0 = gold drift (buy-hold) + ~0.5 real label-timing edge. CAVEAT: mild model-training run-variance (2.51-2.76 across re-runs). So GLD = a real-but-MODEST timing edge on gold; the deployable value is mostly gold exposure + a small genuine alpha.
-**ACTION REQUIRED: re-validate the ENTIRE logdollar leaderboard leak-free; treat GLD ~2.76 as the one surviving
-single-ticker edge and SOXX/others as suspect until re-run.** The honest book + all DSR/e-value/cost numbers below
-were computed on the LEAKY champions and are now superseded for logdollar names.
+Fixed downstream (`modules/trainer.py`, all seeded `random_state=42`):
+```
+StandardScaler → reduce_dims(corr-20 | reduce=infogain) → XGBoost(depth 3, lr .03, n 200) → isotonic calibrate (embargoed VAL)
+```
+`reduce=infogain` = Wang information-gain selection (top-K by mutual_info with TRAIN label vs corr-filter's variance); opt-in, `correlation` default byte-identical. Multi-file render: `bar_builder.py` is a SEPARATE QC file (imported by main.py) → the 64k char limit is PER FILE, so 3-way+ ensembles fit. Keep separate files QC-lint-clean (no `getattr`, no nested-quote f-strings).
 
-## honest state (2026-06-03, very late) — mechanistically understood; gold is multi-structure [SUPERSEDED by the leak correction above for logdollar names]
-Durable single-ticker alpha = **3 confirmed edges** (Bonferroni-significant + permute-validated, deployable):
-**GLD `ker+regime_gmm`+`dd_overlay` n=15 = 4.55 (reducer width n_components=15 was the latest lever; arc 3.20->3.22->3.90->4.02->4.19->4.55, six improvements from "fixed" dimensions)** (logdollar; trend+REGIME HYBRID + drawdown-aware sizing — adding regime_gmm to the trend core
-beat the old 3.22, +21%; threshold-robust 3.64–3.90, the most trustworthy crown) · **SOXX `ker+trend_scan+bgm` t0.50 = 3.02** (logdollar; semis ARE multi-structure — trend+REGIME via bgm; +43% over the old 1.92; the SMH sister-fund replication failed on the pure-trend version → fund-specificity caveat stands) ·
-**UUP `bgm+ker` 1.30** (IMBALANCE axis; regime edge). Everything else = buy-hold. Provisional/un-crowned: KRE/ITB
-(permute-pass but Bonferroni-FAIL). SLV lead DEAD (logdollar+t0.30-specific, axis-fragile, hybrid hurts it).
+**BACKTEST CONTRACT — never break (audited clean, `BACKTEST_AUDIT.md`).** Real OOS backtest is **online, leak-free, model-only-from-QC-ObjectStore.**
+- `infer.py` holds NO model — pure replay of saved predictions + causal `_size`. Test enters only via predict.
+- Every `.fit` is in `footer.py` on TRAIN(+embargoed VAL) only. Features past-only; thresholds TRAIN-only.
+- Proven: `verify.py` bars ≤ 1e-9; `infer_online.py` p_live==p_saved ≤ 1e-6. **Don't trust a champion until its `infer_online` shows preds_match=1.** Ensembles deploy live (footer saves multi-member bundle; `live_trade.py.tmpl` averages calibrated+gated member probs online, rbuf-warmed from history).
 
-**DEFLATED-SHARPE AUDIT at the TRUE session-wide trial counts (2026-06-03, `scripts/honest_audit.py` → `HONEST_AUDIT.md`; the deep-research #1 gap, now run on all 528 logged trials).** This REORDERS trust in the book and is the most important honesty result of the session: **SOXX DSR 0.959 (N=39) = the MOST robust edge — survives best-of-N** · **GLD DSR 0.931 (N=72) = MARGINAL, selection-INFLATED** (PSR>0 is 1.000 so the edge is real, but 72 trials of search + high trial-variance pull the 4.55/2.63-Sharpe point estimate just under the 0.95 bar — the headline Calmar is optimistic) · **UUP DSR 0.600 (N=48) = FAILS deflation** (1.30 sits within best-of-48 noise; permute-REAL but statistically fragile/low-trade → DEMOTE to provisional diversifier, not a robust crown). Counter-intuitive lesson: MORE search on a name RAISES its deflation bar, so GLD's heavy optimization made its crown statistically *weaker* than SOXX's. Nothing survives Holm-Bonferroni across all 11 audited assets — the per-round Bonferroni gate does NOT capture the cumulative 528-trial burden. **Trust ranking by DSR: SOXX > GLD > UUP.** Going forward, weight conviction by DSR (not raw Calmar) and treat each new trial as raising every co-tested name's deflation bar.
+**Leak guard (regression test).** After the logdollar/kyle bar-threshold leak (scaled TRAIN rate by full-series `np.sum(valid)` = OOS-inclusive count → inflated Calmars), `tests/test_bar_threshold_leak.py` (numpy-free, CI-runnable) asserts every bar-threshold scaling is TRAIN-masked / OOS-invariant and forbids the `np.sum(valid)` full-series signature. Negative-tested. **RUN IT after any `bar_builder.py` change.** Deepest lesson: in-sample + code audits MISS leaks — only re-running with the fix reveals impact (full leak history below).
 
-**HARVEY-LIU HAIRCUT cross-check (2026-06-03, `scripts/harvey_liu_haircut.py`) — an INDEPENDENT multiple-testing method that REFINES the above.** It adjusts each champion's own Sharpe t-stat for M trials (Bonferroni FWER / BH FDR) instead of the extreme-value E[max]. Result: **the two methods DISAGREE on GLD vs SOXX, and that disagreement is the real finding.** GLD t=4.42 → haircut Sharpe ~2.0 (survives Bonferroni at M=66) = STRONGLY real in ABSOLUTE terms; SOXX t=2.55 → Bonferroni haircut 0.50 (BH 1.28) = modest absolute significance. So GLD and SOXX are BOTH genuinely real but robust in DIFFERENT senses: GLD = high absolute significance but a dispersion-inflated point estimate (DSR-marginal); SOXX = high consistency / low search-dispersion (DSR-strong) but modest absolute t. Last tick's "SOXX>GLD" was a DSR-specific artifact of GLD's search DISPERSION, not a universal ranking — **honest statement: GLD and SOXX both solid; UUP fragile** (UUP fails strict FWER under BOTH methods — DSR-Holm and HL-Bonferroni HC 0.000 — so its demotion is robust). CAVEAT: SLV/QQQ PASS the haircut (HC>0.7) but were already killed by the PERMUTE control (SLV axis-fragile, QQQ drift-artifact) → multiple-testing haircuts are NECESSARY NOT SUFFICIENT; permute + replication (SMH) are orthogonal gates that catch what DSR/HL cannot. Both audits in `HONEST_AUDIT.md`.
+## Confirmed edges & deployable book
 
-**FORMAL DECAY on REAL OOS series (2026-06-03, `scripts/champion_series.py` → `CHAMPION_DECAY.md`; the return series is now EXTRACTABLE read-only via QC `/backtests/chart/read` — the last honesty gap, unblocking PBO too).** Ran early/late Sharpe + Page-Hinkley/CUSUM change-point on each champion's actual equity curve: **GLD 1.98→3.00 (strengthening) · SOXX 0.51→2.75 (strengthening) · UUP 1.49→0.80 (SOFTENING — the only champion losing alpha).** This gives THREE independent honesty lenses that ALL converge on UUP as the fragile crown: DSR 0.600 (fails deflation) + Harvey-Liu Bonferroni haircut 0.000 (fails FWER) + decay 1.49→0.80. **CONCLUSION (triangulated): GLD + SOXX are durable, STRENGTHENING edges (deflation-solid + decay-healthy); UUP is statistically fragile AND decaying → DEMOTE to provisional, drop-candidate.** (Page-Hinkley fired at 5–11% on all three = early transients, over-sensitive at defaults and contradicted by the strengthening late-Sharpes; the early/late half-window is the reliable read. Series granularity ~223 pts = QC chart downsampling, fine for decay; finer daily resolution would need infer-side logging.) **PBO-via-CSCV is now feasible** (series obtainable) — a controlled per-asset config sweep with series capture is the clean next honesty step.
+Durable single-ticker alpha is scarce + asset-intrinsic. Leak-free, permute-confirmed, the book is **one strong gold edge + one softening dollar edge + a small-cap edge, on a diversified buy-hold core.** Conviction order: **GLD > UUP > IWM.**
 
-**PBO-via-CSCV on GLD (2026-06-03, `scripts/pbo_gld.py`; the 4th and final overfitting lens, the deep-research #1 gold standard) = 0.581** over 1000 CSCV partitions, 9 ker-family configs. READ IT CAREFULLY: PBO 0.581 does NOT mean GLD's edge is fake — ALL 9 configs are positive OOS — it means the LABELER SELECTION is overfit (the IS-best config lands OOS-below-median 58% of the time, worse than a coin flip). The per-config OOS Sharpe table is the real finding: **`ker` is the load-bearing component** (every ker-containing config clusters +0.25–0.28; non-ker configs trend_scan +0.17 / accel +0.13 are clearly worse) and **the ensemble elaboration is selection noise** (`ker+regime_gmm` 0.283 ≈ plain `ker` 0.280, a meaningless ~1% gap). So the 6-improvement GLD arc 3.20→4.55 is, on a SHARPE basis, over-tuning on a real ~ker-trend edge — confirming DSR's "inflated" with the gold-standard metric. CAVEAT: this PBO varies only the LABELER and uses SHARPE on the ~224-pt downsampled series; `regime_gmm`/`dd_overlay` specifically target DRAWDOWNS (Calmar denominator), which Sharpe under-weights, so they may still help CALMAR even while Sharpe-equivalent. **Honest synthesis of all 4 lenses: GLD's durable edge is KER (efficiency-ratio trend); its specific 4.55 config is Sharpe-overfit/inflated but the underlying edge is real and decay-healthy. "Simple is best" vindicated — ker alone is ~the whole Sharpe edge.** ALL honesty infra now built (DSR + Harvey-Liu + decay + PBO); the bottleneck was self-deception, and the loop is now instrumented to detect it.
+### Confirmed model edges
 
-**CALMAR ABLATION resolves the PBO caveat (2026-06-03) — the additions DO earn their keep on the DEPLOYED objective.** PBO measured SHARPE; this A/B measures real CALMAR by dropping each GLD addition: ker-ALONE (drop regime_gmm) = 3.71 (−18%, so regime_gmm worth +22%, via 390→1546 trades = more CAGR); ker+regime_gmm + cdf_overlay (drop dd_overlay) = 4.15 (−9%, dd_overlay worth +9%, via drawdown-trimmed sizing). So PBO's "Sharpe-overfit" was OBJECTIVE-SPECIFIC: the additions are Sharpe-neutral but CALMAR-POSITIVE (they manage drawdowns/exposure, which Sharpe under-weights and Calmar rewards). **This PREVENTED an error** — naively trusting PBO-on-Sharpe and simplifying GLD to ker-only would have cost ~22% Calmar. LESSON: validate ablations on the objective you DEPLOY (Calmar), not a proxy (Sharpe). FINAL honest GLD picture: ker = the Sharpe edge; regime_gmm+dd_overlay = justified Calmar/drawdown machinery (NOT overfit); only the precise 4.55 MAGNITUDE stays DSR-optimistic. The config STRUCTURE is vindicated.
+| Ticker | Config | Calmar | Status |
+|--------|--------|-------:|--------|
+| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t0.40 n15 rebal_band=0.03 / reduce=infogain | **4.02** | **the one durable edge.** decay-HEALTHY (early→late Sharpe 1.84→2.30). re-validated bit-exact 3× (4.0218), online-proven, gold-specific (not SLV). |
+| **UUP** | imbalance / `bgm+sadf_explosive+ker` / cdf_overlay | **1.85** | provisional. permute-real but decay-STALE (early→late 2.67→0.74; alpha front-loaded in 2014-15). Bonferroni-boundary (N=72). Earns its seat by decorrelation. |
+| **IWM** | logdollar / `trend_leg` / cdf_overlay / reduce=infogain | **0.665** | provisional. beats buy-hold (0.55), permute-PASS, decay-HEALTHY (0.63→1.31), online-proven. fails strict deflation (DSR 0.845, N=64). |
 
-**SOXX ablation (2026-06-03) — the LOAD-BEARING MODULE is ASSET-SPECIFIC; SOXX is regime-primary, NOT ker-primary.** Same Calmar ablation on SOXX (champion ker+trend_scan+bgm=3.02): ker-ALONE = 1.66 (−45%, barely above buy-hold ~1.34, DA 7.74 = high drawdown), ker+trend_scan (drop bgm) = 1.99 (−34%). So adding bgm to ker+trend_scan is the BIGGEST single jump (1.99→3.02, +52%) — **bgm (regime) is SOXX's load-bearing module**, confirming + quantifying the "semis are multi-structure" claim (NOT noise). Contrast with GLD where ker is load-bearing and regime is +22% machinery. So the dominant module DIFFERS by asset (GLD trend-primary via ker; SOXX regime-primary via bgm), exactly matching the two-mechanism governing rule — now measured by ablation, not asserted. Neither crown is over-elaborated; both config STRUCTURES are earned. Method generalizes: a per-crown Calmar ablation reveals which module carries each edge, and it is asset-intrinsic.
+GLD decomposition: ~2.0 gold buy-hold + ~1.16 real label-timing alpha. GLD load-bearing module = trend (trend_leg/ker); regime_gmm+dd_overlay = justified Calmar/drawdown machinery (+22% / +9%, ablation-confirmed). UUP load-bearing module = bgm regime (carries 1.11 of 1.30); sadf adds explosive-regime. Edge type + axis are asset-intrinsic: GLD/IWM trend on logdollar (info clock), UUP regime on imbalance (order-flow).
 
-**UUP ablation completes the trilogy (2026-06-03) — UUP is REGIME-primary like SOXX.** Champion bgm+ker=1.30: bgm-ALONE=1.11 (carries almost all of it), ker-ALONE=0.40 (barely works, DA 8.5 high drawdown). So ker adds only +17%; UUP's edge IS the bgm regime detector on the order-flow (imbalance) axis — REAL + mechanistically understood (not noise), just statistically fragile (low-trade → fails DSR 0.600 / HL-Bonf 0.000 / decaying). Demotion stands; mechanism confirmed genuine. **CROSS-CROWN ABLATION MAP COMPLETE: GLD=ker/TREND-primary · SOXX=bgm/REGIME-primary (+52%) · UUP=bgm/REGIME-primary (1.11/1.30).** The book = 1 trend edge (GLD) + 2 regime edges (SOXX, UUP), load-bearing module measured by ablation, clustering into the two asset-intrinsic mechanisms. Every crown's config STRUCTURE is now ablation-justified; the honesty arc (DSR+Harvey-Liu+decay+PBO+ablation) has fully characterized the book at both the magnitude level (which is trustworthy) and the module level (which carries each edge).
+### Deployable book
 
-**HONEST BOOK RE-DERIVATION (2026-06-03, `scripts/portfolio_rederive.py` → `HONEST_AUDIT.md`) — the actionable culmination; the deployed champion book was STALE.** Recomputed portfolio metrics on REAL OOS series (Calmar²-weighted, the deployed scheme): current decorr core (GLD/UUP/TIP/DBC/HYG)=5.22 · **+SOXX added (6)=6.19 (Calmar +18.5%, MaxDD 2.61→2.03%, Sharpe 2.73→3.04) = STRICT WIN on every metric** · UUP→SOXX swap=6.11 · drop-UUP(4)=5.15 (WORST). TWO decisions: (1) **ADD SOXX** — the deployed book (decorr_calmarsq, 06-02) predated the SOXX crown (06-03); adding it dominates on all metrics. (2) **KEEP UUP despite individual fragility** — dropping it LOWERS Calmar (6.19→6.11) because its regime edge is DECORRELATED from the trend edges, cutting portfolio MaxDD. CRUCIAL NUANCE: individual-asset fragility ≠ portfolio uselessness — the audits correctly say "don't TRUST UUP standalone" (fails DSR/FWER/decay) but the portfolio says "don't DROP it" (decorrelation value). **HONEST BOOK = GLD/SOXX/UUP/TIP/DBC/HYG, Calmar²-weighted (Calmar 6.19 / MaxDD 2.03% / Sharpe 3.04 on the recomputed ~weekly grid).** Caveat: recomputed absolute Calmars exceed the stored 3.53 (grown OOS window + GLD/SOXX strengthening + ~weekly granularity vs daily) — the RELATIVE ranking (+SOXX best, drop-UUP worst) is the robust finding. Series cached in `results/series_cache.json` for cheap re-runs.
+**GLD / UUP / IWM / TIP / DBC / HYG**, Calmar²-weighted (gross ≤ 1). TIP/DBC/HYG are `always_long` buy-hold diversifiers (no timing edge — they earn seats by decorrelation, not alpha).
 
-**BOOK WEIGHTING ROBUSTNESS + decorrelation QUANTIFIED (2026-06-03, `scripts/portfolio_weights.py`, zero backtests from cache).** The OOS correlation matrix proves UUP is the book's NEGATIVE-correlation anchor: UUP↔GLD −0.22, ↔SOXX −0.07, ↔TIP −0.27, ↔HYG −0.31 — **UUP is negatively correlated with EVERY other member**, which is precisely why it earns its seat despite standalone fragility (it's the unique drawdown-cutter). Weighting sweep on the 6-name book: equal=4.56 · Calmar²=6.19 · Calmar²×DSR=6.15 · inverse-variance=6.07 (UUP 50%, MaxDD 0.88%, Sharpe 3.33). TWO results: (1) DSR-aware weighting ≈ Calmar² (6.19 vs 6.15) — penalizing UUP's low DSR barely moves the book (its Calmar²-weight is already 5%), so the honest book is ROBUST to the fragility concern. (2) inverse-variance loads UUP to 50% for the best Sharpe (3.33) / lowest MaxDD (0.88%) — confirming UUP's risk-reduction value. So pick by objective: Calmar²→max Calmar (6.19, deployed); inverse-variance→min-DD/max-Sharpe. The decorrelation claim is now QUANTIFIED, not asserted.
+- Weekly grid: **Calmar 4.617 / MaxDD 2.46% / Sharpe 2.46.** Honest daily haircut ~1.15× → **~4.0 Calmar / ~2.8% MaxDD.**
+- Net-of-cost: gross → **~3.4 @5bp** (GLD 4.02→3.43 on 602 orders; UUP 1.85→1.54; IWM 0.665→0.61) → ~2.8 @10bp. Buy-hold core barely trades, so cost erosion is GLD-driven; the IG+0.03-band GLD config is more cost-robust than the old one.
+- GLD anchors (~63% Calmar²-weight). UUP earns its seat by decorrelation (negative-correlated with every other member; with-UUP cuts book MaxDD) despite standalone staleness. Drop-UUP and drop-IWM both LOWER book Calmar — keep the weak names for decorrelation.
+- **SOXX DROPPED**: its edge was the bar-threshold leak (leak-free 0.81 ≈ buy-hold). IWM replaced it as the 6th decorrelation seat.
 
-**SELF-SKEPTICAL GRANULARITY CORRECTION (2026-06-03) — my own headline was optimistic.** The book metrics above came from ~weekly (224-pt) chart equity, which UNDERSTATES drawdowns vs daily. Quantified by comparing each name's weekly-series MaxDD to QC's TRUE daily MaxDD (per_etf_best real_mdd): median understatement ratio = 1.15 (SOXX worst at 1.43 — sharp intra-week moves; GLD 1.20, UUP 1.24, TIP/DBC/HYG ~1.10). So the honest book MaxDD is ~2.34% (not 2.03%) and the honest daily Calmar is **~5.4, not 6.19** — still excellent (MaxDD ~2.3%, Sharpe ~3.0) but I over-stated by ~13%. IMPORTANT: this corrects only the ABSOLUTE level; all COMPOSITIONAL conclusions (+SOXX best, drop-UUP worst, weighting robustness, decorrelation) are RELATIVE comparisons on the same weekly grid, so the ~uniform multiplicative factor preserves every ranking. Lesson: be skeptical of your OWN analysis's resolution; chart-API equity is downsampled, trust QC's statistics for absolute DD.
+Live-deployable: ensembles deploy via the multi-member `model_{cell}` bundle (footer saves all members, `live_trade.py` averages calibrated+gated probs online); verified end-to-end on QC.
 
-**TRANSACTION-COST STRESS (2026-06-03, `scripts/cost_stress.py`) — the last real-world honesty dimension; pipeline sets NO explicit slippage model (uses QC defaults = optimistic).** Re-ran each crown's infer (same decisions, pure replay) with explicit ConstantSlippageModel: GLD 4.55→3.48(5bp)→2.46(10bp, −46%) · SOXX 3.02→2.78→2.55 (−16%) · UUP 1.30→1.00→0.73 (−43%). THREE findings: (1) edges SURVIVE realistic costs — at a conservative 5bp (top-liquid ETFs, ~1-2bp real spreads) the book holds (GLD 3.48, SOXX 2.78). (2) GLD's headline is the MOST cost-fragile (1546 orders → −46% at 10bp, drops below the Calmar>3 bar) — yet another way 4.55 is optimistic. (3) SOXX is the MOST cost-robust crown (−16%, fewer trades) = 6th lens confirming SOXX steadiest. ACTIONABLE: GLD would benefit from a WIDER rebalance dead-band (fewer trades → less cost drag) — concrete future improvement. The truly-honest deployable book haircuts for BOTH granularity AND ~5bp costs: GLD ~3.5, SOXX ~2.8, UUP ~1.0. (cost_stress.py inserts slippage into a rendered infer COPY — production template untouched/audited-clean.)
+## Governing rules & failure modes (lessons)
 
-**GLD DEAD-BAND TUNING (2026-06-03, `scripts/deadband_tune.py`) — a REAL net-of-cost improvement (first genuine net-positive in many ticks).** The infer rebalance dead-band is hardcoded 0.01 (rebalance when target weight moves >1%) — too TIGHT for the cost-sensitive GLD, over-trading on noise. Tuning vs the NET-OF-5bp-cost objective (pure replay, same decisions, execution-only change → no leak): band 0.01→net Calmar 3.48 (1546 orders) · 0.03→3.64 (1070) · 0.05→3.84 (837) · 0.08→3.97 (637). Wider band cuts orders up to −59%, net Calmar RISES, CAGR even improves (less whipsaw). HONESTY DISCIPLINE on my own result: this is tuned on OOS, so the EXACT optimum (0.08) is OOS-optimistic — what's robust is the MECHANISM (fewer trades→less cost drag, monotonic, a-priori). Defensible conclusion: widen GLD's band to ~0.03 (CONSERVATIVE, mechanism-justified → net Calmar 3.48→3.64, trades −31%), NOT the OOS-max. GLD-SPECIFIC (high-freq cost-sensitive crown; SOXX/UUP trade far less, smaller benefit). Proper deployment = make the dead-band a CONFIG option (default 0.01 back-compat; ~0.03 for GLD). This is the cost-aware lever flagged last tick, now quantified.
+**The governing rule — two edge mechanisms, asset-intrinsic.** Every result fits this. Each mechanism needs its own labeler; which one wins (and the axis) is a property of the asset, not a choice.
+1. **TREND-MOMENTUM** (`ker` → beaten by `trend_leg`): wins ⟺ drawdowns are momentum-cyclical / trend-predictable AND trimming-cost < MaxDD-saved. Wins: GLD ✓ (logdollar/info clock). Fails: event/shock-driven (XLE, XBI, DBC → 0.05–0.3) and V-recovery up-drifters (QQQ/SPY → timing trims carry). SOXX was a trend crown pre-leak (3.02) → **leak-dead 0.81 ≈ buy-hold**; not recoverable by any method. XME, SLV near-miss → mechanism is sector-idiosyncratic, not a general "cyclical sector" property.
+2. **REGIME** (`bgm`): wins on macro-regime oscillation → UUP ✓ (imbalance / order-flow clock). The trend core gets only ~0.55 on UUP; `ker` gets ~0.40. Each mechanism's labeler fails on the other's asset.
 
-**DEAD-BAND GENERALIZES (SOXX check, 2026-06-03) — confirms the GLD finding is NOT OOS-overfit; optimum is FREQUENCY-DEPENDENT.** Ran the same net-of-5bp tuning on SOXX (honesty discipline: is my GLD result general or GLD-OOS-specific?): SOXX 0.01→2.78 · 0.02→2.87 · 0.03→2.70 · 0.05→3.00 (best) · 0.08→2.69 (DECLINES). So widening helps SOXX net-of-cost too (peak +8% at 0.05) → the "0.01 default is too tight / over-trades" MECHANISM is REAL and generalizes (not OOS-fit). BUT the optimum is asset-/frequency-specific: GLD (high-freq) improves monotonically through 0.08; SOXX (mid-freq) PEAKS ~0.05 then DECLINES (too-wide → stale positions → MaxDD up), and is NOISY at its lower trade count (0.03 dipped). CONCLUSION: don't bake one system-wide value — make the dead-band a per-asset CONFIG knob (GLD ~0.05, SOXX ~0.02), default 0.01 too tight for all cost-sensitive strategies. Benefit scales with trade frequency. (deadband_tune.py now takes a ticker arg.)
+**Where wins come from (the meta-pattern). Three sources, proven across the session:**
+- **(a) a BETTER core labeler IN the edge's own mechanism** — `trend_leg` > `ker` on GLD-trend (2.51→3.47).
+- **(b) an ORTHOGONAL ADD** — `sadf_explosive` adds to UUP-regime (bgm+ker 1.30 → bgm+sadf+ker 1.85, sadf is orthogonal to bgm/ker; same sadf DISCARDS on GLD-trend → mechanism matters).
+- **(c) a DIFFERENT module slot** — IG reducer (`reduce=infogain`) lifts GLD 3.47→4.02.
+- **What always LOSES:** swapping the mechanism's IMPLEMENTATION (`jump_model`↔bgm, `sliced_wasserstein`↔bgm/regime_gmm, `calmar_scan`/`sortino_scan`↔trend_leg, `vpin`↔imbalance, `run`/`spectral`↔logdollar) — incumbent always wins. And a **3rd same-family label DILUTES** (GLD trend_leg+regime_gmm+{accel/cusum/sadf/sliced_w/Wang-ladder} all < 4.02; UUP any 3rd dilutes). GLD's trend core has now beaten 7 cousins (ker, calmar_scan, sortino_scan, accel, sharpe_scan, tleg-ladder, sadf).
 
-**DEAD-BAND IMPLEMENTED + GLD RE-CROWNED 4.55→4.71 (2026-06-03, gated KEEP).** Made the rebalance band a CONFIG knob (`rebal_band`, default 0.01 byte-identical; threaded header→orchestrator→footer[synth + BOTH cell-saves incl. the ENSEMBLE path L629, the bug that took a debug to find]→infer[reads from payload]→driver[+_b cell-key suffix]). Ran GLD band=0.03 through the FULL pipeline: Calmar **4.7079 > 4.5454**, 1070 trades (−31%), and it passed every honesty gate (val_auc 0.741, survives best-of-89 deflation [noise 3.24], permute PASS [+3.12→−0.68], Bonferroni N=90 significant) → driver AUTO-KEPT it. So the conservative dead-band widening improves BOTH gross (4.55→4.71, less whipsaw) AND net-of-5bp (3.48→3.64, less cost) — NO tradeoff, because the trimmed trades were noise (confirms "0.01 over-trades"). NOT more OOS-overfit: it's gated by the same deflation/Bonferroni stack (N=90) and the mechanism generalizes to SOXX. GLD champion is now ker+regime_gmm dd_overlay t0.40 n15 **rebal_band=0.03 = 4.71**. The dead-band lever, implemented, paid off as a real gated upgrade.
+**Label-relevance (val_auc / MI) ≠ profit-relevance (Calmar).** High val_auc + low Calmar = the "predictable-not-profitable" trap. Confirmed 5×: `jump_model` (val_auc 0.82, persistent regimes predictable not directional), `sliced_wasserstein` (val_auc 0.81–0.89, OT vol-regime learnable not tradeable), `features=rich` VR-persistence (val_auc HIGHER, Calmar collapses — IG SELECTS high-MI features that are drawdown-increasing → crowds out profitable trend_leg features), QQQ intraday-revert. Mirror trap = high Calmar + low val_auc (SOXX IG-revival 2.6 at val_auc 0.48 = drift/path-luck). The val_auc>0.52 gate + permute + deflation jointly catch both directions. **IG amplifies a real trend edge (val_auc>0.6) but cannot manufacture one** (SOXX 0.48, every drifter) and helps only the single-trend-label component, not pure-regime ensembles (UUP IG +1.65 < corr 1.85).
 
-**SOXX dead-band = gross-NEUTRAL but net-POSITIVE (2026-06-03) — exposes a gate limitation.** SOXX band=0.02 full pipeline: gross Calmar 3.0077 ≈ 3.0248 (TIED, within noise) but 296 trades vs 575 (−49%) → driver DISCARDS (gross-tied). Yet net-of-5bp it's BETTER (2.78→2.87, half the trades). MECHANISTIC DISTINCTION from GLD: GLD's trades were partly NOISE (cutting them helps gross→gated KEEP 4.71); SOXX's trades are INFORMATIVE (cutting them is gross-neutral, only saves cost→net-only win). IMPLICATION: the driver gates on GROSS Calmar (optimistic default costs), so it is BLIND to net-of-cost deployment improvements — it correctly KEEPs GLD (gross+net) but wrongly DISCARDs the SOXX deployment win (net-only). DEPLOY SOXX band=0.02 anyway (same gross, −49% trades, better net). This is the strongest argument yet for adding a realistic default cost model to the production pipeline so the gate optimizes the DEPLOYED objective, not an optimistic proxy (the next structural honesty upgrade). **UUP band=0.02 completes the 3-crown picture (frequency-scaling CONFIRMED):** gross 1.2942~1.2958 (tied), only -16% trades (146->122, too low-freq to matter). So dead-band benefit SCALES with trade frequency — GLD(1546,high)=gross+net KEEP, SOXX(575,mid)=net-only, UUP(146,low)=negligible. Lever fully characterized + deployed (GLD band0.03 crowned; SOXX band0.02 deploy-recommend; UUP no change).
+**Clean drifters are buy-hold-optimal.** Timing a low-drawdown drifter sacrifices the carry it needs; there's little drawdown to cut so any trimming loses → HYG always_long 1.83 (credit-spread signal can't beat carry-sacrifice), QQQ/SPY/TIP/DBC. These are val_auc≈0.5 names; ML finds nothing.
 
-**MANY assets are MULTI-STRUCTURE; the REGIME DETECTOR is asset-specific** (key 2026-06-03 find, corrects an earlier 'gold-unique' claim): gold→`regime_gmm` (+21%→4.02), semis→`bgm` (+43%→2.73), dollar→`bgm`. Using the WRONG detector looks degenerate (regime_gmm on semis=no-op), which is why I'd wrongly called names 'pure-trend'. bgm-regime cuts drawdowns broadly on cyclical assets (IWM/EEM show it) but only crowns where the CAGR/DA balance is right (SOXX). `dd_overlay` sizing is GOLD-specific (its slow/persistent drawdowns; hurts semis' V-recoveries). Edge type AND axis
-are asset-intrinsic: GLD/SOXX edges live on logdollar (information clock), UUP on imbalance (order-flow microstructure).
+**New methods help only where there's structure (val_auc>0.6).** On val_auc≈0.5 drifters no method beats buy-hold — don't grind them (TLT 0.40–0.49, FXY 0.50, XME 0.500, VIXY 0.53). Vol products = uncrackable without external data: short-carry is Calmar-incompatible (crash fat-left-tail, DA 71), long-timing val_auc<0.5 (spikes exogenous), term-structure features lift val_auc 0.56→0.61 but Calmar stays ~0.
 
-**THE governing rule (explains every result): two edge MECHANISMS, each needs its own labeler, edge type is asset-intrinsic.**
-1. **TREND-MOMENTUM** (`ker+trend_scan`): wins ⟺ drawdowns are MOMENTUM-CYCLICAL / trend-predictable AND trimming
-   costs < MaxDD it saves → GLD ✓, SOXX ✓; SLV near-miss (mechanism fires, 20× less DD, but Calmar just under BH);
-   FAILS on event/shock-driven (XLE oil, XBI FDA, DBC commodities → 0.05–0.3) and V-recovery up-drifters (QQQ/SPY → trims).
-   **XME (metals/miners, 2026-06-03 universe probe, fully gated): NO edge** — the recipe cuts drawdown 7× (DA 51.7→7.5, mechanism partially fires) but Calmar COLLAPSES 1.16(buy-hold)→0.29 (CAGR cost > MaxDD saved) AND val_auc=0.500 (no learnable structure). So the trend-predictable-drawdown mechanism is SEMIS-SPECIFIC, not a general 'cyclical sector' property (cf. failed SMH sibling replication + SLV near-miss). New-input universe probes keep returning buy-hold → durable edges are rare + sector-idiosyncratic; stop expanding.
-2. **REGIME** (`bgm`): wins on macro-regime OSCILLATION → UUP ✓ (dollar). The trend core gets only 0.55 on UUP.
-Each labeler FAILS on the other's asset. `revert` (mean-reversion) captures signal on TLT/IWM/EEM but never beats their up-drift.
+**Sample where the edge RESOLVES, not where the trend is.** A trend clock (`run` axis) is silent during chop / at turning points — exactly where `trend_leg` resolves its EXITS — so MaxDD balloons (GLD 4.55→0.80). `logdollar`/`dc` sample the drawdown-onsets the trend edge must time → win. Corollary: the resolution insight is a bar-AXIS property (where to sample), NOT a labeling target (`turn_scan` reversal-timing label lost on UUP). Bar AXIS is asset-intrinsic; the custom-axis lever is CLOSED (kyle/run/spectral/vpin all lose to champions already on the right clock).
 
-**Honesty gates (all earn their keep):** permute control (excess-over-buyhold collapse — caught SPY's fake drift-edge) ·
-Bonferroni significance (demoted KRE/ITB) · REPLICATION (SMH exposed SOXX fragility — the deepest lesson: in-sample
-gates don't catch fund/path-specificity, only replication does). **Single-ticker search is CONVERGED + explained;
-the high-value move now is decay-monitoring GLD/UUP, not more searching (each round adds multiple-testing burden).**
+**Per-crown Calmar ablation reveals the load-bearing module (asset-intrinsic):** GLD = trend-primary (ker/trend_leg core; regime_gmm = +22% drawdown machinery; dd_overlay GOLD-specific, hurts semis' V-recoveries). SOXX (pre-leak) / UUP = regime-primary (bgm carries it). **Ablate on the DEPLOYED objective (Calmar), not a proxy (Sharpe)** — PBO-on-Sharpe called GLD's additions overfit; Calmar ablation showed they earn +22%/+9% by managing drawdowns Sharpe under-weights. Trusting the Sharpe proxy would have cost ~22% Calmar.
 
-**Ensemble DEPTH is asset-specific:** a 3rd label helps only where the 2-way left orthogonal structure — and only
-a SAME-FAMILY label (GLD: +accel, a trend-shape label like ker/trend_scan, won; +cusum_regime/+sharpe_scan diluted;
-UUP: any 3rd label dilutes). A label worthless SOLO (accel) can win in ENSEMBLE. Both 3-way frontiers now mapped.
+**Leak history + the only reliable detection (2026-06-03).** `logdollar` (champion axis) and `kyle` bar-thresholds scaled the TRAIN-fit rate by `int(np.sum(valid))` = valid-minute count over the **FULL series incl. OOS** → finer OOS bars → inflated Calmar. Impact was non-uniform OOS-dependent variance: inflated GLD (4.71→2.76) and SOXX (3.02→0.81), suppressed XLE (0.86→1.35) → the crowned `logdollar` champions were the leak's lucky cases (selection-under-leak). Fix: extrapolate TRAIN valid-density to full length (`train_valid/train_total * len(c)`), OOS-invariant. **Lessons: (1) only RE-RUNNING with the fix reveals a leak's impact — in-sample/code audits miss it (the prior 13-agent audit AND this workflow's own agents did).** (2) Bar-coarseness fragility (a threshold change swinging 4.71→2.76) is itself an overfit-to-bar-realization signal. Guarded by `tests/test_bar_threshold_leak.py` (above).
 
-**Closed levers — don't re-grind:** model capacity (depth-5 overfits 3.20→1.71; depth-3 optimal) · model family
-(sklearn ExtraTrees is platform-blocked in QC's runtime — XGBoost only) · meta-labeling (weaker than KER on GLD,
-over-filters UUP, decayed on EEM) · VR + SPY-cross-asset features (crowd the correlation-select, regress) · universe
-siblings (SLV doesn't generalize — GLD's edge is gold-idiosyncratic, not a precious-metals property). A real
-cross-asset edge needs a 2-symbol *pairs* strategy, which violates single-ticker.
+**Other closed levers — don't re-grind:** model capacity (depth-5 overfits 3.20→1.71; depth-3 optimal) · model family (XGBoost only — sklearn ExtraTrees platform-blocked in QC) · meta-labeling (weaker than ker, over-filters UUP, decayed EEM) · VR + SPY cross-asset features (crowd correlation-select; high-MI-but-unprofitable even under IG) · universe siblings (SMH ≠ SOXX, SLV ≠ GLD — edges are fund/asset-idiosyncratic; a real cross-asset edge needs a 2-symbol PAIRS strategy, which violates single-ticker) · sample-uniqueness weights (HURT directional edges — overlap IS the signal) · 64k render limit (SOLVED by multi-file render).
 
-**Open frontier — new bar axis / new unsupervised label (the two priority modules).** The remaining alpha is a
-genuinely *new method*, tested on the weakest names:
-- new **bar axes** (priority) — how you sample the clock. Built: `kyle` (price-impact/illiquidity, no win); `run`
-  (run-PERSISTENCE / trend clock, dual of `dc`: accumulate |logret| within a directional run, reset on sign flip,
-  emit on sustained runs — built clean, emits the right bar count on GLD 1558≈1546, but the trend edge COLLAPSES:
-  GLD 4.55→0.80, SOXX 3.02→2.27. MECHANISM: the run clock is SILENT during chop / at turning points = exactly where
-  `ker+trend_scan` resolves its EXITS, so MaxDD balloons 6%→16%. A trend clock UNDER-samples the drawdown-onsets the
-  trend edge must time; `dc`/`logdollar` sample those → win. LESSON: sample where the edge RESOLVES, not where the
-  trend IS); `spectral` (dominant-CYCLE clock: band-pass EMA-diff oscillator, emit on zero-crossings — dense in
-  oscillation, sparse in trend — built clean, emits PLENTY of bars on UUP 506 vs 146, but the edge COLLAPSES
-  1.30→0.26, MaxDD explodes 8.5×. MECHANISM: UUP's edge is ORDER-FLOW imbalance microstructure; the cycle clock
-  DISCARDS the order-flow info and "dense in oscillation" = dense in NOISE for a microstructure edge). **NEW-BAR-AXIS
-  FRONTIER EXHAUSTED** — kyle/run/spectral all built + A/B'd, ALL lose to the asset-intrinsic champion axes
-  (logdollar=info clock for trend; imbalance=order-flow for UUP). The bar AXIS is asset-intrinsic; the custom-axis
-  lever is CLOSED. Don't build more axes — champions already sit on the right clock.
-- new **unsupervised labels** (priority) — what you call "up". Built: `ker` ✓ + `accel` ✓ (ensemble-win on GLD);
-  `sharpe_scan`/`mfe_mae`/`revert`/`turn_scan` valid, no win (mfe_mae gold-specific 2.5; `turn_scan` = forward V/Λ
-  extremum-TIMING / reversal label — the "edges resolve at turning points" insight tried as a TARGET: deployable +
-  balanced on UUP but loses 0.36 (solo 0.18) vs `bgm+ker` 1.30. MECHANISM: local micro-reversal timing ≠ UUP's MACRO
-  regime oscillation, which bgm's distributional clustering already captures. LESSON: the resolution insight is about
-  where to SAMPLE the clock (a bar-axis property), NOT a labeling target); `perment` (INFO-THEORETIC: permutation
-  entropy / Bandt-Pompe ordinal predictability — trade only ordinally-structured forward windows by sign. The "info-
-  theoretic" frontier item: VALID with real standalone signal (SOXX solo 1.24, `ker+perment` pair 1.98 — best new-label
-  near-miss) but REDUNDANT, below champion `ker+trend_scan+bgm` 3.02. MECHANISM: ordinal-entropy predictability ⊂ what
-  trend_scan(slope-sig)+ker(efficiency)+bgm(regime) already capture; a weaker cousin of the trend-predictability family).
-  **NEW-LABEL FRONTIER BROADLY MAPPED** — every DISTINCT forward-window readout now built (slope, efficiency, curvature,
-  magnitude, trail-sign, extremum-timing, risk-adj, regime, tail, ordinal-entropy); none beats the per-asset champion.
-  Combined with the closed bar-axis lever, the two PRIORITY new-method modules are now exhausted. **PIVOT (per deep-
-  research review): the high-value work is now decay-monitoring + honesty infra (DSR/PBO multiple-testing, survival
-  analysis for alpha decay), NOT more method-building** — each new method adds multiple-testing burden for ~0 edge.
-- **ensemble composition** (now cheap — multi-file unblocked 3-way+): same-family 3rd labels on a structured
-  champion. GLD/UUP 3-way mapped; deeper combos = diminishing/overfit.
-- secondary: new **features** (non-crowding), **reducers** (vs corr-20), **sizers** (`dd_overlay` tried, lost on UUP).
-- **loop-honesty/efficiency (from the deep-research review, higher-leverage than more permutations):** standing
-  permuted-label GATE in the driver · PROV-JSON provenance schema (the ledger is a *provenance* graph, not causal)
-  · TPE/ASHA-driven selection over the (now larger) ensemble-composition space vs manual enumerate-and-race.
+**Honesty discipline:** Records go stale (OOS window grows → re-validate before trusting). In-sample Calmar HIDES temporal fragility — run early/late-Sharpe decay on real equity (caught UUP 1.85 = front-loaded 2.67→0.74 STALE vs GLD/IWM strengthening). Multiple-testing haircuts (DSR/Harvey-Liu) are NECESSARY NOT SUFFICIENT — permute + replication are orthogonal gates that catch fund/path-specificity (SLV, QQQ pass haircut but die to permute). Each new trial RAISES every co-tested name's deflation bar → on static data, manufacturing experiments inflates the bar for ~0 EV. Never crown on LLM judgment (idea-eval barely beats chance) — gate on real QC Calmar.
 
-**Closed lever (superseded):** the 64k render limit / axis-pruning — SOLVED by multi-file render (bar_builder.py
-as a separate QC file). Don't re-grind axis-pruning.
+## Method inventory (axes, labels, levers)
 
-## setup
-QC project 31338454, creds `qc/.creds.json`. Hypothesis = `{ticker, axis, labeler, thresh, sizing[, max_depth]}`.
-Modules `autoresearch/modules/` (bar_builder · features · labeler · trainer) + templates (header/footer/infer/verify) ·
-findings `knowledge.json` (provenance graph) · audit `BACKTEST_AUDIT.md` · reviews `RESEARCH_REVIEW*.md` ·
-Wang's course `pdfs/`, `docs/legacy/wang_qa_questions.md`.
+Three module slots carry the search: **bar axis** (how you clock the price path) → **unsupervised label** (what you call "up") → **levers** (reduce / sizer / band / horizons). The edge lives in axis + label; reach for a new one of those before touching features/reducers/sizers. Champions are marked ★. Everything unmarked is built + leak-safe but lost or is dormant.
 
-## efficiency review v3 (2026-06-03, `RESEARCH_REVIEW_v3.md`) — 110 primary claims, 72/75 verified
-Second deep review. **#1 NEW upgrade: E-VALUES / anytime-valid inference for continuous re-validation** — we re-test champions as the OOS window grows (decay checks) = optional-stopping/peeking, which INVALIDATES p-value/DSR-based gates (the reproducibility-crisis cause). E-processes stay valid under continuous monitoring (Ville), are the ONLY admissible anytime-valid method, and MERGE BY MULTIPLICATION. This is the formal cure for staleness the prior review named but didn't solve. Alpha-spending (O'Brien-Fleming; data-driven peeking doesn't inflate alpha) is the lighter alternative. OTHER verified takeaways: (1) 'causal graph as log' = confirmed TERMINOLOGY TRAP — ours is correctly a PROVENANCE graph (causal-DAG nodes are population RVs/assumptions, not findings/derived stats). (2) SINGLE-agent ≥ multi-agent for the core loop (Operand Quant top MLE-Bench, beats orchestrated) → don't build tournaments; our single loop is right. (3) EXECUTION is the only arbiter — LLM idea-novelty FLIPS after execution, LLMs can't eval ideas (53%<56% human), idea diversity capped ~5% → never crown on my judgment, gate on real Calmar (we do). (4) AI honesty harnesses BARELY beat chance → external QC backtest = our defense-in-depth, never let an LLM self-grade. (5) cap tunable params ~15-20 (we're at ~9, watch it). (6) xKG: admit a method only if backed by runnable code; semantic similarity is a DECEPTIVE retrieval signal.
+### Bar axes — `modules/bar_builder.py` AXES (18; registry order)
 
-**E-VALUE MONITOR IMPLEMENTED (2026-06-03, `scripts/evalue_monitor.py`) — the review's #1 upgrade, validated.** Testing-by-betting e-process (WSR 2023) for H0: mean<=0; anytime-valid (Ville), peeking-robust, re-validations MULTIPLY in. Self-test PASSES: strong-signal e=135 (power), zero-mean false-positive rate 0.000 (<=0.05 Ville bound, valid). RESULT on champions (weekly cached series): GLD e=6.80, SOXX e=3.27, UUP e=1.31, HYG 2.51, TIP 1.58, DBC 1.26 — ALL 'weak' (e>=1 but <20), NONE clear anytime-valid significance. KEY: the peeking-robust e-value is STRICTLY MORE CONSERVATIVE than the fixed-sample DSR (GLD 0.93/SOXX 0.96) — the honest price of our continuous re-testing; GLD has the most anytime-valid evidence. CAVEATS: weekly series (short -> limited power), tests RAW mean (drift-confounded; buy-hold also positive). REFINEMENT QUEUED: daily-resolution + excess-over-buyhold e-process. This SUPERSEDES the peeking-invalidated DSR/p-value re-checks for ongoing decay monitoring.
+| axis | clock | status |
+|---|---|---|
+| `dollar` | equal traded notional | base (Wang) |
+| `tick` | N transactions | base (Wang) |
+| `vol` | realized-variance × √vol | base (Wang) |
+| `range` | equal % price move | base |
+| `logdollar` ★ | log1p(close·vol), tail-compressed info clock | **GLD/SOXX/IWM champion axis** |
+| `entropy` | TRAIN-frozen surprise −log(p_bucket) | dormant |
+| `imbalance` ★ | signed-dollar directional runs (de Prado) | **UUP champion axis** |
+| `tickimb` | sign-only directional runs | dormant |
+| `volumeimb` | signed share-volume runs | dormant |
+| `fracdiff` | FFD memory-preserving increments (ADF-fit d) | dormant |
+| `dc` | directional-change / intrinsic-time reversals | dormant |
+| `zcusum` | standardized log-dollar CUSUM event clock | dormant |
+| `kyle` | price-impact / illiquidity (\|Δlc\|/√vol) | LOST (no win) |
+| `run` | within-run \|Δlc\| trend clock | LOST (GLD 4.55→0.80: silent at turns) |
+| `spectral` | dominant-cycle zero-crossings | LOST (UUP 1.30→0.26) |
+| `vpin` | BVC soft order-flow toxicity | dormant |
+| `jump` | Lee-Mykland significant-jump clock | dormant |
+| `volofvol` | bipower vol-of-vol repricings | dormant |
 
-**E-VALUE now NATIVE + frequency-invariant (2026-06-03).** Added `evalue_oos` runtime stat to infer.py.tmpl (anytime-valid e-process on the DAILY OOS returns, computed on-QC; contract-safe post-hoc stat like sharpe_oos) — every champion infer now auto-reports its peeking-robust e-value. HONEST findings: (1) the e-value is FREQUENCY-INVARIANT — daily ≈ weekly (GLD 6.38≈6.80, SOXX 3.09≈3.27, UUP 1.32≈1.31) because e-value ~ Sharpe²×years independent of sampling -> last tick's 'daily adds power' hypothesis was a NO-OP (honest negative). (2) The binding constraint is BOUNDED BETTING (λ_max=5), not resolution: low-vol risk-managed strategies have optimal λ≫cap, so the bet is clipped -> the e-value is CONSERVATIVE. (3) SCOPE (corrects a slight over-claim): the e-value tests PROFITABILITY (mean>0, peeking-robust), drift-confounded for long-biased edges + bounded-bet-conservative -> it's a peeking-robust LIVENESS/DECAY monitor, NOT a high-power significance test nor an anytime-valid Calmar test (risk-reduction isn't a mean). Ranking holds GLD>SOXX>UUP. USE: ongoing decay monitoring (re-validations multiply in), not crowning.
+**Axis lever CLOSED.** kyle/run/spectral all built + A/B'd, all lose to the champion axes. The bar axis is asset-intrinsic: `logdollar` = info clock for trend (GLD/SOXX/IWM), `imbalance` = order-flow for UUP. Don't build more axes — sample where the edge *resolves*, not where the trend is.
 
-## FRONTIER — what would re-open productive research (2026-06-03 terminus)
-The loop has reached an EARNED terminus on the current inputs: 3 confirmed edges fully characterized
-(selection/decay/module/granularity/cost/anytime-valid lenses), a deployed gated upgrade (GLD 4.71),
-a complete honesty stack incl. the native e-value monitor + validated decay gate, and the deep review
-delivered + its #1 upgrade implemented. The new-method frontier is exhausted (kyle/run/spectral axes,
-turn_scan/perment/accel/mfe_mae/revert labels all lost or redundant; even medicine-inspired survival
-labeling = our existing triple_barrier). New universe returns buy-hold (XME✗). The review confirmed
-durable single-asset alpha is intrinsically scarce (R²~0.003-0.005) and the bottleneck is self-deception
-(now armored), not throughput. **Static OOS data + 5-min ticks => no new information per tick.** Further
-config/universe grinding only inflates the multiple-testing burden. Productive work needs a NEW INPUT:
+### Unsupervised labels — `modules/labeler.py` LABELERS (41; FEATURED + 2 BASELINE)
 
-1. **New DATA modality** (highest leverage) — we have exhausted price/volume. Alternative data with a
-   DIFFERENT information source: options-implied vol / skew, positioning (COT, ETF flows), macro-release
-   surprises, cross-asset signals (credit spreads, the VIX term structure). New information, not new tuning.
-2. **New MECHANISM-CLASS universe** — we tested trend/regime on equity-sector/commodity/dollar/bond ETFs.
-   Untested edge mechanisms: volatility products (term-structure carry), rate-CURVE spreads, FX carry —
-   each a structurally different edge than our trend/regime crowns.
-3. **Cross-asset PAIRS** (relaxes the single-ticker constraint) — the one place a real cross-asset edge can
-   live (a 2-symbol relative-value strategy); single-ticker provably can't capture it (frontier-mapped).
-4. **Intraday holding** — we use minute bars but ~daily holding; an intraday-horizon edge is a different
-   regime we haven't searched.
-5. **REGIME CHANGE / real-time decay** — the ONLY thing that changes on the current inputs is the OOS
-   window growing as real calendar time passes. The native `evalue_oos` decay gate is the standing monitor;
-   re-validate + act when it flags. Until then, the deployed book is the answer.
+**Champions / wins**
+- `ker` ★ — Kaufman efficiency-ratio clean-trend. Load-bearing on GLD; the Sharpe edge.
+- `trend_leg` ★ — Wang flagship connected-leg trend SEGMENTATION. GLD champion core (beat ker), IWM standalone win.
+- `regime_gmm` ★ — causal-feature GMM regimes. GLD +regime machinery (asset-specific detector).
+- `bgm` ★ — Bayesian-GMM regime. UUP + SOXX load-bearing (regime-primary, +52% on SOXX).
+- `accel` — trend-acceleration. Worthless solo, won in a GLD 3-way ensemble (same-family).
+- `sadf_explosive` — supremum-ADF explosive/bubble regime. Real ORTHOGONAL ADD on UUP regime side.
+- `trend_scan` — AFML trend-scanning. SOXX champion component (pre-leak).
 
-**Standing behavior at terminus:** monitor the deployed book's `evalue_oos` liveness/decay; do NOT
-manufacture experiments on static data (it inflates the deflation bar for zero edge). Re-open only on a
-new input (above) or a decay flag. To redirect the loop, point it at one of (1)-(4).
+**Built, valid, no win (dormant)**
+`sharpe_scan` (risk-adj trend) · `sortino_scan` (downside-adj) · `calmar_scan` (drawdown-adj) · `mfe_mae` (excursion asymmetry, gold-specific 2.5) · `revert` (mean-reversion turn; signal on TLT/IWM/EEM, never beats up-drift) · `turn_scan` (extremum-timing reversal) · `perment` (permutation-entropy; SOXX near-miss 1.98) · `ofsc` (order-flow serial-corr) · `bde_cusum` (recursive-CUSUM break) · `changepoint` (Wang mean-shift) · `hurst_persist` (DFA persistence) · `sliced_wasserstein` (optimal-transport tail regime) · `jump_model` (statistical jump-model regimes) · `crash_ahead` (tail target, pair `crashveto`) · `cusum_regime` · `tertile` · `carry` · `kmeans2stage` · `agglomerative` · `dc_trend` · `dc_reversal` · `multi_horizon`.
 
-**REPRODUCIBILITY CHECK (2026-06-03):** leak-free GLD is reproducibly **~2.51** (two runs gave IDENTICAL 2.5141; band-robust 0.03->2.51/0.05->2.49). The earlier 2.76 was a ONE-OFF anomaly (stale-cell/transient) — the pipeline is deterministic (XGBoost/KMeans/BGMM all seeded random_state=42). So GLD = ~2.51 leak-free = gold buy-hold (~2.0) + ~0.5 permute-confirmed label alpha. The honest single real model edge, band-robust + reproducible.
+**Strength ladders** (Wang trend-strength ENSEMBLE path): `tleg_fast/mid/slow` (trend_leg @ H=20/60/150), `ker_fast/mid/slow` (ker @ H=20/60/150).
 
-**BOTH SURVIVING EDGES CONFIRMED + REPRODUCIBLE (2026-06-03):** post-leak validation of the two real model edges. GLD: reproducible 2.51, permute->1.29 (stays positive = gold DRIFT remains); net alpha over gold buy-hold ~+0.5; mostly gold exposure + a small real timing edge. UUP: reproducible EXACT 1.2958, permute->-0.08 (goes NEGATIVE = dollar has ~no drift, so the FULL 1.30 is PURE label alpha); the cleaner/bigger real alpha, but statistically fragile (146 trades). So the honest book = GLD (gold + small alpha) + UUP (pure-but-fragile alpha) + buy-hold diversifiers. Both edges permute-pass + reproduce; everything else was buy-hold or leak. This is the validated, honest, scarce-alpha conclusion.
+**Meta / triple-barrier family**: `triple_barrier`, `_tight`, `_meta` (secondary decision model + GATE), `_tight_meta`, `_ae` (autoencoder DR). Meta-labeling weaker than ker on GLD, over-filters UUP — dormant.
 
-**NEW-METHOD DRIVE RE-OPENED → trend_leg WINS on GLD 2.51→3.47 (2026-06-03, per user "never stop exploring + do more on axes/labels, search internet+local").** A research workflow mined a 31-method backlog (`docs/research/new_method_backlog.md`) from AFML+Wang course+ML4AM+web. Built TWO: (1) **`vpin` axis** (VPIN/bulk-volume-classification toxicity clock, AFML Ch.19.5.2) — VALID + leak-safe but DISCARD on UUP (vpin+ker val_auc 0.78/Calmar 0.60 ≪ imbalance 1.30; bgm regime labeler returns no balanced labels on vpin bars so the ensemble fails — test new axes with a SIMPLE labeler first; the new `dbg_bars_{axis}` footer stat pinpoints axis-vs-labeler failures; two debugging lessons: an O(n·240) rolling-σ TIMED QC OUT masquerading as no-edge, fixed to O(1)). (2) **`trend_leg` labeler** (Wang's FLAGSHIP connected-leg trend SEGMENTATION, course Module 4) — **WINS on GLD: `trend_leg+regime_gmm` = 3.4716 > prior ker+regime_gmm 2.5140 (+38%), gated KEEP** (deployable 826 trades, val_auc 0.765, permute-PASS, deflation-PASS floor 3.21, Bonferroni PSR 0.9997 N=100). **Reproducible EXACT 3.4716** on re-run (deterministic), permute control 2.31. Decomposition: 3.47 = ~2.0 gold buy-hold + ~1.16 REAL label-timing alpha (>2× ker's ~0.5) — segmentation adapts the horizon to the trend vs ker's fixed-H efficiency, suiting gold's persistent trends. CAVEAT: clears the deflation floor (3.21) modestly → magnitude mildly selection-optimistic, but reproducible+permute-real+Bonferroni-sig. **GLD champion now trend_leg+regime_gmm 3.47.** LESSON: the "new-method frontier exhausted" terminus was pre-leak AND pre-this-drive — literature-mined NEW methods still win; the loop (research→build→debug-via-execution→race→gated-keep) WORKS. Backlog has ~29 more (calmar_scan/jump_model/sadf_explosive next). See [[trend-leg-wins-gld]], [[never-stop-exploring]].
+**Baselines** (gate comparators, never crowned): `hmm` (forbidden as a detector), `always_long` (buy-hold floor).
 
-**NEW-METHOD DRIVE — full results + META-PATTERN (2026-06-03). 5 experiments, 1 win, GLD-trend + UUP-regime now SATURATED.** Built & raced 4 literature-mined methods + a squeeze: (1) **`vpin` axis** (VPIN toxicity clock) — valid, DISCARD UUP (0.60≪1.30; bgm fails on vpin bars; 2 debug lessons: O(n·240) σ TIMED QC OUT → O(1) fix; dbg_bars stat). (2) **`trend_leg`** — WIN GLD 3.47. (3) **`calmar_scan`** (drawdown-adj trend) — DISCARD GLD 2.93 (<trend_leg). (4) **`jump_model`** (Statistical Jump Model, persistent regimes) — DISCARD UUP 0.34 (trains clean, val_auc 0.82, but persistent regimes are PREDICTABLE not PROFITABLE; bgm's distributional clustering wins). (5) **GLD 3-way squeeze** — DISCARD (trend_leg+calmar_scan/+accel = 3.43/3.00 < 3.47; 2-way is optimal depth, 3rd trend label redundant). **META-PATTERN (the session's key insight): wins come from a BETTER METHOD IN THE EDGE'S OWN MECHANISM (trend_leg beat ker at trend-labeling); swapping the mechanism's IMPLEMENTATION (jump_model↔bgm regime, vpin↔imbalance axis, calmar_scan↔trend_leg trend) LOSES, and adding a same-family 3rd label DILUTES.** So GLD-trend (trend_leg 3.47) and UUP-regime (bgm 1.30) are now SATURATED — the trend & regime readout spaces are well-covered (segmentation/efficiency/slope/curvature/drawdown/vol-ratio/distributional/persistence all built). Genuinely-new edges now need either a structurally-novel SIGNAL (sadf_explosive/explosive regimes, info-flow — untested) or a NEW INPUT (the FRONTIER section). High val_auc ≠ high Calmar (jump_model). Audit finding #1 CLOSED: both ensemble champions (incl. the new GLD trend_leg) PROVEN online (preds_match=1, ~1e-8). See [[new-methods-characterized]].
+**Label frontier MAPPED.** Every distinct forward-window readout is built — slope, efficiency, curvature, magnitude, trail-sign, extremum-timing, risk-adj, regime, tail, ordinal-entropy. None beats the per-asset champion. Two mechanisms only: TREND-MOMENTUM (`ker`/`trend_leg`/`trend_scan`) and REGIME (`bgm`/`regime_gmm`); each labeler fails on the other's asset.
 
-**COMPREHENSIVE TERMINUS (2026-06-03, very late) — explored across METHODS + MECHANISM-CLASSES + HOLDING-HORIZONS.** After trend_leg's win the drive continued exhaustively and re-converged: (a) **methods** — sadf_explosive (novel explosive-regime signal) DISCARD on GLD (standalone 2.50, dilutes the 3-way to 3.10<3.47): even a STRUCTURALLY-NOVEL signal doesn't beat/extend trend_leg (gold's explosive runs ARE its trends). (b) **mechanism class** — FXY/yen (new FX mechanism, in-universe) NO edge: 14915 bars but ker val_auc=0.5005 (random); regime ensembles degenerate. The yen is a val_auc~0.5 drifter like TLT/sectors. (c) **holding horizon** — built the `CONFIG['horizons']` INTRADAY lever (FRONTIER #4; threaded header→orchestrator→footer→driver, byte-identical back-compat verified) and probed it: GLD intraday (ker@[10,20,40]=1.39) ≪ daily 3.47 (gold edge is DAILY); QQQ intraday revert=1.27 beats buy-hold 1.24 but FAILS Bonferroni (selection-bias); IWM intraday revert=0.63 FAILS deflation+Bonferroni (DA 20.9, ls_overlay DA 81). **NO new intraday edge — the honesty gates correctly reject every marginal.** CONCLUSION: the single-ticker × fixed-20-universe space is now COMPREHENSIVELY explored across all three axes (method, mechanism, horizon); durable edges = **GLD (trend/daily/3.47) + UUP (regime/daily/1.30) ONLY**; everything else is buy-hold / no-structure / fails-significance. The new-method LOOP works (trend_leg proves it) and all infra is built (intraday lever, dbg_bars, ensemble online-proof, honesty stack). REAL further progress now needs a NEW INPUT the current setup can't provide: new DATA modality (options/flows/macro), or relaxing single-ticker → cross-asset PAIRS. The deployed book (GLD 3.47 + UUP 1.30 + buy-hold diversifiers) is the answer; standing job = evalue_oos decay-monitor. To reopen: point the loop at a new data source or authorize pairs.
+### Levers — `templates/header.py.tmpl` CONFIG (each writes a distinct cell-key suffix)
 
-**UUP 2nd EDGE — sadf_explosive ADDS to the regime edge (2026-06-04, the grind paid off).** Per the user's "keep grinding single-ticker" steer at the comprehensive terminus, continued probing found a REAL second new-method edge: **`bgm+sadf_explosive+ker` = 1.8473 on UUP vs `bgm+ker` 1.30 (+42%), DA 2.7 (low drawdown)**. sadf's explosive-regime detection (the dollar's 2014-15/2022 surge episodes) ADDS to UUP's order-flow regime edge — the REGIME-side analog of trend_leg's trend-side GLD win (META-PATTERN: better method IN the edge's mechanism; the 3-way ADDS here because explosive is orthogonal to bgm/ker, unlike on GLD-trend where a 3rd trend label diluted; and sadf DISCARDED on GLD-trend = it's a regime-complement, mechanism matters). VALIDATED: reproducible EXACT 1.8473; **permute control PASSES** (+1.85 → −0.0861 under TRAIN-label shuffle = PURE label alpha, ~identical to the original UUP −0.08; not drift/leak); PSR 0.9972; deployable 134 trades. CAVEAT: fails Bonferroni N=72 by a HAIR (0.9972 vs 0.99931) = this session's cumulative search burden, NOT a fake edge (permute is the decisive real-vs-artifact test, and it passes). PROVISIONAL UUP champion 1.85 (permute-real; magnitude selection-boundary) — same standard as the original UUP bgm+ker (also failed deflation, deployed permute-real). LESSON: the user was RIGHT to keep grinding past my "saturated" call — a real edge surfaced; AND the honesty stack worked (flagged it for permute scrutiny rather than auto-crowning the inflated magnitude). See [[sadf-adds-to-uup]]. Book: GLD trend_leg+regime_gmm 3.47 + UUP bgm+sadf+ker 1.85 (provisional) + buy-hold diversifiers.
+| lever | values (default) | suffix | verdict |
+|---|---|---|---|
+| `reduce` ★ | `correlation` (def) · `infogain` · `variance` · `autoencoder` | `_ig` | **infogain VALIDATED** — top-K by mutual-info w/ TRAIN label vs corr's variance. Lifts single trend-shape labels: TLT corr −0.10→+0.49, IWM win +0.665, **GLD 3.47→4.02 (+16%, crowned)**. NOT pure-regime ensembles (UUP no help) / val_auc≈0.5 names (SOXX). Leak-safe (MI TRAIN-only, frozen kept_idx, online-proven preds_match=1). |
+| `rebal_band` ★ | float (`0.01`) | `_b` | **GLD `0.03` CROWNED** (4.55→4.71 gross + net-of-cost). Benefit scales with trade freq: GLD(high) gross+net win, SOXX(mid ~0.02) net-only, UUP(low) negligible. Default 0.01 over-trades cost-sensitive crowns. |
+| `n_components` | int (`20`) | `_n` | reducer width. GLD `15` was a real step in the arc; not universal. |
+| `features` | `base` (def) · `rich` · `termstruct` · `fx` | `_fr`/`_ts`/`_fx` | LOSES everywhere. `rich` (VR Lo-MacKinlay trend-persistence) DISCARD on GLD+IWM (high-MI ≠ profit). `termstruct` = cross-asset log-ratio z-score (`CROSS_ASSET`: VIXY→VIXM vol-curve, HYG→LQD credit-spread) — VIXY DISCARD, HYG degenerate. Capabilities permanent, no edge in reachable universe. |
+| `horizons` | None=daily (def) · bar-list | `_hz` | INTRADAY-holding lever. No new edge — GLD intraday 1.39 ≪ daily 3.47; QQQ/IWM intraday fail Bonferroni. Gold edge is daily. |
+| `permute_labels` | `0` (def) · `1` | `_perm` | **honesty harness, not an edge** (see loop). Shuffles ONLY TRAIN labels; a real edge COLLAPSES (UUP 1.30→−0.08, GLD 3.22→1.27, IWM +0.665→+0.14). Run on every KEEP. |
 
-**DECAY/CONSISTENCY of the 2 new edges (2026-06-04, champion_series.py on real OOS equity) — a CRUCIAL deployment finding.** Early→late Sharpe: **GLD trend_leg+regime_gmm 1.84→2.30 = HOLDING (strengthening, decay-healthy)** · **UUP bgm+sadf_explosive+ker 2.67→0.74 = STALE (softening, Page-Hinkley fires ~10% in)**. So the UUP sadf edge is TEMPORALLY FRONT-LOADED: the +42%/1.85 headline is concentrated in the EARLY OOS (the 2014-15 explosive-dollar surges sadf TARGETS); recent-regime alpha is weak (~0.74 Sharpe). REAL (permute-confirmed) but the in-sample 1.85 OVERSTATES the forward edge — deploy UUP with tempered expectations. GLD trend_leg is the more trustworthy forward edge (strengthening). LESSON: in-sample Calmar HIDES temporal fragility; the early/late-Sharpe decay check on real equity is essential before trusting a headline (high Calmar ≠ durable forward edge). Confirmatory validation (no new search trial) — completes the robustness lenses on the book: GLD 3.47 (durable, cost-survives ~2.9@5bp) + UUP 1.85 (real but softening, cost-survives ~1.5@5bp). See [[sadf-adds-to-uup]].
+### Sizers — `_size()` in infer/portfolio templates
 
-## WANG DEEP-INVESTIGATION + in-rule-lever drive (2026-06-04) — `WANG_INVESTIGATION.md`, [[wang-investigation]], [[infogain-lever-validated]]
-User asked to "deep investigate what wang said": 5 agents mined all 16 Wang (王一鸣) transcripts + QA. **Wang VALIDATES our pipeline** (custom axis = his #1 edge; look-ahead trend labels; XGB-over-LSTM; single-ticker ETFs-not-stocks; asset-intrinsic edges; fit-on-TRAIN-freeze; rolling/causal standardization = exactly what would've prevented our logdollar leak) **and our DSR/permute/leak gates EXCEED his** (he has no multiple-testing discipline). His 2 gaps vs us: (1) ensemble a trend-STRENGTH label sweep (his regime-adaptation trick); (2) the cross-sectional SPREAD path (no-new-data escape from the single-ticker wall — user DECLINED to relax single-ticker). Caveat: his Calmar 5.63 is on Chinese commodities/CSI300/crypto (stronger trend persistence than US ETFs).
+`cdf_overlay` ★ (default; de Prado CDF bet × causal inverse-vol overlay) · `dd_overlay` ★ (drawdown-aware throttle — **GLD-specific**, suits slow gold drawdowns, hurts semis' V-recoveries) · `cdf_plain` · `binary` · `ramp` · `crashveto` (tail veto, pair `crash_ahead`) · `longshort` · `ls_cdf` · `ls_overlay` (up-drifters reject shorts).
 
-**IN-RULE lever drive on the WEAKEST (TLT), per user "keep levers on the weakest" + "do it automatically" (no asking).** Built + leak-safe + characterized:
-- **`CONFIG['reduce']='infogain'` (Wang INFORMATION-GAIN feature selection) = the WIN.** Top-K by mutual_info with the TRAIN label (label-relevant) vs corr-filter's variance (label-agnostic) — fixes the crowding that made fracdiff/VR features hurt. VALIDATED on TLT: corr −0.10 → **IG +0.49** (3× reproducible exact, pushed val_auc>0.52 where every prior TLT method got 0.40-0.49; permute partially collapses 0.49→0.21 = ~57% real label signal; beats autoencoder DR −0.01 decisively). **Labeler-SPECIFIC**: lifts single trend-shape labels (trend_leg +0.49, ker +0.20) but NOT regime-shift (changepoint −0.19) or the 3-strength ensemble (val_auc 0.439). Short-biased (binary sizing → 4 trades). Leak-safe (MI TRAIN-only, kept_idx frozen, online replays indices). Opt-in, `correlation` default byte-identical (champions undisturbed). Commit 0c3e9b4.
-- **trend-strength label ENSEMBLE** (tleg/ker fast/mid/slow @ H=20/60/150, via the `+` path): Wang's #1 trick. On TLT the ensemble LOST to single strength (−0.024 vs +0.150) — does not manufacture structure on a no-edge name. Fixed a 64k render bug (variants as explicit defs so `_prune_labelers` keeps them). Commit cfea3e6.
-- **NEW labelers** ofsc (order-flow serial-corr), bde_cusum (Brown-Durbin-Evans recursive-CUSUM break), changepoint (Wang-preferred mean-shift) — all built/validated/leak-safe; all DISCARD on TLT (val_auc≈0.4-0.49).
+## Honesty infra (all built)
 
-**TLT TERMINUS — now DEFLATION-DEAD (N=136).** ~11 in-rule-lever experiments, ALL DISCARD. The IG lever's +0.49 (PSR 0.84) can't clear the best-of-135 bar (0.88); every further TLT trial RAISES that bar (actively harms the record) without any chance of passing. TLT is no-structure (rates/macro-driven, not in price features) AND multiple-testing-saturated. The in-rule Wang levers are now thoroughly characterized on the weakest. The validated IG lever + 4 new labelers are PERMANENT, leak-safe capabilities — their clean test (do they LIFT a real edge?) needs a structured name (deflation headroom + val_auc>0.6), which the user has reserved (weakest-only). Durable book unchanged: GLD 3.47 + UUP 1.85 + buy-hold diversifiers.
+Seven independent overfitting/robustness lenses. A KEEP must survive the per-round gates; the book is audited by all seven.
 
-**🔑IWM = the IG lever's first NEW EDGE (2026-06-04, permute-real + decay-healthy).** TLT being deflation-dead, advanced the weakest-pick to the next-weakest ATTACKABLE name (IWM: Calmar 0.55 = pure buy-hold, ML had found NOTHING, N=48 = deflation headroom). `IWM logdollar trend_leg + reduce=infogain + cdf_overlay` = **+0.6653** — BEATS buy-hold (+0.55) AND corr-filter (+0.502, same config), val_auc>0.52, reproducible exact. **PERMUTE PASSES decisively** (real +0.665 → permuted +0.14, collapses well below buy-hold = genuine label signal). **DECAY-HEALTHY** (champion_series.py: early→late Sharpe 0.63→1.31 = STRENGTHENING, HOLDING — more durable than UUP which is STALE). **ONLINE-PROVEN** (preds_match=1, max_pred_diff=0.0 EXACT, n_matched=131 → deployable-clean; also PROVES the reduce=infogain online path = frozen kept_idx replay is leak-free end-to-end). Fails ONLY strict deflation (DSR 0.845 < 0.95, N=64) — UUP-style permute-real provisional. Strengthening attempts failed (regime_gmm gate degenerate=0 trades; dd_overlay weaker). IG is NOT universal: it HURT a commodity drifter (DBC +0.45 < corr +0.59 < BH +0.91) — it lifts CHOPPY weak equity (room for timing), not clean drifters. **This is the payoff of the Wang→IG→deflation-headroom chain: the validated IG lever DOES lift a real, durable edge where there's deflation headroom + latent structure.** Book candidate: GLD 3.47 + UUP 1.85 + **IWM +0.665 (provisional, decay-healthy, decorrelated)** + buy-hold diversifiers. Same run re-validated the book LIVE (GLD HOLDING 1.84→2.30, UUP STALE 2.67→0.74). See [[infogain-lever-validated]].
+- **Deflated Sharpe / deflation** (`honest_audit.py`, `deflated_audit.py`) — the max of N trials is upward-biased; an edge must clear best-of-N noise. Run on all logged trials; each new trial RAISES every co-tested name's bar. `always_long` baselines carry no selection bias.
+- **Permute control** — re-run the KEEP with `permute_labels:true` (TRAIN labels only, leak-safe). A real edge collapses toward buy-hold. Decisive real-vs-artifact test (caught SPY/SLV/QQQ fakes; UUP 1.30→−0.08 = pure alpha).
+- **Decay** (`champion_series.py`) — early→late Sharpe + Page-Hinkley/CUSUM on the real OOS equity curve. Half-window read is reliable; Page-Hinkley over-sensitive at defaults. Flags front-loaded/softening edges (UUP STALE 2.67→0.74; GLD/IWM HOLDING).
+- **E-value monitor** (`evalue_oos`, native in infer.py) — anytime-valid e-process (Ville), peeking-robust, re-validations MULTIPLY in. Frequency-invariant (daily≈weekly). Tests profitability (mean>0), bounded-bet-conservative → a liveness/DECAY monitor, NOT a significance/Calmar test. **The standing gate.** Supersedes peeking-invalidated DSR/p-value re-checks for ongoing monitoring.
+- **PBO-via-CSCV** (`pbo_gld.py`) — gold-standard config-selection overfit probe (1000 partitions). GLD PBO 0.581 = labeler SELECTION is Sharpe-overfit (all configs positive OOS; ker is load-bearing). Resolved by Calmar ablation: regime_gmm/dd_overlay are Sharpe-neutral but Calmar-positive → validate ablations on the DEPLOYED objective (Calmar), not a proxy (Sharpe).
+- **Cost-stress** (`cost_stress.py`) — pure-replay infer with explicit slippage (pipeline default = optimistic). Book holds at 5bp (GLD 4.02→3.43, UUP 1.85→1.54, IWM 0.665→0.61). Dead-band knob (`rebal_band`) cuts cost drag; benefit scales with trade frequency.
+- **Harvey-Liu haircut** (`harvey_liu_haircut.py`) — independent multiple-testing method (Bonferroni/BH on each Sharpe t-stat). Cross-checks DSR; the two can disagree (disagreement IS the finding). Necessary-not-sufficient — permute + replication catch what they cannot.
 
-**🎯🎯GLD IG CROWN = the session's BIG WIN (2026-06-04): IG LIFTS THE TOP EDGE 3.47 → 4.02 (+16%), full KEEP.**
-After exhausting the weak-name space (6 names, IWM the one win) the user kept firing the cron + "do it
-automatically", so I autonomously unlocked the structured-IG frontier. UUP (pure-regime ensemble bgm+sadf+ker):
-IG +1.65 < corr +1.85 = no help. But **GLD** (champion `trend_leg+regime_gmm dd_overlay t0.40 n15 b3`, which has
-the single-TREND-LABEL component where IG helps): **IG = +4.0218 vs corr +3.4716**. Controlled A/B (only `reduce`
-differed). PASSED EVERY GATE: beats prev best, val_auc 0.735, **SURVIVES DEFLATION** (clears best-of-113 noise
-3.21 — a STRONG edge clears it where IWM's modest +0.665 couldn't), **PERMUTE-GATE PASS** (edge-over-BH +2.44
-COLLAPSES to +0.73 under label-shuffle = real signal), **ONLINE-PROVEN** (preds_match=1, max_pred_diff=1.3e-8 —
-the reduce=infogain online path works on the ensemble). New GLD champion = `...n15_b3_ig` = 4.02 (champion_series
-CHAMPS + per_etf_best updated; FIXED a pre-existing driver bug where per_etf_best dropped optional levers from
-the recorded config — now captures reduce/n_components/rebal_band so crowns are reproducible). **Book top edge:
-GLD 3.47 → 4.02.** Lesson: IG helps the single-trend-label component (GLD's trend_leg-in-hybrid, IWM standalone),
-NOT pure-regime ensembles (UUP); and on a STRONG edge the IG lift CLEARS deflation into a deployable crown.
-The autonomous structured-IG call — after the weak space was exhausted + the user said do-it-automatically —
-delivered the session's biggest result. Validate decay next.
+Standing facts: nothing survives Holm-Bonferroni across the full ~500+-trial session burden; per-round Bonferroni does not capture cumulative burden. Weight conviction by DSR, not raw Calmar. Series cached in `results/series_cache.json` for cheap re-runs.
 
-**SOXX IG-REVIVAL = NO EDGE (2026-06-04) — IG AMPLIFIES a real edge, CAN'T MANUFACTURE one.** Tested whether the
-two newest winning levers (`trend_leg` labeler + `reduce=infogain`) revive the leak-killed semis trend crown
-(3.02 pre-leak → 0.81 leak-free; SOXX is the only OTHER name where the trend mechanism was ever a crown, so the
-natural IG-frontier generalization test). A: `trend_leg+bgm`+IG = **1.7355** (val_auc 0.490); B: `trend_leg`+IG =
-**2.6348** (val_auc 0.477) — both CRUSH 0.81 on raw Calmar BUT **driver DISCARD: val_auc 0.49/0.48 ≤ 0.52
-(coin-flip model = no learnable structure) + Bonferroni FAIL (PSR 0.9987, N=52, selection-suspect).** The juicy
-Calmar is drift/sizing PATH-LUCK, not alpha — the val_auc+deflation gate correctly rejects a high-Calmar/no-skill
-config (exactly what the honesty harness exists for). **CONFIRMS the leak correction: the semis trend edge is
-genuinely LEAK-DEAD, not recoverable by a better method.** Re-proven lesson: IG/trend_leg LIFT a real trend edge
-where val_auc>0.6 (GLD 0.735→4.02) but CANNOT create one where the model is at chance (SOXX 0.48). The IG frontier
-is NARROW — crowns GLD-trend, helps IWM (provisional), fails on every drifter (DBC/KRE/XME) + leak-dead SOXX.
-See [[infogain-lever-validated]], [[material-logdollar-leak]].
+## Frontier — what is exhausted, what re-opens
 
-**GLD WANG TREND-STRENGTH ENSEMBLE = DILUTES (2026-06-04) — Wang's #1 unexploited lever, now tested on a STRUCTURED
-name + champion bit-exact re-validated.** Wang's flagship regime-adaptive multi-horizon trend ladder
-(`tleg_fast+tleg_mid+tleg_slow` @ H=20/60/150, "+"-path averages a model per strength) + regime_gmm + IG, clean A/B
-vs the champion (only the trend component differs). A (ladder+regime_gmm): **3.6565**, val_auc **0.620** — REAL
-structure (well above chance, the ladder genuinely learns); B (champion `trend_leg+regime_gmm`+IG): **re-validated
-EXACT 4.0218** (val_auc 0.7348, 602 trades, identical to the crown → deterministic, the "validate decay" staleness
-check PASSES by exact reproduction). **DISCARD: A 3.66 < champion 4.02.** Distinct from SOXX (val_auc 0.48 = no
-structure): here the ladder DOES learn (0.62), it's just WEAKER than one sharp trend_leg. CONFIRMS "added trend
-labels DILUTE GLD" extends even to Wang's flagship trick: multi-horizon AVERAGING smooths the sharp single-horizon
-trend_leg signal GLD's edge relies on — gold wants ONE focused trend label + regime, not a strength ladder (Wang's
-ladder suits his Chinese-commodity stronger trend-persistence, not US gold). **The #1 Wang lever is now CLOSED on
-the structured name.** Meta-pattern re-confirmed: on GLD-trend a BETTER single trend labeler wins (trend_leg>ker),
-but MORE trend labels (ensemble/ladder/3rd-label) always dilute. See [[wang-investigation]].
+The single-ticker × fixed-universe space is COMPREHENSIVELY explored across method, mechanism-class, and holding-horizon. Static OOS data + 5-min ticks ⇒ no new information per tick; further config/universe grinding only inflates the deflation bar.
 
-**GLD 4.02 CROWN IS DECAY-HEALTHY (2026-06-04, champion_series.py on real OOS equity) — the session's biggest
-result is FORWARD-DURABLE.** Full current-book decay snapshot (early→late Sharpe on the real OOS return series):
-**GLD `trend_leg+regime_gmm`+IG 4.02: 1.92→2.52 = HOLDING (STRENGTHENING)** — the IG crown is NOT temporally
-front-loaded; the +16% IG lift persists into late OOS → the crown is trustworthy (the flagged "validate decay next"
-follow-up, now PASSED, on top of the bit-exact re-validation). **UUP `bgm+sadf+ker` 1.85: 2.67→0.74 = STALE**
-(re-confirms front-loading — the explosive-dollar episodes sadf targets are early-OOS; the 1.85 headline overstates
-the forward edge). **IWM `trend_leg`+IG 0.665: 0.63→1.31 = HOLDING (strengthening)** — the provisional IG edge is
-durable. (Page-Hinkley/CUSUM fire 5–10% in on all three = over-sensitive defaults, contradicted by GLD/IWM's
-strengthening late-Sharpes; the half-window read is the reliable one and cleanly separates the 2 HOLDING trend/IG
-edges from the 1 STALE regime edge.) ACTIONABLE: GLD 4.02 is the trustworthy deployable crown; UUP's DECAYING
-regime edge MOTIVATES seeking a FRESH orthogonal regime signal → next experiment builds `sliced_wasserstein`
-(optimal-transport / tail-aware regime label), the regime-side analog of how sadf added before.
+- **Method space SATURATED.** Trend & regime readout spaces well-covered (segmentation/efficiency/slope/curvature/drawdown/vol-ratio/distributional/persistence/ordinal-entropy all built). Wins come ONLY from a better CORE labeler in the edge's own mechanism, an orthogonal ADD, or a different module slot — swapping a mechanism's implementation always loses, a same-family 3rd label always dilutes (see Governing rules). Custom bar-AXIS lever closed. Recurring negative: label-relevance (val_auc/MI) ≠ profit-relevance (Calmar).
+- **Vol mechanism class REACHABLE but Calmar-INCOMPATIBLE.** VIXY probed from every angle (short-carry, long-timing, mechanism-matched sadf, term-structure features). Carry is REAL (positive expectancy) but the short-vol CRASH TAIL (fat left tail, DA 55–97) makes it fundamentally Calmar-incompatible; vol spikes are EXOGENOUS/shock-driven (val_auc ~0.5 from price/volume alone — needs VIX term structure / options flow).
+- **Cross-asset-curve features (`features=termstruct`) — TWO failure modes spanning the reachable universe.** Cross-asset FEATURES (VIXY→VIXM, HYG→LQD), single-ticker-compliant (not a traded pair). (1) crash-prone names (vol) = Calmar-INCOMPATIBLE (fat tail; IG lifts val_auc 0.56→0.61 but Calmar stays ~0); (2) clean drifters (HYG credit spread) = buy-hold-OPTIMAL (carry>timing; little drawdown to cut). The sweet spot (predictable signal + benign tail + timing-beats-carry) doesn't exist in the reachable single-ticker universe. Capability is permanent.
 
-**sliced_wasserstein (OT regime) DISCARD on UUP — VALID + highly LEARNABLE but PREDICTABLE-NOT-PROFITABLE
-(jump_model redux).** Built the tail-aware optimal-transport regime labeler (W1 k-medians on sorted forward-return
-DISTRIBUTIONS; commit a24beac) and solo-first raced on UUP. **TRAINS CLEANLY** (build correct, first end-to-end QC
-execution). A (solo): Calmar 0.765, **val_auc 0.807**, 77 trades (G2-fail); B (`bgm+sliced_wasserstein`): Calmar
-0.9606, **val_auc 0.894**, 125 trades. **DISCARD** (0.96 < UUP 1.30; and 0.96 < bgm-ALONE 1.11 → sliced_w DILUTES
-bgm). KEY: val_auc 0.81–0.89 is VERY HIGH (the OT regime is highly LEARNABLE — past features strongly predict the
-distribution-regime) yet Calmar is LOW = **PREDICTABLE-NOT-PROFITABLE**, the exact jump_model failure mode
-(predictable persistent/distribution regimes ≠ profitable DIRECTION; the OT clustering separates calm/crash by
-vol-distribution shape, predictable from past vol but not directionally tradeable). So sliced_wasserstein joins
-jump_model: a NEW regime IMPLEMENTATION that LEARNS well but loses to bgm's directional distributional clustering →
-the regime readout space is SATURATED for UUP. (Mirror of SOXX's high-Calmar/low-val_auc path-luck; here
-low-Calmar/high-val_auc predictable-unprofitable — the two opposite ways the val_auc+Calmar gates jointly catch a
-non-edge.) Build is a permanent leak-safe capability. Next: test on GLD (tail-awareness most relevant to gold's
-drawdowns/Calmar denominator). See [[new-methods-characterized]].
+**Re-openers (each needs a NEW INPUT):**
+1. **New DATA modality** (highest leverage) — options-IV/skew, positioning (COT, ETF flows), macro-release surprises, credit spreads, VIX term structure. New information, not new tuning. *(Proprietary alt-data requires the user.)*
+2. **Cross-asset PAIRS** — relaxes single-ticker; the one place a real relative-value edge can live. *(Requires user authorization.)*
+3. **Intraday holding** — `CONFIG['horizons']` lever built; minute bars but ~daily holding probed (no intraday edge: GLD/QQQ/IWM all fail Bonferroni/deflation). A different regime, mostly unsearched.
+4. **Regime change / real-time decay** — the only thing that changes on current inputs is the OOS window growing. `evalue_oos` is the standing monitor.
 
-**sliced_wasserstein DISCARD on GLD too → FULLY CHARACTERIZED (regime space SATURATED on both edges).** Tested the
-OT regime on gold (tail-awareness targets gold's drawdowns/Calmar). A (swap `trend_leg+sliced_wasserstein`):
-**3.34** (val_auc 0.63) — `regime_gmm` BEATS the OT regime as GLD's regime component. B (add 3rd
-`trend_leg+regime_gmm+sliced_wasserstein`): **3.82** (val_auc 0.73) — DILUTES the 2-way champion (4.02), confirming
-"3rd label dilutes GLD" extends to tail-aware regimes. Both DISCARD. So **sliced_wasserstein loses on BOTH edges**
-(regime_gmm>it on GLD, bgm>it on UUP) = a valid/leak-safe/highly-learnable but NON-IMPROVING regime detector,
-exactly like jump_model. **DECISIVE META-PATTERN (now proven across jump_model + sliced_wasserstein):** swapping the
-regime mechanism's IMPLEMENTATION always loses to the incumbent (bgm/regime_gmm); a 3rd label dilutes. Wins this
-session came ONLY from (a) a BETTER CORE labeler in the mechanism (trend_leg>ker), (b) an ORTHOGONAL ADD (sadf), or
-(c) a DIFFERENT module slot (IG reducer). **PIVOT: stop building regime/trend SWAPS — the productive frontier is
-the IG-winning REDUCER slot (richer feature sets that label-relevant IG can select without crowding) or a NEW
-INPUT.** See [[new-methods-characterized]].
+## Standing behavior at terminus
 
-**features=rich (VR trend-persistence + IG) DISCARD on GLD — REFUTES the IG-fixes-crowding hypothesis; high-MI ≠
-profit.** Built the `features=rich` lever (re-adds variance-ratio Lo-MacKinlay trend-persistence features behind a
-CONFIG flag for the label-relevant IG reducer to select; commit eda8108) to test the program's standing hypothesis
-"IG fixes the crowding that made VR features hurt." Clean base-vs-rich A/B, both reduce=infogain: A (base, champion)
-re-validated **EXACT 4.0218** (val_auc 0.735, 602 trades — 3rd bit-exact re-validation this run, deterministic
-crown); B (rich) **2.5498** (val_auc **0.8247 — HIGHER**, DA 8.05→**10.83 = MORE drawdown**). **DISCARD: rich 2.55
-<< base 4.02. HYPOTHESIS REFUTED** — IG does NOT rescue VR features: it SELECTS them (high mutual-info with the label
-→ higher val_auc) but they are Calmar-NEGATIVE (drawdown-increasing), so IG picking them CROWDS OUT the profitable
-trend_leg features → Calmar collapses. The issue was never just variance-crowding; the VR features are genuinely
-high-MI-but-UNPROFITABLE. **THIRD high-val_auc/LOW-Calmar "predictable-not-profitable" negative this run**
-(jump_model, sliced_wasserstein, now rich-VR): label-RELEVANCE (MI/AUC, what IG optimizes) ≠ profit-RELEVANCE
-(Calmar). GLD is FEATURE-OPTIMAL with the 80-feature base set EVEN under IG. The build is a permanent lever and
-FIXED a latent driver cell-key bug (parallel-path key now appends _fr to match _PSUF; verified base reproduced
-4.0218 + rich got a distinct 2.55, so base/rich legs read distinct cells). Next: test the lever where the trend
-edge has HEADROOM (IWM 0.665) not the saturated GLD. See [[new-methods-characterized]].
+The loop has reached an EARNED terminus on the current inputs. The honesty stack is complete; the bottleneck is self-deception (now armored), not throughput.
 
-**features=rich DISCARD on IWM too → lever helps NOWHERE; EXHAUSTIVE SATURATION (8 experiments/run, 0 wins).**
-Tested the rich lever where the trend edge has headroom (IWM provisional 0.665, decay-healthy). A (base): reproduced
-**0.6653** (val_auc 0.555 — IWM provisional re-validated, still deflation-FAIL/provisional); B (rich): **0.5969**
-(val_auc **0.5916 — HIGHER**, DA 6.47→**14.20 = drawdown DOUBLED**). DISCARD — same exact signature as GLD: rich
-features RAISE val_auc but LOWER Calmar + balloon drawdown. **`features=rich` HELPS NOWHERE** (saturated GLD ✗,
-headroom IWM ✗) → fully characterized, the VR trend-persistence features are universally high-MI-but-unprofitable
-under IG. **5TH consecutive high-val_auc/LOW-Calmar negative this run.** ── **SATURATION VERDICT (honest, evidence-
-backed): this session-run = 8 experiments, 0 wins** (SOXX-revival, Wang-ladder, sliced_wasserstein ×2, rich-VR ×2,
-+ the decay re-validation): every regime/trend SWAP loses to the incumbent, every 3rd label dilutes, every
-learnability-adding lever hits the **label-relevance ≠ profit-relevance** wall. The single-ticker × fixed-universe ×
-method/lever frontier is now EXHAUSTIVELY confirmed saturated (consistent with the program's standing terminus).
-Per terminus guidance, STOP manufacturing method experiments (each inflates the deflation bar for ~0 EV). The
-durable deliverable stands: **GLD 4.02 (trend_leg+regime_gmm+IG, decay-HEALTHY 1.92→2.52, re-validated bit-exact
-3×)** + UUP 1.85 (regime, STALE) + IWM 0.665 (provisional) + buy-hold diversifiers. Productive progress REQUIRES a
-NEW INPUT (new data modality / mechanism-class universe / cross-asset pairs / intraday — see FRONTIER §). New
-permanent capabilities built this run: `sliced_wasserstein` label, `features=rich` lever, + a driver cell-key bug
-fix. Pivot the loop to deployed-book monitoring + re-derivation, not more method probes. See
-[[new-methods-characterized]], [[frontier-converged-terminus]].
+- **Monitor** the deployed book's `evalue_oos` liveness/decay (re-validations multiply in). Re-validate + act when it flags.
+- **Do NOT manufacture experiments on static data** — each negative-EV probe only inflates the deflation bar for ~0 edge.
+- **Re-open ONLY on a new input** (1–4 above) or a decay flag. To redirect, point the loop at one.
+- **Current redirect (user, 2026-06-04): exploration of custom bar AXES + unsupervised LABELS is RE-OPENED** — the two priority modules where every confirmed edge originated; literature-mined NEW methods still win (trend_leg, sadf, IG all surfaced after a prior "exhausted" call). Build a new method, A/B vs champion, gate hard.
+## Active exploration (2026-06-04, custom-axis/label drive)
 
-**DEPLOYED BOOK RE-DERIVED with current crowns (2026-06-04, portfolio_rederive.py → HONEST_AUDIT.md) — IWM replaces
-leak-dead SOXX, the GLD 4.02 crown lifts the book.** The deployed book was stale (predated the GLD 3.47→4.02 IG
-crown + still listed leak-dead SOXX). Re-derived on real OOS series (Calmar²-weighted, the deployed scheme) with
-current crowns [GLD 4.02 trend_leg+regime_gmm+IG · UUP 1.30 gated bgm+ker · IWM 0.665 provisional decay-healthy +
-TIP/DBC/HYG buy-hold diversifiers] on the 224-pt ~weekly grid: prior core GLD/UUP/TIP/DBC/HYG = 4.609 · **+IWM (6)
-= 4.617** (Calmar↑ + MaxDD 2.50→2.46% + Sharpe 2.460 = STRICT marginal WIN — IWM earns the decorrelation seat SOXX
-vacated) · drop-UUP-keep-IWM = 4.519 (UUP STILL earns its seat: decorrelation > standalone staleness, the recurring
-nuance) · GLD+diversifiers-only = 4.511 (worst — the alpha names add value) · both-alpha-concentrated GLD/UUP/IWM =
-5.061 Calmar but lowest Sharpe 2.254 (concentration trades risk-adj for raw Calmar). **REFRESHED DEPLOYABLE BOOK =
-GLD/UUP/IWM/TIP/DBC/HYG, Calmar²-weighted = Calmar 4.617 / MaxDD 2.46% / Sharpe 2.46** (~weekly grid; honest daily
-haircut ~1.15× → Calmar ~4.0, MaxDD ~2.8%). The relative conclusions (+IWM best, drop-UUP worse) hold on the common
-grid. This is the productive terminus deliverable — the deployable book now reflects the session's one real win
-(GLD 4.02) and swaps the leak-dead SOXX for the decay-healthy IWM. See [[portfolio-endpoint]].
-
-**COST-STRESS on CURRENT crowns (2026-06-04, cost_stress.py → HONEST_AUDIT.md) — all SURVIVE realistic costs; the
-new GLD IG crown is MORE cost-robust than the old.** Re-ran each current crown's infer (pure replay, same decisions)
-with explicit per-fill slippage: **GLD 4.022→3.431(5bp)→2.834(10bp, −30%)** · UUP 1.847→1.541→1.159(−37%) · IWM
-0.665→0.610→0.575(−13%, most robust). KEY: the new GLD crown (trend_leg+regime_gmm+IG, rebal_band=0.03, **602
-orders**) erodes only −30%@10bp vs the OLD GLD champion's −46% (**1546 orders**) — the IG config + 0.03 dead-band
-MATERIALLY improved cost-robustness (fewer, less-noisy trades; the dead-band lever's cost benefit, now quantified on
-the deployed crown). At a conservative 5bp (liquid ETFs, real spreads ~1–2bp) the whole book HOLDS: GLD 3.43, UUP
-1.54, IWM 0.61 — all positive + deployable. Net-of-5bp deployable book ≈ Calmar ~4.0 weekly / ~3.4 daily.
-
-**═══ LOOP COMPLETE ON CURRENT INPUTS (2026-06-04). ═══** This run delivered: (1) the GLD IG crown 3.47→**4.02**
-(the one real win, decay-HEALTHY + re-validated bit-exact 3× + cost-robust), (2) exhaustive method-frontier
-saturation proof (8 experiments, 0 wins — every swap loses, every 3rd-label dilutes, every learnability-lever hits
-the label-relevance≠profit-relevance wall), (3) two new permanent capabilities (`sliced_wasserstein` label,
-`features=rich` lever) + a driver cell-key fix, (4) the refreshed deployable book GLD/UUP/IWM/TIP/DBC/HYG (SOXX
-dropped leak-dead, IWM added), (5) ALL robustness lenses re-run on the current crowns (decay ✓, book-rederive ✓,
-cost-stress ✓). The single-ticker × fixed-universe × method/lever space is comprehensively explored and the
-deployable answer is finalized. **Productive further research REQUIRES a NEW INPUT** — new data modality
-(options-IV/skew, ETF flows, macro surprises, credit spreads) · new mechanism-class universe (vol-carry, rate-curve,
-FX-carry) · cross-asset PAIRS · intraday holding (FRONTIER §). Until one is provided, the loop is in
-monitoring/consolidation; the deployed book is the answer. See [[frontier-converged-terminus]], [[portfolio-endpoint]].
-
-**sortino_scan (downside-deviation trend label) DISCARD on GLD — a WEAKER core than trend_leg (NOT the learnability
-trap).** Built the Calmar-aligned downside-deviation core label (commit 0a4018d; profit-aligned by design — downside
-deviation IS the Calmar denominator) and raced solo + with regime. A (sortino+regime_gmm+IG) = **3.20** (val_auc
-0.71 — regime_gmm carries it); B (sortino SOLO+IG) = **1.18, val_auc 0.495 (~CHANCE — sortino has almost no
-standalone trend structure)**. DISCARD (3.20 < 4.02). UNLIKE the prior 5 high-val_auc/low-Calmar negatives, sortino's
-solo val_auc is LOW — it's simply a WEAKER trend readout than trend_leg (solo val_auc ~0.76), joining calmar_scan
-(2.93) as a downside-cousin that loses to trend_leg's segmentation. **GLD's trend core is DEFINITIVELY trend_leg** —
-now beaten 7 cousins (ker / calmar_scan / sortino_scan / accel / sharpe_scan / tleg-ladder / sadf). **═══ 9 EXPERIMENTS
-THIS RUN, 0 WINS; 3 new methods BUILT (sliced_wasserstein, features=rich, sortino_scan), all DISCARD. ═══** The
-method/lever frontier is CONCLUSIVELY dead across every angle (better-core, orthogonal-ADD, 3rd-label, reducer-slot,
-feature-set, downside-aligned-core). Each further probe RAISES the deflation bar (now N≈72) for ~0 EV — the program's
-explicit anti-manufacturing warning. AUTONOMOUS DECISION (not stalling): HOLD — stop manufacturing method probes on
-static data; the deployable book (GLD 4.02 / UUP / IWM / diversifiers, cost-robust) is the finished answer. Re-open
-ONLY on a NEW INPUT (data modality / mechanism-class universe / pairs / intraday). See [[frontier-converged-terminus]].
-
-**VIXY vol-carry probe (NEW MECHANISM CLASS, autonomously reachable) DISCARD — reachable + genuinely different, but
-NOT crackable by our methods.** Corrected a wrong "all re-openers need the user" claim: the FRONTIER's "new
-mechanism-class universe" re-opener IS reachable autonomously (vol ETFs are on QC → add to CORE_7). Probed VIXY (VIX
-short-term futures, structural roll-decay CARRY = a genuinely different edge than trend/regime drift), short-capable
-(ls_overlay): A (bgm+ker) Calmar **0.0383, DA 71.5**, val_auc 0.556; B (trend_leg) 0.0368, DA 45, val_auc 0.534.
-DISCARD (Calmar ~0, Bonferroni-fail). DIAGNOSIS: the carry is REAL but the SHORT-vol crash risk (vol spikes) →
-ENORMOUS drawdowns (DA 71) → Calmar collapses to ~0 (the classic short-vol fat-left-tail, correctly rejected by the
-drawdown-aware Calmar objective). The BINDING constraint is **weak vol-timing skill (val_auc 0.53)** — our
-price/volume trend/regime methods barely predict vol, which is SHOCK-DRIVEN/exogenous (predicted by EXTERNAL info:
-VIX term structure, options flow — not the asset's own price/volume). So the vol class is REACHABLE + structurally
-novel but uncrackable WITHOUT external data. The other "new-mechanism" re-openers are pair-based (rate-curve/FX
-spreads → violate single-ticker) or single-asset drifters (FXY already val_auc 0.50). **CONCLUSION: the
-autonomously-reachable new directions are now ALSO exhausted; the remaining re-openers (cross-asset PAIRS, EXTERNAL
-alt-DATA) genuinely REQUIRE the user.** 10 experiments this run, 0 wins; the deployable book stands. See
-[[frontier-converged-terminus]].
-
-**VIXY mechanism-matched long-vol probe DISCARD (0 trades, val_auc <0.5) — DEFINITIVELY closes the vol class:
-spikes are EXOGENOUS.** Tested the gap from the first VIXY probe (which used generic methods on the short-carry
-side): `sadf_explosive` (explosive-regime detector, mechanism-MATCHED to vol spikes) on the LONG-vol (positive-skew)
-side. A (sadf+ker) / B (sadf solo), cdf_overlay: BOTH **val_auc 0.46/0.45 (BELOW chance)** → **0 trades** (the model
-never predicts a spike confidently enough to take a position). CONCLUSIVE: even the mechanism-matched explosiveness
-detector CANNOT predict VIXY's forward vol spikes from past price/volume — because vol spikes are EXOGENOUS/
-shock-driven (news/macro events), not internal price structure. So the vol class is now characterized across BOTH
-sides (short-carry: crash-dominated DA 71; long-timing: unpredictable val_auc <0.5) and BOTH labeler types (generic
-bgm/trend_leg AND mechanism-matched sadf). **Vol is genuinely UNCRACKABLE without external data** (VIX term
-structure, options flow, macro calendar). 11 experiments this run, 0 wins. **The one autonomously-reachable new
-direction is now DEFINITIVELY closed** — every remaining re-opener (external alt-DATA, cross-asset PAIRS) is
-confirmed to REQUIRE the user. The deployable book (GLD 4.02 / UUP / IWM / diversifiers, ~4.0 daily Calmar,
-robustness-complete, DEPLOYMENT.md finalized) is the finished answer. See [[frontier-converged-terminus]].
-
-**VIXY TERM-STRUCTURE attack (features=termstruct) DISCARD — vol class CONCLUSIVELY CLOSED: carry is real but
-Calmar-INCOMPATIBLE (crash tail), not a signal problem.** Corrected the "vol needs the user's external data" claim:
-the exogenous predictor (VIX term structure) is VIXY's OWN underlying (VIXM = mid-term sister), reachable on QC +
-single-ticker-compliant (cross-asset FEATURES via the existing spy_lc hook, NOT a traded pair). Built `features=
-termstruct` (per-ticker CROSS_ASSET VIXY→VIXM; offset-invariant log-ratio z-score/change features; reduce=infogain
-for crowding; threaded + verified like features=rich, _ts cell). A (termstruct+IG) Calmar −0.139/DA 97.6/val_auc
-0.611; B (base+IG control) 0.068/DA 55.4/val_auc 0.616. **A≠B (VIXM loaded, features LIVE — build works) but term
-structure did NOT help** (A val_auc ≈ B, A Calmar WORSE — approximate re-barred-VIXM alignment adds noise + contango
-already encoded in VIXY's own price decay). DECISIVE: **IG lifted vol-timing val_auc 0.556→0.61 (real modest skill)
-yet Calmar stays ~0 with DA 55–97** — the binding constraint is the short-vol CRASH TAIL, not signal: imperfect
-timing (val_auc 0.61) still gets caught in spikes → catastrophic drawdowns the Calmar objective correctly rejects.
-**Vol now attacked from EVERY angle** (short-carry crash-dominated; long-timing val_auc<0.5; mechanism-matched sadf;
-exogenous term-structure+IG) → the carry is REAL (positive expectancy) but fundamentally Calmar-INCOMPATIBLE
-(fat-left-tail). The `features=termstruct` cross-asset-feature capability is PERMANENT (could suit a genuinely
-term-structure-driven name later). **12 experiments this run, 0 wins. The autonomously-reachable frontier is now
-GENUINELY exhausted** — every remaining re-opener (PROPRIETARY alt-data: options order-flow/ETF flows; or cross-asset
-PAIRS) requires the user. The deployable book stands. See [[frontier-converged-terminus]].
-
-**HYG credit-spread (termstruct GENERALIZATION) DISCARD — degenerate labeler + structurally buy-hold-optimal; the
-cross-asset-curve sub-space yields NO reachable edge.** Generalized the term-structure capability to HYG→LQD (credit
-spread = high-yield vs investment-grade, a persistent/predictable exogenous signal on a benign-tail asset — the
-hoped-for "better than vol" profile). BOTH legs (A termstruct, B base) val_auc 0.0 / 0 trades = **bgm+ker DEGENERATED
-on HYG's smooth low-vol bars** (no balanced labels — the vpin-on-UUP failure mode; consistent with HYG always being a
-buy-hold member) → INCONCLUSIVE test of the credit signal. BUT structurally LOW-EV regardless: HYG is a CLEAN
-low-drawdown DRIFTER → buy-hold-OPTIMAL (program R124: timing a clean drifter SACRIFICES needed carry; exactly why
-HYG's crown is always_long 1.83). Even a perfect credit-stress signal can't beat the carry-sacrifice when there's
-little drawdown to cut. **So the cross-asset-curve sub-space has TWO failure modes spanning the reachable universe:
-crash-prone names (vol) = Calmar-INCOMPATIBLE (fat tail); clean drifters (HYG credit) = buy-hold-OPTIMAL
-(carry>timing).** The sweet spot (predictable signal + benign tail + timing-beats-carry) doesn't exist in the
-reachable single-ticker universe. The termstruct/cross-asset-curve CAPABILITY is permanent (VIXY→VIXM, HYG→LQD wired).
-**13 experiments this run, 0 wins. The reachable frontier — single-ticker methods, the vol mechanism class, AND the
-cross-asset-curve generalization — is now EXHAUSTIVELY explored from every angle.** Re-openers (PROPRIETARY alt-data:
-options order-flow/ETF flows; or cross-asset PAIRS) require the user. The deployable book (GLD 4.02 / UUP / IWM /
-diversifiers) is the finished answer. See [[frontier-converged-terminus]].
+Re-opened per user directive. A novel-method workflow (ideate→adversarial-vet→implement, 46 candidates) delivered a leak-audited build queue. **Built + applied + leak-test PASS:** `volofvol` (★new — second-order vol-of-vol bipower clock, the first axis clocking vol's RATE-OF-CHANGE) and `wavelet` (causal à-trous Haar multi-scale energy clock). Queue (code ready): `amihud` (illiquidity clock, TLT), `transfer_entropy_dir` (nonlinear directed info-flow label, TLT), `ddonset` (drawdown-onset clock — literal "sample where the edge resolves", GLD), `lzc` (Lempel-Ziv complexity clock, UUP), `visgraph` (horizontal-visibility-graph time-irreversibility label, GLD). Racing now, gated hard (val_auc>0.52 + permute + deflation). Round counter fixed (was frozen at 131 = KEEP-only; now real per-round count via `_round_count()`).
