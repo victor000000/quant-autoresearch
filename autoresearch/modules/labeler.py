@@ -2387,6 +2387,59 @@ def generate_labels_sliced_wasserstein(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fw
     return best, best_cfg, best_h
 
 
+def generate_labels_sortino_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[40, 80, 160]):
+    """Downside-risk-adjusted forward-trend label (Sortino; Sortino & Price 1994) — mined 2026-06-04.
+    Like sharpe_scan (net / TOTAL forward vol) but the denominator is DOWNSIDE deviation ONLY — the RMS of
+    the NEGATIVE forward bar-returns in the window (positives zeroed before squaring). A move that climbs
+    through few/shallow pullbacks scores HIGH even at high total vol; sharpe_scan penalizes its upside vol.
+    Targets the path a long actually FEELS (smooth-up vs jagged-up) and aligns with the DEPLOYED CALMAR
+    objective (a downside/drawdown denominator), unlike sharpe_scan's symmetric vol. Orthogonal to ker
+    (|net|/gross efficiency), mfe_mae (extremum asymmetry), and calmar_scan (single WORST drawdown vs all-
+    downside-deviation). Label 1 if |SOR|>=cut and net>0, 0 if net<=0, -1 (ignore) if |SOR|<cut. cut = TRAIN
+    quantile of |SOR|. O(N) per H via a cumulative sum of squared-negative returns. Forward window = TARGET
+    only (G3-ok). Sweeps H and q; keeps the most TRAIN-balanced config. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    neg = np.minimum(lr, 0.0)
+    negsq = neg * neg
+    csum = np.concatenate(([0.0], np.cumsum(negsq)))     # csum[k] = sum negsq[:k]  -> O(1) windowed downside MS
+    for H in horizons:
+        if N <= H + 1:
+            continue
+        sor = np.full(N, np.nan)
+        net = np.full(N, np.nan)
+        for t in range(N - H - 1):
+            ms = (csum[t + 1 + H] - csum[t + 1]) / H     # mean of min(lr,0)^2 over the H forward bars
+            ddev = math.sqrt(ms) if ms > 0 else 0.0
+            if ddev < 1e-9:
+                ddev = 1e-9                               # perfectly smooth climb -> tiny downside -> high |SOR|
+            net[t] = lc[t + H] - lc[t]
+            sor[t] = net[t] / (ddev * math.sqrt(H))
+        trsel = tr_m & fv & np.isfinite(sor)
+        if int(trsel.sum()) < 100:
+            continue
+        asor = np.abs(sor)
+        for q in (0.4, 0.5, 0.6, 0.7):
+            cut = float(np.quantile(asor[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            strong = fv & np.isfinite(sor) & (asor >= cut)
+            y[strong & (net > 0)] = 1
+            y[strong & (net <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"sortino_H{H}_q{q}", H
+    if best is None:
+        return None, "sortino_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
@@ -2405,6 +2458,7 @@ LABELERS = {
     "sadf_explosive": generate_labels_sadf_explosive, # Supremum-ADF EXPLOSIVE/bubble regime (new, non-HMM; novel signal)
     "hurst_persist": generate_labels_hurst_persist,   # DFA forward fractal-PERSISTENCE (new, non-HMM; multi-scale)
     "sliced_wasserstein": generate_labels_sliced_wasserstein,  # tail-aware OPTIMAL-TRANSPORT regime (W1 k-medians on sorted forward windows; new, non-HMM)
+    "sortino_scan": generate_labels_sortino_scan,     # DOWNSIDE-deviation-adjusted forward trend (Calmar-aligned; new, non-HMM)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
@@ -2433,7 +2487,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
