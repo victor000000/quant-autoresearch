@@ -255,19 +255,26 @@ def _scan_rounds_csv():
 
 
 # ---- small HTML builders ---------------------------------------------------
-def _spark(series, w=120, h=26):
+def _spark(series, w=120, h=28):
     pts = [c for _, c in series]
     if len(pts) < 2:
         return '<span class="sparkna">—</span>'
     lo, hi = min(pts), max(pts)
     rng = (hi - lo) or 1.0
     n = len(pts)
-    coords = " ".join(f"{i / (n - 1) * w:.1f},{h - (c - lo) / rng * (h - 4) - 2:.1f}" for i, c in enumerate(pts))
+
+    def _y(c):
+        return h - (c - lo) / rng * (h - 6) - 3
+    coords = " ".join(f"{i / (n - 1) * w:.1f},{_y(c):.1f}" for i, c in enumerate(pts))
     last_up = pts[-1] >= pts[0]
     col = "var(--pos)" if last_up else "var(--neg)"
+    base_y = _y(pts[0])                                  # reference line at the first tested value
+    last_x, last_y = w, _y(pts[-1])
     return (f'<svg class="spark" viewBox="0 0 {w} {h}" width="{w}" height="{h}" preserveAspectRatio="none" '
-            f'aria-label="{n} pts">'
-            f'<polyline points="{coords}" fill="none" stroke="{col}" stroke-width="1.6"/></svg>')
+            f'role="img" aria-label="Calmar over {n} rounds, {"rising" if last_up else "falling"}">'
+            f'<line x1="0" y1="{base_y:.1f}" x2="{w}" y2="{base_y:.1f}" stroke="var(--line-2)" stroke-width="1"/>'
+            f'<polyline points="{coords}" fill="none" stroke="{col}" stroke-width="1.8"/>'
+            f'<circle cx="{last_x:.1f}" cy="{last_y:.1f}" r="2.2" fill="{col}"/></svg>')
 
 
 def _edgebar(edge, w):
@@ -280,20 +287,25 @@ def _edgebar(edge, w):
             f'<span class="edgebar"><i class="{cls}" style="{side};width:{w / 2:.1f}%"></i></span></td>')
 
 
-def _num(v, fmt, suf=""):
+def _num(v, fmt, suf="", cls=""):
+    extra = (" " + cls) if cls else ""
     if v is None:
-        return '<td class="num">—</td>'
-    return f'<td class="num">{format(v, fmt)}{suf}</td>'
+        return f'<td class="num{extra}">—</td>'
+    return f'<td class="num{extra}">{format(v, fmt)}{suf}</td>'
 
 
 def _row_html(r):
     sig = r.get("significant")
+    psr = r.get("psr")
+    psr_txt = f'{psr:.2f}' if isinstance(psr, (int, float)) else "—"
     if sig is True:
-        sigb = f'<span class="sigbadge holds" title="PSR {r.get("psr")} clears the Bonferroni bar over {r.get("n_trials")} trials">holds up</span>'
+        sigb = (f'<span class="sigbadge holds" title="Probabilistic Sharpe {psr_txt} clears the bar required '
+                f'after {r.get("n_trials")} trials — survives the multiple-testing correction.">holds up</span>')
     elif sig is False:
-        sigb = f'<span class="sigbadge luck" title="PSR {r.get("psr")} below the Bonferroni bar over {r.get("n_trials")} trials — likely selection bias">likely luck</span>'
+        sigb = (f'<span class="sigbadge luck" title="Probabilistic Sharpe {psr_txt} is below the bar required '
+                f'after {r.get("n_trials")} trials — the apparent edge is probably selection bias.">likely luck</span>')
     else:
-        sigb = '<span class="sigbadge na">not assessed</span>'
+        sigb = '<span class="sigbadge na" title="too few trades to run the deflation test">not assessed</span>'
     cal = r["calmar"]
     calcell = f'<td class="num metric {"pos" if (cal or 0) > 0 else "neg"}">{cal:+.2f}</td>' if cal is not None else '<td class="num">—</td>'
     return (
@@ -302,7 +314,7 @@ def _row_html(r):
         f'{calcell}'
         f'{_edgebar(r["edge"], r["edge_w"])}'
         f'<td class="num spk">{_spark(r["series"])}</td>'
-        f'{_num(r["sharpe"], ".2f")}'
+        f'{_num(r["sharpe"], ".2f", cls="firstdiag")}'
         f'{_num(r["val_auc"], ".2f")}'
         f'<td class="num">{r["trades"] if r["trades"] is not None else "—"}</td>'
         f'<td>{sigb}</td>'
@@ -316,8 +328,8 @@ def _lb_table(rows, tid):
             '<th data-k="etf" data-t="s">ETF</th>'
             '<th data-k="calmar" data-t="n" class="num sorted-desc" title="annual return ÷ worst drawdown">Calmar</th>'
             '<th data-k="edge" data-t="n" class="num" title="Calmar minus simply buying &amp; holding">vs. buy &amp; hold</th>'
-            '<th class="num" title="Calmar across this ETF\'s tested recipes">history</th>'
-            '<th data-k="sharpe" data-t="n" class="num" title="return per unit of volatility">Sharpe</th>'
+            '<th class="num" title="best Calmar across successive rounds — green if the latest is at/above the first tested, red if below">Calmar history</th>'
+            '<th data-k="sharpe" data-t="n" class="num firstdiag" title="return per unit of volatility">Sharpe</th>'
             '<th data-k="val_auc" data-t="n" class="num" title="learnable structure — ~0.5 = none, &gt;0.6 = real signal">signal</th>'
             '<th data-k="trades" data-t="n" class="num">trades</th>'
             '<th title="does the edge hold up after correcting for how many strategies we tried?">significance</th>'
@@ -450,9 +462,9 @@ def _ledger_html_csv(rounds):
 
 
 def _scoreboard_html(sb):
-    return ('<div class="kpi"><div class="k">edges found</div><div class="v acc">' + str(sb.get("edges", 0)) + '</div></div>'
+    return ('<div class="kpi"><div class="k" title="ETFs whose best strategy beats buy-and-hold by a traded margin (before the luck-check)">beat buy &amp; hold</div><div class="v acc">' + str(sb.get("edges", 0)) + '</div></div>'
             '<div class="kpi"><div class="k">best Calmar</div><div class="v pos">' + f'{sb.get("best_calmar",0):.2f}' + '</div></div>'
-            '<div class="kpi"><div class="k">survive deflation</div><div class="v">' + f'{sb.get("n_sig",0)}/{sb.get("n_assessed",0)}' + '</div></div>'
+            '<div class="kpi"><div class="k" title="how many edges survive the multiple-testing / deflated-Sharpe correction">pass luck-check</div><div class="v">' + f'{sb.get("n_sig",0)}/{sb.get("n_assessed",0)}' + '</div></div>'
             '<div class="kpi"><div class="k">rounds</div><div class="v">' + str(sb.get("rounds", 0)) + '</div></div>')
 
 
@@ -503,10 +515,16 @@ def _intro_html(K):
         '<li><b>MaxDD (MDD)</b> = the deepest peak-to-trough loss along the way.</li>'
         '<li><b>CAGR</b> = compounded annual return. <b>Sharpe</b> = return per unit of volatility.</li>'
         '<li><b>Edge</b> = how much a strategy beats simply buying and holding the same ETF.</li>'
-        '<li><b>“Survives deflation”</b> = the result still looks real after correcting for how many strategies we '
-        'tried (a guard against luck/overfitting). A weak edge that was lucky over a short window is rejected.</li>'
+        '<li><b>“Survives deflation” / luck-check</b> = the result still looks real after correcting for how many '
+        'strategies we tried (a guard against luck/overfitting). <i>Beat buy &amp; hold</i> counts ETFs whose best '
+        'strategy clears the ETF by a traded margin; the <i>luck-check</i> tally is the subset of those that also '
+        'survive this correction.</li>'
         '<li><b>Recipe / cell</b> = the exact pipeline that produced a result: '
-        '<code>asset · bar-clock · labeling-method · sizing · threshold</code>.</li></ul></details></section>')
+        '<code>asset · bar-clock · labeling-method · sizing · threshold</code>.</li>'
+        '<li><b>Bar-clock</b> = strategies sample the market on event bars (e.g. equal dollar traded), not fixed '
+        'clock time — so each bar carries comparable information.</li>'
+        '<li><b>Entry 0.40</b> = the model only takes a position when its conviction exceeds 0.40.</li>'
+        '</ul></details></section>')
 
 
 def _champions_html(K):
@@ -517,10 +535,14 @@ def _champions_html(K):
         return f"{c:.2f}" if c is not None else "—"
     pf = K.get("portfolio") or {}
     book = pf.get(pf.get("champion", "")) or {}
-    _stale = bool(book.get("STALE_PRE_LEAK_FIX"))
-    _members = book.get("members") or ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]
+    _members = book.get("members") or ["GLD", "UUP", "TIP", "DBC", "HYG"]
+    # SOXX's edge was a bar-threshold leak (gone leak-free), so any book that still lists
+    # SOXX — and its Calmar computed on those leak-inflated champions — is stale and must
+    # be quarantined: show the leak-free members and a "pending" Calmar, not 4.15-with-SOXX.
+    _stale = bool(book.get("STALE_PRE_LEAK_FIX")) or ("SOXX" in _members)
+    if "SOXX" in _members:
+        _members = [m for m in _members if m != "SOXX"]
     _bcv = book.get("calmar")
-    # Book Calmar was computed on the LEAK-INFLATED champions; quarantine it until re-derived leak-free.
     bc = "pending" if _stale else (f"{_bcv:.2f}" if isinstance(_bcv, (int, float)) else "—")
     book_note = ('⚠ pre-leak-fix — re-deriving leak-free' if _stale
                  else '·'.join(_members) + f' · MaxDD {book.get("mdd_pct","—")}%')
@@ -593,11 +615,17 @@ def build_html():
             'Status</h2><p class="small">loading…</p></div>'
             '<div class="block scoreboard" id="scoreboard">' + _scoreboard_html(data["scoreboard"]) + '</div></section>'
             + _latest_callout(csv_rounds))
-    lb = (f'<section class="block" id="leaderboard"><h2>Leaderboard — real OOS, leak-free</h2>'
+    lb = (f'<section class="block" id="leaderboard"><h2>Leaderboard — real out-of-sample results, leak-free</h2>'
           f'<div class="tablewrap">{_leaderboard_html(rows)}</div>'
-          '<p class="small"><b>Calmar</b>=annual return ÷ worst drawdown (higher is better) · '
-          '<b>vs. buy &amp; hold</b>=Calmar minus simply holding the ETF · <b>history</b>=Calmar across this ETF\'s '
-          'tested recipes · <b>significance</b>=does the edge survive correcting for how many strategies we tried. '
+          '<p class="small"><b>Calmar</b> = annual return ÷ worst drawdown (higher is better) · '
+          '<b>vs. buy &amp; hold</b> = Calmar minus simply holding the ETF; bar length is relative to the '
+          'largest edge on the board · <b>Calmar history</b> = best Calmar across successive rounds (line '
+          'green if the latest is at/above the first tested, red if below) · '
+          '<b>signal</b> = learnable structure in the label (validation AUC): 0.50 = none, above 0.60 = real; '
+          'blank = not applicable to this recipe · '
+          '<b>significance</b> — “holds up” = the Calmar survives the deflated-Sharpe / multiple-testing '
+          'correction; “likely luck” = it does not, so the apparent edge is probably selection bias; '
+          '“not assessed” = too few trades to test. '
           'Click a header to sort.</p></section>')
     cmap = (f'<section class="block" id="map"><h2>What each asset rewards</h2>'
             '<p class="small">The hard-won lesson: <b>durable machine-learned edges are scarce.</b> Only '
@@ -628,7 +656,10 @@ def build_html():
               '<button class="fchip" data-f="discard">DISCARD</button></div>'
               f'{ledger_body}'
               '<button class="showall" id="showall">show all rounds</button></section>')
-    return (head + '<div class="dash">' + nav + _intro_html(K) + _champions_html(K) + hero + lb + cmap + story + insights + graph_sec + ledger
+    # Status-first: the live poller (Now-running / Idle + scoreboard) anchors the top,
+    # then the champions band and the cold-landing intro, then the data sections.
+    return (head + '<div class="dash">' + nav + hero + _champions_html(K) + _intro_html(K)
+            + lb + cmap + story + insights + graph_sec + ledger
             + '</div><script>' + CONSOLE_JS + '</script></body></html>')
 
 
@@ -683,9 +714,9 @@ async function poll(){
     }
     var sb=d.scoreboard||{};
     var sbel=document.getElementById('scoreboard');
-    if(sbel)sbel.innerHTML='<div class="kpi"><div class="k">edges found</div><div class="v acc">'+(sb.edges||0)+'</div></div>'+
+    if(sbel)sbel.innerHTML='<div class="kpi"><div class="k" title="ETFs whose best strategy beats buy-and-hold by a traded margin (before the luck-check)">beat buy &amp; hold</div><div class="v acc">'+(sb.edges||0)+'</div></div>'+
       '<div class="kpi"><div class="k">best Calmar</div><div class="v pos">'+(+(sb.best_calmar||0)).toFixed(2)+'</div></div>'+
-      '<div class="kpi"><div class="k">survive deflation</div><div class="v">'+(sb.n_sig||0)+'/'+(sb.n_assessed||0)+'</div></div>'+
+      '<div class="kpi"><div class="k" title="how many edges survive the multiple-testing / deflated-Sharpe correction">pass luck-check</div><div class="v">'+(sb.n_sig||0)+'/'+(sb.n_assessed||0)+'</div></div>'+
       '<div class="kpi"><div class="k">rounds</div><div class="v">'+(sb.rounds||0)+'</div></div>';
     var ve=document.getElementById('verdict'); if(ve)ve.textContent=d.verdict||'';
     var st=document.getElementById('stale'); // keep server stale text

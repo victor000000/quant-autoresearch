@@ -19,6 +19,9 @@ R = json.loads(sys.argv[1])
 OUT = os.path.join(os.path.dirname(__file__), "..", "autoresearch", "reports", f"round_{R['round']}.html")
 keep = str(R.get("verdict", "")).upper().startswith("KEEP")
 vcls = "keep" if keep else "discard"
+# Clean one-word verdict keyword for the <title>/tab (the ledger parser matches
+# KEEP/DISCARD here); the full rationale stays in the on-page verdict pill + TL;DR.
+vkey = "KEEP" if keep else "DISCARD"
 rows = R.get("rows", [])
 win = next((r for r in rows if r.get("win")), (rows[0] if rows else {}))
 
@@ -72,7 +75,7 @@ cards_html = "".join(
 
 html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Round {R['round']} — {R['etf']} ({R.get('verdict','')})</title>
+<title>Round {R['round']} — {R['etf']} · {vkey}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">

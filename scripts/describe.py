@@ -9,6 +9,7 @@ AXES = {
     "range": "equal-price-range bars", "vol": "volatility bars",
     "entropy": "entropy/surprise bars", "fracdiff": "fractional-difference (memory) bars",
     "dc": "directional-change (reversal) bars", "tick": "tick bars",
+    "volofvol": "volatility-of-volatility bars",
 }
 LAB = {
     "triple_barrier": "triple-barrier (forward σ-barrier) labels",
@@ -21,18 +22,32 @@ LAB = {
     "regime_gmm": "causal-feature GMM regime labels",
     "cusum_regime": "CUSUM change-point regime labels",
     "hmm": "HMM regime labels (baseline)", "always_long": "always-long (buy & hold)",
+    "ker": "Kaufman efficiency-ratio labels",
+    "trend_leg": "trend-segmentation (trend-leg) labels",
+    "trend_scan": "trend-scanning labels",
+    "sadf_explosive": "explosive-regime (SADF) labels",
 }
 SIZ = {
     "cdf_overlay": "long-only, vol-targeted", "cdf_plain": "long-only",
     "ls_overlay": "long/short, vol-targeted", "ls_cdf": "long/short (continuous)",
     "longshort": "long/short (binary ±1)", "binary": "binary long/flat",
-    "ramp": "ramped long",
+    "ramp": "ramped long", "dd_overlay": "drawdown-scaled sizing",
+    "always_long": "always-long (buy & hold)",
 }
+
+
+def _one_labeler(p):
+    """Map a single labeler token to plain English, translating a trailing '_meta'
+    (secondary meta-labeling decision model) into a readable suffix."""
+    meta = ""
+    if p.endswith("_meta"):
+        p, meta = p[:-len("_meta")], " (meta-labeled)"
+    return LAB.get(p, p) + meta
 
 
 def labeler_phrase(labeler):
     parts = str(labeler).split("+")
-    phrases = [LAB.get(p, p) for p in parts]
+    phrases = [_one_labeler(p) for p in parts]
     return ("ensemble of " + " + ".join(phrases)) if len(parts) > 1 else phrases[0]
 
 

@@ -107,14 +107,15 @@ def net_html(cid, nodes, edges, phases, height=620, zoom=True):
 </script>"""
 
 
-# NOTE: chips MUST set an explicit dark text color — they sit on light pastel
-# backgrounds inside a DARK report (body text is light), else they'd be invisible.
+# Chips use the dashboard's DARK-badge convention (soft dark fill + bright text +
+# hairline border) so the per-round legend matches the dark report palette instead
+# of clashing with light pastel pills. All keep >=4.5:1 text contrast on their fills.
 _CHIP = "padding:.12em .5em;border-radius:5px;font-weight:600"
 LEGEND = ('<p style="font-size:.95em;color:#aab6c8"><b style="color:#e6edf6">Legend:</b> '
-          f'<span style="background:#fff3cd;color:#5c4500;border:1px solid #e0a800;{_CHIP}">FINDING (mechanism hub)</span> '
-          f'<span style="background:#d4edda;color:#0b3d1a;border:1px solid #28a745;{_CHIP}">milestone / KEEP</span> '
-          f'<span style="background:#e2dcff;color:#2d1a5c;border:1px solid #6f42c1;{_CHIP}">decision / unlock</span> '
-          f'<span style="background:#eef1f6;color:#1b2230;border:1px solid #9aa5b1;{_CHIP}">• experiment (collapsed)</span> '
+          f'<span style="background:#241d0c;color:#f2c14e;border:1px solid #4d3f18;{_CHIP}">FINDING (mechanism hub)</span> '
+          f'<span style="background:#0f241a;color:#3fd07a;border:1px solid #1f5236;{_CHIP}">milestone / KEEP</span> '
+          f'<span style="background:#0e2a2a;color:#38e0c8;border:1px solid #1d4d49;{_CHIP}">decision / unlock</span> '
+          f'<span style="background:#0d1320;color:#aab6c8;border:1px solid #222b3a;{_CHIP}">• experiment (collapsed)</span> '
           f'<span style="border:1px dashed #ff6b6b;color:#ff6b6b;{_CHIP}">this round\'s new nodes</span>. '
           'Each new hypothesis is reasoned from a FINDING node.</p>')
 
