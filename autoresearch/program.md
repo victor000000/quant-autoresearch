@@ -311,3 +311,19 @@ session came ONLY from (a) a BETTER CORE labeler in the mechanism (trend_leg>ker
 (c) a DIFFERENT module slot (IG reducer). **PIVOT: stop building regime/trend SWAPS — the productive frontier is
 the IG-winning REDUCER slot (richer feature sets that label-relevant IG can select without crowding) or a NEW
 INPUT.** See [[new-methods-characterized]].
+
+**features=rich (VR trend-persistence + IG) DISCARD on GLD — REFUTES the IG-fixes-crowding hypothesis; high-MI ≠
+profit.** Built the `features=rich` lever (re-adds variance-ratio Lo-MacKinlay trend-persistence features behind a
+CONFIG flag for the label-relevant IG reducer to select; commit eda8108) to test the program's standing hypothesis
+"IG fixes the crowding that made VR features hurt." Clean base-vs-rich A/B, both reduce=infogain: A (base, champion)
+re-validated **EXACT 4.0218** (val_auc 0.735, 602 trades — 3rd bit-exact re-validation this run, deterministic
+crown); B (rich) **2.5498** (val_auc **0.8247 — HIGHER**, DA 8.05→**10.83 = MORE drawdown**). **DISCARD: rich 2.55
+<< base 4.02. HYPOTHESIS REFUTED** — IG does NOT rescue VR features: it SELECTS them (high mutual-info with the label
+→ higher val_auc) but they are Calmar-NEGATIVE (drawdown-increasing), so IG picking them CROWDS OUT the profitable
+trend_leg features → Calmar collapses. The issue was never just variance-crowding; the VR features are genuinely
+high-MI-but-UNPROFITABLE. **THIRD high-val_auc/LOW-Calmar "predictable-not-profitable" negative this run**
+(jump_model, sliced_wasserstein, now rich-VR): label-RELEVANCE (MI/AUC, what IG optimizes) ≠ profit-RELEVANCE
+(Calmar). GLD is FEATURE-OPTIMAL with the 80-feature base set EVEN under IG. The build is a permanent lever and
+FIXED a latent driver cell-key bug (parallel-path key now appends _fr to match _PSUF; verified base reproduced
+4.0218 + rich got a distinct 2.55, so base/rich legs read distinct cells). Next: test the lever where the trend
+edge has HEADROOM (IWM 0.665) not the saturated GLD. See [[new-methods-characterized]].
