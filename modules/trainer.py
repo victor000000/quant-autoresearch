@@ -117,7 +117,7 @@ def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20, y
             method = "correlation"                   # degrade gracefully to the linear path
     kept = np.ones(F, dtype=bool)
     if method == "variance": kept &= variances > 0.01
-    elif method in ("correlation", "infogain"):
+    elif method in ("correlation", "infogain", "mrmr"):
         kept &= variances > 1e-6; kept_idx = np.where(kept)[0]
         if len(kept_idx) > 1:
             corr = np.abs(np.corrcoef(X_train[:, kept_idx].T))
@@ -138,6 +138,33 @@ def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20, y
             yt = np.asarray(y_train).astype(int)
             mi = mutual_info_classif(X_train[:, kept_idx], yt, random_state=42)
             top_k = kept_idx[np.argsort(mi)[-n_components:]]
+            kept = np.zeros(F, dtype=bool); kept[top_k] = True; kept_idx = np.where(kept)[0]
+        except Exception:
+            pass
+    # mRMR (min-Redundancy-Max-Relevance, Peng 2005): IG keeps the n_components most
+    # label-relevant features but ignores that they may be redundant with each other; mRMR
+    # greedily picks each next feature by relevance(MI w/ TRAIN label) MINUS redundancy
+    # (mean |corr| with already-picked). TRAIN-only -> kept_idx frozen for val/test (same
+    # leak-safe contract). A principled upgrade over infogain on structured names.
+    if method == "mrmr" and y_train is not None and len(kept_idx) > n_components:
+        try:
+            from sklearn.feature_selection import mutual_info_classif
+            yt = np.asarray(y_train).astype(int)
+            rel = mutual_info_classif(X_train[:, kept_idx], yt, random_state=42)  # relevance (TRAIN)
+            C = np.abs(np.corrcoef(X_train[:, kept_idx].T))                        # redundancy (TRAIN)
+            C = np.atleast_2d(C)
+            sel, cand = [], list(range(len(kept_idx)))                            # positions within kept_idx
+            while len(sel) < n_components and cand:
+                if not sel:
+                    p = int(cand[int(np.argmax(rel[cand]))])
+                else:
+                    best_sc, p = -1e18, cand[0]
+                    for f in cand:
+                        sc = float(rel[f]) - float(np.mean([C[f, s] for s in sel]))
+                        if sc > best_sc:
+                            best_sc, p = sc, f
+                sel.append(p); cand.remove(p)
+            top_k = kept_idx[np.array(sel, dtype=int)]
             kept = np.zeros(F, dtype=bool); kept[top_k] = True; kept_idx = np.where(kept)[0]
         except Exception:
             pass

@@ -466,8 +466,8 @@ def _validate_cfg(cfg):
     if not (5 <= cfg["n_components"] <= 60):
         raise ValueError(f"n_components {cfg['n_components']} must be in [5,60]")
     cfg["reduce"] = str(cfg.get("reduce", "correlation"))            # Wang ④ dim-reduce lever (default correlation)
-    if cfg["reduce"] not in ("correlation", "infogain", "variance", "autoencoder"):
-        raise ValueError(f"reduce {cfg['reduce']!r} must be correlation|infogain|variance|autoencoder")
+    if cfg["reduce"] not in ("correlation", "infogain", "variance", "autoencoder", "mrmr"):
+        raise ValueError(f"reduce {cfg['reduce']!r} must be correlation|infogain|variance|autoencoder|mrmr")
     cfg["rebal_band"] = float(cfg.get("rebal_band", 0.01))           # optional net-of-cost dead-band lever (default 0.01)
     if not (0.0 <= cfg["rebal_band"] <= 0.20):
         raise ValueError(f"rebal_band {cfg['rebal_band']} must be in [0.0,0.20]")
