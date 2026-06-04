@@ -194,7 +194,10 @@ class AutoresearchPipeline(QCAlgorithm):
         # the calibrator/model fit (would bleed test info). Drop them from the FIT
         # sets only; the model is train-fit and TRAIN labels can't reach test (val
         # is years wide >> H), so only the val->test boundary needs the embargo.
-        _EMBARGO = 200
+        # LEAK FIX (2026-06-04 leak-hunt): the embargo MUST cover the full forward-label
+        # horizon, else a CONFIG['horizons'] override > 200 bars bleeds test labels into the
+        # cal.fit/eval_set. Built-in labeler horizons max at 200; this is horizon-aware.
+        _EMBARGO = max(200, int(max(CONFIG.get("horizons") or [0])))
         _allidx = np.arange(len(y))
         _tepos = np.where(te_m)[0]
         emb = (_allidx < (_tepos[0] - _EMBARGO)) if len(_tepos) else np.ones(len(y), dtype=bool)
@@ -455,14 +458,21 @@ class AutoresearchPipeline(QCAlgorithm):
             try:
                 spy_close = np.array(self.spy_cll)
                 spy_vol = np.ones_like(spy_close)
-                spy_lc, spy_lr, _, _ = build_bars(
+                spy_lc, spy_lr, _, spy_bts = build_bars(
                     spy_close, spy_vol, ts_arr, bar_type=axis, target_bars=TARGET_BARS)
-                spy_lc = spy_lc[:N]
-                spy_lr = spy_lr[:N]
-                if len(spy_lc) < N:
-                    spy_lc = np.pad(spy_lc, (0, N - len(spy_lc)), 'edge')
-                if len(spy_lr) < N:
-                    spy_lr = np.pad(spy_lr, (0, N - len(spy_lr)), 'edge')
+                # LEAK FIX (2026-06-04 leak-hunt): align the secondary series to the primary's bar
+                # boundaries by TIME, not index. Positional spy_lc[:N] paired primary bar i with
+                # secondary bar i, which (different bar cadence) can be a FUTURE minute = look-ahead leak.
+                # As-of join: each primary bar uses the LAST secondary bar with close-time <= it.
+                _pbts = np.array([np.datetime64(str(t)) for t in bar_ts])
+                _sbts = np.array([np.datetime64(str(t)) for t in spy_bts])
+                if len(_sbts) > 0:
+                    _aidx = np.clip(np.searchsorted(_sbts, _pbts, side="right") - 1, 0, len(spy_lc) - 1)
+                    spy_lc = np.asarray(spy_lc)[_aidx]
+                    spy_lr = np.asarray(spy_lr)[_aidx]
+                else:
+                    spy_lc = None
+                    spy_lr = None
             except Exception:
                 spy_lc = None
                 spy_lr = None
