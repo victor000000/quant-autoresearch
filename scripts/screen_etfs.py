@@ -58,26 +58,30 @@ def main():
     for r in todo:
         tk = r["Ticker"].strip()
         ac = r.get("Asset_Class", "?")
-        # class-aware methodology: currencies fit the REGIME recipe (UUP: imbalance+bgm+ker);
-        # everything else gets the TREND recipe (GLD: logdollar+trend_leg+regime_gmm). leg B is
-        # always_long = buy-hold either way, so every ETF still gets its baseline.
-        if ac == "Currency":
-            method = json.dumps({"ticker": tk, "axis": "imbalance", "labeler": "bgm+ker",
-                                "thresh": 0.50, "sizing": "cdf_overlay"})
-        else:
-            method = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "trend_leg+regime_gmm",
-                                "thresh": 0.40, "sizing": "dd_overlay", "reduce": "infogain",
-                                "n_components": 15, "rebal_band": 0.03})
+        # METHOD PANEL — test our distinct proven mechanisms (not just one), so FIT = ANY of our
+        # methods beats buy-hold. 3 methods + buy-hold over 2 driver calls (2 QC nodes each):
+        #   trend  = GLD champion : logdollar + trend_leg+regime_gmm (+IG, dd_overlay)  [segmentation trend]
+        #   regime = UUP champion : imbalance + bgm+ker (cdf_overlay)                    [distributional regime]
+        #   ker    = logdollar + ker (dd_overlay)                                        [efficiency-ratio trend]
+        #   buyhold= logdollar + always_long (cdf_overlay)                               [baseline for every ETF]
+        trend = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "trend_leg+regime_gmm",
+                            "thresh": 0.40, "sizing": "dd_overlay", "reduce": "infogain",
+                            "n_components": 15, "rebal_band": 0.03})
+        regime = json.dumps({"ticker": tk, "axis": "imbalance", "labeler": "bgm+ker",
+                            "thresh": 0.50, "sizing": "cdf_overlay"})
+        ker = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "ker",
+                         "thresh": 0.45, "sizing": "dd_overlay"})
         buyhold = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "always_long",
                              "thresh": 0.50, "sizing": "cdf_overlay"})
         log.write(f"SCREEN {tk} ({ac})\n")
         log.flush()
-        try:
-            subprocess.run(["python3", DRIVER, method, buyhold], cwd=HERE, timeout=1000,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception as e:
-            log.write(f"ERR {tk}: {e}\n")
-            log.flush()
+        for pair in ([trend, regime], [ker, buyhold]):
+            try:
+                subprocess.run(["python3", DRIVER] + pair, cwd=HERE, timeout=1000,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception as e:
+                log.write(f"ERR {tk}: {e}\n")
+                log.flush()
         log.write(f"DONE {tk}\n")
         log.flush()
     log.write("SCREEN COMPLETE\n")

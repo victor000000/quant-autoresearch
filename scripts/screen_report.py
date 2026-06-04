@@ -36,7 +36,8 @@ for r in rows[1:]:
         if tk not in bh or ts > bh[tk][1]:
             bh[tk] = (cal, ts)
     else:
-        if tk not in meth or ts > meth[tk][4]:
+        # method panel: keep the BEST (max Calmar) method per ETF — FIT = ANY of our methods beats B&H
+        if tk not in meth or cal > meth[tk][0]:
             meth[tk] = (cal, va, tr, lab, ts)
 
 out = []
@@ -46,7 +47,7 @@ for tk in done:
     mc, va, tr, lab, _ = meth[tk]
     bc = bh[tk][0]
     edge = mc - bc
-    rec = "regime" if "bgm" in lab else "trend"
+    rec = "regime" if "bgm" in lab else ("ker" if lab.startswith("ker") else "trend")
     # ARTIFACT guard: Calmar = CAGR/MaxDD blows up for cash-like / near-flat assets (T-bills, ultra-short
     # duration) whose MaxDD ~ 0 -> a "Calmar 30" is a division artifact, not a tradeable edge. No real ETF
     # edge exceeds ~4 (GLD). Flag implausibly high Calmar OR a flat buy-hold (cash) with a big "edge".
