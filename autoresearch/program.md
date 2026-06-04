@@ -396,3 +396,19 @@ feature-set, downside-aligned-core). Each further probe RAISES the deflation bar
 explicit anti-manufacturing warning. AUTONOMOUS DECISION (not stalling): HOLD — stop manufacturing method probes on
 static data; the deployable book (GLD 4.02 / UUP / IWM / diversifiers, cost-robust) is the finished answer. Re-open
 ONLY on a NEW INPUT (data modality / mechanism-class universe / pairs / intraday). See [[frontier-converged-terminus]].
+
+**VIXY vol-carry probe (NEW MECHANISM CLASS, autonomously reachable) DISCARD — reachable + genuinely different, but
+NOT crackable by our methods.** Corrected a wrong "all re-openers need the user" claim: the FRONTIER's "new
+mechanism-class universe" re-opener IS reachable autonomously (vol ETFs are on QC → add to CORE_7). Probed VIXY (VIX
+short-term futures, structural roll-decay CARRY = a genuinely different edge than trend/regime drift), short-capable
+(ls_overlay): A (bgm+ker) Calmar **0.0383, DA 71.5**, val_auc 0.556; B (trend_leg) 0.0368, DA 45, val_auc 0.534.
+DISCARD (Calmar ~0, Bonferroni-fail). DIAGNOSIS: the carry is REAL but the SHORT-vol crash risk (vol spikes) →
+ENORMOUS drawdowns (DA 71) → Calmar collapses to ~0 (the classic short-vol fat-left-tail, correctly rejected by the
+drawdown-aware Calmar objective). The BINDING constraint is **weak vol-timing skill (val_auc 0.53)** — our
+price/volume trend/regime methods barely predict vol, which is SHOCK-DRIVEN/exogenous (predicted by EXTERNAL info:
+VIX term structure, options flow — not the asset's own price/volume). So the vol class is REACHABLE + structurally
+novel but uncrackable WITHOUT external data. The other "new-mechanism" re-openers are pair-based (rate-curve/FX
+spreads → violate single-ticker) or single-asset drifters (FXY already val_auc 0.50). **CONCLUSION: the
+autonomously-reachable new directions are now ALSO exhausted; the remaining re-openers (cross-asset PAIRS, EXTERNAL
+alt-DATA) genuinely REQUIRE the user.** 10 experiments this run, 0 wins; the deployable book stands. See
+[[frontier-converged-terminus]].
