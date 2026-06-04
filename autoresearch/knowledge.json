@@ -3900,6 +3900,12 @@
         "type": "round",
         "phase": "VIXY",
         "label": "R345 VIXY DISCARD: Sample on log-dollar bars; ensemble of sadf_explosive + ker; size long-only, vol-targeted, entry 0.45. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r346",
+        "type": "round",
+        "phase": "VIXY",
+        "label": "R346 VIXY DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + ker; size long/short, vol-targeted, entry 0.50. -> Calmar +0.0677 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6551,6 +6557,11 @@
       {
         "src": "r344",
         "dst": "r345",
+        "label": "no improvement"
+      },
+      {
+        "src": "r345",
+        "dst": "r346",
         "label": "no improvement"
       }
     ],

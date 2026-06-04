@@ -426,3 +426,21 @@ structure, options flow, macro calendar). 11 experiments this run, 0 wins. **The
 direction is now DEFINITIVELY closed** — every remaining re-opener (external alt-DATA, cross-asset PAIRS) is
 confirmed to REQUIRE the user. The deployable book (GLD 4.02 / UUP / IWM / diversifiers, ~4.0 daily Calmar,
 robustness-complete, DEPLOYMENT.md finalized) is the finished answer. See [[frontier-converged-terminus]].
+
+**VIXY TERM-STRUCTURE attack (features=termstruct) DISCARD — vol class CONCLUSIVELY CLOSED: carry is real but
+Calmar-INCOMPATIBLE (crash tail), not a signal problem.** Corrected the "vol needs the user's external data" claim:
+the exogenous predictor (VIX term structure) is VIXY's OWN underlying (VIXM = mid-term sister), reachable on QC +
+single-ticker-compliant (cross-asset FEATURES via the existing spy_lc hook, NOT a traded pair). Built `features=
+termstruct` (per-ticker CROSS_ASSET VIXY→VIXM; offset-invariant log-ratio z-score/change features; reduce=infogain
+for crowding; threaded + verified like features=rich, _ts cell). A (termstruct+IG) Calmar −0.139/DA 97.6/val_auc
+0.611; B (base+IG control) 0.068/DA 55.4/val_auc 0.616. **A≠B (VIXM loaded, features LIVE — build works) but term
+structure did NOT help** (A val_auc ≈ B, A Calmar WORSE — approximate re-barred-VIXM alignment adds noise + contango
+already encoded in VIXY's own price decay). DECISIVE: **IG lifted vol-timing val_auc 0.556→0.61 (real modest skill)
+yet Calmar stays ~0 with DA 55–97** — the binding constraint is the short-vol CRASH TAIL, not signal: imperfect
+timing (val_auc 0.61) still gets caught in spikes → catastrophic drawdowns the Calmar objective correctly rejects.
+**Vol now attacked from EVERY angle** (short-carry crash-dominated; long-timing val_auc<0.5; mechanism-matched sadf;
+exogenous term-structure+IG) → the carry is REAL (positive expectancy) but fundamentally Calmar-INCOMPATIBLE
+(fat-left-tail). The `features=termstruct` cross-asset-feature capability is PERMANENT (could suit a genuinely
+term-structure-driven name later). **12 experiments this run, 0 wins. The autonomously-reachable frontier is now
+GENUINELY exhausted** — every remaining re-opener (PROPRIETARY alt-data: options order-flow/ETF flows; or cross-asset
+PAIRS) requires the user. The deployable book stands. See [[frontier-converged-terminus]].
