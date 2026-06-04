@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""UNIVERSE SCREEN (user directive 2026-06-04: "explore the 311 ETFs, find which fit my methodology").
+"""UNIVERSE SCREEN (user 2026-06-04: "explore the 311 ETFs, find which fit; do NOT forget buy-and-hold").
 
-For each untested QC-confirmed ETF, race the two CHAMPION methodologies head-to-head via the normal
-driver (leak-safe, gated, logged): the GLD TREND recipe (logdollar + trend_leg+regime_gmm + dd_overlay
-+ IG) vs the UUP REGIME recipe (imbalance + bgm+ker + cdf_overlay). The driver logs each leg's val_auc
-+ real OOS Calmar to results/round_results.csv; classify FIT (val_auc>0.55 AND deployable edge that
-beats the ticker's buy-hold) vs NO-FIT (buy-hold drifter / no structure) from that.
+For each untested QC-confirmed ETF, race the GLD TREND methodology against ALWAYS_LONG (buy-and-hold) via
+the normal leak-safe driver, so EVERY ETF gets its buy-hold baseline. FIT = the methodology's real OOS
+Calmar BEATS buy-and-hold AND val_auc>0.55 AND deployable (>80 trades). A high Calmar that only matches
+buy-hold is NO-FIT (gold rallied -> a 2.8 trend Calmar means nothing if buy-hold is 3.0).
 
-Prioritises the high-fit asset classes first (Commodity/Currency like GLD/UUP, then Fixed Income / Real
-Estate / Leveraged), then the broad-equity names (mostly expected NO-FIT). ONE driver call at a time
-(single coordinator — no main.py collision). Resumable (skips tickers already marked DONE).
+  leg A = TREND   : logdollar + trend_leg+regime_gmm + dd_overlay + IG   (the GLD champion recipe)
+  leg B = BUYHOLD : logdollar + always_long + cdf_overlay                 (vol-targeted hold = the book's
+                                                                           buy-hold baseline convention)
 
-Run in background:  nohup python3 scripts/screen_etfs.py > /tmp/arlogs/screen.log 2>&1 &
+Prioritises high-fit asset classes first (Commodity/Currency, then Fixed Income/REIT/Leveraged, then broad
+equity). ONE driver call at a time (single coordinator). Resumable (skips DONE). The REGIME champion recipe
+(imbalance+bgm+ker, which fit GDX) is a documented PASS-2 re-screen of the trend-no-fits.
+
+Run:  nohup python3 scripts/screen_etfs.py > /tmp/arlogs/screen.log 2>&1 &
 """
 import sys, os, csv, json, subprocess
 
@@ -50,7 +53,7 @@ def main():
             and r.get("Asset_Class", "") in PRIORITY]
     todo.sort(key=lambda r: (PRIORITY[r["Asset_Class"]], _aum_rank(r)))
     log = open(PROG, "a")
-    log.write(f"START screen: {len(todo)} ETFs todo ({len(done)} already done)\n")
+    log.write(f"START screen (trend-vs-buyhold): {len(todo)} ETFs todo ({len(done)} already done)\n")
     log.flush()
     for r in todo:
         tk = r["Ticker"].strip()
@@ -58,12 +61,12 @@ def main():
         trend = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "trend_leg+regime_gmm",
                             "thresh": 0.40, "sizing": "dd_overlay", "reduce": "infogain",
                             "n_components": 15, "rebal_band": 0.03})
-        regime = json.dumps({"ticker": tk, "axis": "imbalance", "labeler": "bgm+ker",
+        buyhold = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "always_long",
                              "thresh": 0.50, "sizing": "cdf_overlay"})
         log.write(f"SCREEN {tk} ({ac})\n")
         log.flush()
         try:
-            subprocess.run(["python3", DRIVER, trend, regime], cwd=HERE, timeout=1000,
+            subprocess.run(["python3", DRIVER, trend, buyhold], cwd=HERE, timeout=1000,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as e:
             log.write(f"ERR {tk}: {e}\n")
