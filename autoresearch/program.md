@@ -256,3 +256,17 @@ genuinely LEAK-DEAD, not recoverable by a better method.** Re-proven lesson: IG/
 where val_auc>0.6 (GLD 0.735→4.02) but CANNOT create one where the model is at chance (SOXX 0.48). The IG frontier
 is NARROW — crowns GLD-trend, helps IWM (provisional), fails on every drifter (DBC/KRE/XME) + leak-dead SOXX.
 See [[infogain-lever-validated]], [[material-logdollar-leak]].
+
+**GLD WANG TREND-STRENGTH ENSEMBLE = DILUTES (2026-06-04) — Wang's #1 unexploited lever, now tested on a STRUCTURED
+name + champion bit-exact re-validated.** Wang's flagship regime-adaptive multi-horizon trend ladder
+(`tleg_fast+tleg_mid+tleg_slow` @ H=20/60/150, "+"-path averages a model per strength) + regime_gmm + IG, clean A/B
+vs the champion (only the trend component differs). A (ladder+regime_gmm): **3.6565**, val_auc **0.620** — REAL
+structure (well above chance, the ladder genuinely learns); B (champion `trend_leg+regime_gmm`+IG): **re-validated
+EXACT 4.0218** (val_auc 0.7348, 602 trades, identical to the crown → deterministic, the "validate decay" staleness
+check PASSES by exact reproduction). **DISCARD: A 3.66 < champion 4.02.** Distinct from SOXX (val_auc 0.48 = no
+structure): here the ladder DOES learn (0.62), it's just WEAKER than one sharp trend_leg. CONFIRMS "added trend
+labels DILUTE GLD" extends even to Wang's flagship trick: multi-horizon AVERAGING smooths the sharp single-horizon
+trend_leg signal GLD's edge relies on — gold wants ONE focused trend label + regime, not a strength ladder (Wang's
+ladder suits his Chinese-commodity stronger trend-persistence, not US gold). **The #1 Wang lever is now CLOSED on
+the structured name.** Meta-pattern re-confirmed: on GLD-trend a BETTER single trend labeler wins (trend_leg>ker),
+but MORE trend labels (ensemble/ladder/3rd-label) always dilute. See [[wang-investigation]].
