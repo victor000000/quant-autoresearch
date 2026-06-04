@@ -497,12 +497,13 @@ class AutoresearchPipeline(QCAlgorithm):
             except Exception:
                 pass
 
+            _rich = (CONFIG.get("features") == "rich")
             try:
-                feats = build_feats(lc, lr, spy_lc, spy_lr)
+                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich)
             except NameError:
                 continue
             except TypeError:
-                feats = build_feats(lc, lr)
+                feats = build_feats(lc, lr, rich=_rich)
             fv = ~np.isnan(feats).any(axis=1)
             _hz = CONFIG.get("horizons")     # intraday-holding override (in BARS); None => labeler defaults
             if _hz:

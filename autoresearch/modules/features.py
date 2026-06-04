@@ -33,14 +33,19 @@ def sample_entropy(x, m=2, r_factor=0.2, max_comp=40):
     return -math.log((A / tA) / (B / tB)) if tA > 0 and tB > 0 else 0.0
 
 
-def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0):
+def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False):
     """Build feature matrix from log-close and log-return arrays.
 
     Args:
         lc, lr: ETF log-close and log-return arrays
         spy_lc, spy_lr: optional SPY arrays (reserved for future cross-asset features)
+        rich: if True, APPEND variance-ratio trend-persistence features (Lo-MacKinlay). These
+            HURT under the correlation filter (label-agnostic crowding, GLD 3.20->2.60) but are
+            label-relevant trend-persistence signal that the INFORMATION-GAIN reducer can select
+            WITHOUT crowding (reduce=infogain picks top-K by MI). Tests the program hypothesis
+            "IG fixes the crowding that made VR features hurt." Causal (rolling, past-only).
 
-    Returns: np.array of shape (N, F) with float32 dtype. F = 80.
+    Returns: np.array of shape (N, F) with float32 dtype. F = 80 (base), or 88 with rich=True.
     NOTE: Cross-asset features temporarily disabled — they crowded out ETF-specific
     features in correlation filter, reducing trades from 521→1 (QQQ) and 77→1 (EEM).
     """
@@ -132,5 +137,20 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0):
     # NOTE: SPY-relative cross-asset features were tested (round 34) and REGRESSED
     # TLT (0.7679 -> 0.677); a real cross-asset edge needs a 2-symbol PAIRS strategy,
     # not SPY features in a single-asset model. Reverted; left disabled. See f_crossasset.
+
+    # RICH feature set (opt-in, reduce=infogain only): variance-ratio trend-persistence (Lo-MacKinlay
+    # 1988). VR(k) = Var(k-bar logret)/(k*Var(1-bar logret)); VR>1 = persistent/trending, VR<1 =
+    # mean-reverting. Tested under the corr-filter where they HURT (crowding); re-enabled here for the
+    # label-relevant IG reducer to select. 8 features (2 base windows x 4 horizons). Causal rolling.
+    if rich:
+        s1 = pd.Series(lr)
+        for W in [200, 400]:
+            var_1 = s1.rolling(W, min_periods=W).var()
+            for k in [5, 10, 20, 40]:
+                kret = np.full(N, np.nan)
+                kret[k:] = lc[k:] - lc[:-k]
+                var_k = pd.Series(kret).rolling(W, min_periods=W).var()
+                vr = var_k / (k * var_1 + 1e-12)
+                feats.append((vr - 1.0).astype(np.float32).to_numpy())
 
     return np.column_stack(feats).astype(np.float32)
