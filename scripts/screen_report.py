@@ -34,7 +34,7 @@ for r in rows[1:]:
         continue
     if lab.startswith("always_long"):
         if tk not in bh or ts > bh[tk][1]:
-            bh[tk] = (cal, ts)
+            bh[tk] = (cal, ts, tr)   # also track trades — a 0-trade buy-hold = degenerate baseline
     else:
         # method panel: keep the BEST (max Calmar) method per ETF — FIT = ANY of our methods beats B&H
         if tk not in meth or cal > meth[tk][0]:
@@ -46,17 +46,17 @@ for tk in done:
         continue
     mc, va, tr, lab, _ = meth[tk]
     bc = bh[tk][0]
+    bh_tr = bh[tk][2] if len(bh[tk]) > 2 else 999
     edge = mc - bc
     rec = ("regime" if "bgm" in lab else "changept" if "changepoint" in lab else "sadf" if "sadf" in lab
            else "ker" if lab.startswith("ker") else "trend")
-    # ARTIFACT guard: Calmar = CAGR/MaxDD blows up for cash-like / near-flat assets (T-bills, ultra-short
-    # duration) whose MaxDD ~ 0 -> a "Calmar 30" is a division artifact, not a tradeable edge. No real ETF
-    # edge exceeds ~4 (GLD). Flag implausibly high Calmar OR a flat buy-hold (cash) with a big "edge".
-    # cash/flat assets: buy-hold Calmar ~0 means near-zero MaxDD (the calmar calc clamps |mdd|<0.01 to 0),
-    # i.e. an ultra-short-Treasury / T-bill cash instrument. ANY positive method Calmar there is a
-    # near-zero-MaxDD division artifact on negligible absolute return -> NOT a real edge.
-    artifact = (mc >= 8.0) or (abs(bc) < 0.05 and mc > 0.5)
-    if artifact:
+    # ARTIFACT guard: Calmar = CAGR/MaxDD blows up for cash-like assets (T-bills/ultra-short) whose MaxDD~0
+    # -> a "Calmar 30" is a division artifact (no real ETF edge exceeds ~4, GLD). A flat buy-hold (|bc|<0.05)
+    # WITH a deployable hold = cash; but a flat buy-hold with a 0-TRADE hold = a DEGENERATE/failed baseline
+    # (leveraged-ETF data quirks, e.g. QLD), which we cannot compare against -> NO-BASELINE, not a fit/artifact.
+    if bh_tr < 80:
+        verdict = "NO-BASELINE"
+    elif (mc >= 8.0) or (abs(bc) < 0.05 and mc > 0.5):
         verdict = "ARTIFACT(cash)"
     elif mc > bc and va == va and va > 0.55 and tr > 80:
         verdict = "STRONG" if (mc > 1.0 and edge > 0.3) else "marginal"
@@ -77,6 +77,7 @@ strong = [d for d in out if d["verdict"] == "STRONG"]
 marg = [d for d in out if d["verdict"] == "marginal"]
 nofit = [d for d in out if d["verdict"] == "NO-FIT"]
 artifact = [d for d in out if d["verdict"] == "ARTIFACT(cash)"]
+nobase = [d for d in out if d["verdict"] == "NO-BASELINE"]
 from collections import Counter
 print(f"=== {len(done)} screened, {len(out)} classified -> {OUT} ===")
 print("STRONG FITS (methodology beats buy-hold, deployable, plausible Calmar):")
@@ -86,4 +87,6 @@ for d in strong:
 print(f"marginal: {[d['ticker'] for d in marg]}")
 if artifact:
     print(f"ARTIFACTS (cash-like, Calmar inflated by ~0 MaxDD — NOT real edges): {[(d['ticker'], d['method_calmar']) for d in artifact]}")
-print(f">>> {len(strong)} STRONG, {len(marg)} marginal, {len(artifact)} artifact, {len(nofit)} no-fit | classes: {dict(Counter(d['asset_class'][:8] for d in out))}")
+if nobase:
+    print(f"NO-BASELINE (buy-hold leg degenerate/0-trade — can't compare; mostly leveraged ETFs): {[d['ticker'] for d in nobase]}")
+print(f">>> {len(strong)} STRONG, {len(marg)} marginal, {len(artifact)} artifact, {len(nobase)} no-baseline, {len(nofit)} no-fit | classes: {dict(Counter(d['asset_class'][:8] for d in out))}")
