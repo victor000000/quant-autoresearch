@@ -298,3 +298,16 @@ the regime readout space is SATURATED for UUP. (Mirror of SOXX's high-Calmar/low
 low-Calmar/high-val_auc predictable-unprofitable — the two opposite ways the val_auc+Calmar gates jointly catch a
 non-edge.) Build is a permanent leak-safe capability. Next: test on GLD (tail-awareness most relevant to gold's
 drawdowns/Calmar denominator). See [[new-methods-characterized]].
+
+**sliced_wasserstein DISCARD on GLD too → FULLY CHARACTERIZED (regime space SATURATED on both edges).** Tested the
+OT regime on gold (tail-awareness targets gold's drawdowns/Calmar). A (swap `trend_leg+sliced_wasserstein`):
+**3.34** (val_auc 0.63) — `regime_gmm` BEATS the OT regime as GLD's regime component. B (add 3rd
+`trend_leg+regime_gmm+sliced_wasserstein`): **3.82** (val_auc 0.73) — DILUTES the 2-way champion (4.02), confirming
+"3rd label dilutes GLD" extends to tail-aware regimes. Both DISCARD. So **sliced_wasserstein loses on BOTH edges**
+(regime_gmm>it on GLD, bgm>it on UUP) = a valid/leak-safe/highly-learnable but NON-IMPROVING regime detector,
+exactly like jump_model. **DECISIVE META-PATTERN (now proven across jump_model + sliced_wasserstein):** swapping the
+regime mechanism's IMPLEMENTATION always loses to the incumbent (bgm/regime_gmm); a 3rd label dilutes. Wins this
+session came ONLY from (a) a BETTER CORE labeler in the mechanism (trend_leg>ker), (b) an ORTHOGONAL ADD (sadf), or
+(c) a DIFFERENT module slot (IG reducer). **PIVOT: stop building regime/trend SWAPS — the productive frontier is
+the IG-winning REDUCER slot (richer feature sets that label-relevant IG can select without crowding) or a NEW
+INPUT.** See [[new-methods-characterized]].

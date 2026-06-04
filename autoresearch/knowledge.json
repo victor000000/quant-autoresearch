@@ -3864,6 +3864,12 @@
         "type": "round",
         "phase": "UUP",
         "label": "R339 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + sliced_wasserstein; size long-only, vol-targeted, entry 0.50. -> Calmar +0.9606 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r340",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R340 GLD DISCARD: Sample on log-dollar bars; ensemble of trend_leg + causal-feature GMM regime labels + sliced_wasserstein; size dd_overlay, entry 0.40. -> Calmar +3.8162 (prev best +4.0218). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6485,6 +6491,11 @@
       {
         "src": "r338",
         "dst": "r339",
+        "label": "no improvement"
+      },
+      {
+        "src": "r339",
+        "dst": "r340",
         "label": "no improvement"
       }
     ],
