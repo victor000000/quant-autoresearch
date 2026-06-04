@@ -5,9 +5,11 @@ Single-ticker ETF ML on QuantConnect (project 31338454), Wang's pipeline. Each r
 ## The loop, rules & backtest contract
 
 **Core rules**
+- **ALWAYS attack the WEAKEST ETF each round** (lowest real OOS Calmar) — never drift to the strong/structured names (GLD/UUP). Don't be lazy: co-design the WHOLE config for that ticker, don't just swap one knob.
 - **Single-ticker only.** No cross-ticker ensembling. Simple > complex.
-- **The edge lives in the first two modules** — a new **bar axis** (how you sample the clock) or a new **unsupervised label** (what you call "up"). Every confirmed edge came from one (ker, trend_leg, imbalance axis). Reach for a new bar/label before a new feature/reduce/sizer.
-- **Do not stop exploring** — but on static data, don't manufacture experiments (each trial raises every co-tested name's deflation bar for ~0 EV).
+- **Priority modules = custom bar AXIS + unsupervised LABEL** — every confirmed edge came from one (ker, trend_leg, imbalance axis); reach there first. **But ALSO explore the other modules** (features, reduce, sizer) — a win can come from any slot (IG reducer lifted GLD 3.47→4.02).
+- **Never stop exploring** new axes/labels — literature-mined methods still win after "exhausted" calls (trend_leg, sadf, IG). On static data, though, don't grind deflation-dead names with config permutations (raises every co-tested name's bar for ~0 EV).
+- **Leak-safe is non-negotiable** — bar thresholds TRAIN-only + OOS-invariant; run `tests/test_bar_threshold_leak.py` after any `bar_builder.py` change; verify every new method EMPIRICALLY (append-OOS-invariance), not just by code-audit (audits miss leaks).
 - **Autonomous:** decide + run the next experiment; do not ask.
 
 **The loop**
@@ -148,7 +150,7 @@ Three module slots carry the search: **bar axis** (how you clock the price path)
 
 | lever | values (default) | suffix | verdict |
 |---|---|---|---|
-| `reduce` ★ | `correlation` (def) · `infogain` · `variance` · `autoencoder` | `_ig` | **infogain VALIDATED** — top-K by mutual-info w/ TRAIN label vs corr's variance. Lifts single trend-shape labels: TLT corr −0.10→+0.49, IWM win +0.665, **GLD 3.47→4.02 (+16%, crowned)**. NOT pure-regime ensembles (UUP no help) / val_auc≈0.5 names (SOXX). Leak-safe (MI TRAIN-only, frozen kept_idx, online-proven preds_match=1). |
+| `reduce` ★ | `correlation` (def) · `infogain` · `variance` · `autoencoder` | `_ig` | **infogain VALIDATED** — top-K by mutual-info w/ TRAIN label vs corr's variance. Lifts single trend-shape labels: TLT corr −0.10→+0.49, IWM win +0.665, **GLD 3.47→4.02 (+16%, crowned)**. NOT pure-regime ensembles (UUP no help) / val_auc≈0.5 names (SOXX). Leak-safe (MI TRAIN-only, frozen kept_idx, online-proven preds_match=1). `autoencoder` = plain sklearn-MLP bottleneck (NOT a VAE — torch unavailable in QC), LOST to corr+IG (TLT AE −0.01 < IG +0.49) → dormant. |
 | `rebal_band` ★ | float (`0.01`) | `_b` | **GLD `0.03` CROWNED** (4.55→4.71 gross + net-of-cost). Benefit scales with trade freq: GLD(high) gross+net win, SOXX(mid ~0.02) net-only, UUP(low) negligible. Default 0.01 over-trades cost-sensitive crowns. |
 | `n_components` | int (`20`) | `_n` | reducer width. GLD `15` was a real step in the arc; not universal. |
 | `features` | `base` (def) · `rich` · `termstruct` · `fx` | `_fr`/`_ts`/`_fx` | LOSES everywhere. `rich` (VR Lo-MacKinlay trend-persistence) DISCARD on GLD+IWM (high-MI ≠ profit). `termstruct` = cross-asset log-ratio z-score (`CROSS_ASSET`: VIXY→VIXM vol-curve, HYG→LQD credit-spread) — VIXY DISCARD, HYG degenerate. Capabilities permanent, no edge in reachable universe. |
@@ -187,14 +189,21 @@ The single-ticker × fixed-universe space is COMPREHENSIVELY explored across met
 3. **Intraday holding** — `CONFIG['horizons']` lever built; minute bars but ~daily holding probed (no intraday edge: GLD/QQQ/IWM all fail Bonferroni/deflation). A different regime, mostly unsearched.
 4. **Regime change / real-time decay** — the only thing that changes on current inputs is the OOS window growing. `evalue_oos` is the standing monitor.
 
-## Standing behavior at terminus
+## Fallback behavior (only if genuinely out of new methods)
 
-The loop has reached an EARNED terminus on the current inputs. The honesty stack is complete; the bottleneck is self-deception (now armored), not throughput.
+The honesty stack is complete; the bottleneck is self-deception (now armored), not throughput. The loop is CURRENTLY LIVE (see Active exploration below) — this is only the fallback if the new-method queue is truly empty AND no lead has positive EV:
 
 - **Monitor** the deployed book's `evalue_oos` liveness/decay (re-validations multiply in). Re-validate + act when it flags.
-- **Do NOT manufacture experiments on static data** — each negative-EV probe only inflates the deflation bar for ~0 edge.
-- **Re-open ONLY on a new input** (1–4 above) or a decay flag. To redirect, point the loop at one.
-- **Current redirect (user, 2026-06-04): exploration of custom bar AXES + unsupervised LABELS is RE-OPENED** — the two priority modules where every confirmed edge originated; literature-mined NEW methods still win (trend_leg, sadf, IG all surfaced after a prior "exhausted" call). Build a new method, A/B vs champion, gate hard.
-## Active exploration (2026-06-04, custom-axis/label drive)
+- **Don't grind deflation-dead names with config permutations** — that inflates the deflation bar for ~0 edge. (Trying a genuinely-NEW axis/label on the weakest name is NOT this — it can find structure price-only methods missed.)
+- A truly new EDGE-CLASS still needs a new input (alt-data / pairs). But new METHODS in the priority modules keep surfacing real edges — keep building them.
+## Active exploration (2026-06-04 — LOOP IS LIVE, not at terminus)
 
-Re-opened per user directive. A novel-method workflow (ideate→adversarial-vet→implement, 46 candidates) delivered a leak-audited build queue. **Built + applied + leak-test PASS:** `volofvol` (★new — second-order vol-of-vol bipower clock, the first axis clocking vol's RATE-OF-CHANGE) and `wavelet` (causal à-trous Haar multi-scale energy clock). Queue (code ready): `amihud` (illiquidity clock, TLT), `transfer_entropy_dir` (nonlinear directed info-flow label, TLT), `ddonset` (drawdown-onset clock — literal "sample where the edge resolves", GLD), `lzc` (Lempel-Ziv complexity clock, UUP), `visgraph` (horizontal-visibility-graph time-irreversibility label, GLD). Racing now, gated hard (val_auc>0.52 + permute + deflation). Round counter fixed (was frozen at 131 = KEEP-only; now real per-round count via `_round_count()`).
+Per user directive the loop is RUNNING, **weakest-ETF-each-round**, priority on custom axes + unsupervised labels, **also exploring other modules**, gating hard, leak-safe. The earlier "terminus" is superseded — literature-mined new methods keep surfacing real edges.
+
+**Method pipeline.** A novel-method workflow (ideate→adversarial-vet→implement, 46 candidates) delivers leak-audited drop-in code. Built + leak-test PASS so far: `volofvol` (★2nd-order vol-of-vol bipower clock), `wavelet` (à-trous Haar multi-scale clock), `amihud` (Amihud illiquidity clock), `transfer_entropy_dir` (Schreiber nonlinear directed info-flow label). Queue: `ddonset` (drawdown-onset clock — literal "sample where the edge resolves"), `lzc` (Lempel-Ziv complexity clock), `visgraph` (HVG time-irreversibility label).
+
+**Races so far (all DISCARD — new axes lose to champion clocks, as expected):** QQQ volofvol (buy-hold-optimal, val_auc 0.97/Calmar 0.69 = predictable-not-profitable); UUP volofvol (0.51 < imbalance 1.30); GLD wavelet (1.35 < logdollar 4.02). TLT (weakest) amihud + transfer_entropy_dir = in flight — the real question on these is **val_auc > 0.6** (does a genuinely-new method find structure where price-only/linear methods got ~0.5?).
+
+**Deep leak hunt (running).** Adversarial 6-locus hunt, every finding verified EMPIRICALLY (append-OOS-invariance / leak test / render-grep), focused on the new axes — because code audits MISS leaks (the prior 13-agent audit missed the logdollar leak). Backstop before trusting any race.
+
+**Infra fixed:** round counter (was frozen at 131 = KEEP-only → real per-round count via `_round_count()`); dashboard readability pass (WCAG contrast, status-first layout, plain-English copy).
