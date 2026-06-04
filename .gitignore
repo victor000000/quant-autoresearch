@@ -106,3 +106,8 @@ _archive/
 ._*
 .DS_Store
 *.aux
+
+# reorg 2026-06-04 — gitignored content relocated
+scratch/
+refs/pdfs/
+results/etf_qc_confirmed_pre2009.csv

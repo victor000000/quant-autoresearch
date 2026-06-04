@@ -3960,6 +3960,18 @@
         "type": "round",
         "phase": "SOXX",
         "label": "R355 SOXX DISCARD: Sample on ddonset; ensemble of Kaufman efficiency-ratio labels + trend-scanning labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.3377 (prev best +0.8074). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r356",
+        "type": "round",
+        "phase": "DBC",
+        "label": "R356 DBC DISCARD: Sample on amihud; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.1362 (prev best +0.9119). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r357",
+        "type": "round",
+        "phase": "TIP",
+        "label": "R357 TIP DISCARD: Sample on log-dollar bars; transfer_entropy_dir; size long-only, vol-targeted, entry 0.45. -> Calmar +0.2525 (prev best +1.1463). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6661,6 +6673,16 @@
       {
         "src": "r354",
         "dst": "r355",
+        "label": "no improvement"
+      },
+      {
+        "src": "r355",
+        "dst": "r356",
+        "label": "no improvement"
+      },
+      {
+        "src": "r356",
+        "dst": "r357",
         "label": "no improvement"
       }
     ],

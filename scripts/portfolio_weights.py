@@ -8,7 +8,7 @@ import json, os, math
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(HERE, "results", "series_cache.json")
-OUT = os.path.join(HERE, "HONEST_AUDIT.md")
+OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
 
 NAMES = ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]
 # UPDATED 2026-06-04 to the leak-free, this-session-improved edges: GLD trend_leg+regime_gmm 3.47

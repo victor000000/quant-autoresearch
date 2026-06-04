@@ -27,7 +27,7 @@ PPY = 252.0
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV = os.path.join(HERE, "results", "round_results.csv")
 KNOW = os.path.join(HERE, "knowledge.json")
-OUT = os.path.join(HERE, "HONEST_AUDIT.md")
+OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
 
 
 def fnum(x):

@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 REPORTS = os.path.abspath(os.path.join(HERE, "..", "reports"))
 PROGRAM = os.path.abspath(os.path.join(HERE, "..", "program.md"))
-DEPLOY = os.path.abspath(os.path.join(HERE, "..", "DEPLOYMENT.md"))
+DEPLOY = os.path.abspath(os.path.join(HERE, "..", "docs", "analysis", "DEPLOYMENT.md"))
 from render_index import build_html   # live dashboard renderer
 
 app = Flask(__name__, static_folder=None)

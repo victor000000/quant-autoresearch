@@ -8,7 +8,7 @@ import json, os, math, datetime, statistics as st
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(HERE, "results", "series_cache.json")
-OUT = os.path.join(HERE, "HONEST_AUDIT.md")
+OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
 NAMES = ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]
 
 

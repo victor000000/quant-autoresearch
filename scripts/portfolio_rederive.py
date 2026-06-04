@@ -17,7 +17,7 @@ from harness.constants import QC_PROJECT_ID
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(HERE, "results", "series_cache.json")
-OUT = os.path.join(HERE, "HONEST_AUDIT.md")
+OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
 
 # candidate members: (cfg for train, ObjectStore cell, champion Calmar for weighting)
 # Updated 2026-06-04 to CURRENT leak-free crowns: GLD trend_leg+regime_gmm+IG 4.02 (was old pre-leak
