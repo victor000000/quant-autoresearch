@@ -777,9 +777,75 @@ class JumpBarBuilder:
         return emit
 
 
+class VolOfVolBarBuilder:
+    """Custom axis: VOL-OF-VOL clock (second-order volatility / volatility-of-volatility). Mined
+    2026-06-04. Every built axis is FIRST-order: vol/logdollar weight the variance LEVEL, jump
+    standardizes a single return, kyle/imbalance/vpin clock impact/flow. NONE clocks the RATE-OF-
+    CHANGE of volatility. This axis emits a bar when the cumulative absolute change in (log) spot
+    variance crosses a threshold, so bars CLUSTER at vol REPRICINGS — the minutes where the
+    volatility regime is turning — and stay silent while vol drifts (whether vol is high or low).
+
+    Spot variance is estimated jump-robustly with the Lee-Mykland BIPOWER form sigma2 =
+    (pi/2)*mean(|r_{j-1}||r_j|) over a trailing window (K=60); a single isolated jump inflates one
+    product but is washed out by the window mean, so a lone jump does NOT masquerade as vol-of-vol
+    (this is what separates it from the `jump` axis, which fires ON the jump itself). The
+    accumulator sums |v - prev_v| where v = log(sigma2) (log so equal MULTIPLICATIVE vol changes
+    weigh equally, scale-free across the dollar's calm/stress regimes).
+
+    O(1) per minute: the bipower mean is kept with a running product-sum ring (the vpin/jump O(n)
+    timeout lesson), and v / |dv| are single scalars. The builder needs ONLY the scalar threshold
+    -> BUILDER_CLASSES-compatible (online byte-exact replay), no second fitted param. The threshold
+    is a rate-then-scale TRAIN fit (mean per-minute |dv| over TRAIN minutes x full length /
+    target_bars) in _make_builder — OOS-invariant. UUP regime turns are preceded by vol repricing,
+    so this over-samples regime-onset minutes the size/flow clocks reach late ('sample where the
+    edge RESOLVES'). A genuinely second-order signal, not a reweighting of the first-order axes.
+    """
+
+    _K = 60   # trailing window for the bipower spot-variance estimate (matches the jump axis)
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.last_lc = None
+        self.close_lc = None
+        self.cum = 0.0
+        self._prev_ar = None     # previous |log-return|
+        self._prods = []         # ring of consecutive products |r_{j-1}|*|r_j| (bipower)
+        self._psum = 0.0         # running sum of _prods (O(1) bipower mean)
+        self._prev_v = None      # previous v = log(bipower spot variance)
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None      # break the return chain across invalid prints
+            return None
+        lc = math.log(close)
+        emit = None
+        if self.last_lc is not None:
+            ar = abs(lc - self.last_lc)
+            if self._prev_ar is not None and len(self._prods) >= 20:
+                bv = (math.pi / 2.0) * self._psum / len(self._prods)   # bipower spot variance
+                if bv > 1e-300:
+                    v = math.log(bv)
+                    if self._prev_v is not None:
+                        self.cum += abs(v - self._prev_v)   # vol-of-vol increment (|dlog sigma2|)
+                    self._prev_v = v
+            if self._prev_ar is not None:
+                p = self._prev_ar * ar
+                self._prods.append(p)
+                self._psum += p
+                if len(self._prods) > self._K:
+                    self._psum -= self._prods.pop(0)
+            self._prev_ar = ar
+        self.last_lc = lc
+        self.close_lc = lc
+        if self.cum >= self.thresh:
+            self.cum = 0.0
+            emit = {"ts_close": ts, "log_close": lc}
+        return emit
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -798,6 +864,7 @@ AXES = {
     "spectral": SpectralCycleBarBuilder,
     "vpin": VpinBarBuilder,
     "jump": JumpBarBuilder,
+    "volofvol": VolOfVolBarBuilder,
 }
 
 

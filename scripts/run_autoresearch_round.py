@@ -117,6 +117,22 @@ def _write_status(**kw):
     except Exception:
         pass
 
+
+def _round_count():
+    """Number of rounds already logged (distinct timestamps in round_results.csv). The DISPLAYED
+    round number = this + 1 — incremented EVERY round (not just on KEEP, the old last_round bug that
+    froze the dashboard at the last crown's round)."""
+    try:
+        seen = set()
+        with open(ROUND_RESULTS_CSV) as f:
+            for line in f:
+                ts = line.split(",", 1)[0]
+                if ts[:2] == "20":
+                    seen.add(ts)
+        return len(seen)
+    except Exception:
+        return 0
+
 VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump"]
 VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
@@ -628,7 +644,8 @@ def run_round(argv):
     print(f"  Hypothesis A: {cfg_a}")
     print(f"  Hypothesis B: {cfg_b}")
 
-    _write_status(running=True, etf=target,
+    round_no = _round_count() + 1
+    _write_status(running=True, etf=target, round=round_no,
                   since=datetime.now().strftime("%Y-%m-%d %H:%M"),
                   phase="training — fitting 2 models on the 2 QC nodes", legs="train 0/2 · infer 0/2",
                   hypotheses=[describe_cfg(cfg_a), describe_cfg(cfg_b)])
@@ -788,7 +805,7 @@ def run_round(argv):
     # ---- Update per_etf_best on keep ----
     if kept:
         cell_key = f"{target}_{winner['axis']}_{winner['labeler']}_{winner['sizing']}_t{winner['thresh']:.2f}"
-        new_round = int(knowledge.get("last_round", 0) or 0) + 1
+        new_round = round_no   # real per-round number (was KEEP-only last_round+1, which froze the count)
         per_etf_best[target] = {
             "cell": cell_key,
             "real_calmar": round(winner["real_calmar"], 4),

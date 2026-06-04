@@ -3912,6 +3912,12 @@
         "type": "round",
         "phase": "HYG",
         "label": "R347 HYG DISCARD: Sample on log-dollar bars; ensemble of Bayesian-GMM regime labels + ker; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0000 (prev best +1.8276). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r348",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R348 QQQ DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.50. -> Calmar +0.3233 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -6573,6 +6579,11 @@
       {
         "src": "r346",
         "dst": "r347",
+        "label": "no improvement"
+      },
+      {
+        "src": "r347",
+        "dst": "r348",
         "label": "no improvement"
       }
     ],
