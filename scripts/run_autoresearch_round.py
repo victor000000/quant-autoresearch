@@ -82,6 +82,7 @@ if SCRIPTS_DIR not in sys.path:
 from describe import describe_cfg  # noqa: E402  config -> plain-English hypothesis
 
 CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
+          "VIXY",  # NEW MECHANISM-CLASS (2026-06-04): VIX short-term futures ETF — structural variance-risk-premium CARRY (roll decay), a STRUCTURALLY DIFFERENT edge than trend/regime drift (FRONTIER re-opener). Short-capable (ls_overlay); permute control distinguishes carry-BETA from timing-ALPHA.
           "EFA",   # universe expansion: developed-intl equity (correlated w/ equity sleeve — excluded from book, R109)
           "DBC",   # broad commodities — DECORRELATED; improved the book 3.60->4.22 (R111)
           "UUP",   # US dollar — NEGATIVELY correlated w/ risk assets (risk-off hedge); decorrelation candidate
