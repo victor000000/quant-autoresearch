@@ -27,6 +27,10 @@ CHAMPS = [   # the 2026-06 leak-free, this-session edges (updated 2026-06-04) â€
       "sizing": "dd_overlay", "n_components": 15, "rebal_band": 0.03}, "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3"),
     ({"ticker": "UUP", "axis": "imbalance", "labeler": "bgm+sadf_explosive+ker", "thresh": 0.5,
       "sizing": "cdf_overlay"}, "imbalance_bgm_x_sadf_explosive_x_ker_cdf_overlay_t50"),
+    # IWM trend_leg+IG (2026-06-04): the Wang IG lever's permute-real beats-buy-hold edge (deflation-boundary
+    # DSR 0.845, N=64). Decay check tells us if even the modest +0.665 is durable or front-loaded.
+    ({"ticker": "IWM", "axis": "logdollar", "labeler": "trend_leg", "thresh": 0.45,
+      "sizing": "cdf_overlay", "reduce": "infogain"}, "logdollar_trend_leg_cdf_overlay_t45_ig"),
 ]
 
 

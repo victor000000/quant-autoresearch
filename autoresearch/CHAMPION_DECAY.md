@@ -11,3 +11,7 @@ GLD   npts= 223 ppy~ 78.9  early_SR=  1.84 late_SR=  2.30  PageHinkley=  5% in C
 UUP   npts= 223 ppy~ 78.9  early_SR=  2.67 late_SR=  0.74  PageHinkley= 10% in CUSUM= 10% in  -> STALE
 ```
 - UUP: early→late Sharpe 2.67→0.74; downward change-point DETECTED.
+```
+IWM   npts= 223 ppy~ 78.9  early_SR=  0.63 late_SR=  1.31  PageHinkley=  6% in CUSUM=  6% in  -> HOLDING
+```
+- IWM: early→late Sharpe 0.63→1.31; downward change-point DETECTED.
