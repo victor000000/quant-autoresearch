@@ -2531,6 +2531,70 @@ def generate_labels_transfer_entropy_dir(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, 
     return best, best_cfg, best_h
 
 
+def generate_labels_visgraph(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                             horizons=[40, 80, 160]):
+    """HORIZONTAL-VISIBILITY-GRAPH time-irreversibility label (Lacasa 2012) — TOPOLOGICAL, UNSUPERVISED,
+    non-HMM. Map the forward bar-CLOSE window to its HVG (i~j iff both exceed every bar between them),
+    then measure DIRECTED time-irreversibility = (ascending - descending visibility edges)/total:
+    >0 = clean UPtrend geometry, <0 = clean DOWN, ~0 = reversible CHOP. Genuinely distinct from every
+    clock/return-moment label — graph-topological, scale-free, robust to monotone transforms. Trade only
+    IRREVERSIBLE-enough windows (|irr| >= TRAIN-q), labeled by trend SIGN; cut TRAIN-only; forward window
+    = TARGET only. O(N*H) monotonic-stack HVG. Sweeps H/q, keeps most TRAIN-balanced. Returns
+    (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H + 2 or H < 8:
+            continue
+        M = N - H - 1
+        irr = np.full(N, np.nan)
+        for i in range(M):
+            w = lc[i + 1:i + 2 + H]                 # H+1 forward closes = the TARGET window
+            if not np.all(np.isfinite(w)):
+                continue
+            wl = w.tolist()                         # python floats -> fast pure-python inner loop
+            asc = 0
+            desc = 0
+            stack = []                              # indices into wl, monotonic-decreasing values
+            for j in range(H + 1):
+                xj = wl[j]
+                while stack and wl[stack[-1]] < xj:
+                    stack.pop()
+                    asc += 1                        # edge (popped, j): later bar higher -> ascending
+                if stack:
+                    if wl[stack[-1]] > xj:
+                        desc += 1                   # edge (top, j) over a valley: later bar lower -> descending
+                    else:
+                        asc += 1
+                stack.append(j)
+            tot = asc + desc
+            if tot > 0:
+                irr[i] = (asc - desc) / float(tot)
+        trsel = tr_m & fv & np.isfinite(irr)
+        if int(trsel.sum()) < 100:
+            continue
+        absirr = np.abs(irr)
+        for q in (0.4, 0.5, 0.6):
+            cut = float(np.quantile(absirr[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            coh = fv & np.isfinite(irr) & (absirr >= cut)   # trade only clean (irreversible) windows
+            y[coh & (irr > 0)] = 1                           # clean up-geometry -> long
+            y[coh & (irr <= 0)] = 0                          # clean down-geometry -> flat/short
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"visgraph_H{H}_q{q}", H
+    if best is None:
+        return None, "visgraph_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
@@ -2551,6 +2615,7 @@ LABELERS = {
     "sliced_wasserstein": generate_labels_sliced_wasserstein,  # tail-aware OPTIMAL-TRANSPORT regime (W1 k-medians on sorted forward windows; new, non-HMM)
     "sortino_scan": generate_labels_sortino_scan,     # DOWNSIDE-deviation-adjusted forward trend (Calmar-aligned; new, non-HMM)
     "transfer_entropy_dir": generate_labels_transfer_entropy_dir,  # Schreiber TRANSFER-ENTROPY directed self-prediction (nonlinear conditional-MI; new, non-HMM)
+    "visgraph": generate_labels_visgraph,             # horizontal-visibility-graph TIME-IRREVERSIBILITY (topological trend-geometry; new, non-HMM)
     "mfe_mae": generate_labels_mfe_mae,               # forward excursion-asymmetry / path-quality (new, non-HMM, orthogonal)
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
@@ -2579,7 +2644,7 @@ LABELERS = {
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",
