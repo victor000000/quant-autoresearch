@@ -64,18 +64,18 @@ def main():
         #   regime = UUP champion : imbalance + bgm+ker (cdf_overlay)                    [distributional regime]
         #   ker    = logdollar + ker (dd_overlay)                                        [efficiency-ratio trend]
         #   buyhold= logdollar + always_long (cdf_overlay)                               [baseline for every ETF]
-        trend = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "trend_leg+regime_gmm",
-                            "thresh": 0.40, "sizing": "dd_overlay", "reduce": "infogain",
-                            "n_components": 15, "rebal_band": 0.03})
-        regime = json.dumps({"ticker": tk, "axis": "imbalance", "labeler": "bgm+ker",
-                            "thresh": 0.50, "sizing": "cdf_overlay"})
-        ker = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "ker",
-                         "thresh": 0.45, "sizing": "dd_overlay"})
-        buyhold = json.dumps({"ticker": tk, "axis": "logdollar", "labeler": "always_long",
-                             "thresh": 0.50, "sizing": "cdf_overlay"})
+        J = lambda **k: json.dumps(dict(ticker=tk, **k))
+        # 5 distinct MECHANISM classes (not one recipe) + buy-hold, over 3 driver calls:
+        trend = J(axis="logdollar", labeler="trend_leg+regime_gmm", thresh=0.40, sizing="dd_overlay",
+                  reduce="infogain", n_components=15, rebal_band=0.03)   # segmentation trend (GLD)
+        regime = J(axis="imbalance", labeler="bgm+ker", thresh=0.50, sizing="cdf_overlay")  # distributional regime (UUP)
+        ker = J(axis="logdollar", labeler="ker", thresh=0.45, sizing="dd_overlay")          # efficiency trend
+        changepoint = J(axis="logdollar", labeler="changepoint", thresh=0.50, sizing="cdf_overlay")  # change-point regime
+        sadf = J(axis="logdollar", labeler="sadf_explosive", thresh=0.50, sizing="cdf_overlay")       # structural/explosive
+        buyhold = J(axis="logdollar", labeler="always_long", thresh=0.50, sizing="cdf_overlay")        # baseline
         log.write(f"SCREEN {tk} ({ac})\n")
         log.flush()
-        for pair in ([trend, regime], [ker, buyhold]):
+        for pair in ([trend, regime], [ker, changepoint], [sadf, buyhold]):
             try:
                 subprocess.run(["python3", DRIVER] + pair, cwd=HERE, timeout=1000,
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

@@ -47,7 +47,8 @@ for tk in done:
     mc, va, tr, lab, _ = meth[tk]
     bc = bh[tk][0]
     edge = mc - bc
-    rec = "regime" if "bgm" in lab else ("ker" if lab.startswith("ker") else "trend")
+    rec = ("regime" if "bgm" in lab else "changept" if "changepoint" in lab else "sadf" if "sadf" in lab
+           else "ker" if lab.startswith("ker") else "trend")
     # ARTIFACT guard: Calmar = CAGR/MaxDD blows up for cash-like / near-flat assets (T-bills, ultra-short
     # duration) whose MaxDD ~ 0 -> a "Calmar 30" is a division artifact, not a tradeable edge. No real ETF
     # edge exceeds ~4 (GLD). Flag implausibly high Calmar OR a flat buy-hold (cash) with a big "edge".
