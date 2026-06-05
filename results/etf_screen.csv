@@ -1,19 +1,36 @@
 ticker,asset_class,recipe,method_calmar,buyhold_calmar,edge,val_auc,trades,verdict,name
 BIL,Fixed Income,trend,30.43,0.0,30.43,0.918,2774,ARTIFACT(cash),State Street SPDR Bloomberg 1-3 Month T-
+VGK,International Equity,regime,1.92,0.0,1.92,0.557,6,NO-BASELINE,Vanguard FTSE Europe ETF
+SCZ,International Equity,ker,1.614,0.0,1.614,0.436,149,NO-BASELINE,iShares MSCI EAFE Small-Cap ETF
+VWO,International Equity,trend,1.528,0.0,1.528,0.801,594,NO-BASELINE,Vanguard Emerging Markets Stock Index Fu
 QLD,Leveraged/Inverse,regime,1.502,0.0,1.502,0.62,245,NO-BASELINE,ProShares Ultra QQQ
+SSO,Leveraged/Inverse,regime,2.511,1.029,1.482,0.631,146,STRONG,ProShares Ultra S&P500
+IAU,Commodity,trend,3.351,1.943,1.408,0.62,1073,STRONG,iShares Gold Trust
 DBA,Commodity,ker,2.382,1.025,1.358,0.499,168,NO-FIT,Invesco DB Agriculture Fund
 XOP,Commodity,regime,1.626,0.299,1.327,0.526,341,NO-FIT,State Street SPDR S&P Oil & Gas Explorat
+USO,Commodity,trend,2.175,0.937,1.238,0.979,601,STRONG,"United States Oil Fund, LP"
+AGQ,Leveraged/Inverse,changept,2.489,1.309,1.179,0.568,375,STRONG,ProShares Ultra Silver
 SHV,Fixed Income,changept,1.05,0.0,1.05,0.599,1913,ARTIFACT(cash),iShares 0–1 Year Treasury Bond ETF
+GDX,Commodity,trend,2.478,1.529,0.95,0.962,321,STRONG,VanEck Gold Miners ETF
 DJP,Commodity,ker,2.011,1.082,0.928,0.633,196,STRONG,iPath Bloomberg Commodity Index Total Re
 GSG,Commodity,sadf,1.921,1.005,0.916,0.655,216,STRONG,iShares S&P GSCI Commodity-Indexed Trust
-IAU,Commodity,trend,2.824,1.943,0.88,0.748,1014,STRONG,iShares Gold Trust
 CMF,Fixed Income,changept,1.13,0.266,0.864,0.549,164,NO-FIT,iShares California Muni Bond ETF
+TNA,Leveraged/Inverse,ker,0.822,0.0,0.822,0.499,85,NO-BASELINE,Direxion Daily Small Cap Bull 3X Shares
+UCO,Leveraged/Inverse,trend,1.102,0.387,0.714,0.661,126,STRONG,ProShares Ultra Bloomberg Crude Oil
 SPAB,Fixed Income,sadf,1.13,0.416,0.714,0.719,54,NO-FIT,State Street SPDR Portfolio Aggregate Bo
+ACWI,International Equity,sadf,0.649,0.0,0.649,0.498,68,NO-BASELINE,iShares MSCI ACWI ETF
+VT,International Equity,ker,2.017,1.482,0.535,0.547,730,NO-FIT,Vanguard Total World Stock Index Fund ET
 MLN,Fixed Income,sadf,0.545,0.024,0.521,0.674,42,ARTIFACT(cash),VanEck Long Muni ETF
+SPXS,Leveraged/Inverse,trend,0.0,-0.477,0.477,0.0,0,NO-FIT,Direxion Daily S&P 500 Bear 3X Shares
+QID,Leveraged/Inverse,trend,0.0,-0.456,0.456,0.0,0,NO-FIT,ProShares UltraShort QQQ
+SDS,Leveraged/Inverse,trend,0.0,-0.394,0.394,0.0,0,NO-FIT,ProShares UltraShort S&P500
 UNG,Commodity,trend,0.0,-0.379,0.379,0.0,0,NO-FIT,"United States Natural Gas Fund, LP"
 LQD,Fixed Income,changept,0.975,0.608,0.367,0.516,176,NO-FIT,iShares iBoxx $ Investment Grade Corpora
 BWX,Fixed Income,sadf,0.465,0.102,0.363,0.809,83,marginal,SPDR Bloomberg International Treasury Bo
+PSQ,Leveraged/Inverse,trend,0.0,-0.36,0.36,0.0,0,NO-FIT,ProShares Short QQQ
+ERX,Leveraged/Inverse,sadf,0.858,0.51,0.347,0.495,226,NO-FIT,Direxion Daily Energy Bull 2X Shares
 SPTL,Fixed Income,sadf,0.191,-0.149,0.34,0.552,325,marginal,State Street SPDR Portfolio Long Term Tr
+SH,Leveraged/Inverse,trend,0.0,-0.306,0.306,0.0,0,NO-FIT,ProShares Short S&P500
 VNQ,Real Estate,sadf,0.698,0.426,0.272,0.567,26,NO-FIT,Vanguard Real Estate Index Fund ETF Shar
 BLV,Fixed Income,changept,0.284,0.034,0.251,0.679,556,marginal,Vanguard Long-Term Bond Fund
 FXF,Currency,ker,0.586,0.342,0.244,0.732,835,marginal,Invesco CurrencyShares Swiss Franc Trust
@@ -25,6 +42,7 @@ PEY,Fixed Income,changept,0.697,0.508,0.189,0.517,483,NO-FIT,Invesco High Yield 
 IGE,Commodity,sadf,1.0,0.816,0.183,0.378,148,NO-FIT,iShares North American Natural Resources
 XES,Commodity,changept,0.425,0.254,0.172,0.575,108,marginal,State Street SPDR S&P Oil & Gas Equipmen
 PLW,Fixed Income,trend,0.0,-0.155,0.155,0.0,0,NO-FIT,Invesco Equal Weight 0-30 Years Treasury
+SPEM,International Equity,ker,0.147,0.0,0.147,0.517,788,NO-BASELINE,State Street SPDR Portfolio Emerging Mar
 IEO,Commodity,sadf,0.593,0.471,0.122,0.639,94,marginal,iShares U.S. Oil & Gas Exploration & Pro
 ICF,Real Estate,sadf,0.562,0.459,0.103,0.603,58,NO-FIT,iShares Select U.S. REIT ETF
 VOX,Fixed Income,sadf,1.153,1.059,0.094,0.737,134,marginal,Vanguard Communication Services Index Fu
@@ -37,33 +55,46 @@ GSY,Fixed Income,trend,0.0,0.0,0.0,0.0,0,NO-BASELINE,Invesco Ultra Short Duratio
 PWZ,Fixed Income,trend,0.0,0.0,0.0,0.0,0,NO-BASELINE,Invesco California AMT-Free Municipal Bo
 IYR,Real Estate,sadf,0.478,0.488,-0.01,0.563,83,NO-FIT,iShares U.S. Real Estate ETF
 PGX,Fixed Income,ker,0.273,0.29,-0.017,0.608,538,NO-FIT,Invesco Preferred ETF
+UWM,Leveraged/Inverse,changept,0.386,0.421,-0.035,0.558,375,NO-FIT,ProShares Ultra Russell2000
 TLH,Fixed Income,trend,0.0,0.039,-0.039,0.0,0,NO-FIT,iShares 10-20 Year Treasury Bond ETF
-USO,Commodity,regime,0.884,0.937,-0.053,0.559,340,NO-FIT,"United States Oil Fund, LP"
 REZ,Real Estate,changept,0.446,0.527,-0.081,0.537,306,NO-FIT,iShares Residential and Multisector Real
 NLR,Commodity,trend,0.161,0.252,-0.091,nan,3292,NO-FIT,VanEck Uranium and Nuclear ETF
+SPDW,International Equity,ker,0.935,1.035,-0.099,0.475,468,NO-FIT,State Street SPDR Portfolio Developed Wo
 NYF,Fixed Income,trend,0.0,0.142,-0.142,0.0,0,NO-FIT,iShares New York Muni Bond ETF
 DBB,Commodity,ker,0.867,1.024,-0.157,0.629,664,NO-FIT,Invesco DB Base Metals Fund
+UGL,Leveraged/Inverse,trend,1.379,1.541,-0.161,0.842,1766,NO-FIT,ProShares Ultra Gold
 WIP,Fixed Income,regime,0.0,0.168,-0.168,0.0,0,NO-FIT,SPDR FTSE International Government Infla
 JNK,Fixed Income,sadf,1.545,1.713,-0.168,0.49,416,NO-FIT,State Street SPDR Bloomberg High Yield B
 IEF,Fixed Income,changept,0.08,0.285,-0.205,0.522,127,NO-FIT,iShares 7-10 Year Treasury Bond ETF
-GDX,Commodity,changept,1.286,1.529,-0.243,0.532,451,NO-FIT,VanEck Gold Miners ETF
+EWY,International Equity,sadf,1.806,2.052,-0.246,0.558,369,NO-FIT,iShares MSCI South Korea ETF
+DDM,Leveraged/Inverse,sadf,0.594,0.847,-0.253,0.699,87,NO-FIT,ProShares Ultra Dow30
 TFI,Fixed Income,trend,0.0,0.272,-0.272,0.0,0,NO-FIT,State Street SPDR Nuveen ICE Municipal B
 RWO,Real Estate,trend,0.155,0.449,-0.294,0.768,333,NO-FIT,State Street SPDR Dow Jones Global Real 
 VYM,Fixed Income,regime,1.241,1.56,-0.32,0.476,177,NO-FIT,Vanguard High Dividend Yield Index Fund 
+EWJ,International Equity,ker,0.875,1.2,-0.326,0.424,232,NO-FIT,iShares MSCI Japan ETF
 MUB,Fixed Income,trend,0.0,0.331,-0.331,0.0,0,NO-FIT,iShares National Muni Bond ETF
+TECL,Leveraged/Inverse,ker,0.771,1.141,-0.37,0.509,779,NO-FIT,Direxion Daily Technology Bull 3X Shares
+VEA,International Equity,sadf,1.053,1.432,-0.379,0.613,175,NO-FIT,Vanguard FTSE Developed Markets Index Fu
 USIG,Fixed Income,trend,0.0,0.395,-0.395,0.0,0,NO-FIT,iShares Broad USD Investment Grade Corpo
+FAS,Leveraged/Inverse,changept,0.25,0.648,-0.398,0.597,264,NO-FIT,Direxion Daily Financial Bull 3X Shares
+SPXL,Leveraged/Inverse,ker,0.577,0.986,-0.41,0.532,564,NO-FIT,Direxion Daily S&P500 Bull 3X Shares
 RWR,Real Estate,changept,0.219,0.636,-0.417,0.564,209,NO-FIT,State Street SPDR Dow Jones REIT ETF
 SPTI,Fixed Income,regime,0.0,0.422,-0.422,0.0,0,NO-FIT,State Street SPDR Portfolio Intermediate
 AGG,Fixed Income,sadf,0.266,0.699,-0.433,0.777,513,NO-FIT,iShares Core U.S. Aggregate Bond ETF
 MBB,Fixed Income,ker,0.065,0.532,-0.467,0.546,366,NO-FIT,iShares MBS ETF
+EZU,International Equity,trend,0.79,1.26,-0.47,0.814,783,NO-FIT,iShares MSCI Eurozone ETF
+VPL,International Equity,ker,0.868,1.402,-0.534,0.542,84,NO-FIT,Vanguard FTSE Pacific Index Fund ETF Sha
 PCY,Fixed Income,ker,0.208,0.846,-0.638,0.563,185,NO-FIT,Invesco Emerging Markets Sovereign Debt 
 BND,Fixed Income,trend,0.0,0.644,-0.644,0.0,0,NO-FIT,Vanguard Total Bond Market Index Fund
+VEU,International Equity,ker,0.756,1.417,-0.661,0.512,268,NO-FIT,Vanguard FTSE All-World ex-US Index Fund
+SHM,Leveraged/Inverse,ker,0.326,1.035,-0.709,0.605,512,NO-FIT,State Street SPDR Nuveen ICE Short Term 
 IEI,Fixed Income,trend,0.0,0.92,-0.92,0.0,0,NO-FIT,iShares 3-7 Year Treasury Bond ETF
 IGIB,Fixed Income,trend,0.0,0.927,-0.927,0.0,0,NO-FIT,iShares 5-10 Year Investment Grade Corpo
 IYZ,Fixed Income,sadf,1.04,2.065,-1.025,0.574,21,NO-FIT,iShares U.S. Telecommunications ETF
 EMB,Fixed Income,trend,0.0,1.216,-1.216,0.0,0,NO-FIT,iShares J.P. Morgan USD Emerging Markets
 GVI,Fixed Income,trend,0.0,1.261,-1.261,0.0,0,NO-FIT,iShares Intermediate Government/Credit B
 SUB,Leveraged/Inverse,trend,0.0,1.465,-1.465,0.0,0,NO-FIT,iShares Short-Term National Muni Bond ET
+EFV,International Equity,trend,0.203,1.69,-1.487,0.835,850,NO-FIT,iShares MSCI EAFE Value ETF
 BSV,Fixed Income,sadf,0.45,2.66,-2.21,0.733,41,NO-FIT,Vanguard Short-Term Bond Index Fund ETF 
 IGSB,Fixed Income,ker,0.115,3.133,-3.018,0.58,33,NO-FIT,iShares 1-5 Year Investment Grade Corpor
 SHY,Fixed Income,trend,0.0,3.5,-3.5,0.0,0,NO-FIT,iShares 1-3 Year Treasury Bond ETF

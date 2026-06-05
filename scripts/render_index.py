@@ -19,12 +19,27 @@ KJ = os.path.join(R, "..", "knowledge.json")
 PROG = os.path.join(R, "..", "program.md")
 STATUS = os.path.join(R, "status.json")
 ROUND_CSV = os.path.join(R, "..", "results", "round_results.csv")
+SCREEN_CSV = os.path.join(R, "..", "results", "etf_screen.csv")
+SCREEN_PROG = os.path.join(R, "..", "results", "etf_screen_progress.log")
+SWEEP_PROG = os.path.join(R, "..", "results", "etf_deepsweep_progress.log")
+UNIVERSE_N = 311        # QC-confirmed pre-2009 ETFs (etf_qc_confirmed_pre2009.csv data rows)
+SWEEP_TOTAL = 45        # deep-sweep planned ETFs (START line: "45 ETFs x 21 axes + 27 labelers")
+# STALE / pre-leak historical single-ticker rows — quarantined, NOT current screen fits.
+STALE_HIST = [("GLD", 4.71, "logdollar × ker (pre-leak)"),
+              ("EEM", 4.03, "meta-label timing (window-decayed)"),
+              ("SOXX", 3.02, "trend+regime (bar-threshold leak)")]
 TICKERS = ["TLT", "IWM", "QQQ", "EEM", "GLD", "HYG", "XLE", "EFA", "DBC", "UUP", "TIP", "SLV"]
 CHARACTER = {
     "TLT": "long bonds · rates", "IWM": "small-cap equity", "QQQ": "big-cap tech",
     "EEM": "emerging markets", "GLD": "gold", "HYG": "high-yield credit", "XLE": "energy",
     "EFA": "developed ex-US", "DBC": "broad commodities", "UUP": "US dollar",
     "TIP": "inflation-linked bonds", "SLV": "silver", "SOXX": "semiconductors",
+    # universe-screen names (the 311-ETF expansion — see the screen section)
+    "IAU": "gold (iShares)", "GDX": "gold miners", "USO": "crude oil",
+    "GSG": "broad commodities", "DJP": "broad commodities", "UCO": "2× crude oil",
+    "AGQ": "2× silver", "UGL": "2× gold", "SSO": "2× S&P 500", "QLD": "2× Nasdaq-100",
+    "XOP": "oil & gas E&P", "BIL": "1–3 month T-bills", "VT": "total world equity",
+    "EWY": "South Korea equity",
 }
 # What SIGNAL each asset rewards — the edge type our ML can (or can't) extract from it.
 # Plain-English, one phrase. Pairs with the data-derived verdict badge in _charmap_html.
@@ -42,6 +57,21 @@ REWARDS = {
     "IWM": "small-cap beta — no learnable timing signal",
     "SLV": "silver beta — no learnable timing signal (gold's edge doesn't transfer)",
     "SOXX": "semis cyclicality — looked like a trend+regime edge but it was a bar-threshold leak; gone leak-free",
+    # universe-screen fits — screen-strong (beat buy-hold, val_auc>0.55, >80 trades), validating before a book seat
+    "IAU": "clean gold trends, same edge family as GLD — ML times entries (screen fit, validating)",
+    "GDX": "gold-miner trends amplified by operating leverage — high val_auc, overfit-suspect (provisional)",
+    "USO": "two-sided oil swings — structure exists but val_auc is suspiciously high (provisional)",
+    "GSG": "broad-commodity trends — ML times the moves (screen fit, validating)",
+    "DJP": "broad-commodity trends — ML times the moves (screen fit, validating)",
+    "UCO": "leveraged crude — regime model reads the state (slim screen fit)",
+    "AGQ": "leveraged silver — change-point timing beats holding (screen fit, validating)",
+    "UGL": "leveraged gold — gold's trend edge, geared up (screen)",
+    "SSO": "leveraged S&P — ML reads the risk-on/off regime (screen fit, validating)",
+    "QLD": "leveraged Nasdaq — degenerate buy-hold baseline, shown excluded not a fit",
+    "XOP": "two-sided energy swings — regime model reads the state (screen)",
+    "BIL": "cash-like T-bills — near-zero drawdown inflates Calmar; excluded as an artifact",
+    "VT": "global equity beta — holding beats timing",
+    "EWY": "single-country beta — holding beats timing",
 }
 G1_CALMAR = 3.0
 G2_TRADES = 80
@@ -86,12 +116,35 @@ def leak_trust(etf, v):
     return ("unverified", "untrusted", "not re-validated under the leak fix")
 
 
+def _excluded_tickers():
+    """Tickers the universe screen classifies as NOT real fits — cash-MaxDD artifacts
+    (ARTIFACT(cash), e.g. BIL T-bills) and degenerate 0-trade buy-hold baselines
+    (NO-BASELINE, e.g. leveraged ETFs like QLD). The legacy per-ETF leaderboard reads
+    raw per_etf_best, so without this an inflated artifact Calmar (BIL 30.43) would rank
+    #1 and headline the scoreboard — contradicting the screen's own honesty verdict."""
+    out = set()
+    try:
+        with open(SCREEN_CSV, newline="") as f:
+            for r in csv.DictReader(f):
+                if (r.get("verdict") or "").strip() in ("ARTIFACT(cash)", "NO-BASELINE"):
+                    tk = (r.get("ticker") or "").strip()
+                    if tk:
+                        out.add(tk)
+    except Exception:
+        pass
+    return out
+
+
 def derive(K):
-    """Per-ETF derived dashboard rows (sorted by edge desc). Shared by render + poll."""
+    """Per-ETF derived dashboard rows (sorted by edge desc). Shared by render + poll.
+    Skips tickers the screen flags as cash-artifact / degenerate-baseline (not real fits)."""
     pe = K.get("per_etf_best", {}) or {}
     bh = K.get("buyhold", {}) or {}
+    excluded = _excluded_tickers()
     rows = []
     for etf, v in pe.items():
+        if etf in excluded:
+            continue
         cal = _f(v.get("real_calmar"))
         bc = _f((bh.get(etf, {}) or {}).get("calmar"))
         if bc is None:  # SLV: parse "buy-hold 1.26" from status
@@ -163,7 +216,7 @@ def build_data(K=None):
         "verdict": (f'Single-ticker research · r{sb["rounds"]} rounds · {sb["etfs"]}/{sb["etfs"]} leak-free · '
                     f'G1 Calmar>{G1_CALMAR:g}: {sb["g1_pass"]}/{sb["g1_total"]} PASS' + sig_txt +
                     f' — best single-ticker edge ~{(rows[0]["calmar"] if rows and rows[0]["calmar"] else 0):.2f}; '
-                    f'durable single-ticker alpha is scarce (GLD/UUP only)'),
+                    f'GLD/UUP fully validated, the 311-ETF screen is surfacing commodity/leveraged fits'),
     }
 
 
@@ -252,6 +305,96 @@ def _scan_rounds_csv():
         })
     out.sort(key=lambda d: d["n"], reverse=True)
     return out
+
+
+# ---- universe screen (this week's headline) --------------------------------
+def _best_method_join():
+    """{ticker: (calmar, axis, labeler, val_auc)} — the BEST non-always_long row per
+    ticker from round_results.csv. Reproduces screen.csv's method_calmar and supplies
+    the winning AXIS × LABELER (the screen `recipe` column is a lossy 5-bucket family,
+    so the exact axis×labeler only lives here). Pure-csv, numpy-free."""
+    best = {}
+    try:
+        with open(ROUND_CSV, newline="") as f:
+            for r in csv.DictReader(f):
+                tk = (r.get("ticker") or "").strip()
+                lab = r.get("labeler") or ""
+                if not tk or lab.startswith("always_long"):
+                    continue
+                cal = _f(r.get("real_calmar"))
+                if cal is None:
+                    continue
+                if tk not in best or cal > best[tk][0]:
+                    best[tk] = (cal, (r.get("axis") or "").strip(), lab, _f(r.get("val_auc")))
+    except Exception:
+        return {}
+    return best
+
+
+def _screen_tier(verdict, auc):
+    """Trust tier from verdict + val_auc — the single load-bearing honesty rule.
+    STRONG fits split on val_auc: >0.85 = overfit/selection suspect (PROVISIONAL),
+    else leak-verifiable deployable shortlist (TRUSTWORTHY)."""
+    if verdict == "STRONG":
+        if auc is not None and auc > 0.85:
+            return ("prov", "PROVISIONAL")
+        return ("trust", "TRUSTWORTHY")
+    if verdict == "marginal":
+        return ("marginal", "MARGINAL")
+    if verdict in ("ARTIFACT(cash)", "NO-BASELINE"):
+        return ("excluded", "EXCLUDED")
+    return ("nofit", "NO-FIT")
+
+
+def load_screen():
+    """Read etf_screen.csv (the persistent FIT map) + join round_results.csv for the
+    winning axis × labeler, attach trust tier. Sorted by edge desc (as written)."""
+    try:
+        with open(SCREEN_CSV, newline="") as f:
+            raw = list(csv.DictReader(f))
+    except Exception:
+        return []
+    bm = _best_method_join()
+    rows = []
+    for r in raw:
+        tk = (r.get("ticker") or "").strip()
+        d = {k: (r.get(k, "") or "").strip() for k in ("ticker", "asset_class", "recipe", "verdict", "name")}
+        for k in ("method_calmar", "buyhold_calmar", "edge", "val_auc", "trades"):
+            d[k] = _f(r.get(k))
+        ax, lab = "", ""
+        if tk in bm:
+            ax, lab = bm[tk][1], bm[tk][2]
+        d["axis"], d["labeler"] = ax, lab
+        d["recipe_full"] = (ax + " × " + lab) if (ax and lab) else (d["recipe"] or "—")
+        d["logdollar"] = (ax == "logdollar")
+        d["tier_cls"], d["tier"] = _screen_tier(d["verdict"], d["val_auc"])
+        rows.append(d)
+    rows.sort(key=lambda d: (d["edge"] is not None, d["edge"] or -9), reverse=True)
+    return rows
+
+
+def _progress(path):
+    """(done, ...) — DONE lines in a screen/sweep progress log. Numpy-free."""
+    try:
+        with open(path) as f:
+            return sum(1 for l in f if l.startswith("DONE "))
+    except Exception:
+        return 0
+
+
+def screen_summary(rows=None):
+    """Tier/verdict tallies + progress, shared by render + poll so they never diverge."""
+    if rows is None:
+        rows = load_screen()
+    from collections import Counter
+    cnt = Counter(r["tier_cls"] for r in rows)
+    return {
+        "screened": _progress(SCREEN_PROG), "universe": UNIVERSE_N,
+        "sweep_done": _progress(SWEEP_PROG), "sweep_total": SWEEP_TOTAL,
+        "n_trust": cnt.get("trust", 0), "n_prov": cnt.get("prov", 0),
+        "n_marginal": cnt.get("marginal", 0), "n_excluded": cnt.get("excluded", 0),
+        "n_nofit": cnt.get("nofit", 0), "n_classified": len(rows),
+    }
 
 
 # ---- small HTML builders ---------------------------------------------------
@@ -381,6 +524,154 @@ def _charmap_html(rows):
             + body + '</tbody></table>')
 
 
+def _scr_auc_cell(auc):
+    if auc is None:
+        return '<td class="num">—</td>'
+    if auc > 0.85:
+        return f'<td class="num"><span class="aucwarn">{auc:.2f}</span></td>'
+    return f'<td class="num">{auc:.2f}</td>'
+
+
+def _scr_row(r, maxe, rank):
+    edge = r["edge"]
+    w = (abs(edge) / maxe * 100.0) if edge is not None else 0.0
+    cal = r["method_calmar"]
+    bh = r["buyhold_calmar"]
+    calcell = f'<td class="num metric {"pos" if (cal or 0) > 0 else "neg"}">{cal:+.2f}</td>' if cal is not None else '<td class="num">—</td>'
+    bhcell = f'<td class="num">{bh:+.2f}</td>' if bh is not None else '<td class="num">—</td>'
+    trd = r["trades"]
+    trdcell = f'<td class="num">{int(trd)}</td>' if trd is not None else '<td class="num">—</td>'
+    ld = ' <span class="ldflag" title="logdollar-axis fit — re-verified leak-clean by two deep leak-hunt workflows">ⓛ</span>' if r["logdollar"] else ""
+    return (
+        f'<tr class="scr-{r["tier_cls"]}" data-tier="{r["tier_cls"]}">'
+        f'<td class="num rank">{rank}</td>'
+        f'<td class="etf"><b>{r["ticker"]}</b><span class="char">{r["name"]}</span></td>'
+        f'<td class="acls">{r["asset_class"]}</td>'
+        f'<td><span class="tbadge t-{r["tier_cls"]}">{r["tier"]}</span></td>'
+        f'<td class="recipe"><code>{r["recipe_full"]}</code>{ld}</td>'
+        f'{calcell}{bhcell}'
+        f'{_edgebar(edge, w)}'
+        f'{_scr_auc_cell(r["val_auc"])}'
+        f'{trdcell}'
+        f'<td class="vcell">{r["verdict"]}</td>'
+        f'</tr>')
+
+
+def _scr_table(rows, maxe, start_rank, tid=None):
+    id_attr = (' id="' + tid + '"') if tid else ""
+    body = "".join(_scr_row(r, maxe, start_rank + i) for i, r in enumerate(rows))
+    return ('<table' + id_attr + '><thead><tr>'
+            '<th class="num">#</th><th>ETF</th><th>class</th><th>trust tier</th>'
+            '<th>axis × labeler</th>'
+            '<th class="num" title="annual return ÷ worst drawdown">Calmar</th>'
+            '<th class="num" title="buy-and-hold Calmar for the same ETF">buy&amp;hold</th>'
+            '<th class="num" title="Calmar minus buy-and-hold; the rank key">edge</th>'
+            '<th class="num" title="validation AUC — 0.5 none, 0.6-0.75 real, &gt;0.85 overfit-suspect">val_auc</th>'
+            '<th class="num">trades</th><th>verdict</th>'
+            '</tr></thead><tbody>' + body + '</tbody></table>')
+
+
+def _screen_section_html():
+    rows = load_screen()
+    if not rows:
+        return ('<section class="block" id="screen"><h2>Universe screen</h2>'
+                '<p class="small">(screen results pending)</p></section>')
+    sm = screen_summary(rows)
+    fits = [r for r in rows if r["tier_cls"] in ("trust", "prov")]
+    marg = [r for r in rows if r["tier_cls"] == "marginal"]
+    excl = [r for r in rows if r["tier_cls"] == "excluded"]
+    nofit = [r for r in rows if r["tier_cls"] == "nofit"]
+    maxe = max([abs(r["edge"]) for r in rows if r["edge"] is not None] or [1.0]) or 1.0
+
+    # honesty banner
+    prov_names = ", ".join(f'{r["ticker"]} {r["val_auc"]:.2f}' for r in fits if r["tier_cls"] == "prov") or "—"
+    trust_names = ", ".join(r["ticker"] for r in fits if r["tier_cls"] == "trust") or "—"
+    banner = (
+        '<div class="next-box screen-banner"><b>Selection-bias warning.</b> Each ETF is the best of a '
+        '<b>49-config-per-ETF</b> (21 axes + 27 labelers) best-of-N search — that search inflates the top result. '
+        f'<b>TRUSTWORTHY</b> fits ({trust_names}) are leak-re-verified with val_auc 0.57–0.66. '
+        f'<b>PROVISIONAL</b> fits (val_auc&nbsp;&gt;&nbsp;0.85: {prov_names}) are overfit / selection suspects — they need '
+        '<b>DSR deflation</b> + a <b>permuted-label control</b> before deployment. '
+        'Cash-<b>ARTIFACT</b> (Calmar inflated by ~0 MaxDD) and <b>NO-BASELINE</b> (degenerate 0-trade buy-hold, e.g. '
+        'leveraged ETFs) are shown as <b>excluded, not fits</b>. <span class="ldflag">ⓛ</span> marks logdollar-axis fits '
+        '(leak-re-verified).</div>')
+
+    # progress bars
+    scr_pct = sm["screened"] / sm["universe"] * 100 if sm["universe"] else 0
+    sw_pct = sm["sweep_done"] / sm["sweep_total"] * 100 if sm["sweep_total"] else 0
+    prog = (
+        '<div class="scrprog">'
+        '<div class="prow"><span class="plabel">universe screened</span>'
+        f'<span class="pbar"><i style="width:{scr_pct:.1f}%"></i></span>'
+        f'<span class="pval">{sm["screened"]}/{sm["universe"]}</span></div>'
+        '<div class="prow"><span class="plabel">deep-sweep (49 cfg each)</span>'
+        f'<span class="pbar"><i style="width:{sw_pct:.1f}%"></i></span>'
+        f'<span class="pval">{sm["sweep_done"]}/{sm["sweep_total"]}</span></div></div>')
+
+    # tier-count chips
+    chips = (
+        '<div class="tierchips">'
+        f'<span class="tc tc-trust">{sm["n_trust"]} TRUSTWORTHY</span>'
+        f'<span class="tc tc-prov">{sm["n_prov"]} PROVISIONAL</span>'
+        f'<span class="tc tc-marg">{sm["n_marginal"]} marginal</span>'
+        f'<span class="tc tc-excl">{sm["n_excluded"]} excluded</span>'
+        f'<span class="tc tc-nofit">{sm["n_nofit"]} no-fit</span>'
+        f'<span class="tc tc-tot">{sm["screened"]}/{sm["universe"]} screened</span></div>')
+
+    # leaderboard: fits + marginal in the open table, excluded shown struck, no-fit folded
+    open_rows = fits + marg + excl
+    lb_tbl = _scr_table(open_rows, maxe, 1, tid="scrlb")
+    nofit_tbl = ('<details class="bhfold"><summary>No fit — buy-and-hold wins (' + str(len(nofit)) +
+                 ' ETFs)</summary>' + _scr_table(nofit, maxe, len(open_rows) + 1) + '</details>')
+
+    # fit-by-mechanism breakdown (STRONG + marginal, joined axis/labeler)
+    mech = _mechanism_html(fits, marg)
+
+    # stale quarantine strip
+    stale_chips = "".join(f'<span class="stalechip">{t} {c:.2f}</span>' for t, c, _ in STALE_HIST)
+    stale = ('<p class="small stale-strip"><b>Not in this screen (STALE — quarantined):</b> '
+             + stale_chips + ' — old pre-leak / window-decayed single-ticker rows. Shown for '
+             'context only; <b>not current fits</b> and deliberately kept out of the ranked board above.</p>')
+
+    return (
+        '<section class="block" id="screen"><h2>Universe screen — 311 QC-confirmed ETFs raced vs. buy-and-hold</h2>'
+        '<p class="small">This week\'s big result: every screened ETF\'s best method panel is raced against '
+        '<b>always-long buy-and-hold</b>; a deep-sweep then tries <b>all axes × all labelers</b> on the fit-relevant '
+        'classes. The board ranks fits by <b>edge over buy-and-hold</b>, color-coded by trust tier.</p>'
+        + banner + prog + chips
+        + f'<div class="tablewrap">{lb_tbl}</div>'
+        + nofit_tbl
+        + mech
+        + stale
+        + '</section>')
+
+
+def _mechanism_html(fits, marg):
+    from collections import Counter
+    fitmarg = fits + marg
+    by_axis = Counter((r["axis"] or "?") for r in fitmarg if r["axis"])
+    by_lab = Counter((r["labeler"] or "?") for r in fitmarg if r["labeler"])
+    by_class = Counter(r["asset_class"] for r in fits)        # STRONG-fit asset classes
+
+    def _bars(counter):
+        if not counter:
+            return '<span class="mut">—</span>'
+        return " · ".join(f'<b>{k}</b> ×{v}' for k, v in counter.most_common())
+    classes_all = ["Commodity", "Leveraged/Inverse", "Fixed Income", "International Equity", "Real Estate", "Currency"]
+    zero = [c for c in classes_all if by_class.get(c, 0) == 0]
+    zero_txt = (', '.join(zero)) if zero else "none"
+    return (
+        '<div class="scr-mech">'
+        '<div class="mechcard"><div class="mechhd">winning axis (fits + marginal)</div>'
+        f'<div class="mechbody">{_bars(by_axis)}</div></div>'
+        '<div class="mechcard"><div class="mechhd">winning labeler (fits + marginal)</div>'
+        f'<div class="mechbody">{_bars(by_lab)}</div></div>'
+        '<div class="mechcard"><div class="mechhd">where STRONG fits live</div>'
+        f'<div class="mechbody">{_bars(by_class)}<div class="mechnote">zero STRONG fits in: {zero_txt} '
+        '— the mechanism only fits commodity &amp; leveraged-equity classes.</div></div></div>'
+        '</div>')
+
+
 def _acts_html(K):
     cg = K.get("causal_graph", {}) or {}
     lbl = {n["id"]: n.get("label", "") for n in cg.get("nodes", [])}
@@ -392,6 +683,7 @@ def _acts_html(K):
         ("II · The unlock", "Long-only can't beat a declining asset; shorting + a directional label + ③ mean-reversion features unlocked TLT.", "TLT 0.31 → 1.52" if has("f_meanrev_feat") or has("unlock_short") else ""),
         ("III · The correction", "A bar-threshold look-ahead (full-series stats incl. OOS) was inflating results; the leak fix re-validated the whole board.", "XLE 2.26 → 0.64" if has("r68") else ""),
         ("IV · Convergence", "One rule governs the board — time when the hold is weak, hold when the trend is strong (f_timing_when).", "7/7 at leak-free ceilings" if has("f_timing_when") else ""),
+        ("V · The widening", "With the fixed-12 frontier saturated, the hunt widened to all 311 QC-confirmed ETFs — race each against buy-and-hold, keep only genuine fits. A cluster of commodity &amp; leveraged-equity names surfaced, now under validation.", "311-ETF screen"),
     ]
     cards = ""
     for t, body, delta in acts:
@@ -505,11 +797,13 @@ def _intro_html(K):
         '<p>An <b>autonomous research loop</b> that invents and back-tests <b>single-ticker</b> ETF trading '
         'strategies on real market data (QuantConnect), and keeps only the ones that beat buy-and-hold <i>and</i> '
         'survive strict out-of-sample + multiple-testing checks. The AI proposes and runs the experiments; a human steers.</p>'
-        f'<p><b>Bottom line today —</b> durable single-ticker alpha is <b>scarce</b>: only {edges} beat buy-and-hold in a '
-        'way that survives the deflation (multiple-testing) gate — every other ETF is best held passively. Each round the '
-        'loop attacks the <b>weakest-Calmar ticker</b> with two competing hypotheses and keeps a winner only if it clears '
-        'every honest gate. The backtest is verified <b>leak-free and fully online</b>, using only models trained in the '
-        'cloud (see <a href="deployment.md">deploy</a>).</p>'
+        f'<p><b>Bottom line today —</b> fully-validated single-ticker alpha is <b>scarce</b>: only {edges} clear every '
+        'gate including the deflation (multiple-testing) check. But the loop is now <b>screening all 311 QC-confirmed '
+        'ETFs</b> against buy-and-hold, and a cluster of <b>commodity &amp; leveraged-equity fits</b> (IAU, GDX, USO, '
+        'SSO, AGQ…) has surfaced — screen-strong and being validated before they earn a book seat. Each round attacks '
+        'one ticker with two competing hypotheses and keeps a winner only if it clears every honest gate. The backtest '
+        'is verified <b>leak-free and fully online</b>, using only models trained in the cloud (see '
+        '<a href="deployment.md">deploy</a>).</p>'
         '<details class="glossary"><summary>How to read the numbers</summary>'
         '<ul><li><b>Calmar</b> = annual return ÷ worst drawdown (higher is better; above 3 is strong).</li>'
         '<li><b>MaxDD (MDD)</b> = the deepest peak-to-trough loss along the way.</li>'
@@ -607,7 +901,7 @@ def build_html():
             '<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
             '<link rel="stylesheet" href="style.css"></head><body>')
     nav = ('<div class="commandbar"><span class="prompt">autoresearch / research-console</span>'
-           '<span class="chapnav"><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
+           '<span class="chapnav"><a href="#screen">universe</a><a href="#leaderboard">leaderboard</a><a href="#map">map</a>'
            '<a href="#story">story</a><a href="#insights">insights</a><a href="#graph">graph</a>'
            '<a href="#rounds">rounds</a><a href="program.md">program.md</a><a href="deployment.md">deploy</a></span>'
            f'<span class="stale" id="stale">live · {nrounds} rounds</span><span class="clock" id="clock"></span></div>')
@@ -628,15 +922,16 @@ def build_html():
           '“not assessed” = too few trades to test. '
           'Click a header to sort.</p></section>')
     cmap = (f'<section class="block" id="map"><h2>What each asset rewards</h2>'
-            '<p class="small">The hard-won lesson: <b>durable machine-learned edges are scarce.</b> Only '
-            '<b>GLD</b> (gold trend-following) and <b>UUP</b> (dollar regime) beat buy-and-hold in a way that '
-            'survives the selection-bias audit. Two-sided <i>timing</i> edges (EEM/TLT/IWM) looked great on a '
-            'short window but <b>decayed to nothing</b> as the out-of-sample window grew — so the rest of the '
-            'universe is best held passively, and the value comes from combining decorrelated holdings.</p>'
+            '<p class="small">The hard-won lesson among the core names: <b>fully-validated machine-learned edges are '
+            'scarce.</b> <b>GLD</b> (gold trend-following) and <b>UUP</b> (dollar regime) are the two that survive the '
+            'selection-bias audit; two-sided <i>timing</i> edges (EEM/TLT/IWM) looked great on a short window but '
+            '<b>decayed</b> as the out-of-sample window grew. The 311-ETF <a href="#screen">universe screen</a> is now '
+            'widening the hunt and has surfaced a cluster of commodity &amp; leveraged-equity fits (IAU, GDX, USO, '
+            'SSO…) — screen-strong, validating before they earn a book seat.</p>'
             f'{_charmap_html(rows)}</section>')
     story = (f'<section class="block" id="story"><h2>The research arc</h2>'
-             '<p class="small">How the project got here, in four acts — from a failed start to the rule that '
-             'now governs the whole board.</p>'
+             '<p class="small">How the project got here — from a failed start, to the rule that governs the core '
+             'board, to the universe-wide screen now running.</p>'
              f'{_acts_html(K)}</section>')
     insights = (f'<section class="block" id="insights"><h2>Top insights</h2>'
                 '<p class="small">The most important things learned, each with the evidence that backs it.</p>'
@@ -645,6 +940,7 @@ def build_html():
                  '<p class="small">How each outcome caused the next hypothesis. Drag · hover · double-click a phase '
                  'cluster to expand. Full page: <a href="causal_graph.html">causal_graph.html</a></p>'
                  f'<div id="graphwrap" data-pending="1">{graph}</div></section>')
+    screen = _screen_section_html()
     ledger_body = _ledger_html_csv(rounds) if csv_rounds else _ledger_html(rounds)
     ledger = (f'<section class="block" id="rounds"><h2>Rounds ({len(rounds)})</h2>'
               '<p class="small">Every round pits <b>two competing hypotheses</b> against the '
@@ -657,8 +953,9 @@ def build_html():
               f'{ledger_body}'
               '<button class="showall" id="showall">show all rounds</button></section>')
     # Status-first: the live poller (Now-running / Idle + scoreboard) anchors the top,
-    # then the champions band and the cold-landing intro, then the data sections.
-    return (head + '<div class="dash">' + nav + hero + _champions_html(K) + _intro_html(K)
+    # then THE UNIVERSE SCREEN (this week's headline), then the legacy single-ticker
+    # champions band / cold-landing intro / data sections (reframed as historical context).
+    return (head + '<div class="dash">' + nav + hero + screen + _champions_html(K) + _intro_html(K)
             + lb + cmap + story + insights + graph_sec + ledger
             + '</div><script>' + CONSOLE_JS + '</script></body></html>')
 
