@@ -1241,17 +1241,24 @@ def generate_labels_dc_reversal(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
                     ev_idx.append(t); ev_dir.append(1)    # upward reversal
         if len(ev_idx) < 20:
             continue
+        # LEAK FIX (2026-06-05 deep leak-hunt): the next-reversal index can be UNBOUNDED bars
+        # ahead, so a near-boundary VAL bar's label could encode a reversal INSIDE the test
+        # segment -> fit-side leak via cal.fit/eval_set (footer _EMBARGO=max(200,max(horizons))
+        # was blind to it, assuming "built-in labelers max at 200"). Bound the reach to the
+        # embargo floor and DECLARE it (3rd return, was None=unbounded); a bar whose next
+        # reversal is > _MAXREACH ahead is left -1 (ignored), keeping the label within embargo.
+        _MAXREACH = 200
         y = np.full(N, -1, dtype=int)
         j = 0
         for t in range(N):
             while j < len(ev_idx) and ev_idx[j] <= t:
                 j += 1
-            if j < len(ev_idx):
-                y[t] = 1 if ev_dir[j] == 1 else 0          # direction of the NEXT reversal
+            if j < len(ev_idx) and (ev_idx[j] - t) <= _MAXREACH:
+                y[t] = 1 if ev_dir[j] == 1 else 0          # direction of the NEXT reversal within reach
         sel = y[tr_idx][y[tr_idx] >= 0]
         bal = float(sel.mean()) if len(sel) else 0.5
         if 0.25 < bal < 0.75:
-            return y, f"dc_reversal_k{k}", None
+            return y, f"dc_reversal_k{k}", _MAXREACH
     return None, "dc_reversal_unbalanced", None
 
 

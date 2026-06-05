@@ -97,10 +97,27 @@ def main():
                             "`_EMBARGO = max(200, int(max(CONFIG.get('horizons') or [0])))` "
                             "(a bare `_EMBARGO = 200` under-embargoes horizons>200 -> test-label leak).")
 
+    # 5. LABELER REACH regression (2026-06-05 deep leak-hunt): generate_labels_dc_reversal labeled each
+    #    bar with the direction of the NEXT reversal — an UNBOUNDED forward reach that returned None as
+    #    its declared horizon. A near-boundary VAL bar's label could then encode a reversal INSIDE the
+    #    test segment, bleeding into cal.fit/eval_set (the fixed embargo is blind to it). The labeler's
+    #    reach MUST be bounded (<= the 200 embargo floor) and DECLARED (3rd return, not None).
+    LABELER = os.path.join(_ROOT, "modules", "labeler.py")
+    if os.path.exists(LABELER):
+        lsrc = open(LABELER).read()
+        m = re.search(r"def generate_labels_dc_reversal\(.*?\n(?=\ndef )", lsrc, re.S)
+        body = m.group(0) if m else ""
+        if "_MAXREACH" not in body:
+            problems.append("labeler.py dc_reversal missing the _MAXREACH reach-bound — its next-reversal "
+                            "reach is unbounded and can bleed test-segment labels into cal.fit/eval_set.")
+        if re.search(r'return y,\s*f"dc_reversal_k\{k\}",\s*None', body):
+            problems.append("labeler.py dc_reversal returns None (unbounded) as its declared reach — must "
+                            "return a bounded reach (<=200 embargo floor) so the fit-set embargo covers it.")
+
     if problems:
         fail(problems)
-    print("LEAK GUARD: \033[92mPASS\033[0m — bar-threshold scalings TRAIN-masked / OOS-invariant (no `np.sum(valid)`); "
-          "embargo horizon-aware.")
+    print("LEAK GUARD: \033[92mPASS\033[0m — bar-threshold TRAIN-masked/OOS-invariant; embargo horizon-aware; "
+          "dc_reversal reach bounded+declared.")
     sys.exit(0)
 
 
