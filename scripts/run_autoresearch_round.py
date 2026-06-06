@@ -145,14 +145,19 @@ def _round_count():
     except Exception:
         return 0
 
-VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset"]
+VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset",
+              # 2026-06-06 new-methods-backlog axes (mirror bar_builder._AXES_ORDER tail):
+              "semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar"]
 VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
                   "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon",
                   "regime_gmm", "cusum_regime", "jump_model", "dc_trend", "dc_reversal", "crash_ahead",
                   "trend_scan", "ker", "trend_leg", "accel", "sharpe_scan", "ofsc", "bde_cusum", "changepoint",
                   "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow",
-                  "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment", "hmm", "always_long"]
+                  "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment",
+                  # 2026-06-06 new-methods-backlog labelers (mirror labeler.LABELERS):
+                  "kllt", "diurnal_anomaly", "rskew", "icss_var", "bocpd_label", "setar", "tlb_reversal",
+                  "hmm", "sticky_hmm", "always_long"]
 VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto", "ddbreaker"]
 
 # 2-node pool params (reused from run_axis_label_parallel.py).

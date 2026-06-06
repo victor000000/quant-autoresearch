@@ -32,6 +32,24 @@ import math
 
 
 # --------------------------------------------------------------------------- #
+# Optional bar-timestamp hook for CALENDAR/SEASONALITY labelers (diurnal_anomaly). #
+# The canonical labeler signature carries no bar_ts; the footer can call           #
+# set_labeler_bar_ts(bar_ts) before the labeler sweep to enable time-of-day        #
+# labelers (the "stash a module global" path in NEW_METHODS_BACKLOG). When unset    #
+# (current footer), those labelers degrade to None — no crash, leak-safe. The       #
+# global is a TRAIN/VAL/TEST-aligned per-bar timestamp array (len == N).            #
+# --------------------------------------------------------------------------- #
+_LABELER_BAR_TS = None
+
+
+def set_labeler_bar_ts(bar_ts):
+    """Footer plumbing hook: register the per-bar emission timestamps so calendar
+    labelers (diurnal_anomaly) can compute minute-of-day. Idempotent; pass None to clear."""
+    global _LABELER_BAR_TS
+    _LABELER_BAR_TS = bar_ts
+
+
+# --------------------------------------------------------------------------- #
 # Forward metrics                                                             #
 # --------------------------------------------------------------------------- #
 def compute_forward_metrics(lc, lr, horizons=[50, 100, 200]):
@@ -772,6 +790,158 @@ def generate_labels_hmm(lc, lr, tr_m, va_m, te_m, fv,
     if best_labels is None:
         return None, "hmm_no_balanced_horizon", None
     return best_labels, best_cfg, best_horizon
+
+
+# --------------------------------------------------------------------------- #
+# Wang's ACTUAL labeler: STICKY Gaussian HMM (numpy, no hmmlearn).             #
+# generate_labels_hmm above uses FREE EM (params='stmc'); Wang's Q&A is        #
+# explicit that the sticky transition floor A_kk>=0.95 is THE key feature      #
+# ("without it EM fits very fast-switching states useless for trend trading";  #
+# dwell >= 1/(1-.95)=20 bars). Fit on TRAIN only; label = SMOOTHED posterior   #
+# (Wang's spec — look-ahead is OK for a TARGET, the deployed signal is the     #
+# causal XGBoost, not the HMM). Validated on synthetic regimes (89% recovery). #
+# --------------------------------------------------------------------------- #
+def _shmm_lse(a, axis):
+    m = np.max(a, axis=axis, keepdims=True)
+    return np.squeeze(m + np.log(np.sum(np.exp(a - m), axis=axis, keepdims=True)), axis=axis)
+
+
+def _shmm_logemit(X, means, covars):
+    K = means.shape[0]
+    out = np.empty((X.shape[0], K))
+    for k in range(K):
+        d = X - means[k]
+        out[:, k] = -0.5 * (np.sum(d * d / covars[k], axis=1) + np.sum(np.log(2.0 * np.pi * covars[k])))
+    return out
+
+
+def _shmm_forward(logB, logpi, logA):
+    N, K = logB.shape
+    la = np.full((N, K), -np.inf)
+    la[0] = logpi + logB[0]
+    for t in range(1, N):
+        la[t] = _shmm_lse(la[t - 1][:, None] + logA, axis=0) + logB[t]
+    return la
+
+
+def _shmm_backward(logB, logA):
+    N, K = logB.shape
+    lb = np.full((N, K), -np.inf)
+    lb[N - 1] = 0.0
+    for t in range(N - 2, -1, -1):
+        lb[t] = _shmm_lse(logA + (logB[t + 1] + lb[t + 1])[None, :], axis=1)
+    return lb
+
+
+def _shmm_fit(X, K, sticky, n_iter):
+    N, D = X.shape
+    qs = np.quantile(X[:, 0], [(k + 0.5) / K for k in range(K)])
+    means = np.zeros((K, D))
+    means[:, 0] = qs
+    if D > 1:
+        means[:, 1:] = np.mean(X[:, 1:], axis=0)
+    covars = np.tile(np.var(X, axis=0) + 1e-9, (K, 1))
+    A = np.full((K, K), (1.0 - sticky) / max(1, K - 1))
+    for k in range(K):
+        A[k, k] = sticky
+    pi = np.full(K, 1.0 / K)
+    for _it in range(n_iter):
+        logB = _shmm_logemit(X, means, covars)
+        logA = np.log(A + 1e-300)
+        logpi = np.log(pi + 1e-300)
+        la = _shmm_forward(logB, logpi, logA)
+        lb = _shmm_backward(logB, logA)
+        lg = la + lb
+        lg = lg - _shmm_lse(lg, axis=1)[:, None]
+        g = np.exp(lg)
+        log_xi = la[:-1, :, None] + logA[None] + (logB[1:] + lb[1:])[:, None, :]
+        log_xi = log_xi - _shmm_lse(log_xi.reshape(N - 1, -1), axis=1)[:, None, None]
+        xi = np.exp(log_xi).sum(axis=0)
+        pi = g[0] / g[0].sum()
+        A = xi / np.maximum(xi.sum(axis=1, keepdims=True), 1e-12)
+        for k in range(K):           # STICKY floor: A_kk >= sticky, renormalise the row
+            if A[k, k] < sticky:
+                off = A[k].copy()
+                off[k] = 0.0
+                s = off.sum()
+                off = (off / s * (1.0 - sticky)) if s > 1e-12 else np.full(K, (1.0 - sticky) / max(1, K - 1))
+                A[k] = off
+                A[k, k] = sticky
+        w = g.sum(axis=0) + 1e-12
+        means = (g.T @ X) / w[:, None]
+        for k in range(K):
+            d = X - means[k]
+            covars[k] = (g[:, k][:, None] * (d * d)).sum(axis=0) / w[k] + 1e-9
+    return pi, A, means, covars
+
+
+def _shmm_smoothed(X, pi, A, means, covars):
+    logB = _shmm_logemit(X, means, covars)
+    logA = np.log(A + 1e-300)
+    la = _shmm_forward(logB, np.log(pi + 1e-300), logA)
+    lb = _shmm_backward(logB, logA)
+    lg = la + lb
+    lg = lg - _shmm_lse(lg, axis=1)[:, None]
+    return np.argmax(np.exp(lg), axis=1)
+
+
+def generate_labels_sticky_hmm(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                               horizons=[50, 100, 200]):
+    """Wang's ACTUAL labeler (Q&A module 2): STICKY 3-state Gaussian HMM, numpy-only.
+
+    obs = [r, |r|]; sticky transition floor A_kk>=0.95 enforced each EM M-step (the feature the
+    free-EM generate_labels_hmm OMITS). Params fit on TRAIN obs ONLY (leak-safe). Label = SMOOTHED
+    posterior over the full sequence (Wang's spec; look-ahead OK for a TARGET — deployed signal is the
+    causal XGBoost). Up = highest TRAIN-mean fwd_ret state; for K=3 the {flat,down} states collapse to
+    0 (Wang's balance trick). Picks the most-balanced horizon. Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    lrf = np.where(np.isfinite(lr), lr, 0.0)
+    X = np.column_stack([lrf, np.abs(lrf)]).astype(float)
+    tr_idx = np.where(tr_m & np.isfinite(lr))[0]
+    if len(tr_idx) < 300:
+        return None, "sticky_hmm_insufficient_train", None
+    try:
+        pi, A, means, covars = _shmm_fit(X[tr_idx], 3, 0.95, 15)
+        # BLOCK-DECODE at the OOS boundary: smooth TRAIN+VAL and TEST separately so the backward
+        # pass never makes a TRAIN/VAL label a function of TEST observations. Append-OOS-invariant
+        # by construction (altering/appending TEST cannot change states[:cut]). Closes the latent
+        # unbounded-backward-reach defect (leak-hunt 2026-06-06; same precedent as dc_reversal's
+        # bounded reach). Params are TRAIN-only; TEST block is decode-only (its labels deploy nothing).
+        _te = np.where(te_m)[0]
+        cut = int(_te[0]) if len(_te) else N
+        states = np.empty(N, dtype=int)
+        states[:cut] = _shmm_smoothed(X[:cut], pi, A, means, covars)
+        if cut < N:
+            states[cut:] = _shmm_smoothed(X[cut:], pi, A, means, covars)
+    except Exception:
+        return None, "sticky_hmm_failed", None
+
+    best_labels, best_cfg, best_score, best_h = None, "", -1.0, None
+    for fk in horizons:
+        fr = fwd_ret[fk]
+        fvd = ~np.isnan(fr)
+        state_dir = {}
+        for s in range(3):
+            sel = tr_m & fvd & fv & (states == s)
+            state_dir[s] = float(np.mean(fr[sel])) if sel.sum() > 0 else -np.inf
+        up_state = int(max(state_dir, key=state_dir.get))
+        y = np.full(N, -1, dtype=int)
+        valid = fv & fvd
+        y[valid] = 0
+        y[valid & (states == up_state)] = 1
+        ly = y >= 0
+        tx = fv & ly & tr_m
+        vx = fv & ly & va_m
+        if tx.sum() < 100 or vx.sum() < 20:
+            continue
+        bal = y[tx].mean()
+        if 0.2 < bal < 0.8:
+            score = min(bal, 1.0 - bal)
+            if score > best_score:
+                best_score, best_labels, best_cfg, best_h = score, y, f"sticky_hmm3_f{fk}_up{up_state}", fk
+    if best_labels is None:
+        return None, "sticky_hmm_no_balanced_horizon", None
+    return best_labels, best_cfg, best_h
 
 
 def generate_labels_always_long(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
@@ -2602,6 +2772,617 @@ def generate_labels_visgraph(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+# --------------------------------------------------------------------------- #
+# NEW LABELERS (NEW_METHODS_BACKLOG.md, 2026-06-06): kllt, diurnal_anomaly,    #
+# rskew, icss_var, bocpd_label, setar, tlb_reversal. All TRAIN-fit; forward    #
+# info is the TARGET only and bounded to the 200-bar embargo floor (or         #
+# block-decoded at the OOS boundary for the full-sequence RTS smoother).       #
+# --------------------------------------------------------------------------- #
+def _kllt_kalman_ll(y, ql, qs, R):
+    """Forward Kalman log-likelihood for the local-linear-trend model on a price
+    series y. State [level, slope]; T=[[1,1],[0,1]]; process noise diag(ql,qs);
+    obs = level + N(0,R). Diffuse prior. Scalar recursion (no matrices). TRAIN-only caller."""
+    n = len(y)
+    if n < 3:
+        return -1e18
+    lvl = float(y[0])
+    slp = 0.0
+    p00, p01, p11 = 1e4, 0.0, 1e4
+    ll = 0.0
+    for t in range(1, n):
+        lvl_p = lvl + slp
+        pp00 = p00 + 2.0 * p01 + p11 + ql
+        pp01 = p01 + p11
+        pp11 = p11 + qs
+        S = pp00 + R
+        if S <= 0:
+            return -1e18
+        v = float(y[t]) - lvl_p
+        ll += -0.5 * (math.log(2.0 * math.pi * S) + v * v / S)
+        k0 = pp00 / S
+        k1 = pp01 / S
+        lvl = lvl_p + k0 * v
+        slp = slp + k1 * v
+        p00 = pp00 - k0 * pp00
+        p01 = pp01 - k0 * pp01
+        p11 = pp11 - k1 * pp01
+    return ll
+
+
+def _kllt_smooth_slope(y, ql, qs, R):
+    """Forward Kalman filter + Rauch-Tung-Striebel backward smoother for the LLT model;
+    returns the MMSE-smoothed SLOPE per index. O(n) with 2x2 ops. The backward pass
+    looks ahead, so callers BLOCK-DECODE at the OOS boundary (TRAIN/VAL never sees TEST)."""
+    n = len(y)
+    if n < 2:
+        return np.zeros(n)
+    T = np.array([[1.0, 1.0], [0.0, 1.0]])
+    Q = np.array([[ql, 0.0], [0.0, qs]])
+    xf = np.zeros((n, 2))
+    Pf = np.zeros((n, 2, 2))
+    xpred = np.zeros((n, 2))
+    Ppred = np.zeros((n, 2, 2))
+    xf[0] = np.array([float(y[0]), 0.0])
+    Pf[0] = np.array([[1e4, 0.0], [0.0, 1e4]])
+    for t in range(1, n):
+        xp = T @ xf[t - 1]
+        Pp = T @ Pf[t - 1] @ T.T + Q
+        xpred[t] = xp
+        Ppred[t] = Pp
+        S = Pp[0, 0] + R
+        if S <= 0:
+            S = 1e-12
+        v = float(y[t]) - xp[0]
+        K = Pp[:, 0] / S
+        xf[t] = xp + K * v
+        Pf[t] = Pp - np.outer(K, Pp[0, :])
+    xs = np.zeros((n, 2))
+    xs[n - 1] = xf[n - 1]
+    for t in range(n - 2, -1, -1):
+        Pp = Ppred[t + 1]
+        try:
+            Ppinv = np.linalg.inv(Pp)
+        except np.linalg.LinAlgError:
+            Ppinv = np.linalg.pinv(Pp)
+        C = Pf[t] @ T.T @ Ppinv
+        xs[t] = xf[t] + C @ (xs[t + 1] - xpred[t + 1])
+    return xs[:, 1]
+
+
+def generate_labels_kllt(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                         horizons=[50, 100, 200]):
+    """KLLT — Kalman RTS-smoothed-slope SIGN label (Harvey 1989 LLT; Rauch-Tung-Striebel 1965).
+    Matched look-ahead target for the kalman filtered-slope axis: the causal filtered slope is
+    the natural predictor of the MMSE RTS-smoothed slope SIGN. R=var(TRAIN returns); a small
+    (q_level,q_slope) grid is MLE'd on the TRAIN price segment (forward Kalman LL); the best q
+    refits a forward filter + RTS smoother over the FULL series for the smoothed slope ss. The
+    smoother looks ahead, so it is BLOCK-DECODED at the OOS boundary (TRAIN+VAL smoothed
+    separately from TEST) — a TRAIN/VAL label never depends on a TEST observation (same
+    precedent as sticky_hmm). thr = TRAIN quantile of ss; y=1 if ss>=thr else 0 (finite), -1
+    elsewhere. Look-ahead is the legitimate TARGET. Returns (labels, cfg, None)."""
+    N = len(lc)
+    tr_idx = np.where(tr_m & fv)[0]
+    if len(tr_idx) < 300:
+        return None, "kllt_insufficient_train", None
+    lrf = lr[tr_m & np.isfinite(lr)]
+    if lrf.size < 50:
+        return None, "kllt_insufficient_train", None
+    R = float(np.var(lrf))
+    if not np.isfinite(R) or R <= 0:
+        return None, "kllt_degenerate", None
+    seg = np.asarray(lc[tr_idx], dtype=float)            # contiguous TRAIN prices
+    best_ll, best_q = -1e18, None
+    for ql in (R * 1e-2, R * 1.0, R * 1e2):
+        for qs in (R * 1e-6, R * 1e-4, R * 1e-2):
+            ll = _kllt_kalman_ll(seg, ql, qs, R)
+            if ll > best_ll:
+                best_ll, best_q = ll, (ql, qs)
+    if best_q is None:
+        return None, "kllt_mle_failed", None
+    ql, qs = best_q
+    # BLOCK-DECODE the RTS smoother at the OOS boundary: TRAIN+VAL vs TEST decoded
+    # separately so the backward pass never makes a TRAIN/VAL slope a function of a
+    # TEST observation. Append-OOS-invariant on [:cut] by construction.
+    _te = np.where(te_m)[0]
+    cut = int(_te[0]) if len(_te) else N
+    ss = np.full(N, np.nan)
+    if cut >= 2:
+        ss[:cut] = _kllt_smooth_slope(np.asarray(lc[:cut], dtype=float), ql, qs, R)
+    if cut < N and (N - cut) >= 2:
+        ss[cut:] = _kllt_smooth_slope(np.asarray(lc[cut:], dtype=float), ql, qs, R)
+    trsel = tr_m & fv & np.isfinite(ss)
+    if int(trsel.sum()) < 100:
+        return None, "kllt_no_smoothed", None
+    best, best_cfg, best_score = None, "", -1.0
+    for q in (0.4, 0.5, 0.6):
+        thr = float(np.quantile(ss[trsel], q))
+        y = np.full(N, -1, dtype=int)
+        fin = fv & np.isfinite(ss)
+        y[fin] = (ss[fin] >= thr).astype(int)
+        ly = y >= 0
+        tx = fv & ly & tr_m
+        vx = fv & ly & va_m
+        if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+            continue
+        bal = float(y[tx].mean())
+        if 0.1 < bal < 0.9:
+            score = min(bal, 1.0 - bal)
+            if score > best_score:
+                best_score, best, best_cfg = score, y, f"kllt_ql{q}_thr{round(thr, 5)}"
+    if best is None:
+        return None, "kllt_no_balanced", None
+    return best, best_cfg, None
+
+
+def _minute_of_day(bar_ts):
+    """Vectorised minute-of-day (0..1439) from a per-bar timestamp array, mirroring the
+    footer's np.datetime64(str(t)) coercion. Causal: each bar's own emission time only."""
+    ts = np.array([np.datetime64(str(t)) for t in bar_ts])
+    mins = ((ts.astype("datetime64[m]") - ts.astype("datetime64[D]")) / np.timedelta64(1, "m"))
+    return mins.astype(int), len(ts)
+
+
+def generate_labels_diurnal_anomaly(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                    horizons=[50, 100, 200]):
+    """DIURNAL_ANOMALY — seasonal information-shock label (Andersen-Bollerslev 1997 FFF).
+    The program's FIRST calendar/seasonality labeler: trade only bars whose activity is
+    ABNORMAL for its time-of-day, then label them directionally. s2[m]=per-minute-of-day TRAIN
+    mean of lr^2 (>=20 obs, else global mean); z=lr^2/s2[mod] is the deseasonalised surprise
+    (causal — current bar only). For H,q a TRAIN-quantile cut on z selects abnormal bars;
+    y=1 if fwd_ret>0 else 0 (forward = TARGET, bounded by H<=200). Picks the most TRAIN-balanced
+    (H,q). REQUIRES per-bar timestamps via set_labeler_bar_ts; degrades to None when unset
+    (footer plumbing handled separately). Returns (labels, cfg, horizon)."""
+    if _LABELER_BAR_TS is None:
+        return None, "diurnal_no_bar_ts", None
+    N = len(lc)
+    try:
+        mod, nts = _minute_of_day(_LABELER_BAR_TS)
+    except Exception:
+        return None, "diurnal_ts_error", None
+    if nts != N:
+        return None, "diurnal_ts_len_mismatch", None
+    r2 = np.where(np.isfinite(lr), lr * lr, np.nan)
+    trsel0 = tr_m & fv & np.isfinite(r2)
+    if int(trsel0.sum()) < 300:
+        return None, "diurnal_insufficient_train", None
+    gmean = float(np.mean(r2[trsel0]))
+    if not np.isfinite(gmean) or gmean <= 0:
+        return None, "diurnal_degenerate", None
+    s2 = np.full(1440, gmean)
+    modt = mod[trsel0]
+    r2t = r2[trsel0]
+    for m in range(1440):
+        sm = modt == m
+        if int(sm.sum()) >= 20:
+            v = float(np.mean(r2t[sm]))
+            if np.isfinite(v) and v > 0:
+                s2[m] = v
+    denom = s2[mod]
+    z = np.where(np.isfinite(r2) & (denom > 0), r2 / denom, np.nan)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    ztr = tr_m & fv & np.isfinite(z)
+    if int(ztr.sum()) < 100:
+        return None, "diurnal_no_z", None
+    for H in horizons:
+        fr = fwd_ret[H]
+        fvd = np.isfinite(fr)
+        for q in (0.6, 0.7, 0.8):
+            cut = float(np.quantile(z[ztr], q))
+            y = np.full(N, -1, dtype=int)
+            abn = fv & np.isfinite(z) & fvd & (z >= cut)
+            y[abn & (fr > 0)] = 1
+            y[abn & (fr <= 0)] = 0
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1.0 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"diurnal_H{H}_q{q}", H
+    if best is None:
+        return None, "diurnal_no_balanced", None
+    return best, best_cfg, best_h
+
+
+def generate_labels_rskew(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                          horizons=[40, 80, 160]):
+    """RSKEW — forward realized-SKEWNESS sign label (Amaya-Christoffersen-Jacobs-Vasquez 2015 JFE).
+    Targets the 3rd realized moment: scale/drift-free down-tail asymmetry, orthogonal to crash_ahead
+    (net move) and mfe_mae (path extrema). Prefix sums S2=cumsum(lr^2), S3=cumsum(lr^3); over forward
+    window H, rv=S2[t+H+1]-S2[t+1], sk=sqrt(H)*(S3 diff)/rv^1.5. Median-centre sk on TRAIN; |sc|>=
+    TRAIN-quantile cut selects skewed windows; y=1 if LEFT-skewed (sc<=-cut), 0 if right-skewed.
+    Forward window = TARGET only (H<=160<=embargo). Most TRAIN-balanced (H,q). Returns (labels, cfg, H)."""
+    N = len(lc)
+    lrf = np.where(np.isfinite(lr), lr, 0.0)
+    P2 = np.concatenate([[0.0], np.cumsum(lrf * lrf)])
+    P3 = np.concatenate([[0.0], np.cumsum(lrf * lrf * lrf)])
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H + 1:
+            continue
+        m = N - H
+        t = np.arange(m)
+        rv = P2[t + H + 1] - P2[t + 1]
+        sr3 = P3[t + H + 1] - P3[t + 1]
+        ok = rv > 1e-12
+        sk = np.full(N, np.nan)
+        sk[:m] = np.where(ok, math.sqrt(H) * sr3 / np.where(ok, rv, 1.0) ** 1.5, np.nan)
+        trsel = tr_m & fv & np.isfinite(sk)
+        if int(trsel.sum()) < 100:
+            continue
+        med = float(np.median(sk[trsel]))
+        sc = sk - med
+        asc = np.abs(sc)
+        for q in (0.3, 0.4, 0.5):
+            cut = float(np.quantile(asc[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            fin = fv & np.isfinite(sc)
+            y[fin & (sc <= -cut)] = 1              # left-skewed (down-tail asymmetry)
+            y[fin & (sc >= cut)] = 0               # right-skewed
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1.0 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"rskew_H{H}_q{q}", H
+    if best is None:
+        return None, "rskew_no_balanced", None
+    return best, best_cfg, best_h
+
+
+def generate_labels_icss_var(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                             horizons=[60, 120, 200]):
+    """ICSS_VAR — CUSUM-of-squares variance-break onset-DIRECTION label (Inclan-Tiao 1994 JASA;
+    deploy rationale Moreira-Muir 2017). The novel head: variance FALLING (calm/risk-on, y=1) vs
+    RISING (turbulence, y=0) at the forward break, not the calm/turbulent LEVEL split (carry).
+    csq=cumsum(lr^2) prefix; over window H, D_m=Ck/Cn - m/H, IT=sqrt(H/2)*max|D|; dir=v2-v1 (post-
+    minus pre-break per-bar variance). |IT|>=TRAIN-quantile cut selects strong breaks. Forward window
+    = TARGET only (H<=200<=embargo). Deploy as a META/sizing gate; A/B vs carry. Returns (labels, cfg, H)."""
+    N = len(lc)
+    lrf = np.where(np.isfinite(lr), lr, 0.0)
+    csq = np.concatenate([[0.0], np.cumsum(lrf * lrf)])
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= H + 1:
+            continue
+        m = N - H
+        t = np.arange(m)
+        base = csq[t + 1]
+        Cn = csq[t + 1 + H] - base
+        ok = Cn > 1e-18
+        Cn_safe = np.where(ok, Cn, 1.0)
+        maxD = np.zeros(m)
+        argm = np.ones(m, dtype=int)
+        Ck_at = np.zeros(m)
+        Hf = float(H)
+        for mm in range(1, H):
+            Ck = csq[t + 1 + mm] - base
+            D = np.where(ok, Ck / Cn_safe - mm / Hf, 0.0)
+            aD = np.abs(D)
+            upd = aD > maxD
+            maxD = np.where(upd, aD, maxD)
+            argm = np.where(upd, mm, argm)
+            Ck_at = np.where(upd, Ck, Ck_at)
+        IT = np.full(N, np.nan)
+        dirarr = np.full(N, np.nan)
+        ITv = math.sqrt(H / 2.0) * maxD
+        v1 = Ck_at / np.maximum(argm, 1)
+        v2 = (Cn - Ck_at) / np.maximum(H - argm, 1)
+        IT[:m] = np.where(ok, ITv, np.nan)
+        dirarr[:m] = np.where(ok, v2 - v1, np.nan)
+        trsel = tr_m & fv & np.isfinite(IT)
+        if int(trsel.sum()) < 100:
+            continue
+        for q in (0.5, 0.6, 0.7):
+            cut = float(np.quantile(IT[trsel], q))
+            y = np.full(N, -1, dtype=int)
+            strong = fv & np.isfinite(IT) & np.isfinite(dirarr) & (IT >= cut)
+            y[strong & (dirarr < 0)] = 1          # variance FALLING -> calm / risk-on
+            y[strong & (dirarr >= 0)] = 0         # variance RISING -> turbulence
+            ly = y >= 0
+            tx = fv & ly & tr_m
+            vx = fv & ly & va_m
+            if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                continue
+            bal = float(y[tx].mean())
+            if 0.2 < bal < 0.8:
+                score = min(bal, 1.0 - bal)
+                if score > best_score:
+                    best_score, best, best_cfg, best_h = score, y, f"icss_H{H}_q{q}", H
+    if best is None:
+        return None, "icss_no_balanced", None
+    return best, best_cfg, best_h
+
+
+_LGAMMA = np.vectorize(math.lgamma)
+
+
+def _bocpd_logsumexp(a):
+    m = float(np.max(a))
+    if not np.isfinite(m):
+        return m
+    return m + math.log(float(np.sum(np.exp(a - m))))
+
+
+def _bocpd_run(x, mu0, kappa0, alpha0, beta0, hazard, Rmax=300):
+    """Adams-MacKay 2007 BOCPD with a Normal-Gamma (Student-T predictive) on a CAUSAL forward
+    pass: cp[t]=P(run length resets at t)=P_reset, rl[t]=MAP run length. Each cp[t] uses only
+    x[0..t] (append-OOS-invariant on any prefix). Log-space; Rmax truncation. numpy only."""
+    n = len(x)
+    cp = np.zeros(n)
+    rl = np.zeros(n, dtype=int)
+    muT = np.array([float(mu0)])
+    kaT = np.array([float(kappa0)])
+    alT = np.array([float(alpha0)])
+    beT = np.array([float(beta0)])
+    logR = np.array([0.0])
+    logH = math.log(hazard)
+    log1mH = math.log1p(-hazard)
+    for t in range(n):
+        xt = float(x[t])
+        df = 2.0 * alT
+        scale2 = np.maximum(beT * (kaT + 1.0) / (alT * kaT), 1e-300)
+        lp = (_LGAMMA((df + 1.0) / 2.0) - _LGAMMA(df / 2.0)
+              - 0.5 * np.log(df * math.pi * scale2)
+              - ((df + 1.0) / 2.0) * np.log1p((xt - muT) ** 2 / (df * scale2)))
+        log_growth = logR + lp + log1mH
+        log_cp = _bocpd_logsumexp(logR + lp + logH)
+        new_logR = np.concatenate([[log_cp], log_growth])
+        new_logR = new_logR - _bocpd_logsumexp(new_logR)
+        new_mu = np.concatenate([[float(mu0)], (kaT * muT + xt) / (kaT + 1.0)])
+        new_ka = np.concatenate([[float(kappa0)], kaT + 1.0])
+        new_al = np.concatenate([[float(alpha0)], alT + 0.5])
+        new_be = np.concatenate([[float(beta0)], beT + kaT * (xt - muT) ** 2 / (2.0 * (kaT + 1.0))])
+        if len(new_logR) > Rmax:
+            new_logR = new_logR[:Rmax]
+            new_mu = new_mu[:Rmax]
+            new_ka = new_ka[:Rmax]
+            new_al = new_al[:Rmax]
+            new_be = new_be[:Rmax]
+            new_logR = new_logR - _bocpd_logsumexp(new_logR)
+        logR, muT, kaT, alT, beT = new_logR, new_mu, new_ka, new_al, new_be
+        cp[t] = math.exp(float(new_logR[0]))
+        rl[t] = int(np.argmax(new_logR))
+    return cp, rl
+
+
+def generate_labels_bocpd_label(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                horizons=[50, 100, 200]):
+    """BOCPD_LABEL — Bayesian break-AHEAD label (Adams-MacKay 2007). BOCPD's joint mean+variance
+    changepoint posterior as a crash/regime precursor, complementary to crash_ahead. Normal-Gamma
+    prior from TRAIN returns; constant hazard swept over TRAIN segment counts {10,20,40}. A CAUSAL
+    forward pass over the FULL series yields cp[t]=P_reset (each cp[t] uses only x[0..t], so the
+    pass is append-OOS-invariant — no block-decode needed). Break-ahead head: y=1 if any
+    cp[t+1..t+H]>=cut else 0; cut = TRAIN-quantile sweep {.5,.6,.7}; forward reach H<=200<=embargo.
+    Most TRAIN-balanced (hazard,H,cut). Returns (labels, cfg, horizon)."""
+    N = len(lc)
+    lrf = np.where(np.isfinite(lr), lr, 0.0)
+    tr_idx = np.where(tr_m & fv)[0]
+    if len(tr_idx) < 300:
+        return None, "bocpd_insufficient_train", None
+    xt_tr = lrf[tr_idx]
+    mu0 = float(np.mean(xt_tr))
+    sd = float(np.std(xt_tr))
+    if not np.isfinite(sd) or sd <= 0:
+        return None, "bocpd_degenerate", None
+    kappa0, alpha0, beta0 = 1.0, 1.0, float(sd * sd)
+    ntr = float(len(tr_idx))
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for seg in (10, 20, 40):
+        hazard = float(seg) / ntr
+        if not (0.0 < hazard < 1.0):
+            continue
+        try:
+            cp, _rl = _bocpd_run(lrf, mu0, kappa0, alpha0, beta0, hazard, Rmax=300)
+        except Exception:
+            continue
+        cptr = tr_m & fv & np.isfinite(cp)
+        if int(cptr.sum()) < 100:
+            continue
+        rev = cp[::-1]
+        for H in horizons:
+            rrm = pd.Series(rev).rolling(window=H, min_periods=1).max().to_numpy()[::-1]
+            fm = np.full(N, np.nan)            # fm[t] = max(cp[t+1 .. t+H])
+            fm[:N - 1] = rrm[1:]
+            valid = (np.arange(N) + H < N) & fv
+            for q in (0.5, 0.6, 0.7):
+                cut = float(np.quantile(cp[cptr], q))
+                y = np.full(N, -1, dtype=int)
+                y[valid] = 0
+                y[valid & np.isfinite(fm) & (fm >= cut)] = 1
+                ly = y >= 0
+                tx = fv & ly & tr_m
+                vx = fv & ly & va_m
+                if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                    continue
+                bal = float(y[tx].mean())
+                if 0.2 < bal < 0.8:
+                    score = min(bal, 1.0 - bal)
+                    if score > best_score:
+                        best_score, best, best_cfg, best_h = score, y, f"bocpd_s{seg}_H{H}_q{q}", H
+    if best is None:
+        return None, "bocpd_no_balanced", None
+    return best, best_cfg, best_h
+
+
+def generate_labels_setar(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                          horizons=[50, 100, 200]):
+    """SETAR — observable-THRESHOLD AR regime label (Tong-Lim 1980; Tsay 1989; Hansen 2000).
+    A non-latent regime: the regime is a deterministic threshold on a lagged return z=y_{t-d},
+    with regime-SPECIFIC AR coefficients (a fitted momentum-vs-reversion sign per regime) — the
+    momentum/reversion switch the EEM/TLT opposing edges need. For (d,p) a grid threshold c is
+    chosen by minimum pooled SSR of two TRAIN OLS fits; the CAUSAL label = sign of the one-step
+    AR forecast yhat (lagged returns only -> append-OOS-invariant, no forward info). Config is
+    selected on VAL directional accuracy minus 0.02*p with TRAIN balance in (0.2,0.8). A/B +
+    permuted-label control are mandatory downstream. Returns (labels, cfg, None)."""
+    N = len(lc)
+    y_s = np.where(np.isfinite(lr), lr, 0.0)
+    tr_idx = np.where(tr_m & fv)[0]
+    if len(tr_idx) < 200:
+        return None, "setar_insufficient_train", None
+    best = None
+    for d in (1, 2, 3):
+        z = np.concatenate([np.zeros(d), y_s[:-d]])        # z[t] = y[t-d], zero-pad prefix
+        for p in (1, 2):
+            cols = [np.ones(N)]
+            for lag in range(1, p + 1):
+                cols.append(np.concatenate([np.zeros(lag), y_s[:-lag]]))
+            Xf = np.column_stack(cols)
+            warm = max(d, p)
+            fitsel = tr_idx[tr_idx >= warm]
+            if len(fitsel) < 100:
+                continue
+            ztr = z[fitsel]
+            Xfit = Xf[fitsel]
+            yfit = y_s[fitsel]
+            cand = np.quantile(ztr, np.linspace(0.15, 0.85, 17))
+            best_ssr, best_c, best_bl, best_bh = None, None, None, None
+            for c in cand:
+                lo = ztr <= c
+                hi = ~lo
+                if int(lo.sum()) < p + 2 or int(hi.sum()) < p + 2:
+                    continue
+                try:
+                    bl = np.linalg.lstsq(Xfit[lo], yfit[lo], rcond=None)[0]
+                    bh = np.linalg.lstsq(Xfit[hi], yfit[hi], rcond=None)[0]
+                except np.linalg.LinAlgError:
+                    continue
+                ssr = float(np.sum((yfit[lo] - Xfit[lo] @ bl) ** 2)
+                            + np.sum((yfit[hi] - Xfit[hi] @ bh) ** 2))
+                if best_ssr is None or ssr < best_ssr:
+                    best_ssr, best_c, best_bl, best_bh = ssr, c, bl, bh
+            if best_ssr is None:
+                continue
+            yhat = np.where(z <= best_c, Xf @ best_bl, Xf @ best_bh)
+            fin = np.isfinite(yhat)
+            fin[:warm] = False
+            lab = np.full(N, -1, dtype=int)
+            labsel = fin & fv
+            lab[labsel] = (yhat[labsel] > 0).astype(int)
+            txsel = tr_m & fv & (lab >= 0)
+            if int(txsel.sum()) < 100:
+                continue
+            bal = float(lab[txsel].mean())
+            if not (0.2 < bal < 0.8):
+                continue
+            for H in horizons:
+                fr = fwd_ret[H]
+                fvd = np.isfinite(fr)
+                vxsel = va_m & fv & fvd & (lab >= 0)
+                if int(vxsel.sum()) < 20:
+                    continue
+                actual = (fr[vxsel] > 0).astype(int)
+                acc = float(np.mean(lab[vxsel] == actual))
+                score = acc - 0.02 * p
+                if best is None or score > best[0]:
+                    best = (score, lab, f"setar_d{d}_p{p}_H{H}", None)
+    if best is None:
+        return None, "setar_no_balanced", None
+    return best[1], best[2], best[3]
+
+
+def _tlb_events(lc, g):
+    """Three-Line-Break replay with a min-line-size g (Nison 1994). Returns (event_bar, is_rev):
+    a new line forms on a g-continuation (is_rev=0) or a break beyond the last<=3 lines (reversal,
+    is_rev=1). Each line/event at bar t depends only on lc[0..t] (causal)."""
+    n = len(lc)
+    event_bar = []
+    is_rev = []
+    lines = [float(lc[0])]
+    mode = 0
+    for t in range(1, n):
+        p = float(lc[t])
+        if mode == 0:
+            if p >= lines[-1] + g:
+                lines.append(p)
+                mode = 1
+                event_bar.append(t)
+                is_rev.append(0)
+            elif p <= lines[-1] - g:
+                lines.append(p)
+                mode = -1
+                event_bar.append(t)
+                is_rev.append(0)
+        elif mode == 1:
+            low3 = min(lines[-3:])
+            if p >= lines[-1] + g:
+                lines.append(p)
+                event_bar.append(t)
+                is_rev.append(0)
+            elif p <= low3:
+                lines.append(p)
+                mode = -1
+                event_bar.append(t)
+                is_rev.append(1)
+        else:
+            high3 = max(lines[-3:])
+            if p <= lines[-1] - g:
+                lines.append(p)
+                event_bar.append(t)
+                is_rev.append(0)
+            elif p >= high3:
+                lines.append(p)
+                mode = 1
+                event_bar.append(t)
+                is_rev.append(1)
+    return event_bar, is_rev
+
+
+def generate_labels_tlb_reversal(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                 horizons=[50, 100, 200]):
+    """TLB_REVERSAL — leg-exhaustion reversal-vs-continuation label (Nison 1994 Three-Line-Break).
+    A different target column from dc_reversal (turn DIRECTION): will the NEXT Three-Line-Break
+    event be a REVERSAL (1) or a CONTINUATION (0) — leg exhaustion on the self-adapting TLB
+    geometry. g=k*std(TRAIN returns) (the min-line-size floor that makes bar counts tractable at
+    minute freq); replay the line-break process over bar log-closes (causal) and, for each bar t,
+    label it with is_rev of the NEXT line event within the 200-bar embargo floor (exactly the
+    dc_reversal 993edcf bounded-reach fix). Reversal-vs-continuation is intrinsically imbalanced
+    (continuations dominate trends — a rare-event target like crash_ahead), so the learnable band
+    is widened from the spec's nominal (0.25,0.75) to (0.15,0.85), still picking the most balanced
+    k (closest to 0.5). Returns (labels, cfg, 200)."""
+    N = len(lc)
+    trr = lr[tr_m & np.isfinite(lr)]
+    if trr.size < 50:
+        return None, "tlb_rev_insufficient_train", None
+    sigma = float(np.std(trr))
+    if not np.isfinite(sigma) or sigma <= 0:
+        return None, "tlb_rev_degenerate", None
+    _MAXREACH = 200
+    best = None
+    for k in (0.5, 1.0, 1.5, 2.0, 3.0):
+        g = k * sigma
+        if g <= 0:
+            continue
+        eb, er = _tlb_events(lc, g)
+        if len(eb) < 20:
+            continue
+        y = np.full(N, -1, dtype=int)
+        j = 0
+        for t in range(N):
+            while j < len(eb) and eb[j] <= t:
+                j += 1
+            if j < len(eb) and (eb[j] - t) <= _MAXREACH:
+                y[t] = er[j]                       # is the NEXT line event a reversal?
+        sel_idx = np.where(tr_m & fv & (y >= 0))[0]
+        if len(sel_idx) < 100:
+            continue
+        bal = float(y[sel_idx].mean())
+        if 0.15 < bal < 0.85:
+            score = -abs(bal - 0.5)
+            if best is None or score > best[0]:
+                best = (score, y, f"tlb_reversal_k{k}", _MAXREACH)
+    if best is None:
+        return None, "tlb_rev_no_balanced", None
+    return best[1], best[2], best[3]
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
@@ -2627,6 +3408,13 @@ LABELERS = {
     "revert": generate_labels_revert,                 # mean-reversion / contrarian (new, non-HMM; labels the TURN, not continuation)
     "turn_scan": generate_labels_turn_scan,           # forward extremum-TIMING / V-Λ reversal (new, non-HMM; reads turning-point timing)
     "perment": generate_labels_perment,               # permutation-entropy predictability (new, non-HMM, info-theoretic; ordinal structure)
+    "kllt": generate_labels_kllt,                      # Kalman RTS-smoothed-slope SIGN (state-space; matched target for the kalman axis; new, non-HMM)
+    "diurnal_anomaly": generate_labels_diurnal_anomaly,  # seasonal information-shock (FIRST calendar/seasonality labeler; needs set_labeler_bar_ts; new, non-HMM)
+    "rskew": generate_labels_rskew,                    # forward realized-SKEWNESS sign (3rd realized moment / down-tail asymmetry; new, non-HMM)
+    "icss_var": generate_labels_icss_var,              # Inclan-Tiao CUSUM-of-squares variance-break onset-DIRECTION (vol-regime meta gate; new, non-HMM)
+    "bocpd_label": generate_labels_bocpd_label,        # Bayesian online break-AHEAD precursor (joint mean+variance changepoint; new, non-HMM)
+    "setar": generate_labels_setar,                    # observable-threshold AR regime (momentum-vs-reversion switch; non-latent; new, non-HMM)
+    "tlb_reversal": generate_labels_tlb_reversal,      # Three-Line-Break leg-exhaustion reversal-vs-continuation (adaptive-leg geometry; new, non-HMM)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
     "dc_reversal": generate_labels_dc_reversal,
@@ -2645,13 +3433,14 @@ LABELERS = {
     "trend_scan": generate_labels_trend_scan,         # AFML trend-scanning (unsupervised, non-HMM).
     "regime_gmm": generate_labels_regime_gmm,         # causal-feature GMM regimes.
     "cusum_regime": generate_labels_cusum_regime,     # CUSUM change-point regimes.
-    "hmm": generate_labels_hmm,                       # BASELINE comparator only.
+    "hmm": generate_labels_hmm,                       # BASELINE comparator only (FREE EM, no sticky floor).
+    "sticky_hmm": generate_labels_sticky_hmm,         # Wang's ACTUAL labeler: sticky Gaussian HMM (A_kk>=0.95), numpy.
     "always_long": generate_labels_always_long,       # BASELINE: buy-and-hold floor.
 }
 
 # Which registry entries are Wang's FEATURED methods vs. BASELINE comparators.
 FEATURED_LABELERS = [
-    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment", "kmeans2stage", "carry", "tertile", "bgm",
+    "accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "changepoint", "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow", "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment", "kllt", "diurnal_anomaly", "rskew", "icss_var", "bocpd_label", "setar", "tlb_reversal", "kmeans2stage", "carry", "tertile", "bgm",
     "agglomerative", "jump_model", "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
     "triple_barrier_tight_meta", "triple_barrier_ae", "trend_scan", "multi_horizon",
     "regime_gmm", "cusum_regime",

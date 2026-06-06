@@ -30,6 +30,9 @@ MEMBERS = {
     "HYG":  (dict(ticker="HYG", axis="logdollar", labeler="always_long", thresh=0.55, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t55", 1.828),
     "TIP":  (dict(ticker="TIP", axis="logdollar", labeler="always_long", thresh=0.45, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t45", 1.146),
     "DBC":  (dict(ticker="DBC", axis="logdollar", labeler="always_long", thresh=0.45, sizing="cdf_overlay"), "logdollar_always_long_cdf_overlay_t45", 0.912),
+    # 2026-06-06: oil mean-reversion (3rd mechanism), fully validated (permute/decay/cost/DSR 0.915). __CELL__ -> latest_key (just-trained revert cell).
+    "UCO":  (dict(ticker="UCO", axis="logdollar", labeler="revert", thresh=0.45, sizing="cdf_overlay"), "__CELL__", 3.506),
+    "USO":  (dict(ticker="USO", axis="logdollar", labeler="revert", thresh=0.45, sizing="cdf_overlay"), "__CELL__", 2.175),
 }
 CAL = {k: v[2] for k, v in MEMBERS.items()}
 
@@ -111,11 +114,12 @@ def main():
     print(f"\n{len(common)} common timestamps, ppy~{ppy:.1f}, members={list(series.keys())}\n", flush=True)
     avail = set(series.keys())
     COMPS = [
-        ("prior core (GLD/UUP/TIP/DBC/HYG)", ["GLD", "UUP", "TIP", "DBC", "HYG"]),
-        ("+ IWM added (6)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG"]),
-        ("drop UUP, keep IWM", ["GLD", "IWM", "TIP", "DBC", "HYG"]),
-        ("GLD + diversifiers only (no UUP/IWM)", ["GLD", "TIP", "DBC", "HYG"]),
-        ("both alpha names (GLD/UUP/IWM)", ["GLD", "UUP", "IWM"]),
+        ("CURRENT book (GLD/UUP/IWM/TIP/DBC/HYG, 6)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG"]),
+        ("+ UCO oil-reversion 2x (7)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "UCO"]),
+        ("+ USO oil-reversion 1x (7)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO"]),
+        ("alpha core (GLD/UUP/IWM)", ["GLD", "UUP", "IWM"]),
+        ("alpha core + USO 1x", ["GLD", "UUP", "IWM", "USO"]),
+        ("alpha core + UCO 2x", ["GLD", "UUP", "IWM", "UCO"]),
     ]
     lines = ["", "## Honest book re-derivation (real OOS series; decorr champion predates SOXX + audits)", "",
              f"Weights ∝ Calmar² (the deployed scheme), gross=1, on {len(common)}-pt common OOS grid.", "", "```",

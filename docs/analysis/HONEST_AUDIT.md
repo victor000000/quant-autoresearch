@@ -1,57 +1,123 @@
 # Session-scale honest audit (Deflated Sharpe at true trial counts)
 
-Audited 269 model trials across 11 assets with >=5 trials & positive champion. Holm-Bonferroni FWER<=0.05, BH FDR<=0.10.
+Audited 1913 model trials across 99 assets with >=5 trials & positive champion. Holm-Bonferroni FWER<=0.05, BH FDR<=0.10.
 
 ```
 ETF      N  Calmar  SR_ann  Emax_ann  PSR>0    DSR  Holm   BH  verdict
 ----------------------------------------------------------------------
-GLD     80   4.708   2.652     1.820  1.000  0.925 False False  marginal [neither]
-SOXX    43   3.025   1.521     0.631  0.999  0.961 False False  REAL (survives best-of-N) [neither]
-UUP     52   2.540   1.275     1.121  0.984  0.602 False False  FAILS deflation [neither]
-SLV     16   1.870   1.505     0.531  0.992  0.941 False False  marginal [neither]
-EEM      8   1.380   0.901     1.033  0.970  0.391 False False  FAILS deflation [neither]
-QQQ     11   1.046   1.349     0.657  0.988  0.876 False False  FAILS deflation [neither]
-XLE      6   1.023   0.912     0.534  0.937  0.736 False False  FAILS deflation [neither]
-DBC      7   0.912   0.774     0.508  0.900  0.671 False False  FAILS deflation [neither]
-KRE      7   0.899   1.018     0.128  0.962  0.940 False False  marginal [neither]
-IWM      9   0.881   0.910     0.567  0.936  0.717 False False  FAILS deflation [neither]
-TLT     16   0.285   0.393     0.560  0.745  0.389 False False  FAILS deflation [neither]
+BIL      6  30.430  13.653     1.627  1.000  1.000  True True  REAL (survives best-of-N) [Holm+BH]
+SSO     51   6.960   0.840     1.320  0.998  0.054 False False  FAILS deflation [neither]
+SPXL    81   5.638   0.733     1.276  0.997  0.020 False False  FAILS deflation [neither]
+GLD    118   4.708   2.652     1.751  1.000  0.941 False False  marginal [neither]
+QLD     49   4.056   1.716     1.314  1.000  0.859 False False  FAILS deflation [neither]
+UCO     53   3.506   1.712     0.888  0.998  0.915 False False  marginal [neither]
+IAU     61   3.351   1.907     1.552  0.999  0.718 False False  FAILS deflation [neither]
+TLT     44   3.315   0.949     0.824  1.000  0.675 False False  FAILS deflation [neither]
+TNA     81   3.195   1.331     0.889  1.000  0.867 False False  FAILS deflation [neither]
+SOXX    53   3.025   1.521     1.040  0.999  0.830 False False  FAILS deflation [neither]
+UUP     76   2.540   1.275     1.332  0.984  0.461 False False  FAILS deflation [neither]
+SPY      9   2.525   1.563     0.927  0.996  0.858 False False  FAILS deflation [neither]
+AGQ     51   2.489   1.486     1.343  0.994  0.595 False False  FAILS deflation [neither]
+GDX     57   2.478   1.642     1.061  0.997  0.832 False False  FAILS deflation [neither]
+UGL     51   2.471   1.573     1.153  0.996  0.758 False False  FAILS deflation [neither]
+ACWX     5   2.410   1.402     0.731  0.993  0.880 False False  FAILS deflation [neither]
+DBA      9   2.382   1.524     0.650  0.996  0.933 False False  marginal [neither]
+XME     51   2.370   1.884     1.176  0.999  0.891 False False  FAILS deflation [neither]
+USO     57   2.175   1.804     0.854  0.998  0.939 False False  marginal [neither]
+VT       5   2.017   1.601     0.798  0.996  0.911 False False  marginal [neither]
+DJP      9   2.011   1.148     0.694  0.968  0.768 False False  FAILS deflation [neither]
+GSG      9   1.921   1.219     0.713  0.989  0.829 False False  FAILS deflation [neither]
+VGK      5   1.920   1.490     0.935  1.000  0.979 False False  REAL (survives best-of-N) [neither]
+EEM     10   1.908   1.659     1.313  0.999  0.732 False False  FAILS deflation [neither]
+SLV     18   1.870   1.505     0.608  0.992  0.925 False False  marginal [neither]
+EWY      5   1.806   1.483     0.599  0.992  0.924 False False  marginal [neither]
+XOP     57   1.626   1.382     0.804  0.990  0.835 False False  FAILS deflation [neither]
+SCZ      5   1.614   0.760     0.417  0.948  0.769 False False  FAILS deflation [neither]
+JNK      6   1.545   1.088     0.569  0.973  0.821 False False  FAILS deflation [neither]
+VWO      5   1.528   0.996     0.657  0.968  0.736 False False  FAILS deflation [neither]
+XLE      9   1.478   1.044     0.622  0.960  0.760 False False  FAILS deflation [neither]
+HYG      9   1.456   1.392     0.824  0.990  0.830 False False  FAILS deflation [neither]
+EWZ      5   1.426   1.181     0.616  0.984  0.847 False False  FAILS deflation [neither]
+EFA      5   1.385   1.192     0.603  0.977  0.837 False False  FAILS deflation [neither]
+QQQ     21   1.268   1.207     0.925  0.975  0.677 False False  FAILS deflation [neither]
+VYM      6   1.241   1.344     0.705  0.987  0.855 False False  FAILS deflation [neither]
+VOX      6   1.153   1.211     0.670  0.991  0.855 False False  FAILS deflation [neither]
+SPAB     6   1.130   0.972     0.808  0.997  0.677 False False  FAILS deflation [neither]
+CMF      6   1.130   0.762     1.266  0.959  0.126 False False  FAILS deflation [neither]
+VEA      5   1.053   1.350     0.669  0.991  0.886 False False  FAILS deflation [neither]
+SHV      6   1.050   1.351     0.717  0.990  0.863 False False  FAILS deflation [neither]
+IYZ      6   1.040   0.788     0.441  0.940  0.753 False False  FAILS deflation [neither]
+IGE      9   1.000   1.071     0.557  0.960  0.799 False False  FAILS deflation [neither]
+LQD      6   0.975   0.793     0.421  0.984  0.842 False False  FAILS deflation [neither]
+SPDW     5   0.935   0.989     0.615  0.952  0.736 False False  FAILS deflation [neither]
+DBC     15   0.912   0.774     0.483  0.900  0.686 False False  FAILS deflation [neither]
+ITB      5   0.906   0.834     0.514  0.924  0.709 False False  FAILS deflation [neither]
+KRE     11   0.899   1.018     0.341  0.962  0.881 False False  FAILS deflation [neither]
+IWM     27   0.881   0.910     0.646  0.936  0.671 False False  FAILS deflation [neither]
+EWJ      5   0.875   0.773     0.841  0.902  0.454 False False  FAILS deflation [neither]
+VPL      5   0.868   0.912     0.529  0.969  0.783 False False  FAILS deflation [neither]
+DBB      6   0.867   0.583     0.745  0.841  0.391 False False  FAILS deflation [neither]
+ERX      5   0.858   0.801     0.447  0.906  0.720 False False  FAILS deflation [neither]
+BIV      6   0.843   0.986     0.516  0.955  0.790 False False  FAILS deflation [neither]
+EZU      5   0.790   0.730     0.550  0.895  0.621 False False  FAILS deflation [neither]
+TECL     5   0.771   1.067     0.766  0.964  0.694 False False  FAILS deflation [neither]
+VEU      5   0.756   0.822     0.541  0.915  0.680 False False  FAILS deflation [neither]
+VNQ      6   0.698   0.639     0.457  0.905  0.646 False False  FAILS deflation [neither]
+PEY      6   0.697   0.789     0.419  0.909  0.735 False False  FAILS deflation [neither]
+SPXS    49   0.692   0.701     1.268  0.899  0.151 False False  FAILS deflation [neither]
+TIP      5   0.680   0.787     0.513  0.913  0.683 False False  FAILS deflation [neither]
+ACWI     5   0.649   0.465     0.379  0.794  0.560 False False  FAILS deflation [neither]
+PSQ     51   0.602   0.735     1.129  0.973  0.151 False False  FAILS deflation [neither]
+DDM      5   0.594   0.910     0.471  0.950  0.786 False False  FAILS deflation [neither]
+IEO      7   0.593   0.559     0.482  0.828  0.551 False False  FAILS deflation [neither]
+FXF      9   0.586   0.623     0.346  0.858  0.683 False False  FAILS deflation [neither]
+ICF      6   0.562   0.685     0.573  0.888  0.579 False False  FAILS deflation [neither]
+MLN      5   0.545   0.398     1.675  0.781  0.006 False False  FAILS deflation [neither]
+PFF      6   0.543   0.791     0.591  0.908  0.632 False False  FAILS deflation [neither]
+FCG      8   0.532   0.526     0.395  0.814  0.588 False False  FAILS deflation [neither]
+FXE      6   0.518   0.576     0.308  0.836  0.675 False False  FAILS deflation [neither]
+IYR      6   0.478   0.759     0.393  0.915  0.746 False False  FAILS deflation [neither]
+BWX      6   0.465   0.594     0.801  0.852  0.357 False False  FAILS deflation [neither]
+BSV      6   0.450   0.464     0.567  0.789  0.429 False False  FAILS deflation [neither]
+REZ      6   0.446   0.548     0.350  0.814  0.626 False False  FAILS deflation [neither]
+XES      7   0.425   0.548     0.292  0.819  0.664 False False  FAILS deflation [neither]
+UWM      5   0.386   0.627     0.334  0.855  0.690 False False  FAILS deflation [neither]
+SHM      5   0.326   0.444     0.235  0.770  0.636 False False  FAILS deflation [neither]
+REM      5   0.289   0.336     0.319  0.714  0.512 False False  FAILS deflation [neither]
+BLV      6   0.284   0.322     0.326  0.707  0.497 False False  FAILS deflation [neither]
+PGX      6   0.273   0.454     0.801  0.779  0.278 False False  FAILS deflation [neither]
+AGG      6   0.266   0.369     0.237  0.731  0.587 False False  FAILS deflation [neither]
+FAS      5   0.250   0.289     0.163  0.687  0.584 False False  FAILS deflation [neither]
+PGF      6   0.230   0.336     0.189  0.715  0.598 False False  FAILS deflation [neither]
+RWR      6   0.219   0.312     0.228  0.703  0.557 False False  FAILS deflation [neither]
+PCY      6   0.208   0.228     0.664  0.655  0.223 False False  FAILS deflation [neither]
+EFV      5   0.203   0.213     0.220  0.639  0.496 False False  FAILS deflation [neither]
+SPTL     6   0.191   0.313     0.674  0.699  0.274 False False  FAILS deflation [neither]
+NLR     11   0.161   0.287     1.882  0.685  0.004 False False  FAILS deflation [neither]
+RWO      6   0.155   0.273     0.551  0.676  0.321 False False  FAILS deflation [neither]
+SPEM     5   0.147   0.153     0.083  0.601  0.546 False False  FAILS deflation [neither]
+SH      51   0.144   0.237     1.097  0.660  0.067 False False  FAILS deflation [neither]
+QID     49   0.122   0.147     1.306  0.598  0.025 False False  FAILS deflation [neither]
+IGSB     6   0.115   0.175     0.093  0.621  0.557 False False  FAILS deflation [neither]
+IEF      6   0.080   0.193     0.102  0.626  0.560 False False  FAILS deflation [neither]
+VIXY     6   0.068   0.220     0.153  0.642  0.544 False False  FAILS deflation [neither]
+MBB      6   0.065   0.089     0.048  0.560  0.528 False False  FAILS deflation [neither]
+MOO      9   0.048   0.096     0.368  0.564  0.324 False False  FAILS deflation [neither]
+SDS     41   0.023   0.064     0.851  0.543  0.090 False False  FAILS deflation [neither]
 ```
 
-**Survive Holm-Bonferroni (FWER<=.05): NONE.** DSR>=.95 = edge clears the best-of-N-trials noise at the real session search size.
+**Survive Holm-Bonferroni (FWER<=.05): BIL.** DSR>=.95 = edge clears the best-of-N-trials noise at the real session search size.
 
-## Harvey-Liu haircut Sharpe (independent multiple-testing cross-check)
+## Honest book re-derivation (real OOS series; decorr champion predates SOXX + audits)
 
-Adjusts each champion's Sharpe t-stat p-value for its true trial count M (Bonferroni FWER, BH FDR);
-haircut SR = Sharpe surviving the correction. Independent of DSR's extreme-value mechanism.
-
-```
-ETF      N  Calmar     SR      t        p1  HC_Bonf   HC_BH  verdict
-GLD     74   4.708  2.652   4.45  4.25e-06    2.037   2.369  SURVIVES (HC>0.5 both)
-SOXX    42   3.025  1.521   2.55  5.34e-03    0.451   1.281  partial (HC_BH>0)
-UUP     46   2.540  1.275   2.14  1.62e-02    0.000   0.863  partial (HC_BH>0)
-SLV     16   1.870  1.505   2.53  5.76e-03    0.791   1.180  SURVIVES (HC>0.5 both)
-EEM      8   1.380  0.901   1.51  6.52e-02    0.000   0.382  partial (HC_BH>0)
-QQQ     10   1.046  1.349   2.26  1.18e-02    0.706   1.054  SURVIVES (HC>0.5 both)
-XLE      6   1.023  0.912   1.53  6.29e-02    0.186   0.596  partial (HC_BH>0)
-DBC      7   0.912  0.774   1.30  9.69e-02    0.000   0.144  partial (HC_BH>0)
-KRE      7   0.899  1.018   1.71  4.38e-02    0.301   0.911  partial (HC_BH>0)
-IWM      9   0.881  0.910   1.53  6.34e-02    0.000   0.390  partial (HC_BH>0)
-TLT     15   0.285  0.393   0.66  2.55e-01    0.000   0.000  FAILS (haircut ~0)
-```
-
-## Anytime-valid e-value monitor (peeking-robust; supersedes p-value/DSR re-checks)
-
-H0: mean return <= 0 (edge dead). E-value >= 20 = significant at 0.05, VALID under continuous
-monitoring (re-check anytime; merge re-validations by MULTIPLICATION). Testing-by-betting (WSR 2023).
+Weights ∝ Calmar² (the deployed scheme), gross=1, on 224-pt common OOS grid.
 
 ```
-champ    e-value  AV p=1/e        verdict  decay?
-GLD         4.98    0.2010    weak (e>=1)  holding
-UUP         1.31    0.7627    weak (e>=1)  holding
-TIP         1.58    0.6324    weak (e>=1)  holding
-DBC         1.26    0.7947    weak (e>=1)  holding
-HYG         2.51    0.3982    weak (e>=1)  holding
+composition                                   Calmar  CAGR%  MaxDD%  Sharpe
+CURRENT book (GLD/UUP/IWM/TIP/DBC/HYG, 6)      4.617  11.36    2.46   2.460
++ UCO oil-reversion 2x (7)                     4.803  26.30    5.47   2.165
++ USO oil-reversion 1x (7)                     5.160  14.56    2.82   2.756
+alpha core (GLD/UUP/IWM)                       5.061  12.46    2.46   2.254
+alpha core + USO 1x                            4.640  16.25    3.50   2.658
+alpha core + UCO 2x                            4.647  29.84    6.42   2.120
 ```
-
-Anytime-valid: unlike DSR/p-values, these e-values stay honest no matter how many times we re-check as the OOS window grows. Next re-validation just MULTIPLIES the new e-value in.

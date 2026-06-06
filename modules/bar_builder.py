@@ -989,9 +989,276 @@ class DrawdownOnsetBarBuilder:
         return emit
 
 
+class SemivarBarBuilder:
+    """Custom axis: DOWNSIDE realised-semivariance (RS-) / bad-vol clock (Patton-Sheppard 2015;
+    Barndorff-Nielsen-Kinnebrock-Shephard 2010). The vol axis sums RS+ and RS- together (and
+    sqrt-vol-weights), averaging the documented good/bad-vol asymmetry away; semivar accumulates ONLY
+    the down-minute squared returns (r^2 * 1{r<0}) so bars concentrate on down-minute crash build-ups
+    — the sampling-side complement of the only-ever SPY crash-veto life. O(1)/min scalar accumulator
+    that mirrors vol/ddonset (BUILDER_CLASSES byte-exact replay); threshold TRAIN-fit in _make_builder
+    (rate-on-TRAIN-then-scale, OOS-invariant). Invalid prints break the return chain (fit==replay)."""
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.cum = 0.0
+        self.last_lc = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None      # break the return chain across invalid prints
+            return None
+        lc = math.log(close)
+        if self.last_lc is not None:
+            r = lc - self.last_lc
+            if r < 0.0:
+                self.cum += r * r     # downside semivariance: r^2 * 1{r<0}
+        self.last_lc = lc
+        self.close_lc = lc
+        if self.cum >= self.thresh:
+            self.cum = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
+class SignedJumpVarBarBuilder:
+    """Custom axis: SIGNED jump-variation clock (Patton-Sheppard 2015 RS+ minus RS-). Accumulate the
+    sign-by-VARIANCE term theta += r*|r| (= r^2*1{r>0} - r^2*1{r<0}); emit when |theta| >= threshold,
+    then reset. The diffusive integrated variance cancels in RS+ - RS-, isolating directional JUMP
+    runs — orthogonal to the flow-signed imbalance family (signs by ORDER-FLOW) and to the unsigned
+    vol axis. Sibling of semivar (same Patton-Sheppard family); together with jump/volofvol forms a
+    tail trio. Scalar O(1)/min (BUILDER_CLASSES byte-exact). Threshold = TRAIN signed-term volatility
+    random-walk scaled to ~target_bars (mirror the imbalance axes); invalid prints break the chain."""
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.theta = 0.0
+        self.last_lc = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None      # break the return chain across invalid prints
+            return None
+        lc = math.log(close)
+        if self.last_lc is not None:
+            r = lc - self.last_lc
+            self.theta += r * abs(r)      # signed jump variation increment
+        self.last_lc = lc
+        self.close_lc = lc
+        if abs(self.theta) >= self.thresh:
+            self.theta = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
+class CHLSpreadBarBuilder:
+    """Custom axis: Abdi-Ranaldo (2017) effective-SPREAD liquidity-COST clock. Non-overlapping W=30
+    pseudo-day blocks of log-close; per block eta=(max+min)/2 and c=last; the squared effective
+    spread between consecutive blocks is S^2 = 4*(c_prev-eta_prev)*(c_prev-eta_cur) (kept only when
+    positive). Accumulate sqrt(4*term) and emit at threshold. A pure close-vs-range-center geometry
+    (NO volume) — a liquidity-COST dimension orthogonal to amihud(impact/dollar)/kyle(sqrt-share)/
+    vpin(BVC toxicity); densifies bars in illiquidity/stress windows (USO/UCO/GSG/DJP/GDX/XME/AGQ/
+    UUP/HYG). Scalar O(1)/min (BUILDER_CLASSES byte-exact); threshold TRAIN-fit (rate-on-TRAIN-then-
+    scale over per-block terms). Caveat (not a leak): high/low proxied by max/min of minute closes."""
+
+    _W = 30
+
+    def __init__(self, threshold):
+        self.thresh = float(threshold)
+        self.cum = 0.0
+        self._n = 0
+        self._mx = None
+        self._mn = None
+        self._last = None
+        self._c_prev = None
+        self._eta_prev = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self._mx is None or lc > self._mx:
+            self._mx = lc
+        if self._mn is None or lc < self._mn:
+            self._mn = lc
+        self._last = lc
+        self._n += 1
+        emit = None
+        if self._n >= self._W:
+            eta_cur = 0.5 * (self._mx + self._mn)
+            c_cur = self._last
+            if self._c_prev is not None:
+                term = (self._c_prev - self._eta_prev) * (self._c_prev - eta_cur)
+                if term > 0.0:
+                    self.cum += math.sqrt(4.0 * term)
+            self._c_prev = c_cur
+            self._eta_prev = eta_cur
+            self._n = 0
+            self._mx = None
+            self._mn = None
+            self._last = None
+            if self.cum >= self.thresh:
+                self.cum = 0.0
+                emit = {"ts_close": ts, "log_close": lc}
+        return emit
+
+
+class DiurnalVolBarBuilder:
+    """Custom axis: DESEASONALISED time-of-day RV clock (Andersen-Bollerslev 1997 FFF). The program's
+    FIRST seasonality method: a TRAIN-frozen len-1440 profile prof[minute-of-day] = mean |r| per
+    minute removes the deterministic open/close U-shape that dominates every dollar/vol clock, so bars
+    sample on diurnally-ANOMALOUS activity (information shocks) instead of predictable churn. The
+    accumulator sums (r/prof[mod])^2 and emits at threshold. Multi-param (frozen prof+gmean) like the
+    entropy axis -> NOT in BUILDER_CLASSES; threshold + profile fit on TRAIN only (OOS-invariant)."""
+
+    def __init__(self, threshold, prof=None, gmean=None):
+        self.thresh = float(threshold)
+        self.prof = None if prof is None else np.asarray(prof, dtype=float)
+        self.gmean = None if gmean is None else float(gmean)
+        self.cum = 0.0
+        self.last_lc = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None      # break the return chain across invalid prints
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.prof is None or self.gmean is None:
+            self.last_lc = lc
+            return None
+        if self.last_lc is None:
+            self.last_lc = lc
+            return None
+        r = lc - self.last_lc
+        self.last_lc = lc
+        mod = _minute_of_day(ts)
+        p = self.prof[mod] if 0 <= mod < len(self.prof) else self.gmean
+        if not (p > 0.0):
+            p = self.gmean
+        rt = r / p
+        self.cum += rt * rt
+        if self.cum >= self.thresh:
+            self.cum = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
+class KalmanTrendBarBuilder:
+    """Custom axis: local-linear-trend (Harvey 1989 LLT) Kalman FILTERED-SLOPE clock. At steady state
+    the LLT filter is a frozen-gain Holt double-EMA, so the online update is two scalar IIR steps:
+    pred=level+slope; v=y-pred; level=pred+k0*v; slope+=k1*v. Emits on a slope-strength rising edge
+    (|z|=|slope|/sig_slope crossing the delta hysteresis) — an MLE-bandwidth, noise-filtered causal
+    slope distinct from trend_leg(greedy zigzag)/trend_scan(OLS t-stat)/spectral(zero-crossing). The
+    steady-state gain (k0,k1) and slope-uncertainty sig_slope come from a Riccati fixed point on
+    TRAIN-fit process/observation noise; delta binary-searched on a TRAIN sim. Multi-param (k0,k1,
+    sig_slope) like fracdiff -> NOT in BUILDER_CLASSES; all params TRAIN-only (OOS-invariant)."""
+
+    def __init__(self, threshold, k0=None, k1=None, sig_slope=None):
+        self.thresh = float(threshold)        # delta: |z| emission hysteresis
+        self.k0 = k0
+        self.k1 = k1
+        self.sig_slope = sig_slope
+        self.level = None
+        self.slope = 0.0
+        self.armed = True
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.k0 is None or self.sig_slope is None or self.sig_slope <= 0:
+            return None
+        if self.level is None:
+            self.level = lc
+            self.slope = 0.0
+            return None
+        pred = self.level + self.slope
+        v = lc - pred
+        self.level = pred + self.k0 * v
+        self.slope = self.slope + self.k1 * v
+        az = abs(self.slope / self.sig_slope)
+        emit = None
+        if self.armed and az >= self.thresh:
+            self.armed = False
+            emit = {"ts_close": ts, "log_close": lc}
+        if az < 0.5 * self.thresh:
+            self.armed = True
+        return emit
+
+
+class NewmaBarBuilder:
+    """Custom axis: NEWMA dual-EWMA online kernel-MMD distributional-change clock (Keriven-Garreau-
+    Poli 2020). Every existing break clock (zcusum/cusum_regime/changepoint/bde_cusum) is a FIRST-
+    MOMENT mean detector — blind to a pure variance/skew/kurtosis regime change. NEWMA embeds the
+    last p returns via random Fourier features feat = [cos(Wx),sin(Wx)]/sqrt(m) and compares two
+    time-localized kernel mean embeddings via an O(1) MMD: two EWMAs with forgetting l (slow) and L
+    (fast); stat = ||ewma_l - ewma_L||; emit on a rising-edge crossing of threshold. Frozen seeded W
+    (median-heuristic bandwidth on a TRAIN subsample), l/L from the target window, threshold binary-
+    searched on the TRAIN stat series — all TRAIN-only. Multi-param -> NOT in BUILDER_CLASSES."""
+
+    _M = 24
+    _P = 4
+
+    def __init__(self, threshold, W=None, l=None, L=None):
+        self.thresh = float(threshold)
+        self.W = None if W is None else np.asarray(W, dtype=float)
+        self.l = l
+        self.L = L
+        self._buf = []
+        self.ewma = None
+        self.ewma2 = None
+        self.prev_stat = 0.0
+        self.last_lc = None
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None
+            self._buf = []          # break the delay-vector chain across invalid prints
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.W is None or self.l is None:
+            self.last_lc = lc
+            return None
+        if self.last_lc is None:
+            self.last_lc = lc
+            return None
+        r = lc - self.last_lc
+        self.last_lc = lc
+        self._buf.append(r)
+        if len(self._buf) > self._P:
+            self._buf.pop(0)
+        if len(self._buf) < self._P:
+            return None
+        x = np.asarray(self._buf, dtype=float)
+        proj = self.W @ x
+        feat = np.concatenate([np.cos(proj), np.sin(proj)]) / math.sqrt(self.W.shape[0])
+        if self.ewma is None:
+            self.ewma = feat.copy()
+            self.ewma2 = feat.copy()
+            return None
+        self.ewma = self.ewma + self.l * (feat - self.ewma)
+        self.ewma2 = self.ewma2 + self.L * (feat - self.ewma2)
+        diff = self.ewma - self.ewma2
+        stat = math.sqrt(float(np.dot(diff, diff)))
+        emit = None
+        if stat >= self.thresh and self.prev_stat < self.thresh:
+            emit = {"ts_close": ts, "log_close": lc}
+        self.prev_stat = stat
+        return emit
+
+
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset", "semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -1014,6 +1281,15 @@ AXES = {
     "wavelet": WaveletBarBuilder,
     "amihud": AmihudBarBuilder,
     "ddonset": DrawdownOnsetBarBuilder,
+    # --- 2026-06-06 new methods backlog: 6 SHIPPED (5 deferred — hawkes/bocpd/lz/tlb/persistence — to
+    # keep the minified bar_builder.py under QC's 64k-char-per-file limit; all 11 were verified leak-
+    # safe + append-OOS-invariant and can be re-added once the module is split further or trimmed). ---
+    "semivar": SemivarBarBuilder,            # downside realised-semivariance (bad-vol)
+    "chl": CHLSpreadBarBuilder,              # Abdi-Ranaldo effective-spread liquidity cost
+    "diurnal": DiurnalVolBarBuilder,         # deseasonalised time-of-day RV (frozen profile)
+    "kalman": KalmanTrendBarBuilder,         # local-linear-trend filtered slope (frozen gain)
+    "newma": NewmaBarBuilder,                # dual-EWMA kernel-MMD distributional change
+    "signedjumpvar": SignedJumpVarBarBuilder,  # RS+ minus RS- signed jump variation
 }
 
 
@@ -1416,6 +1692,300 @@ def _fit_spectral_axis(close, vol, ts_arr, target_bars):
     return fast
 
 
+# ----------------------------------------------------------------------------
+# Helpers for the 2026-06-06 new-methods axes (diurnal/kalman/newma). All
+# fitted quantities are TRAIN-only (append-OOS-invariant).
+# ----------------------------------------------------------------------------
+def _minute_of_day(ts):
+    """Minute-of-day in [0, 1439] for a single timestamp (np.datetime64 / Timestamp / str)."""
+    t = np.datetime64(str(ts))
+    tm = t.astype("datetime64[m]")
+    td = t.astype("datetime64[D]").astype("datetime64[m]")
+    return int((tm - td) / np.timedelta64(1, "m"))
+
+
+def _minute_of_day_arr(ts_arr):
+    """Vectorised minute-of-day in [0, 1439] for a timestamp array (matches _minute_of_day)."""
+    ts64 = np.array([np.datetime64(str(t)) for t in ts_arr])
+    tm = ts64.astype("datetime64[m]")
+    td = ts64.astype("datetime64[D]").astype("datetime64[m]")
+    return ((tm - td) / np.timedelta64(1, "m")).astype(np.int64)
+
+
+def _newma_partner(B, L):
+    """Slow forgetting factor l in (0, 1/(B+1)) solving l(1-l)^B = L(1-L)^B (NEWMA window pairing).
+    g(x)=x(1-x)^B is increasing on (0, peak=1/(B+1)); bisect for the partner of the fast factor L."""
+    target = L * (1.0 - L) ** B
+    lo = 1e-9
+    hi = 1.0 / (B + 1.0)
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        g = mid * (1.0 - mid) ** B
+        if g < target:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+def _newma_stat_series(ret, c, n_tr, W, l, L):
+    """Replay the NEWMA dual-EWMA statistic over the TRAIN prefix (mirrors NewmaBarBuilder.update
+    bit-for-bit so the fit threshold == online replay). Returns a len-n_tr array (NaN until warm)."""
+    p = NewmaBarBuilder._P
+    msq = math.sqrt(W.shape[0])
+    stat = np.full(n_tr, np.nan)
+    buf = []
+    ewma = None
+    ewma2 = None
+    for i in range(n_tr):
+        ci = c[i]
+        if not np.isfinite(ci) or ci <= 0 or not np.isfinite(ret[i]):
+            buf = []
+            continue
+        buf.append(float(ret[i]))
+        if len(buf) > p:
+            buf.pop(0)
+        if len(buf) < p:
+            continue
+        x = np.asarray(buf, dtype=float)
+        proj = W @ x
+        feat = np.concatenate([np.cos(proj), np.sin(proj)]) / msq
+        if ewma is None:
+            ewma = feat.copy()
+            ewma2 = feat.copy()
+            continue
+        ewma = ewma + l * (feat - ewma)
+        ewma2 = ewma2 + L * (feat - ewma2)
+        d = ewma - ewma2
+        stat[i] = math.sqrt(float(np.dot(d, d)))
+    return stat
+
+
+def _fit_diurnal_axis(close, ts_arr, target_bars):
+    """TRAIN-fit the deseasonalised time-of-day RV axis: a len-1440 minute-of-day mean-|r| profile
+    plus a surprise threshold. Profile + threshold use TRAIN minutes only (append-OOS-invariant)."""
+    c = np.asarray(close, dtype=float)
+    ret = _minute_log_returns(c)
+    tr = _train_minute_mask(ts_arr)
+    mod = _minute_of_day_arr(ts_arr)
+    keep = tr & np.isfinite(ret)
+    if int(np.sum(keep)) < 500:
+        return None, None, None
+    ar = np.abs(ret)
+    gmean = float(np.mean(ar[keep]))
+    if not (gmean > 0):
+        return None, None, None
+    prof = np.full(1440, gmean, dtype=float)
+    for mm in range(1440):
+        sel = keep & (mod == mm)
+        if int(np.sum(sel)) >= 20:
+            vv = float(np.mean(ar[sel]))
+            if vv > 0:
+                prof[mm] = vv
+    prof_full = prof[np.clip(mod, 0, 1439)]
+    rt2 = (ret / prof_full) ** 2
+    keep2 = tr & np.isfinite(rt2)
+    if int(np.sum(keep2)) < 500:
+        return None, None, None
+    total = float(np.mean(rt2[keep2])) * len(c)
+    T = _safe_thresh(total, target_bars)
+    if not np.isfinite(T) or T <= 0:
+        return None, None, None
+    return T, prof, gmean
+
+
+def _fit_kalman_axis(close, ts_arr, target_bars):
+    """TRAIN-fit the local-linear-trend Kalman axis: grid-MLE the process-noise (q_level,q_slope)
+    over TRAIN log-prices, Riccati-iterate the steady-state gain (k0,k1) and slope std sig_slope,
+    then bracket+bisect the |z| hysteresis delta on a TRAIN sim. All TRAIN-only (OOS-invariant)."""
+    c = np.asarray(close, dtype=float)
+    ret = _minute_log_returns(c)
+    tr = _train_minute_mask(ts_arr)
+    rk = ret[tr & np.isfinite(ret)]
+    if len(rk) < 500:
+        return None, None, None, None
+    R = float(np.var(rk))
+    if not np.isfinite(R) or R <= 0:
+        return None, None, None, None
+    lc_tr = np.log(c[tr & (c > 0)])
+    if len(lc_tr) < 500:
+        return None, None, None, None
+    ql_grid = R * np.array([1e-1, 1e-2, 1e-3, 1e-4])
+    qs_grid = R * np.array([1e-5, 1e-7, 1e-9, 1e-11])
+    QL, QS = np.meshgrid(ql_grid, qs_grid)
+    qL = QL.ravel().astype(float)
+    qS = QS.ravel().astype(float)
+    G = len(qL)
+    lvl = np.full(G, lc_tr[0])
+    slp = np.zeros(G)
+    P00 = np.full(G, R)
+    P01 = np.zeros(G)
+    P10 = np.zeros(G)
+    P11 = np.full(G, R)
+    ll = np.zeros(G)
+    log2pi = math.log(2.0 * math.pi)
+    for t in range(1, len(lc_tr)):
+        y = lc_tr[t]
+        pp00 = P00 + P01 + P10 + P11 + qL
+        pp01 = P01 + P11
+        pp10 = P10 + P11
+        pp11 = P11 + qS
+        predlvl = lvl + slp
+        S = pp00 + R
+        v = y - predlvl
+        K0 = pp00 / S
+        K1 = pp10 / S
+        lvl = predlvl + K0 * v
+        slp = slp + K1 * v
+        P00 = pp00 - K0 * pp00
+        P01 = pp01 - K0 * pp01
+        P10 = pp10 - K1 * pp00
+        P11 = pp11 - K1 * pp01
+        ll = ll - 0.5 * (log2pi + np.log(S) + v * v / S)
+    gbest = int(np.argmax(ll))
+    qLb = float(qL[gbest])
+    qSb = float(qS[gbest])
+    p00, p01, p10, p11 = R, 0.0, 0.0, R
+    k0, k1, sig2 = 0.0, 0.0, R
+    for _ in range(3000):
+        pp00 = p00 + p01 + p10 + p11 + qLb
+        pp01 = p01 + p11
+        pp10 = p10 + p11
+        pp11 = p11 + qSb
+        S = pp00 + R
+        nk0 = pp00 / S
+        nk1 = pp10 / S
+        n00 = pp00 - nk0 * pp00
+        n01 = pp01 - nk0 * pp01
+        n10 = pp10 - nk1 * pp00
+        n11 = pp11 - nk1 * pp01
+        done = abs(nk0 - k0) < 1e-13 and abs(nk1 - k1) < 1e-13
+        k0, k1, sig2 = nk0, nk1, pp11
+        p00, p01, p10, p11 = n00, n01, n10, n11
+        if done:
+            break
+    sig_slope = math.sqrt(sig2) if sig2 > 0 else 0.0
+    if not (sig_slope > 0):
+        return None, None, None, None
+    target_train = max(50.0, float(target_bars) * (len(lc_tr) / max(1, len(c))))
+
+    def emit_count(delta):
+        level = lc_tr[0]
+        slope = 0.0
+        armed = True
+        n = 0
+        for t in range(1, len(lc_tr)):
+            pred = level + slope
+            vv = lc_tr[t] - pred
+            level = pred + k0 * vv
+            slope = slope + k1 * vv
+            az = abs(slope / sig_slope)
+            if armed and az >= delta:
+                armed = False
+                n += 1
+            if az < 0.5 * delta:
+                armed = True
+        return n
+
+    # The Schmitt-trigger emission count is UNIMODAL in delta (0 at both extremes, peak in between),
+    # so a monotone bisection misconverges -> grid-scan and pick the delta whose TRAIN count is
+    # closest to target (tie -> larger/coarser delta). Grid fixed -> append-OOS-invariant.
+    deltas = np.exp(np.linspace(math.log(0.05), math.log(30.0), 50))
+    delta = None
+    best_err = None
+    for dcand in deltas:
+        cnt = emit_count(float(dcand))
+        if cnt <= 0:
+            continue
+        err = abs(cnt - target_train)
+        if best_err is None or err <= best_err:
+            best_err = err
+            delta = float(dcand)
+    if delta is None or not np.isfinite(delta) or delta <= 0:
+        return None, None, None, None
+    return delta, k0, k1, sig_slope
+
+
+def _fit_newma_axis(close, ts_arr, target_bars):
+    """TRAIN-fit the NEWMA kernel-MMD axis: frozen seeded RFF projection W (median-heuristic
+    bandwidth on a TRAIN subsample), forgetting factors (l,L) from the target window, and a
+    threshold binary-searched on the TRAIN stat series. All TRAIN-only (append-OOS-invariant)."""
+    c = np.asarray(close, dtype=float)
+    ret = _minute_log_returns(c)
+    tr = _train_minute_mask(ts_arr)
+    p = NewmaBarBuilder._P
+    m = NewmaBarBuilder._M
+    n_tr = int(np.sum(tr))
+    if n_tr < 1000:
+        return None, None, None, None
+    vecs = []
+    buf = []
+    for i in range(n_tr):
+        if not np.isfinite(ret[i]) or c[i] <= 0:
+            buf = []
+            continue
+        buf.append(float(ret[i]))
+        if len(buf) > p:
+            buf.pop(0)
+        if len(buf) == p:
+            vecs.append(list(buf))
+    if len(vecs) < 200:
+        return None, None, None, None
+    V = np.asarray(vecs, dtype=float)
+    sub = V[:: max(1, len(V) // 300)][:300]
+    dacc = []
+    for a in range(len(sub)):
+        diff = sub[a + 1:] - sub[a]
+        if len(diff):
+            dacc.append(np.sum(diff * diff, axis=1))
+    if not dacc:
+        return None, None, None, None
+    alld = np.concatenate(dacc)
+    pos = alld[alld > 0]
+    sigma2 = float(np.median(pos)) if len(pos) else 1.0
+    if not (sigma2 > 0):
+        sigma2 = 1.0
+    rng = np.random.RandomState(20260606)
+    W = rng.standard_normal((m, p)) / math.sqrt(sigma2)
+    B = max(2.0, len(c) / max(1, int(target_bars)))
+    L = 2.0 / (B + 1.0)
+    l = _newma_partner(B, L)
+    stat_tr = _newma_stat_series(ret, c, n_tr, W, l, L)
+    sset = stat_tr[np.isfinite(stat_tr)]
+    if len(sset) < 200:
+        return None, None, None, None
+    target_train = max(50.0, float(target_bars) * (len(sset) / max(1, len(c))))
+
+    def cross_count(thr):
+        n = 0
+        prevv = 0.0
+        for s in stat_tr:
+            if not np.isfinite(s):
+                continue
+            if s >= thr and prevv < thr:
+                n += 1
+            prevv = s
+        return n
+
+    # Rising-edge crossing count is UNIMODAL in the threshold (0 at both extremes), so a monotone
+    # bisection misconverges -> grid-scan over the TRAIN stat support, pick the threshold whose
+    # crossing count is closest to target (tie -> larger threshold). Candidates TRAIN-only.
+    cand = np.linspace(float(np.min(sset)), float(np.max(sset)), 80)
+    thresh = None
+    best_err = None
+    for tc in cand:
+        cnt = cross_count(float(tc))
+        if cnt <= 0:
+            continue
+        err = abs(cnt - target_train)
+        if best_err is None or err <= best_err:
+            best_err = err
+            thresh = float(tc)
+    if thresh is None or not np.isfinite(thresh) or thresh <= 0:
+        return None, None, None, None
+    return thresh, W, l, L
+
+
 def _make_builder(bar_type, close, vol, ts_arr, target_bars):
     """Instantiate the right Builder with an auto-calibrated threshold."""
     if bar_type == "dollar":
@@ -1769,6 +2339,102 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
             return None
         return SpectralCycleBarBuilder(fast)
 
+    if bar_type == "semivar":
+        # DOWNSIDE realised-semivariance clock. Per-minute term = r^2*1{r<0} (0 for up minutes, NaN
+        # for invalid). Threshold = TRAIN mean of that downside term x full length / target_bars
+        # (rate-on-TRAIN-then-scale, OOS-invariant; a full-series SUM would leak OOS bad-vol). Scalar.
+        c = np.asarray(close, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        terms = np.where(np.isfinite(ret) & (ret < 0.0), ret * ret, 0.0)
+        terms = np.where(np.isfinite(ret), terms, np.nan)
+        keep = tr & np.isfinite(terms)
+        if int(np.sum(keep)) < 200:
+            return None
+        total = float(np.mean(terms[keep])) * len(c)       # TRAIN rate x full length (OOS-invariant)
+        return SemivarBarBuilder(_safe_thresh(total, target_bars))
+
+    if bar_type == "signedjumpvar":
+        # SIGNED jump-variation clock. Per-minute term = r*|r| (skew-drifted: nonzero mean), so the
+        # imbalance random-walk recipe applies: threshold = TRAIN std of the signed term x sqrt of the
+        # target minutes-per-bar. Fit on TRAIN minutes only (causal); applied forward unchanged. Scalar.
+        c = np.asarray(close, dtype=float)
+        ret = _minute_log_returns(c)
+        tr = _train_minute_mask(ts_arr)
+        term = ret * np.abs(ret)
+        keep = tr & np.isfinite(term)
+        trsel = term[keep]
+        if len(trsel) < 100:
+            return None
+        sigma = float(np.std(trsel))
+        mpb = max(1.0, len(c) / max(1, int(target_bars)))     # target minutes per bar
+        thresh = sigma * math.sqrt(mpb)
+        if not np.isfinite(thresh) or thresh <= 0:
+            return None
+        return SignedJumpVarBarBuilder(thresh)
+
+    if bar_type == "chl":
+        # Abdi-Ranaldo effective-SPREAD clock. Replay the IDENTICAL W=30 block loop over minutes,
+        # writing the per-block spread term at each block-end index; threshold = TRAIN mean of those
+        # block terms x (full length / W) / target_bars (rate-on-TRAIN-then-scale, OOS-invariant).
+        c = np.asarray(close, dtype=float)
+        tr = _train_minute_mask(ts_arr)
+        Wb = CHLSpreadBarBuilder._W
+        terms = np.full(len(c), np.nan)
+        n_blk = 0
+        mx = None
+        mn = None
+        last = None
+        c_prev = None
+        eta_prev = None
+        for i in range(len(c)):
+            ci = c[i]
+            if not np.isfinite(ci) or ci <= 0:
+                continue
+            lcv = math.log(ci)
+            if mx is None or lcv > mx:
+                mx = lcv
+            if mn is None or lcv < mn:
+                mn = lcv
+            last = lcv
+            n_blk += 1
+            if n_blk >= Wb:
+                eta_cur = 0.5 * (mx + mn)
+                c_cur = last
+                if c_prev is not None:
+                    term = (c_prev - eta_prev) * (c_prev - eta_cur)
+                    terms[i] = math.sqrt(4.0 * term) if term > 0.0 else 0.0
+                c_prev = c_cur
+                eta_prev = eta_cur
+                n_blk = 0
+                mx = None
+                mn = None
+                last = None
+        keep = tr & np.isfinite(terms)
+        if int(np.sum(keep)) < 50:
+            return None
+        total = float(np.mean(terms[keep])) * (len(c) / Wb)   # TRAIN rate x block count (OOS-invariant)
+        return CHLSpreadBarBuilder(_safe_thresh(total, target_bars))
+
+    if bar_type == "diurnal":
+        T, prof, gmean = _fit_diurnal_axis(close, ts_arr, target_bars)
+        if T is None:
+            return None
+        return DiurnalVolBarBuilder(T, prof=prof, gmean=gmean)
+
+    if bar_type == "kalman":
+        delta, k0, k1, sig_slope = _fit_kalman_axis(close, ts_arr, target_bars)
+        if delta is None:
+            return None
+        return KalmanTrendBarBuilder(delta, k0=k0, k1=k1, sig_slope=sig_slope)
+
+    if bar_type == "newma":
+        res = _fit_newma_axis(close, ts_arr, target_bars)
+        if res is None or res[0] is None:
+            return None
+        thr, W, l, L = res
+        return NewmaBarBuilder(thr, W=W, l=l, L=L)
+
     # Default / unknown -> volatility bar (Wang's workhorse axis).
     # Threshold = TRAIN average per-minute vol term x full count / target_bars.
     # The per-minute realized-vol term is averaged over TRAIN minutes only (causal);
@@ -1805,6 +2471,10 @@ BUILDER_CLASSES = {
     "run": RunBarBuilder, "spectral": SpectralCycleBarBuilder,
     "vpin": VpinBarBuilder, "jump": JumpBarBuilder,
     "volofvol": VolOfVolBarBuilder, "wavelet": WaveletBarBuilder, "amihud": AmihudBarBuilder, "ddonset": DrawdownOnsetBarBuilder,
+    # 2026-06-06 new scalar-threshold axes (diurnal/kalman/newma omitted: they also need fitted
+    # params — frozen profile / steady-state gain / RFF W).
+    "semivar": SemivarBarBuilder, "signedjumpvar": SignedJumpVarBarBuilder,
+    "chl": CHLSpreadBarBuilder,
 }
 
 

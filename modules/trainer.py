@@ -27,6 +27,75 @@ VOL_FAST = 10
 VOL_SLOW = 60
 VOL_FLOOR = 1.0  # ROUND 6: overlay OFF (g==1) -> sizing is LABEL-DRIVEN _cdf_bet(p,tau)
 
+# --------------------------------------------------------------------------- #
+# OPT-IN re-enabled inverse-vol overlay (311-plan step 11 quick-win).           #
+# The legacy overlay above is OFF (VOL_FLOOR=1.0 -> g==1). This adds a MODERN     #
+# variant — QUANTILE-GATED + SMOOTHED + NO-TRADE DEADBAND — that de-levers only   #
+# in genuine turbulence and snaps back to full size otherwise (kills momentum     #
+# crashes without churning trades). It is gated behind CONFIG['vol_overlay'] and  #
+# DEFAULTS TO "off", so every existing result is byte-identical unless explicitly  #
+# enabled. SCOPE: this affects trainer.realistic_cstats (offline A/B / VAL select) #
+# only; the infer/live templates are intentionally untouched, so a live deploy of   #
+# the overlay would require mirroring this rule there in a later step.            #
+# --------------------------------------------------------------------------- #
+VOL_OVERLAY_MODE = "off"   # CONFIG['vol_overlay']: "off" (default) | "quantile"
+VOL_FLOOR_V2 = 0.5         # de-lever floor for the opt-in overlay (vs VOL_FLOOR=1.0 default-off)
+VOL_GATE_Q = 0.80          # de-lever ONLY when fast vol is above this quantile of recent fast vol
+VOL_SMOOTH = 0.5           # shrink the de-lever ratio toward 1 (smoothing -> less turnover)
+VOL_DEADBAND = 0.05        # snap multiplier to 1.0 within this band of full size (NO-TRADE)
+
+
+def _overlay_mode():
+    """Read CONFIG['vol_overlay'] from the shared runtime namespace (rendered QC script) when
+    present, else the module default 'off'. Works both concatenated (CONFIG is a script global)
+    and standalone (no CONFIG -> 'off'), so the default path is byte-identical everywhere."""
+    try:
+        cfg = globals().get("CONFIG", None)
+        if isinstance(cfg, dict):
+            return str(cfg.get("vol_overlay", VOL_OVERLAY_MODE))
+    except Exception:
+        pass
+    return VOL_OVERLAY_MODE
+
+
+def _invvol_mult_v2(rbuf):
+    """Quantile-gated + smoothed + deadband causal inverse-vol overlay (OPT-IN). Returns a sizing
+    multiplier in [VOL_FLOOR_V2, 1.0]. Causal: rbuf is the trailing buffer of PAST bar log-returns
+    (realistic_cstats appends decide-then-append), and the quantile gate is a rolling statistic of
+    past fast-vol only -> no full-series / future leakage."""
+    m = len(rbuf)
+    if m < VOL_SLOW + 2:
+        return 1.0
+    arr = np.asarray(rbuf, dtype=float)
+    fast = float(np.std(arr[-VOL_FAST:]))
+    slow = float(np.std(arr[-min(m, VOL_SLOW):]))
+    if fast <= 1e-9 or slow <= 1e-9:
+        return 1.0
+    # QUANTILE GATE: only act when current fast vol sits in the upper tail of the trailing
+    # distribution of rolling fast-vol (genuine turbulence) — else stay fully invested.
+    look = arr[-min(m, VOL_SLOW * 4):]
+    if look.size >= 2 * VOL_FAST:
+        rs = np.array([np.std(look[i:i + VOL_FAST]) for i in range(look.size - VOL_FAST + 1)])
+        thr = float(np.quantile(rs, VOL_GATE_Q))
+    else:
+        thr = fast
+    if fast <= thr:
+        return 1.0                                   # deadband: not turbulent -> full size
+    raw = slow / fast                                # <1 when short-term vol spikes
+    g = 1.0 + VOL_SMOOTH * (raw - 1.0)               # SMOOTH toward 1 (lower turnover)
+    g = float(min(1.0, max(VOL_FLOOR_V2, g)))
+    if g > 1.0 - VOL_DEADBAND:                       # NO-TRADE deadband near full size
+        return 1.0
+    return g
+
+
+def _overlay_mult(rbuf, mode):
+    """Dispatcher. mode 'off' (DEFAULT) -> the legacy _invvol_mult (byte-identical, g==1 today);
+    'quantile' -> the opt-in modern overlay."""
+    if mode == "quantile":
+        return _invvol_mult_v2(rbuf)
+    return _invvol_mult(rbuf)
+
 
 def _cdf_bet(p, thresh):
     """de Prado prob->size: gate at thresh, then 2*Phi(z)-1, z=(p-thresh)/sqrt(p(1-p)).
@@ -66,8 +135,9 @@ def realistic_cstats(probs, lc_arr, ma_arr, log_rets, tc=0.0005, thresh=0.45):
         return 0, 0, 0, 0, 0, 0.0
     positions = np.zeros(n + 1); last_pos = 0.0; trades = 0
     rbuf = []  # trailing bar log-returns (causal: only past returns)
+    _ov_mode = _overlay_mode()  # 'off' (default) -> legacy g==1, byte-identical; 'quantile' -> opt-in
     for i in range(n):
-        g = _invvol_mult(rbuf)
+        g = _overlay_mult(rbuf, _ov_mode)
         target = _cdf_bet(probs[i], thresh) * g
         if (last_pos == 0 and target > 0) or (last_pos > 0 and target == 0) or abs(target - last_pos) > 0.01:
             trades += 1

@@ -184,7 +184,7 @@ class AutoresearchPipeline(QCAlgorithm):
     # or None when the cell cannot be trained.                             #
     # --------------------------------------------------------------------- #
     def _run_cell(self, feats, y, label_cfg, tr_m, va_m, te_m, lc, lr, bar_ts, fv,
-                  thresh, sizing="cdf_overlay", meta=False, ae=False):
+                  thresh, sizing="cdf_overlay", meta=False, ae=False, label_reach=None):
         try:
             from sklearn.preprocessing import StandardScaler
             from sklearn.metrics import roc_auc_score
@@ -207,7 +207,12 @@ class AutoresearchPipeline(QCAlgorithm):
         # LEAK FIX (2026-06-04 leak-hunt): the embargo MUST cover the full forward-label
         # horizon, else a CONFIG['horizons'] override > 200 bars bleeds test labels into the
         # cal.fit/eval_set. Built-in labeler horizons max at 200; this is horizon-aware.
-        _EMBARGO = max(200, int(max(CONFIG.get("horizons") or [0])))
+        # STRUCTURAL FIX (2026-06-06): also CONSUME the labeler's DECLARED forward reach
+        # (the 3rd return value, plumbed in as label_reach). Smoothing/decoding labelers can
+        # out-reach max(horizons) (dc_reversal/tlb_reversal next-event reach=200; a future
+        # wide-smoother could declare >200) — coupling it here means the embargo can never be
+        # silently out-reached by a new labeler. None/0 reach is a no-op (the 200 floor holds).
+        _EMBARGO = max(200, int(max(CONFIG.get("horizons") or [0])), int(label_reach or 0))
         _allidx = np.arange(len(y))
         _tepos = np.where(te_m)[0]
         emb = (_allidx < (_tepos[0] - _EMBARGO)) if len(_tepos) else np.ones(len(y), dtype=bool)
@@ -551,12 +556,13 @@ class AutoresearchPipeline(QCAlgorithm):
                                         if only_label in labeler_registry else {})
             _ens_preds, _ens_tauc, _ens_vauc, _ens_bundles = [], [], [], []
             for label_name, label_fn in labeler_registry.items():
+                _reach = None     # labeler's DECLARED forward reach (3rd return) -> feeds _EMBARGO
                 try:
                     if _hz:
-                        y, label_cfg, _ = label_fn(
+                        y, label_cfg, _reach = label_fn(
                             lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=_hz)
                     else:
-                        y, label_cfg, _ = label_fn(
+                        y, label_cfg, _reach = label_fn(
                             lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol)
                 except Exception:
                     y = None
@@ -568,7 +574,7 @@ class AutoresearchPipeline(QCAlgorithm):
                     res = self._run_cell(feats, y, label_cfg or label_name,
                                          tr_m, va_m, te_m, lc, lr, bar_ts, fv, thresh,
                                          sizing, meta=str(label_name).endswith("_meta"),
-                                         ae=str(label_name).endswith("_ae"))
+                                         ae=str(label_name).endswith("_ae"), label_reach=_reach)
                 except Exception:
                     res = None                  # a failing leg must not crash the whole train
                 if res is None:
