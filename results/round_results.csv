@@ -2433,3 +2433,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-06T16:08:48,USO,0.0,,B,USO,logdollar,always_long,0.5,cdf_overlay,0.9369,69.0979,687,True,True,0.5623,0.5,0.5,0.7462,-0.2917,10.5372,710,False,False,completed,completed
 2026-06-06T16:27:45,KRE,0.0,,A,KRE,logdollar,ker+trend_scan+bgm,0.45,cdf_overlay,0.5758,6.4302,524,True,True,0.0,0.7774,0.552,0.7147,0.2513,18.4964,710,True,False,completed,completed
 2026-06-06T16:27:45,KRE,0.0,,B,KRE,logdollar,always_long,0.5,cdf_overlay,0.5686,52.1827,827,True,True,-0.1395,0.5,0.5,0.7113,0.49,6.8149,710,False,False,completed,completed
+2026-06-06T16:33:14,SPY,0.0,,A,SPY,diurnal,trend_leg,0.45,cdf_overlay,0.6262,1.4103,200,True,True,-0.2189,0.742,0.5128,0.8875,-4.451,70.4262,710,False,False,completed,completed
+2026-06-06T16:33:14,SPY,0.0,,B,SPY,logdollar,always_long,0.5,cdf_overlay,1.397,12.7866,712,True,True,0.1304,0.5,0.5,1.5196,0.0915,7.7541,710,True,False,completed,completed

@@ -9636,6 +9636,12 @@
         "type": "round",
         "phase": "KRE",
         "label": "R1214 KRE DISCARD: Sample on log-dollar bars; ensemble of Kaufman efficiency-ratio labels + trend-scanning labels + Bayesian-GMM regime labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5758 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1215",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1215 SPY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.3970 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -16687,6 +16693,11 @@
       {
         "src": "r1213",
         "dst": "r1214",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1214",
+        "dst": "r1215",
         "label": "no improvement"
       }
     ],
