@@ -17359,6 +17359,21 @@
    },
    "finding": "Calmar^2 (deployed) is Calmar-OPTIMAL (peak 5.16) \u2014 not over-concentrated for return. But book is FLAT across exp 1.5-2 (5.14-5.16, sample noise), and exp=1.5 gives same Calmar/Sharpe with GLD weight 45% vs 57% = free ROBUSTNESS gain (21% less single-edge fragility). Given decay-audit (single edges CAN decay to 0), exp=1.5 is the decay-resilient pick. Book is robust to the weighting (no knife-edge).",
    "recommendation": "keep Calmar^2 for max Calmar, OR shift to Calmar^1.5 for decay-resilience at ~0 cost (judgment call, Calmar identical within noise)"
+  },
+  "leave_one_out_audit_2026_06_06": {
+   "full7_calmar": 5.16,
+   "drop_contribution": {
+    "GLD": -2.317,
+    "HYG": -0.614,
+    "USO": -0.542,
+    "UUP": -0.068,
+    "IWM": -0.003,
+    "TIP": 0.086,
+    "DBC": 0.036
+   },
+   "drop_TIP+DBC_calmar": 5.286,
+   "finding": "GLD dominant edge (-2.32 if dropped); HYG now strong contributor (-0.61, credit rallied to 2.05); USO -0.54 (crown value); UUP small +; IWM neutral. TIP+DBC marginal DRAG (+0.09/+0.04) -> dropping both lifts Calmar 5.16->5.29 (+2.4%). BUT TIP/DBC are INFLATION-regime insurance; OOS 2023-26 was disinflationary so they dragged. The +2.4% is the insurance PREMIUM, not free alpha \u2014 dropping them overfits the recent regime + strips the inflation hedge. KEEP for robustness (regimes shift, per decay-audit).",
+   "decision": "book composition unchanged \u2014 TIP/DBC retained as cheap inflation insurance; drag quantified at +2.4% Calmar premium"
   }
  }
 }
