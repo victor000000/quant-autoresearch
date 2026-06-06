@@ -9548,6 +9548,36 @@
         "type": "round",
         "phase": "GLD",
         "label": "R1204 GLD DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +2.5429 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1205",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1205 SPY DISCARD: Sample on jump; crash_ahead; size crashveto, entry 0.50. -> Calmar +1.0512 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1206",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1206 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1207",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R1207 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.2958 (prev best +1.2958). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1208",
+        "type": "round",
+        "phase": "XLI",
+        "label": "R1208 XLI DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.1312 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1209",
+        "type": "round",
+        "phase": "FXI",
+        "label": "R1209 FXI DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.2475 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -16549,6 +16579,31 @@
       {
         "src": "r1203",
         "dst": "r1204",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1204",
+        "dst": "r1205",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1205",
+        "dst": "r1206",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1206",
+        "dst": "r1207",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1207",
+        "dst": "r1208",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1208",
+        "dst": "r1209",
         "label": "no improvement"
       }
     ],
