@@ -2447,3 +2447,7 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-06T16:57:19,USO,2.1754,USO_logdollar_revert_cdf_overlay_t0.45,B,USO,logdollar,revert,0.45,cdf_overlay,2.1754,10.6084,601,True,True,2.0651,0.9972,0.979,1.8045,-0.2968,9.9507,710,True,False,completed,completed
 2026-06-06T17:19:51,EEM,1.293,EEM_logdollar_always_long_always_long_t0.50,A,EEM,logdollar,triple_barrier_meta,0.3,cdf_overlay,0.4616,7.2102,310,True,True,0.0214,0.6074,0.5326,0.675,0.2901,12.2141,710,False,False,completed,completed
 2026-06-06T17:19:51,EEM,1.293,EEM_logdollar_always_long_always_long_t0.50,B,EEM,logdollar,always_long,0.5,cdf_overlay,1.4717,24.8562,544,True,True,-0.2529,0.5,0.5,1.2459,0.1293,6.0138,710,True,False,completed,completed
+2026-06-06T17:22:28,XLE,1.3484,XLE_logdollar_tertile_cdf_overlay_t0.30,A,XLE,logdollar,multi_horizon,0.45,cdf_overlay,1.2799,12.0305,538,True,True,1.0594,0.8611,0.5356,1.0986,0.4203,6.6068,710,True,False,completed,completed
+2026-06-06T17:22:28,XLE,1.3484,XLE_logdollar_tertile_cdf_overlay_t0.30,B,XLE,logdollar,always_long,0.5,cdf_overlay,0.9683,35.1958,723,True,True,1.1577,0.5,0.5,0.831,-0.1283,6.1346,710,False,False,completed,completed
+2026-06-06T17:26:25,VWO,0.0,,A,VWO,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,1.0284,4.6423,679,True,True,0.0,0.8787,0.7811,0.9628,1.948,22.7346,710,False,False,completed,completed
+2026-06-06T17:26:25,VWO,0.0,,B,VWO,logdollar,always_long,0.5,cdf_overlay,1.187,20.9718,554,True,True,-0.2443,0.5,0.5,1.1229,0.046,5.5316,710,True,False,completed,completed
