@@ -436,11 +436,11 @@ def book_resolver(K):
         "positive_years": db.get("positive_years", "2023-26"),
         "leak_free": db.get("leak_free", True),
         "source_key": "portfolio.deployed_book_2026_06_06",
-        "verdict": ("One ML trend edge (GLD) + a dollar-regime decorrelator (UUP) + "
-                    "decorrelated buy-hold diversifiers; weight prop Calmar^2, gross<=1, "
-                    "positive every calendar year."),
+        "verdict": ("Three ML edges (GLD trend 4.02 / UUP dollar-regime decorrelator / "
+                    "USO oil-reversion 2.18, N_eff-crowned) + decorrelated buy-hold "
+                    "diversifiers; weight prop Calmar^2, gross<=1, positive every calendar year."),
         "freshness": (f'book re-derived 2026-06-06 leak-free · oil arc R1196-1206 · '
-                      f'last round {K.get("last_round", "")}'),
+                      f'last round {len(_scan_rounds_csv())}'),
         "stat_tower": {"mechanisms": 3, "screened": 42, "screened_total": 42, "lenses": 7},
         "upgrade": upgrade,
     }

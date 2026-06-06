@@ -1857,7 +1857,7 @@
   }
  },
  "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
- "last_round": 1190,
+ "last_round": 1213,
  "causal_graph": {
   "phases": [
    "Landscape",
