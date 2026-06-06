@@ -9672,6 +9672,12 @@
         "type": "round",
         "phase": "USO",
         "label": "R1220 USO DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.45. -> Calmar +2.1754 (prev best +2.1754). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1221",
+        "type": "round",
+        "phase": "EEM",
+        "label": "R1221 EEM DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.4717 (prev best +1.2930). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -16753,6 +16759,11 @@
       {
         "src": "r1219",
         "dst": "r1220",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1220",
+        "dst": "r1221",
         "label": "no improvement"
       }
     ],
