@@ -2423,3 +2423,9 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-06T14:58:21,XLI,0.0,,B,XLI,logdollar,always_long,0.5,cdf_overlay,1.1312,19.451,814,True,True,0.1494,0.5,0.5,1.2007,0.6245,9.8146,710,True,False,completed,completed
 2026-06-06T15:12:39,FXI,0.0,,A,FXI,logdollar,revert,0.45,cdf_overlay,-0.3247,93.3506,652,True,True,-0.2116,0.9776,0.9732,-0.5328,-0.5324,10.3588,710,False,False,completed,completed
 2026-06-06T15:12:39,FXI,0.0,,B,FXI,logdollar,always_long,0.5,cdf_overlay,0.2475,71.0761,608,True,True,-0.2188,0.5,0.5,0.3808,0.2195,6.3595,710,True,False,completed,completed
+2026-06-06T15:21:22,EWC,0.0,,A,EWC,logdollar,trend_leg,0.45,cdf_overlay,1.1528,4.0015,426,True,True,0.4167,0.77,0.5425,0.9036,0.5978,21.2266,710,False,False,completed,completed
+2026-06-06T15:21:22,EWC,0.0,,B,EWC,logdollar,always_long,0.5,cdf_overlay,1.5715,15.6506,783,True,True,-0.0155,0.5,0.5,1.2419,-0.2873,6.3163,710,True,False,completed,completed
+2026-06-06T15:58:58,SPY,0.0,,A,SPY,jump,crash_ahead,0.5,crashveto,1.0512,14.6285,1,False,False,0.0,0.8605,0.5472,1.2926,0.1444,16.6117,710,True,False,completed,completed
+2026-06-06T15:58:58,SPY,0.0,,B,SPY,jump,crash_ahead,0.5,crashveto,1.0512,14.6285,1,False,False,0.0,0.8605,0.5472,1.2926,0.1444,16.6117,710,False,False,completed,completed
+2026-06-06T16:04:16,GLD,4.0218,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,A,GLD,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,2.5498,10.8304,607,True,True,0.0,0.8978,0.8247,1.9006,0.0789,7.4331,710,False,False,completed,completed
+2026-06-06T16:04:16,GLD,4.0218,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,4.0218,8.0552,602,True,True,0.0,0.9573,0.7348,2.1687,0.0162,5.5343,710,True,False,completed,completed
