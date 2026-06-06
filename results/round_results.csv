@@ -2441,3 +2441,7 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-06T16:49:33,UUP,1.2958,UUP_imbalance_bgm+ker_cdf_overlay_t0.50,B,UUP,imbalance,bocpd_label,0.5,cdf_overlay,0.1605,12.354,61,False,False,1.8812,0.9365,0.7538,0.3113,-0.1342,14.1229,710,False,False,completed,completed
 2026-06-06T16:52:03,SPY,0.0,,A,SPY,logdollar,rskew,0.45,cdf_overlay,1.0606,15.1061,640,True,True,-0.1668,0.8191,0.7167,1.1057,0.0849,10.5461,710,True,False,completed,completed
 2026-06-06T16:52:03,SPY,0.0,,B,SPY,logdollar,icss_var,0.45,cdf_overlay,0.3307,11.5547,656,True,True,-0.1608,0.8664,0.7986,0.4797,0.3725,29.6989,710,False,False,completed,completed
+2026-06-06T16:54:57,GLD,4.0218,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,A,GLD,chl,trend_leg+regime_gmm,0.4,dd_overlay,1.7108,9.6862,355,True,True,0.0,0.9051,0.8027,1.3822,-0.1206,10.6258,710,False,False,completed,completed
+2026-06-06T16:54:57,GLD,4.0218,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,B,GLD,kalman,trend_leg+regime_gmm,0.4,dd_overlay,2.559,7.5551,402,True,True,0.0,0.7907,0.6822,1.9055,-0.2301,7.8638,710,True,False,completed,completed
+2026-06-06T16:57:19,USO,2.1754,USO_logdollar_revert_cdf_overlay_t0.45,A,USO,signedjumpvar,revert,0.45,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-06T16:57:19,USO,2.1754,USO_logdollar_revert_cdf_overlay_t0.45,B,USO,logdollar,revert,0.45,cdf_overlay,2.1754,10.6084,601,True,True,2.0651,0.9972,0.979,1.8045,-0.2968,9.9507,710,True,False,completed,completed

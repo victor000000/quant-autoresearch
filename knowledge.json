@@ -9660,6 +9660,18 @@
         "type": "round",
         "phase": "SPY",
         "label": "R1218 SPY DISCARD: Sample on log-dollar bars; rskew; size long-only, vol-targeted, entry 0.45. -> Calmar +1.0606 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1219",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1219 GLD DISCARD: Sample on kalman; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +2.5590 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1220",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1220 USO DISCARD: Sample on log-dollar bars; revert; size long-only, vol-targeted, entry 0.45. -> Calmar +2.1754 (prev best +2.1754). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -16731,6 +16743,16 @@
       {
         "src": "r1217",
         "dst": "r1218",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1218",
+        "dst": "r1219",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1219",
+        "dst": "r1220",
         "label": "no improvement"
       }
     ],
