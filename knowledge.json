@@ -17374,6 +17374,32 @@
    "drop_TIP+DBC_calmar": 5.286,
    "finding": "GLD dominant edge (-2.32 if dropped); HYG now strong contributor (-0.61, credit rallied to 2.05); USO -0.54 (crown value); UUP small +; IWM neutral. TIP+DBC marginal DRAG (+0.09/+0.04) -> dropping both lifts Calmar 5.16->5.29 (+2.4%). BUT TIP/DBC are INFLATION-regime insurance; OOS 2023-26 was disinflationary so they dragged. The +2.4% is the insurance PREMIUM, not free alpha \u2014 dropping them overfits the recent regime + strips the inflation hedge. KEEP for robustness (regimes shift, per decay-audit).",
    "decision": "book composition unchanged \u2014 TIP/DBC retained as cheap inflation insurance; drag quantified at +2.4% Calmar premium"
+  },
+  "temporal_robustness_2026_06_06": {
+   "full": {
+    "calmar": 5.16,
+    "sharpe": 2.76,
+    "mdd": 2.82,
+    "span_yr": 2.83
+   },
+   "thirds": {
+    "2023H2-2024H2": {
+     "calmar": 3.48,
+     "sharpe": 1.79,
+     "mdd": 2.82
+    },
+    "2024H2-2025H1": {
+     "calmar": 9.06,
+     "sharpe": 3.23,
+     "mdd": 2.09
+    },
+    "2025H2-2026H1": {
+     "calmar": 13.24,
+     "sharpe": 3.4,
+     "mdd": 1.14
+    }
+   },
+   "finding": "Book PROFITABLE every sub-period (Calmar 3.48/9.06/13.24, no lucky-window concentration). Edge STRENGTHENING not decaying (Sharpe 1.79->3.23->3.40, MaxDD 2.82->1.14). Full Calmar 5.16 anchored by EARLY max-DD (2.82% in 1st third); recent DDs smaller. 5.16 is a real persistent improving edge (opposite of decayed names). Caveat: recent 9-13 Calmars likely above durable rate, may mean-revert toward ~5; persistence is the robust signal."
   }
  }
 }
