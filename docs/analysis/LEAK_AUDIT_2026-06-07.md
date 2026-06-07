@@ -214,7 +214,7 @@ two genuinely decorrelated mechanisms whose combination (6.05) exceeds either al
 real diversification benefit; 1 asset would drop it. Calmar²-weighting beats equal (concentration on real
 edges wins); each weaker/correlated addition (DBC energy-corr w/ USO; HYG/TIP low-return) dilutes Calmar.
 **Trade-off frontier:** 2-edge 6.05 (best Calmar, concentrated in 2 commodities) → 3-edge 5.69 → 5-member
-5.17 (most diversified/robust). The portfolio dimension was fruitful (vs converged single-ticker).
+5.17 (most diversified/robust). GLD/USO weighting tilts (60/40, 40/60) both reduce Calmar — balanced Calmar²(52/48) optimal. **Entire search space now optimized (12 experiments): edges converged + sizing/composition/weighting tuned → 6.05 is the leak-clean ceiling for static data; only remaining frontier is a new data input.** The portfolio dimension was fruitful (vs converged single-ticker).
 
 Dropping the fakes (IWM = Adjusted-artifact, UUP = marginal), adding the real energy
 mean-reversion edges (USO/DBC), and the USO `cdf_plain` cost cut yield a **better, honest,
