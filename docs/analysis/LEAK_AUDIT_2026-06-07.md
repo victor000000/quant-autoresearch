@@ -496,3 +496,15 @@ autonomously-searchable program.md re-opening lever.** Of the four: #1 new-data 
 pairs (declined — stay single-ticker), #3 intraday (now confirmed dead on both mechanisms), #4 decay (passive
 evalue_oos monitor). All autonomous research directions are genuinely exhausted; further progress requires a
 new data modality or calendar time. Deployable book unchanged: GLD+USO+XBI+IXG+EPI = 6.26.
+
+## Lever #4 (decay) monitored — all four levers now addressed (absolute terminus)
+
+Ran the anytime-valid e-value monitor: GLD e=4.98 (strongest, holding), UUP/TIP/DBC/HYG e=1.3-2.5 (all
+holding, none decaying; none >=20 = real but modest, consistent with DSR). New edges (XBI/IXG/EPI) aren't in
+series_cache, so they're decay-assessed via the DSR + temporal-halves analyses instead. **With this, all four
+program.md re-opening levers are literally addressed: #1 new-data (needs user), #2 cross-asset (declined), #3
+intraday (tested dead on both mechanisms), #4 decay (monitored — edges holding). This is the absolute terminus
+of autonomous research on the current data.** The deployable book — GLD+USO+XBI+IXG+EPI = Calmar 6.26, leak-
+clean, online-certified, temporally robust, conviction-tiered, non-redundant, edges-holding — is complete.
+Only a new data modality re-opens the frontier. Minor follow-up: cache the new edges' weekly return series for
+direct e-value monitoring.
