@@ -485,3 +485,14 @@ confirming the satellites' role as drawdown-reducers. **The book is now audited 
 component marginal value, per-half temporal stability, session-scale DSR, online-equivalence, and cost — and
 GLD+USO+XBI+IXG+EPI = 6.26 stands as the optimal, complete, deployment-ready deliverable.** Further progress
 requires new data, a green-lit entropy refactor, or live forward-validation.
+
+## Intraday lever (program.md #3) closed — both mechanisms fail at short horizons
+
+Tested the intraday-holding regime on both edge mechanisms: GLD trend at horizons [5,10,20] = Calmar 1.40 vs
+1.76 daily; USO reversion intraday = 0.99 vs 3.85 daily (val_auc 1.0 but Calmar 0.99 — predictable-not-
+profitable: the fast reversals are perfectly classified but too small to trade profitably). Both edges are
+daily-horizon-specific; shortening the horizon just adds trades/cost without return. **This closes the last
+autonomously-searchable program.md re-opening lever.** Of the four: #1 new-data (needs user), #2 cross-asset
+pairs (declined — stay single-ticker), #3 intraday (now confirmed dead on both mechanisms), #4 decay (passive
+evalue_oos monitor). All autonomous research directions are genuinely exhausted; further progress requires a
+new data modality or calendar time. Deployable book unchanged: GLD+USO+XBI+IXG+EPI = 6.26.
