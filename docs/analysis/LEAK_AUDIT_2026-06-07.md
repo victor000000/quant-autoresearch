@@ -402,3 +402,16 @@ deflation-marginal SPECULATIVE decorrelating satellites — they lift the book t
 but that gain was measured on the same OOS window used to select them (selection-bias risk). Deploy GLD at full
 conviction, satellites at reduced conviction with live decay-monitoring. This is the multiple-testing discipline
 program.md mandates, applied honestly even though it tempers the headline.
+
+## Honest conviction-tiered deployable menu (the final artifact)
+
+Given the DSR reckoning (GLD robust; USO/XBI/IXG/EPI permute-real but deflation-marginal), the honest
+deployment weights the book by robustness, not raw Calmar²:
+- **Prudent (DSR × Calmar² weights — GLD 15.4, USO 10.6, IXG 2.6, XBI 1.8, EPI 0.6): Calmar 5.82, Sharpe
+  2.90, MaxDD 3.81%** — GLD/USO-anchored, satellites down-weighted. This is the honest *forward* expectation.
+- Aggressive (Calmar²): 6.26 — over-weights the satellites that fit the OOS window (optimistic case).
+- GLD-only: the robust floor.
+The prudent book is lower in-sample (5.82 < 6.26) precisely because the backtest rewards the selection-fitted
+satellites; 5.82 is the more trustworthy out-of-sample number. **Deploy GLD-anchored, conviction-tiered; the
+satellites require forward data to confirm. Further in-sample search is contraindicated — it compounds the
+multiple-testing burden the DSR audit measured.** Next frontier: new data, or live forward-validation.
