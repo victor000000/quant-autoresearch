@@ -388,3 +388,17 @@ verified (live path == backtest ≤ 4e-8), leak-clean (RAW), model-only-from-Obj
 deployment-ready, not merely backtest-optimal. Session: deployed 4.62 → certified-deployable 6.26 via 3 new
 online-certified decorrelated edges (XBI biotech, IXG financials, EPI India) found by breadth exploration,
 with rigorous leak + online-equivalence gating throughout.
+
+## ⚠️ Session-scale DSR reckoning — honest multiple-testing control
+
+Ran honest_audit.py (Deflated Sharpe at the TRUE per-asset trial counts) after the ~150-name search.
+Result corrects the 6.34 enthusiasm: **only GLD survives deflation robustly** (N=150, DSR 0.956). USO FAILS
+(DSR 0.714), XBI FAILS (0.802), EWG FAILS (0.340); IXG (N=2) / EPI (N=1) / ILF (N=2) have too few per-asset
+trials to assess but carry a large cross-asset selection burden (found among ~150 names) → deflation-unproven.
+Permute (passed = real label signal) and deflation (mostly fails = magnitude not decisively above best-of-N
+noise) are both valid and orthogonal: **the new edges are real-signal but selection-burdened.** Honest frame:
+GLD = robust core (full conviction); USO = mechanism-grounded but DSR-marginal; XBI/IXG/EPI = permute-real but
+deflation-marginal SPECULATIVE decorrelating satellites — they lift the book to 6.26 via drawdown reduction,
+but that gain was measured on the same OOS window used to select them (selection-bias risk). Deploy GLD at full
+conviction, satellites at reduced conviction with live decay-monitoring. This is the multiple-testing discipline
+program.md mandates, applied honestly even though it tempers the headline.
