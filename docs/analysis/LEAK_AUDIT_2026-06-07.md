@@ -439,3 +439,16 @@ and clean; (2) the infer_online gate works as designed — it auto-caught the il
 fix (origin-independent entropy: stride=1, no abs_start/ffill) is robust but result-changing and ~5x slower, so
 it's a deliberate follow-up requiring full re-validation; the certified book is deployment-ready now. ILF stays
 dropped.
+
+## Entropy-fix feasibility test (contained, reverted) — needs fast-entropy first
+
+Tested the origin-independent entropy fix (stride=1, no abs_start/ffill — each bar's entropy from its own
+window, robust to the illiquid bar-count drift that broke ILF). Result: **the footer TIMES OUT** — computing
+sample_entropy at every bar exceeds QC's compute budget (both ILF legs train:timeout). This confirms why the
+stride+ffill optimization exists, and that the robustness fix is a LARGER effort than removing the grid: it
+requires a **vectorized/faster sample_entropy** first, then stride=1, then full re-validation of every edge
+(the entropy values change). Reverted features.py (the change broke all renders). **The entropy refactor is the
+documented priority engineering follow-up: (1) vectorize sample_entropy ~20x, (2) switch to stride=1 origin-
+independent entropy, (3) re-render + re-validate + re-certify all edges.** Until then, the infer_online gate
+correctly protects deployment by catching illiquid-divergent names (as it did ILF). Deployable book unchanged:
+GLD+USO+XBI+IXG+EPI = 6.26, all liquid + online-certified.
