@@ -290,3 +290,15 @@ sectors/international names fail trend (up-drift beats timing); silver has no go
 base metals fail; currencies form no imbalance bars (0 trades). **Net across 50+ names checked under RAW:
 only gold-trend (GLD/GDX) and energy-reversion (USO/DBC + weak IGE/FCG/IEO) exist; no decorrelated 3rd
 edge; deployable optimum remains GLD+USO (6.05).**
+
+## NEW DECORRELATED EDGE: XBI biotech trend (book improves to 6.14)
+
+Batch-2 breadth sweep found the decorrelated 3rd edge: **XBI (biotech) logdollar/trend_leg/dd_overlay/
+infogain = 1.475** vs buy-hold 0.48, permute-PASS, **Bonferroni PASS (PSR 0.995)** — fully significant,
+unlike the boundary edges. Biotech is a volatile, deep-drawdown, weak-buy-hold sector (like gold) where
+trend-timing adds value, AND it's decorrelated from gold/oil/energy/macro. **Book-additive: GLD+USO+XBI =
+Calmar 6.14 (>6.05), with MaxDD dropping 4.47%→4.2%** — the decorrelation signature (vs GDX/DBC which
+diluted). **New optimal deployable book = GLD + USO + XBI (6.14): gold-trend + oil-reversion + biotech-trend,
+three orthogonal mechanisms.** Lesson: the single-ticker frontier was NOT converged — breadth exploration
+across the volatile-non-drifting sectors found a real decorrelated edge. Secondary unverified leads: FXZ
+(materials trend 1.07), VDE (energy revert 1.47, redundant).
