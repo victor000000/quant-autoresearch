@@ -249,3 +249,21 @@ finds real edges. **BUT GDX is redundant with GLD** (both gold-driven trend): GL
 not edge-discovery** — new real edges keep landing in gold/energy (correlated with the existing GLD/USO).
 Productive frontier sharpened: find a real edge in a *decorrelated* asset class (not gold, not oil/energy).
 Optimal deployable book remains GLD+USO (6.05).
+
+## Decorrelated-frontier check: exhaustively empty under RAW (21 experiments)
+
+Pushed past the "converged" call (rightly — it found GDX). The data-mined "find-the-next-GDX" then
+checked every decorrelated candidate across all four mechanisms; under leak-clean RAW + the grown OOS
+window, every pre-RAW decorrelated/marginal edge is stale and collapses:
+
+| Mechanism | Decorrelated candidate | RAW verdict |
+|---|---|---|
+| Trend | GDX (gold miners) | real (2.30, permute-OK) but **redundant with GLD** |
+| Regime | UUP / VGK | decayed (0.44 / 0.31<BH — pre-RAW 2.54/1.92 were stale) |
+| Crash-veto | SPY jump/crash_ahead | collapsed (1 trade — pre-RAW 2.5 was threshold-fragile/Adjusted) |
+| Meta-labeling | EEM triple_barrier_meta | collapsed (0.46<<BH 1.47 — pre-RAW 4.03 predates the leak fixes) |
+
+**Conclusion:** the only edges that survive leak-clean RAW are gold-trend (GLD/GDX) and oil-reversion
+(USO/DBC), correlated within theme. **No decorrelated 3rd edge exists in this universe** → the deployable
+optimum is **GLD+USO (Calmar 6.05)**, and further progress requires a genuinely new data input. Caveat for
+future sessions: the `meta-labeling-wins` and `spy-crash-veto` leads in memory are STALE (pre-RAW/pre-leak-fix).
