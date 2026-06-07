@@ -160,6 +160,33 @@ train/infer_online/verify renders compile + minify clean; `tests/test_bar_thresh
 **Re-validation owed:** items 4 (if `train_purge` enabled) and 5 (Raw) change results — re-run the
 champions through the driver before trusting their stored numbers.
 
+## RAW re-validation results (2026-06-07, via the autoresearch driver under the new RAW templates)
+
+Every champion/candidate re-run through `run_autoresearch_round.py` (renders fresh → RAW). GLD canary
+reproduced **4.0218 bit-exact**, proving the RAW change is pipeline-clean end-to-end on QC.
+
+| Ticker | Mechanism | pre-RAW (Adjusted) | RAW | RAW buy-hold | Verdict under RAW |
+|---|---|---:|---:|---:|---|
+| **GLD** | trend_leg+regime_gmm | 4.02 | **4.02** | 1.95 | ✅ robust (RAW-invariant: no splits/divs) |
+| **USO** | revert (oil mean-rev) | 3.42 | **3.85** | 0.94 | ✅ robust — permute + deflation PASS |
+| IWM | trend_leg | 0.67 | **0.47** | 0.61 | ❌ edge gone — was an Adjusted-price artifact → **drop** |
+| UUP | bgm+sadf+ker | 1.85 | **0.60** | 0.40 | ⚠️ marginal (decay-stale) → **demote** |
+| HYG | always_long | 1.83 | **2.35** | — | buy-hold core (RAW ↑); no timing edge |
+| TIP | always_long | 1.15 | **1.06** | — | buy-hold core (≈); no timing edge |
+| DBC | always_long | 0.91 | **0.78** | — | buy-hold core; `revert` 1.93 beats BH but fails Bonferroni (energy basket partly carries oil mech) |
+
+**Oil family:** revert is **USO-1× only**. UCO (2× oil) permute-FAILS (Calmar survives shuffling = path/sizing,
+not signal). XOP (E&P equities) has no revert edge (real −0.21).
+
+**Leveraged-ETF screen "fits" are artifacts (3/3):** UCO (2× oil) path-driven; SSO (2× S&P) collapses
+under RAW (2 trades, non-deployable); AGQ (2× silver) collapses (−0.26). Screen-wide pruning rule.
+IAU's `sliced_wasserstein` 3.35 is suspect (permuted retains 64% of Calmar) — confirms the prior flag.
+
+**Net:** under leak-clean RAW data the only robust single-ticker edges are **GLD (4.02)** and **USO (3.85)**.
+Actionable book change (pending portfolio re-weight): **drop IWM, demote UUP, add USO**; buy-hold
+diversifiers (GLD-core/HYG/TIP/DBC) hold for decorrelation. The RAW fix + permute control turned an
+over-stated multi-edge book into an honest two-edge one — the intended effect of the leak correction.
+
 ## Bottom line
 
 The de-Prado leak contract is genuinely well-defended; for the **deployed** configs the online/
