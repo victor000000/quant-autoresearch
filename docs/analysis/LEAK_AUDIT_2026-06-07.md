@@ -313,3 +313,15 @@ orthogonal mechanisms.** (PJP/FBT looked like hits on A-leg monitoring but were 
 collapsed on clean A/B; only driver-KEEP/permute/Bonferroni verdicts count.) Confirmed lesson: decorrelated
 trend edges live in volatile, deep-drawdown, weak-buy-hold sectors/regions — the breadth sweep keeps finding
 them (2 book-additive edges in 2 batches). The frontier was NOT converged; it just needed breadth.
+
+## 3rd new decorrelated edge: IXG (global financials) — 5-edge book Calmar 6.29
+
+Batch-4 found IXG (global financials) logdollar/trend_leg/dd_overlay/infogain = 2.28 vs BH 1.54,
+permute-PASS, Bonferroni PASS (PSR 0.998), driver KEEP (val_auc 0.526 marginal but the decisive
+permute+Bonferroni gates passed). Book-additive: **GLD+USO+XBI+ILF+IXG = Calmar 6.29 (Sharpe 2.83,
+MaxDD 3.46%)**. Breadth progression: 6.05 → 6.14 (+XBI) → 6.22 (+ILF) → 6.29 (+IXG), with MaxDD
+collapsing 4.47% → 3.46% as each decorrelated edge is added. **New optimal book = GLD + USO + XBI + ILF
++ IXG: five orthogonal mechanisms (gold-trend, oil-reversion, biotech-trend, LatAm-trend, financials-trend).**
+THREE confirmed edges in three breadth batches — the recipe trend_leg/dd_overlay/infogain on volatile,
+weak-buy-hold sectors & regions (biotech/LatAm/financials) is broadly productive. The frontier was never
+converged; it needed breadth. Near-misses to chase: IYG (fin-services, 76<80 trades), VIS/VCR/FXR.
