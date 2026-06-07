@@ -193,6 +193,25 @@ buy-hold diversifiers (HYG/TIP) hold for decorrelation. The RAW fix + permute co
 over-stated multi-edge book into an honest, mechanism-grounded one (trend: GLD; mean-reversion: USO/DBC) —
 the intended effect of the leak correction.
 
+## RAW-corrected deployable book (portfolio backtest, leak-clean)
+
+Hypothesis-driven smart-experiment loop (8 deliberate A/Bs, graph-mined; 2 wins / 6 refutes):
+the single-ticker frontier is converged (only GLD/USO/DBC survive RAW+permute), and the one
+remaining high-EV lever — **portfolio combination** — pays off. Calmar²-weighted, leverage 1.0,
+OOS 2023-08→2026-06, `render_portfolio`, n_loaded 5/5:
+
+| Book | Members | Calmar | Sharpe | MaxDD |
+|---|---|---:|---:|---:|
+| **RAW-corrected** | GLD + USO(cdf_plain) + DBC(revert) + HYG + TIP | **5.17** | 2.71 | 4.16% |
+| stale deployed (pre-RAW) | GLD/UUP/IWM/TIP/DBC/HYG | 4.62 | 2.46 | — |
+
+Dropping the fakes (IWM = Adjusted-artifact, UUP = marginal), adding the real energy
+mean-reversion edges (USO/DBC), and the USO `cdf_plain` cost cut yield a **better, honest,
+leak-clean book (5.17 > 4.62)**. Smart-loop wins: H3 USO→cdf_plain (same Calmar, −35% trades);
+H8 portfolio recompose (5.17). Refutes (all mechanism-grounded, graph-checked): cross-asset
+features (H1), infogain-on-DBC (H2), cdf_plain-on-DBC (H4), XME trend (H5, screen-stale),
+GLD band0.05 (H6), USO intraday horizons (H7, val_auc 1.0 but Calmar 0.99 = predictable-not-profitable).
+
 ## Bottom line
 
 The de-Prado leak contract is genuinely well-defended; for the **deployed** configs the online/
