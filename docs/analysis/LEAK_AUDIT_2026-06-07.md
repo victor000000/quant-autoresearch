@@ -520,3 +520,16 @@ drawdown-driven (risk-reducer), not consistent-weekly-return-driven (alpha). All
 directly decay-monitored and holding. With this, all four program.md re-opening levers are fully addressed and
 every book member is leak-clean, online-certified, temporally robust, DSR-characterized, and decay-monitored.
 Book GLD+USO+XBI+IXG+EPI = 6.26 is the complete, deployment-ready deliverable.
+
+## Entropy refactor tested + closed (not viable) — both paths fail
+
+Attempted the origin-independent entropy fix two ways: (1) stride=1 sample_entropy preserves the values but
+times out the footer (O(W^2)); (2) stride=1 PERMUTATION entropy is fast (O(W), 5.6s footer) and provably
+origin-independent (trailing window == full series by construction), BUT it degrades the edges — GLD trend_leg
+falls 1.76 -> 1.10 (val_auc rises 0.69 -> 0.859 but Calmar drops with more trades = predictable-not-profitable;
+ordinal complexity is not a substitute for amplitude complexity, and sample_entropy is Calmar-load-bearing).
+**Conclusion: no origin-independent entropy is simultaneously fast and edge-preserving.** The current stride+
+ffill sample_entropy is the correct speed/accuracy tradeoff; its illiquid bar-count-drift fragility is correctly
+contained by the infer_online deployment gate, which drops online-divergent names (e.g. ILF) automatically. The
+entropy refactor is now closed (tested-dead, not merely deferred); ILF stays dropped with no viable in-pipeline
+fix. features.py reverted.
