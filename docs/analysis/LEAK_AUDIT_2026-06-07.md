@@ -202,8 +202,15 @@ OOS 2023-08→2026-06, `render_portfolio`, n_loaded 5/5:
 
 | Book | Members | Calmar | Sharpe | MaxDD |
 |---|---|---:|---:|---:|
-| **RAW-corrected** | GLD + USO(cdf_plain) + DBC(revert) + HYG + TIP | **5.17** | 2.71 | 4.16% |
+| **RAW 3-edge (best Calmar)** | GLD + USO(cdf_plain) + DBC(revert) | **5.69** | 2.67 | 4.49% |
+| RAW 5-member (best Sharpe/DD) | + HYG + TIP | 5.17 | 2.71 | 4.16% |
+| RAW equal-weight | 5 members, equal | 3.73 | 2.49 | 4.03% |
 | stale deployed (pre-RAW) | GLD/UUP/IWM/TIP/DBC/HYG | 4.62 | 2.46 | — |
+
+Composition findings: **Calmar²-weighting beats equal (concentration on real edges wins)**, and dropping
+the buy-hold diversifiers raises Calmar (5.17→5.69, the edges out-return the diversifiers' DD reduction) at
+the cost of slightly worse Sharpe/MaxDD. By the program's Calmar objective the **3-edge book (5.69) is best**;
+the 5-member is the more diversified/robust choice. The portfolio dimension is fruitful (vs converged single-ticker).
 
 Dropping the fakes (IWM = Adjusted-artifact, UUP = marginal), adding the real energy
 mean-reversion edges (USO/DBC), and the USO `cdf_plain` cost cut yield a **better, honest,
