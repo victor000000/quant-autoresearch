@@ -452,3 +452,14 @@ documented priority engineering follow-up: (1) vectorize sample_entropy ~20x, (2
 independent entropy, (3) re-render + re-validate + re-certify all edges.** Until then, the infer_online gate
 correctly protects deployment by catching illiquid-divergent names (as it did ILF). Deployable book unchanged:
 GLD+USO+XBI+IXG+EPI = 6.26, all liquid + online-certified.
+
+## Entropy refactor conclusively scoped: needs a cheaper entropy measure
+
+Local benchmark: vectorizing sample_entropy yields only 2-4x speedup → a stride=1 footer would still take
+~610s at W=200 (budget ~120s) = infeasible. So origin-independent entropy can't be achieved by vectorizing the
+current O(W^2) sample entropy; it requires switching to a fundamentally cheaper O(W) measure (permutation or
+spectral entropy), which changes feature semantics and mandates full re-validation of every edge. The illiquid-
+name robustness fix is therefore a deliberate multi-step project (new entropy measure → stride=1 → re-render →
+re-validate → re-certify), strongly justifying its deferral. The infer_online gate protects deployment in the
+meantime (it caught ILF automatically). Autonomous in-session work is now genuinely exhausted; the deployable
+book GLD+USO+XBI+IXG+EPI = 6.26 is the deliverable.
