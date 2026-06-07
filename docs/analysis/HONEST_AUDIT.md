@@ -122,6 +122,10 @@ monitoring (re-check anytime; merge re-validations by MULTIPLICATION). Testing-b
 ```
 champ    e-value  AV p=1/e        verdict  decay?
 GLD         4.98    0.2010    weak (e>=1)  holding
+USO        10.38    0.0964    weak (e>=1)  holding
+XBI         2.10    0.4772    weak (e>=1)  holding
+IXG         1.54    0.6479    weak (e>=1)  holding
+EPI         2.63    0.3800    weak (e>=1)  holding
 UUP         1.31    0.7627    weak (e>=1)  holding
 TIP         1.58    0.6324    weak (e>=1)  holding
 DBC         1.26    0.7947    weak (e>=1)  holding

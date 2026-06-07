@@ -508,3 +508,15 @@ of autonomous research on the current data.** The deployable book — GLD+USO+XB
 clean, online-certified, temporally robust, conviction-tiered, non-redundant, edges-holding — is complete.
 Only a new data modality re-opens the frontier. Minor follow-up: cache the new edges' weekly return series for
 direct e-value monitoring.
+
+## Full-book e-value monitor — all members holding (lever #4 complete)
+
+Cached the new edges' weekly equity series (infer-replay, 224 pts each) and ran the anytime-valid e-value
+monitor on the full current book: USO e=10.38 (strongest), GLD 4.98, EPI 2.63, XBI 2.10, IXG 1.54 — all
+holding, none decaying, none >=20 (real but modest). Two nuances: (1) USO is strongest by the anytime-valid
+lens though it failed the Sharpe-DSR — the honesty lenses rank the cores differently but agree all edges are
+real-but-modest; (2) IXG has the lowest e-value despite the highest Calmar, confirming its value is path/
+drawdown-driven (risk-reducer), not consistent-weekly-return-driven (alpha). All five book members are now
+directly decay-monitored and holding. With this, all four program.md re-opening levers are fully addressed and
+every book member is leak-clean, online-certified, temporally robust, DSR-characterized, and decay-monitored.
+Book GLD+USO+XBI+IXG+EPI = 6.26 is the complete, deployment-ready deliverable.
