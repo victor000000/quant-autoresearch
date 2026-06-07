@@ -426,3 +426,16 @@ partially mitigates the satellite selection-bias concern at the book level (the 
 time, not one lucky stretch), though it doesn't isolate the satellites (GLD ~41% weight dominates). Honest net:
 book temporally robust + GLD DSR-real + satellites permute-real-but-deflation-marginal → deploy conviction-
 tiered, forward-monitor the satellites.
+
+## ILF root cause confirmed: entropy-grid fragility on illiquid names
+
+ILF infer_online diagnostic: mean_diff 0.072, n_big_gt01 131/515 (~25% of bars diverge >0.01) — systematic,
+not a single outlier (first bar matches 0.229==0.229 exactly). **Root cause: the entropy stride-grid is anchored
+to the cumulative bar index (abs_start); on illiquid ETFs the online dollar-bar builder drifts its cumulative
+count from the batch build, misaligning the grid phase, so ~25% of bars carry the wrong ffilled entropy and the
+predictions diverge.** Liquid names (GLD/USO/XBI/IXG/EPI) have no bar-count drift, so they reproduce to ~1e-8.
+This confirms (1) the deployable book (GLD+USO+XBI+IXG+EPI = 6.26) is correctly certified — every member liquid
+and clean; (2) the infer_online gate works as designed — it auto-caught the illiquid-divergent name. The proper
+fix (origin-independent entropy: stride=1, no abs_start/ffill) is robust but result-changing and ~5x slower, so
+it's a deliberate follow-up requiring full re-validation; the certified book is deployment-ready now. ILF stays
+dropped.
