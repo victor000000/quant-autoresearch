@@ -66,7 +66,7 @@ class AutoresearchPortfolio(QCAlgorithm):
         loaded = 0
         tot_w = float(sum(max(0.0, float(c[2])) for c in CHAMPIONS)) or 1.0
         for tk, key, wraw in CHAMPIONS:
-            sec = self.add_equity(tk, Resolution.MINUTE)
+            sec = self.add_equity(tk, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW)  # RAW: PIT + live-matching (leak audit 2026-06-07)
             try:
                 sec.set_leverage(max(2.0, float(LEVERAGE) + 1.0))   # margin headroom for the gross target
             except Exception:

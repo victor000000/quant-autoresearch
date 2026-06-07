@@ -13,7 +13,7 @@ class BuyHoldBenchmark(QCAlgorithm):
         self.set_start_date(2023, 8, 1)
         self.set_end_date(2026, 6, 1)
         self.set_cash(100000)
-        self.syms = [self.add_equity(t, Resolution.MINUTE).symbol for t in TICKERS]
+        self.syms = [self.add_equity(t, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol for t in TICKERS]  # RAW (leak audit 2026-06-07)
         self._eq = []
         self._eqy = []
         self._last_day = None

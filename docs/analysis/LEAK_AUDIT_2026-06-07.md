@@ -149,7 +149,16 @@ train/infer_online/verify renders compile + minify clean; `tests/test_bar_thresh
    into early VAL. *Follow-up:* wire `__TRAINPURGE__` into the driver/orchestrator to expose it; enabling
    changes val_auc selection and needs re-validation.
 
-**Not applied (needs a decision + re-validation):** the adjusted-price → Raw flip (gap 1 above).
+5. **Adjusted-price → RAW (APPLIED 2026-06-07).** `data_normalization_mode=DataNormalizationMode.RAW`
+   now set at **every** `add_equity` across all templates (footer ×2, infer, infer_online, verify,
+   live_trade, portfolio, benchmark — 8 sites; all renders compile). Removes the Adjusted-mode level
+   look-ahead and the backtest-vs-live divergence; train/online/live now agree on RAW. **⚠️ This changes
+   historical results and requires a full book re-validation pass via the driver** (cannot run in this
+   session): GLD is provably unaffected (no splits/divs); UUP/IWM/SPY negligible; **USO-family must be
+   re-checked** (2020 reverse split). Until re-validated, stored champion Calmars under Adjusted are stale.
+
+**Re-validation owed:** items 4 (if `train_purge` enabled) and 5 (Raw) change results — re-run the
+champions through the driver before trusting their stored numbers.
 
 ## Bottom line
 

@@ -159,8 +159,12 @@ class AutoresearchPipeline(QCAlgorithm):
         self.set_start_date(2009, 8, 1)
         self.set_end_date(2026, 6, 1)
         self.set_cash(100000)
-        self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol
-        self.spy = self.add_equity(CROSS_ASSET, Resolution.MINUTE).symbol
+        # RAW data normalization (leak audit 2026-06-07): QC's default Adjusted back-adjusts using the
+        # ENTIRE split/dividend history (future corporate actions => level look-ahead) and differs live.
+        # RAW is point-in-time + live-matching (dividends credited as cash, splits adjust share qty).
+        # MUST match across footer/infer/infer_online/verify/live_trade/portfolio (train==online==live).
+        self.sym = self.add_equity(TICKER, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol
+        self.spy = self.add_equity(CROSS_ASSET, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol
         self.tsl = []
         self.cll = []
         self.vll = []
