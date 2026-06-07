@@ -463,3 +463,14 @@ name robustness fix is therefore a deliberate multi-step project (new entropy me
 re-validate → re-certify), strongly justifying its deferral. The infer_online gate protects deployment in the
 meantime (it caught ILF automatically). Autonomous in-session work is now genuinely exhausted; the deployable
 book GLD+USO+XBI+IXG+EPI = 6.26 is the deliverable.
+
+## Satellite role refined: temporally-robust drawdown reducers (not standalone alpha)
+
+Per-half decomposition (full book vs GLD+USO-only): satellites cut MaxDD by ~1pp in BOTH OOS halves
+(H1: 3.54% vs 4.41% = -0.87pp; H2: 3.51% vs 4.48% = -0.97pp), with only a modest Calmar lift (+0.04 H1,
++0.32 H2). **So XBI/IXG/EPI earn their place as risk-reducers via temporally-consistent decorrelation, NOT as
+standalone alpha (the DSR audit correctly flagged their return-magnitude as marginal).** A diversification/
+drawdown benefit that holds in both sub-periods is far more robust to selection bias than a return edge, so
+their inclusion is defensible. Honest final characterization: GLD = robust core alpha (DSR 0.956), USO =
+mechanism-grounded core (oil reversion), XBI/IXG/EPI = temporally-robust drawdown reducers. The deployable
+book (6.26) is justified — GLD/USO drive returns, the satellites consistently shave ~1pp of drawdown.
