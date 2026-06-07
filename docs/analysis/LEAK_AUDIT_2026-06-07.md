@@ -348,3 +348,13 @@ biotech-trend, LatAm-trend, financials-trend, India-trend). **Session final: the
 confirmed new decorrelated edges (4 book-additive), lifting the book 6.05 → 6.34 and nearly halving excess
 MaxDD (4.47% → 3.36%). The repeated "converged" calls were wrong; the frontier needed breadth.** Further real
 edges now correlate with existing ones (don't add), so the book is genuinely saturated for this data/recipe.
+
+## Final: 6-edge book weighting characterized
+
+Calmar²=6.34 (max Calmar) > Calmar¹ 6.26 > equal 5.95 — concentration on the strong GLD/USO edges
+maximizes Calmar. But weighting the decorrelated edges more trades Calmar for risk-adjusted quality:
+Calmar¹ → Sharpe 2.95 / MaxDD 2.85%; equal → MaxDD 2.35% (vs Calmar²'s 2.85 / 3.36%). **Deployment
+frontier:** Calmar²-weights for maximum Calmar (6.34); Calmar¹/equal for maximum Sharpe / minimum drawdown.
+**The book is now fully optimized for this data: GLD + USO + XBI + ILF + IXG + EPI, Calmar 6.34 (or
+Calmar¹-weighted = Sharpe 2.95 / MaxDD 2.85%).** Breadth ceiling reached + weighting tuned; the next real
+gains require a new data modality.
