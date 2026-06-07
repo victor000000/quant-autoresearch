@@ -173,10 +173,11 @@ reproduced **4.0218 bit-exact**, proving the RAW change is pipeline-clean end-to
 | UUP | bgm+sadf+ker | 1.85 | **0.60** | 0.40 | ⚠️ marginal (decay-stale) → **demote** |
 | HYG | always_long | 1.83 | **2.35** | — | buy-hold core (RAW ↑); no timing edge |
 | TIP | always_long | 1.15 | **1.06** | — | buy-hold core (≈); no timing edge |
-| DBC | always_long | 0.91 | **0.78** | — | buy-hold core; `revert` 1.93 beats BH but fails Bonferroni (energy basket partly carries oil mech) |
+| DBC | always_long → **revert** | 0.91 | **1.93** | 0.78 | ✅ **UPGRADE** — `revert` is a permute-CONFIRMED edge (real 1.93 vs permuted 0.17 = 9%; Bonferroni-boundary N=32). DBC is energy-heavy → oil-revert mechanism carries. Switch DBC from buy-hold to revert. |
 
-**Oil family:** revert is **USO-1× only**. UCO (2× oil) permute-FAILS (Calmar survives shuffling = path/sizing,
-not signal). XOP (E&P equities) has no revert edge (real −0.21).
+**Oil/energy family:** revert is **energy-specific** — USO-1× (3.85) AND energy-heavy DBC (1.93) are
+permute-CONFIRMED; UCO (2× oil) permute-FAILS (Calmar survives shuffling = path, not signal); XOP (E&P
+equities) has no revert edge (−0.21); DJP/GSG (lighter-energy baskets) and silver/gold/agri all fail.
 
 **The screen's "8 STRONG fits" collapse to ONE under leak-clean RAW + permute:** USO ✅ real (3.85);
 UCO (2× oil) path-driven; SSO (2× S&P) RAW-collapse (2 trades); AGQ (2× silver) RAW-collapse (−0.26);
@@ -185,10 +186,12 @@ miners) no edge (trend 0.19 < buy-hold 1.53); DJP/GSG no edge (revert < buy-hold
 predictable-not-profitable). Two screen-wide rules: **leveraged-ETF fits are artifacts**, and **revert is
 oil-specific** (inconsistent on commodity baskets: DBC suggestive, DJP/GSG fail).
 
-**Net:** under leak-clean RAW data the only robust single-ticker edges are **GLD (4.02)** and **USO (3.85)**.
-Actionable book change (pending portfolio re-weight): **drop IWM, demote UUP, add USO**; buy-hold
-diversifiers (GLD-core/HYG/TIP/DBC) hold for decorrelation. The RAW fix + permute control turned an
-over-stated multi-edge book into an honest two-edge one — the intended effect of the leak correction.
+**Net:** under leak-clean RAW data the robust single-ticker edges are **GLD (4.02)**, **USO (3.85)**, and
+**DBC-revert (1.93)** (the last permute-real but Bonferroni-boundary). Actionable book change (pending
+portfolio re-weight): **drop IWM, demote UUP, add USO, switch DBC from buy-hold to revert**; remaining
+buy-hold diversifiers (HYG/TIP) hold for decorrelation. The RAW fix + permute control turned an
+over-stated multi-edge book into an honest, mechanism-grounded one (trend: GLD; mean-reversion: USO/DBC) —
+the intended effect of the leak correction.
 
 ## Bottom line
 
