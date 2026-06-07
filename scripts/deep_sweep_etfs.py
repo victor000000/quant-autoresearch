@@ -29,7 +29,11 @@ LABELERS = ["accel", "ker", "trend_leg", "sharpe_scan", "ofsc", "bde_cusum", "ch
             "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir",
             "visgraph", "mfe_mae", "revert", "turn_scan", "perment", "tertile", "bgm", "agglomerative",
             "jump_model", "triple_barrier_meta", "trend_scan", "regime_gmm", "cusum_regime", "kmeans2stage"]
-FIT_CLASSES = {"Commodity", "Currency", "Leveraged/Inverse"}
+# "Leveraged/Inverse" REMOVED 2026-06-07 (leak-audit RAW re-validation): leveraged/inverse fits are
+# ARTIFACTS — UCO(2x oil) permute-path, SSO(2x S&P)/AGQ(2x silver) RAW-collapse, SDS(-2x) negative.
+# Mechanism: leverage decay + path amplification. They only burn QC (all DISCARD). Real energy edges
+# (USO/DBC) live in the Commodity class, kept below. Re-add if a new leveraged hypothesis emerges.
+FIT_CLASSES = {"Commodity", "Currency"}
 # marginal/promising names from other classes that showed an edge in the 5-method screen
 EXTRA = ["BWX", "SPTL", "BLV", "BIV", "IEO", "REM", "VOX", "MOO", "FXF", "XES"]
 # already heavily researched (core book) — skip to avoid redundant compute
