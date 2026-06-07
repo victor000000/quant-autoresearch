@@ -236,3 +236,16 @@ online-equivalence coverage** (multi-param axes, a stronger prediction cross-che
 **adjusted-price point-in-time** (the one untested surface that could hide a real leak), and turning the
 **multiple-testing/lockbox** machinery into binding gates. None of these is an active leak in the current
 book — they are the next things to harden before scaling capital or promoting new champions.
+
+## Update: GDX is a real edge (physics-routing), but the binding constraint is decorrelation
+
+H15/H16/H17 (2026-06-07): GDX (gold miners) on the **imbalance axis** (not logdollar — my earlier
+logdollar test gave 0.19) has a real trend edge: **imbalance/trend_leg/dd_overlay/infogain = 2.30**,
+beats buy-hold 1.26, **permute-confirmed** (permuted collapses to 1.26 ≈ buy-hold, val_auc 0.999→0.476),
+Bonferroni-boundary (N=72, like USO/UUP/DBC). So the single-ticker *edge* space is NOT fully converged —
+smart physics-routing (per the component-selection-guide: "imbalance dominates logdollar on GDX") still
+finds real edges. **BUT GDX is redundant with GLD** (both gold-driven trend): GLD+USO+GDX = 5.60 < GLD+USO
+6.05 (gold concentration raises DD more than return). **The binding constraint on the book is DECORRELATION,
+not edge-discovery** — new real edges keep landing in gold/energy (correlated with the existing GLD/USO).
+Productive frontier sharpened: find a real edge in a *decorrelated* asset class (not gold, not oil/energy).
+Optimal deployable book remains GLD+USO (6.05).
