@@ -167,5 +167,23 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, terms
             feats.append(((ratio - m) / (s + 1e-9)).astype(np.float32).to_numpy())   # z-scored term structure (regime)
         for W in [10, 40]:
             feats.append((ratio - ratio.shift(W)).astype(np.float32).to_numpy())     # term-structure CHANGE (roll dynamics)
+        # SECONDARY-OWN features (2026-06-06, user "other ETFs as features"): the cross-ratio above suits two
+        # maturities of the SAME underlying (VIXY/VIXM), but for "asset <- its macro DRIVER" (GLD<-UUP dollar,
+        # SPY<-VXX vol) the signal is the DRIVER'S OWN dynamics, not the level ratio. Add the secondary's own
+        # momentum / realized-vol / regime z-score so infogain can select them ON MERIT (the ratio alone was
+        # IG-dropped on GLD R1233 / crowded under correlation R1234). Causal: spy_lc/spy_lr are past-only,
+        # as-of joined (footer leak-fix). Offset-invariant transforms only (raw secondary level is share-price-
+        # confounded). Engages only under reduce=infogain (correlation crowds — proven).
+        if spy_lr is not None and len(spy_lr) == N:
+            slc = pd.Series(np.asarray(spy_lc, dtype=float))
+            slr = pd.Series(np.asarray(spy_lr, dtype=float))
+            for k in [1, 5, 20]:                                                      # driver MOMENTUM (k-bar return)
+                feats.append((slc - slc.shift(k)).astype(np.float32).to_numpy())
+            for W in [20, 60]:                                                        # driver REALIZED VOL (vol-of-driver)
+                feats.append(slr.rolling(W, min_periods=W).std().astype(np.float32).to_numpy())
+            for W in [60, 200]:                                                       # driver REGIME (z-scored level)
+                m = slc.rolling(W, min_periods=W).mean()
+                s = slc.rolling(W, min_periods=W).std()
+                feats.append(((slc - m) / (s + 1e-9)).astype(np.float32).to_numpy())
 
     return np.column_stack(feats).astype(np.float32)

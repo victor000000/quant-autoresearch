@@ -4,14 +4,6 @@ Per-champion OOS equity extracted read-only from QC (`/backtests/chart/read`). P
 & CUSUM detect a DOWNWARD mean-shift (decay onset); early/late Sharpe is the half-window read.
 
 ```
-GLD   npts= 223 ppy~ 78.9  early_SR=  1.92 late_SR=  2.52  PageHinkley=  5% in CUSUM=  5% in  -> HOLDING
+SSO   npts= 223 ppy~ 78.9  early_SR=  1.90 late_SR=  2.11  PageHinkley=  4% in CUSUM=  4% in  -> HOLDING
 ```
-- GLD: early→late Sharpe 1.92→2.52; downward change-point DETECTED.
-```
-UUP   npts= 223 ppy~ 78.9  early_SR=  2.67 late_SR=  0.74  PageHinkley= 10% in CUSUM= 10% in  -> STALE
-```
-- UUP: early→late Sharpe 2.67→0.74; downward change-point DETECTED.
-```
-IWM   npts= 223 ppy~ 78.9  early_SR=  0.63 late_SR=  1.31  PageHinkley=  6% in CUSUM=  6% in  -> HOLDING
-```
-- IWM: early→late Sharpe 0.63→1.31; downward change-point DETECTED.
+- SSO: early→late Sharpe 1.90→2.11; downward change-point DETECTED.

@@ -469,22 +469,23 @@ class AutoresearchPipeline(QCAlgorithm):
             if N == 0:
                 continue
 
-            # Cross-asset SPY bars on the same axis (reserved; aligned to N).
+            # Cross-asset secondary FEATURE series (single-ticker: we TRADE only TICKER).
+            # CLEAN sample (2026-06-06): take the secondary's close at EACH PRIMARY bar-close minute
+            # directly off the minute grid (self.spy_cll is co-indexed with ts_arr), instead of
+            # rebuilding secondary bars on the primary's volume/jump axis with UNIT volume — that
+            # axis-rebuild distorted the secondary's OWN dynamics (the reason VXX/UUP/XOP cross-asset
+            # feats underperformed: a vol/dollar series resampled on the primary's clock loses its
+            # signal). bar_ts is a subset of ts_arr, so each primary bar takes the secondary close at
+            # its OWN close minute. Causal/leak-safe: only the secondary close at/<= the bar close.
             try:
-                spy_close = np.array(self.spy_cll)
-                spy_vol = np.ones_like(spy_close)
-                spy_lc, spy_lr, _, spy_bts = build_bars(
-                    spy_close, spy_vol, ts_arr, bar_type=axis, target_bars=TARGET_BARS)
-                # LEAK FIX (2026-06-04 leak-hunt): align the secondary series to the primary's bar
-                # boundaries by TIME, not index. Positional spy_lc[:N] paired primary bar i with
-                # secondary bar i, which (different bar cadence) can be a FUTURE minute = look-ahead leak.
-                # As-of join: each primary bar uses the LAST secondary bar with close-time <= it.
-                _pbts = np.array([np.datetime64(str(t)) for t in bar_ts])
-                _sbts = np.array([np.datetime64(str(t)) for t in spy_bts])
-                if len(_sbts) > 0:
-                    _aidx = np.clip(np.searchsorted(_sbts, _pbts, side="right") - 1, 0, len(spy_lc) - 1)
-                    spy_lc = np.asarray(spy_lc)[_aidx]
-                    spy_lr = np.asarray(spy_lr)[_aidx]
+                spy_close = np.array(self.spy_cll, dtype=float)
+                if len(spy_close) == len(ts_arr) and len(spy_close) > 0:
+                    _mins = np.array([np.datetime64(str(t)) for t in ts_arr])
+                    _pbts = np.array([np.datetime64(str(t)) for t in bar_ts])
+                    _midx = np.clip(np.searchsorted(_mins, _pbts, side="right") - 1, 0, len(spy_close) - 1)
+                    _sc = np.maximum(spy_close[_midx], 1e-9)   # secondary close AT each primary bar close
+                    spy_lc = np.log(_sc)
+                    spy_lr = np.concatenate([[0.0], np.diff(spy_lc)])
                 else:
                     spy_lc = None
                     spy_lr = None

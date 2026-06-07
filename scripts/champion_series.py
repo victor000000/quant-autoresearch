@@ -33,7 +33,17 @@ CHAMPS = [   # the 2026-06 leak-free, this-session edges (updated 2026-06-04) â€
     # DSR 0.845, N=64). Decay check tells us if even the modest +0.665 is durable or front-loaded.
     ({"ticker": "IWM", "axis": "logdollar", "labeler": "trend_leg", "thresh": 0.45,
       "sizing": "cdf_overlay", "reduce": "infogain"}, "logdollar_trend_leg_cdf_overlay_t45_ig"),
+    # USO IG crown (2026-06-06): reduce=infogain LIFTED USO oil-reversion 2.18->3.42 (+57%), isolated R1237 +
+    # permute R1236. Decay check: is the +57% durable or front-loaded (the original correlation USO was healthy)?
+    ({"ticker": "USO", "axis": "logdollar", "labeler": "revert", "thresh": 0.45,
+      "sizing": "cdf_overlay", "reduce": "infogain"}, "logdollar_revert_cdf_overlay_t45_ig"),
+    # SSO REGIME candidate (2026-06-06): 2x-S&P imbalance/bgm+ker = 2.5108, PERMUTE-CONFIRMED (real 2.51 vs
+    # permute -0.05), beats leveraged buy-hold 1.03 (+1.48). FIRST equity edge. Decay = the UUP-style gate:
+    # is it durable or front-loaded? Run ONLY this name for a fast focused verdict.
+    ({"ticker": "SSO", "axis": "imbalance", "labeler": "bgm+ker", "thresh": 0.5,
+      "sizing": "cdf_overlay"}, "imbalance_bgm_x_ker_cdf_overlay_t50"),
 ]
+CHAMPS = [CHAMPS[-1]]   # focused SSO-only decay run (book members decay-checked at R-decay earlier this session)
 
 
 def equity_series(bid):

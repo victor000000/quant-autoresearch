@@ -6,7 +6,7 @@ import json, math, numpy as np, pandas as pd
 from datetime import datetime, timedelta
 
 TICKER = "__TICKER__"
-CROSS_ASSET = {"VIXY": "VIXM", "HYG": "LQD"}.get(TICKER, "SPY")  # cross-asset FEATURE series (single-ticker: we trade only TICKER). VIXY->VIXM = VIX term-structure (contango/backwardation); HYG->LQD = CREDIT SPREAD (high-yield vs investment-grade = credit-stress regime). Default SPY.
+CROSS_ASSET = {"VIXY": "VIXM", "HYG": "LQD", "SPY": "VXX", "GLD": "UUP", "USO": "XOP"}.get(TICKER, "SPY")  # cross-asset FEATURE series (single-ticker: we TRADE only TICKER; other ETFs allowed as features, user 2026-06-06). VIXY->VIXM = VIX term-structure; HYG->LQD = CREDIT SPREAD; SPY->VXX = VOLATILITY; GLD->UUP = DOLLAR; USO->XOP = ENERGY-EQUITY (E&P stocks lead/lag oil = mean-reversion cue). Default SPY.
 TARGET_BARS = 15000
 _TRAIN_SPLITS = {"IWM": 2018}
 _train_year = _TRAIN_SPLITS.get(TICKER, 2021)
