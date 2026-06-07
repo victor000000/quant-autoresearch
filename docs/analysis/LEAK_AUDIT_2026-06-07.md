@@ -178,9 +178,12 @@ reproduced **4.0218 bit-exact**, proving the RAW change is pipeline-clean end-to
 **Oil family:** revert is **USO-1× only**. UCO (2× oil) permute-FAILS (Calmar survives shuffling = path/sizing,
 not signal). XOP (E&P equities) has no revert edge (real −0.21).
 
-**Leveraged-ETF screen "fits" are artifacts (3/3):** UCO (2× oil) path-driven; SSO (2× S&P) collapses
-under RAW (2 trades, non-deployable); AGQ (2× silver) collapses (−0.26). Screen-wide pruning rule.
-IAU's `sliced_wasserstein` 3.35 is suspect (permuted retains 64% of Calmar) — confirms the prior flag.
+**The screen's "8 STRONG fits" collapse to ONE under leak-clean RAW + permute:** USO ✅ real (3.85);
+UCO (2× oil) path-driven; SSO (2× S&P) RAW-collapse (2 trades); AGQ (2× silver) RAW-collapse (−0.26);
+IAU `sliced_wasserstein` suspect (permuted retains 64% of Calmar — confirms the prior flag); GDX (gold
+miners) no edge (trend 0.19 < buy-hold 1.53); DJP/GSG no edge (revert < buy-hold despite val_auc ~0.91 =
+predictable-not-profitable). Two screen-wide rules: **leveraged-ETF fits are artifacts**, and **revert is
+oil-specific** (inconsistent on commodity baskets: DBC suggestive, DJP/GSG fail).
 
 **Net:** under leak-clean RAW data the only robust single-ticker edges are **GLD (4.02)** and **USO (3.85)**.
 Actionable book change (pending portfolio re-weight): **drop IWM, demote UUP, add USO**; buy-hold
