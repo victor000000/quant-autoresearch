@@ -415,3 +415,14 @@ The prudent book is lower in-sample (5.82 < 6.26) precisely because the backtest
 satellites; 5.82 is the more trustworthy out-of-sample number. **Deploy GLD-anchored, conviction-tiered; the
 satellites require forward data to confirm. Further in-sample search is contraindicated — it compounds the
 multiple-testing burden the DSR audit measured.** Next frontier: new data, or live forward-validation.
+
+## Deployable book temporal robustness (non-search stability test)
+
+Split the OOS into halves and re-ran the deployable book (existing models, no new edge search): H1 (2023-08→
+2024-12) Calmar 4.56 / Sharpe 2.15 / MaxDD 3.54%; H2 (2025-01→2026-06) Calmar 7.70 / Sharpe 3.30 / MaxDD 3.51%
+(full OOS 6.26). **The book is profitable and low-drawdown in BOTH halves** — stronger in H2 but robust in both,
+with MaxDD a near-constant ~3.5% throughout (the decorrelation/risk-control is the most robust feature). This
+partially mitigates the satellite selection-bias concern at the book level (the GLD-anchored book holds across
+time, not one lucky stretch), though it doesn't isolate the satellites (GLD ~41% weight dominates). Honest net:
+book temporally robust + GLD DSR-real + satellites permute-real-but-deflation-marginal → deploy conviction-
+tiered, forward-monitor the satellites.
