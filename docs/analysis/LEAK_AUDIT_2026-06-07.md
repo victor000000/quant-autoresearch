@@ -378,3 +378,13 @@ backtest-optimal 6.34 incl. ILF; the 0.08 gap is ILF). All 5 members online-equi
 relaxed infer_online's n_unmatched==0 → ≤2 (gate on maxdiff≤1e-6 + coverage; the strict version false-flagged
 clean champions on a single OOS-boundary bar). Lesson: backtest-valid ≠ live-deployable — infer_online is the
 deciding gate, exactly as program.md states.
+
+## Full certification: all 5 deployable members online-verified under RAW
+
+GLD preds_match=1 / maxdiff 1.4e-8 (ENSEMBLE, n_members=2 — online-reproduces the trend_leg+regime_gmm
+averaging), USO 3.8e-8, XBI 2.7e-8, IXG=1, EPI=1; ILF dropped (0.48). **The certified-deployable book —
+GLD · USO · XBI · IXG · EPI = Calmar 6.26 (Sharpe 2.81, MaxDD 3.54%) — has every member online-equivalence-
+verified (live path == backtest ≤ 4e-8), leak-clean (RAW), model-only-from-ObjectStore.** It is genuinely
+deployment-ready, not merely backtest-optimal. Session: deployed 4.62 → certified-deployable 6.26 via 3 new
+online-certified decorrelated edges (XBI biotech, IXG financials, EPI India) found by breadth exploration,
+with rigorous leak + online-equivalence gating throughout.
