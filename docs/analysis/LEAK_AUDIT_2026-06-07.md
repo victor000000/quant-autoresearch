@@ -267,3 +267,13 @@ window, every pre-RAW decorrelated/marginal edge is stale and collapses:
 (USO/DBC), correlated within theme. **No decorrelated 3rd edge exists in this universe** → the deployable
 optimum is **GLD+USO (Calmar 6.05)**, and further progress requires a genuinely new data input. Caveat for
 future sessions: the `meta-labeling-wins` and `spy-crash-veto` leads in memory are STALE (pre-RAW/pre-leak-fix).
+
+## Complete asset-class map (23 experiments): decorrelated frontier 100% empty
+
+Every major macro driver checked under leak-clean RAW: gold ✅(GLD/GDX), oil/energy ✅(USO/DBC) are the
+ONLY survivors. dollar (UUP decayed), EU-equity (VGK), EM-equity (EEM), agriculture (DBA 0.68<BH),
+equity-crash (SPY), rates (TLT 0.15, 2022 outside OOS) — all stale/leaky/decayed under RAW. Broad-mine
+leads correctly skipped: BIL (cash-degenerate 30.43), SPXL/QLD/TNA (leveraged artifacts), SOXX (logdollar
+leak). **Definitive: the deployable leak-clean optimum is GLD+USO (Calmar 6.05); no decorrelated 3rd edge
+exists in this 311-ETF universe across any asset class or mechanism. Further progress requires a new data
+modality (the single open frontier).**
