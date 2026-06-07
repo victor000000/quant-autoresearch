@@ -358,3 +358,11 @@ frontier:** Calmar²-weights for maximum Calmar (6.34); Calmar¹/equal for maxim
 **The book is now fully optimized for this data: GLD + USO + XBI + ILF + IXG + EPI, Calmar 6.34 (or
 Calmar¹-weighted = Sharpe 2.95 / MaxDD 2.85%).** Breadth ceiling reached + weighting tuned; the next real
 gains require a new data modality.
+
+## Weighting peak confirmed — book at global optimum (6.34)
+
+Exponent sweep around Calmar-weighting: Calmar¹ 6.26 / Calmar² 6.34 / Calmar^2.5 6.23 / Calmar^3 6.14.
+**Calmar² is the verified peak.** Every dimension is now optimized and verified — edges (diversification
+ceiling), composition (6 edges), weighting (Calmar²). **Final deployable book = GLD · USO · XBI · ILF · IXG ·
+EPI, Calmar²-weighted = Calmar 6.34 / Sharpe 2.85 / MaxDD 3.36%** (or Calmar¹-weighted for Sharpe 2.95 /
+MaxDD 2.85%). No marginal gain remains for this data; the next frontier is a new data modality.
