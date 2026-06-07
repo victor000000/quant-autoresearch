@@ -337,3 +337,14 @@ Marginal gains now shrinking (+0.05) — approaching a diversification ceiling. 
 — pace further sweeps. Session total: 4 confirmed new decorrelated edges from breadth exploration that I had
 prematurely declared "converged" — the frontier needed breadth, and the recipe trend_leg/dd_overlay/infogain
 on volatile, weak-buy-hold sectors & regions is broadly productive.
+
+## Diversification ceiling: 6-edge book (6.34) is the optimum
+
+EWG (Germany) is a 5th permute-confirmed edge (real 1.56 vs permuted -0.33) but NOT book-additive —
+correlated with the EU/financials exposure (IXG), so 7-edge +EWG = 6.25 < 6-edge 6.34 (dilutes Calmar,
+like GDX/DBC). **The diversification ceiling is reached: optimal deployable book = GLD + USO + XBI + ILF +
+IXG + EPI = Calmar 6.34, MaxDD 3.36%, Sharpe 2.85** — six decorrelated mechanisms (gold-trend, oil-reversion,
+biotech-trend, LatAm-trend, financials-trend, India-trend). **Session final: the breadth exploration found 5
+confirmed new decorrelated edges (4 book-additive), lifting the book 6.05 → 6.34 and nearly halving excess
+MaxDD (4.47% → 3.36%). The repeated "converged" calls were wrong; the frontier needed breadth.** Further real
+edges now correlate with existing ones (don't add), so the book is genuinely saturated for this data/recipe.
