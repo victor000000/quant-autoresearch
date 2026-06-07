@@ -277,3 +277,16 @@ leads correctly skipped: BIL (cash-degenerate 30.43), SPXL/QLD/TNA (leveraged ar
 leak). **Definitive: the deployable leak-clean optimum is GLD+USO (Calmar 6.05); no decorrelated 3rd edge
 exists in this 311-ETF universe across any asset class or mechanism. Further progress requires a new data
 modality (the single open frontier).**
+
+## Broad universe sweep (ultracode workflow, 30 untested names under RAW)
+
+Scouted + ran 30 physics-matched single-ticker hypotheses across untested structure-rich names, each vs
+its buy-hold under leak-clean RAW. Result: **0 decorrelated, 0 book-additive edges.** The only
+beats-buy-hold FITs are more **energy-reversion**: IGE (nat-resources) 1.24, FCG (natgas E&P) 1.06,
+IEO (oil&gas E&P) 0.87 — all weak (<1.3), energy-correlated (redundant with USO), high-val_auc
+(0.88-0.96, leakage-check warranted). The revert mechanism is broader than crude oil (E&P/exploration
+energy reverts) but **broad energy-equity does not** (IYE revert 0.06<<BH 0.86 — drifts up). All equity
+sectors/international names fail trend (up-drift beats timing); silver has no gold-trend (val_auc 0.41);
+base metals fail; currencies form no imbalance bars (0 trades). **Net across 50+ names checked under RAW:
+only gold-trend (GLD/GDX) and energy-reversion (USO/DBC + weak IGE/FCG/IEO) exist; no decorrelated 3rd
+edge; deployable optimum remains GLD+USO (6.05).**
