@@ -325,3 +325,15 @@ collapsing 4.47% → 3.46% as each decorrelated edge is added. **New optimal boo
 THREE confirmed edges in three breadth batches — the recipe trend_leg/dd_overlay/infogain on volatile,
 weak-buy-hold sectors & regions (biotech/LatAm/financials) is broadly productive. The frontier was never
 converged; it needed breadth. Near-misses to chase: IYG (fin-services, 76<80 trades), VIS/VCR/FXR.
+
+## 4th new decorrelated edge: EPI (India) — 6-edge book Calmar 6.34
+
+Batch-5 found EPI (India earnings) logdollar/trend_leg = 1.11 vs BH 0.18, permute-PASS, Bonferroni PASS
+(PSR 0.993), driver KEPT. Book-additive: **GLD+USO+XBI+ILF+IXG+EPI = Calmar 6.34 (Sharpe 2.85, MaxDD 3.36%)**.
+Full breadth progression: 6.05 → 6.14 → 6.22 → 6.29 → 6.34, MaxDD 4.47% → 3.36%. **Optimal book = six
+decorrelated mechanisms: gold-trend, oil-reversion, biotech-trend, LatAm-trend, financials-trend, India-trend.**
+Marginal gains now shrinking (+0.05) — approaching a diversification ceiling. Unverified candidate: EWG
+(Germany 1.56, driver winner). NOTE: QC became saturated (batch-5 ran ~2.6hr with repeated rate-limit hangs)
+— pace further sweeps. Session total: 4 confirmed new decorrelated edges from breadth exploration that I had
+prematurely declared "converged" — the frontier needed breadth, and the recipe trend_leg/dd_overlay/infogain
+on volatile, weak-buy-hold sectors & regions is broadly productive.
