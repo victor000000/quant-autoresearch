@@ -106,6 +106,13 @@ class LiveTrade(QCAlgorithm):
             return
         self.builder = cls(float(mb["bar_thresh"]))
         self.nfeat = int(mb.get("n_features", 0) or 0)
+        # Entropy stride-grid is anchored at the 2009 series origin in training (build_feats abs_start=0).
+        # We warm from only ~220d of history, so len(self.blc) is NOT the 2009-relative index. Persisted
+        # oos_start_abs (the 2009-origin index of the first OOS bar) lets us reconstruct the true grid phase
+        # so the frozen model gets the SAME entropy features it trained on (leak audit 2026-06-07). -1 on an
+        # old bundle -> legacy fallback (original, phase-mis-anchored) behaviour, never worse than before.
+        self.oos_start_abs = int(mb.get("oos_start_abs", -1))
+        self._oos_anchor_local = None     # local blc index of the first ON-DATA (OOS) bar == oos_start_abs
         # ENSEMBLE (real edges GLD ker+regime_gmm / UUP bgm+ker) OR single-labeler. Load each member;
         # the online prediction AVERAGES the members' calibrated+gated probs (mirrors footer's ensemble).
         raw_members = mb["members"] if mb.get("ensemble") else [mb]
@@ -188,6 +195,10 @@ class LiveTrade(QCAlgorithm):
             return
         lc = float(bar["log_close"])
         self.blc.append(lc)
+        if self._oos_anchor_local is None:
+            # First ON-DATA bar == the batch build's first OOS bar (set_start_date == VAL_END), whose
+            # 2009-origin index is the persisted oos_start_abs. Anchor here to recover the grid phase.
+            self._oos_anchor_local = len(self.blc) - 1
         if len(self.blc) < _WARMUP:
             if self._last_bar_lc is not None:
                 self._rbuf.append(lc - self._last_bar_lc)
@@ -197,7 +208,14 @@ class LiveTrade(QCAlgorithm):
         win = np.array(self.blc[-_TRAIL:], dtype=float)
         lr = np.zeros_like(win)
         lr[1:] = win[1:] - win[:-1]
-        abs_start = len(self.blc) - len(win)
+        # Entropy stride-grid is anchored at the 2009 origin in training; map the window's last row to
+        # its TRUE 2009-origin axis-bar index so the frozen model gets the SAME entropy it trained on
+        # (leak audit 2026-06-07). Legacy fallback (old bundle w/o oos_start_abs) = original behaviour.
+        if self.oos_start_abs >= 0 and self._oos_anchor_local is not None:
+            abs_now = self.oos_start_abs + (len(self.blc) - 1 - self._oos_anchor_local)
+            abs_start = abs_now - (len(win) - 1)
+        else:
+            abs_start = len(self.blc) - len(win)
         try:
             feats = build_feats(win, lr, abs_start=abs_start)
         except Exception:

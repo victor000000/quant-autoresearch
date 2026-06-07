@@ -217,6 +217,10 @@ class AutoresearchPipeline(QCAlgorithm):
         _tepos = np.where(te_m)[0]
         emb = (_allidx < (_tepos[0] - _EMBARGO)) if len(_tepos) else np.ones(len(y), dtype=bool)
         tx = fv & ly & tr_m                 # train: labeled bars only (model fit)
+        if CONFIG.get("train_purge"):       # SYMMETRIC TRAIN->VAL purge (default OFF -> byte-identical):
+            _trp = np.where(tr_m)[0]        # drop the last _EMBARGO train bars whose forward labels reach
+            if len(_trp):                   # into early VAL (mirror of the val->test embargo). leak audit C16.
+                tx = tx & (_allidx <= (_trp[-1] - _EMBARGO))
         y_fit = y                           # permuted-label control: shuffle ONLY the TRAIN
         if CONFIG.get("permute_labels"):    # labels the model fits on (test still enters via
             y_fit = y.copy()                # predict only -> leak-safe). Preserves class balance,
@@ -374,6 +378,13 @@ class AutoresearchPipeline(QCAlgorithm):
                 _cy = getattr(_cal, "y_thresholds_", None)
                 _bundle = {"constant_long": False, "thresh": float(thresh), "sizing": sizing,
                            "rebal_band": float(CONFIG["rebal_band"]),
+                           # Absolute (2009-origin) axis-bar index of the FIRST OOS/test bar. The entropy
+                           # stride-grid in build_feats is anchored at the full-series origin (abs_start=0),
+                           # so live_trade.py — which warms from only ~220d of history, NOT 2009 — needs this
+                           # to reconstruct the correct grid phase and feed the frozen model the SAME entropy
+                           # value it was trained on (leak audit 2026-06-07; live-fidelity finding). Metadata
+                           # only: infer.py/infer_online.py/verify.py ignore it and are unaffected.
+                           "oos_start_abs": (int(np.where(te_m)[0][0]) if bool(np.any(te_m)) else 0),
                            "scaler_mean": [float(x) for x in sc.mean_],
                            "scaler_scale": [float(x) for x in sc.scale_],
                            "kept_idx": [int(i) for i in kept_idx],
@@ -694,6 +705,7 @@ class AutoresearchPipeline(QCAlgorithm):
                                    "thresh": float(thresh), "sizing": sizing, "rebal_band": float(CONFIG["rebal_band"]),
                                    "bar_type": axis, "bar_thresh": float(_ebthr), "target_bars": int(TARGET_BARS),
                                    "n_features": int(_mem[0].get("n_features", 0) or 0),
+                                   "oos_start_abs": (int(np.where(te_m)[0][0]) if bool(np.any(te_m)) else 0),  # entropy-grid phase for live_trade (see _bundle)
                                    "val_end": str(VAL_END), "test_end": str(TEST_END)}
                             self.object_store.save(ekey.replace("/cell_", "/model_"), json.dumps(_eb))
                             try:

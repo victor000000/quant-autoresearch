@@ -679,7 +679,10 @@ def generate_labels_multi_horizon(lc, lr, tr_m, va_m, te_m, fv,
         return None, "", None
 
     hs = "+".join(str(h) for h in horizons)
-    return y, f"mh_consensus_{hs}", None
+    # Declared forward reach = max horizon (was None -> leaned on the 200 embargo floor). Today
+    # max(horizons)=200 so this is byte-identical; if horizons ever widen >200 the embargo follows
+    # automatically instead of silently under-reaching (leak audit 2026-06-07, gap C40).
+    return y, f"mh_consensus_{hs}", int(max(horizons))
 
 
 # --------------------------------------------------------------------------- #
@@ -1465,7 +1468,10 @@ def generate_labels_dc_trend(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol):
             y[t] = 1 if mode == 1 else 0
         bal = float(y[tr_idx].mean())
         if 0.25 < bal < 0.75:
-            return y, f"dc_trend_k{k}", None
+            # CAUSAL labeler — the trend mode at bar t uses only prices <= t (no forward window),
+            # so the true forward reach is 0 (was None; 0 and None both floor to 200). Declared
+            # explicitly for the embargo audit (2026-06-07, gap C40).
+            return y, f"dc_trend_k{k}", 0
     return None, "dc_trend_unbalanced", None
 
 
@@ -1514,7 +1520,9 @@ def generate_labels_trend_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     bal = float(y[tx].mean())
     if not (0.1 < bal < 0.9):               # natural balance ok (don't force 0.5); reject only degenerate
         return None, "trendscan_degenerate", None
-    return y, "trendscan_L20_40_80", None
+    # Declared forward reach = max OLS horizon (max(Ls)=80, was None -> 200 floor). Byte-identical
+    # today; if Ls ever widen >200 the embargo follows automatically (leak audit 2026-06-07, gap C40).
+    return y, "trendscan_L20_40_80", int(max(Ls))
 
 
 def generate_labels_crash_ahead(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,

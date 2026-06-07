@@ -76,13 +76,25 @@ are in the per-round keep-gate — multiple-testing is no longer a pure gap.
 
 ## Blind-spot GAPS (no active leak today, ranked by leverage)
 
-1. **Adjusted-price / point-in-time — UNAUDITED (T22, the top gap).** *Verified:* no
-   `set_data_normalization` mode is set in **any** template (footer/infer/infer_online/verify/live_trade/
-   portfolio). `add_equity` therefore defaults to QC **Adjusted** mode, which can embed future split/
-   dividend factors and can differ between backtest and live — for **both** the traded and cross-asset
-   series. This is the one gap that could be a genuine subtle leak; it needs an explicit normalization
-   decision (and re-validation if it changes). **Action requires a user call — changing it alters every
-   historical result.**
+1. **Adjusted-price / point-in-time (T22) — INVESTIGATED 2026-06-07; recommendation pending a flip.**
+   *Verified:* no `set_data_normalization` mode is set in **any** template (footer/infer/infer_online/
+   verify/live_trade/portfolio/benchmark), so `add_equity` uses QC's default **`Adjusted`** mode. Per QC
+   docs, Adjusted/SplitAdjusted/TotalReturn *"use the entire split and dividend history to adjust
+   historical prices … regardless of the backtest end date"* — i.e. a price at sim-time `t` embeds
+   corporate actions with ex-dates **after** `t`: a genuine **level look-ahead**, and it differs
+   backtest-vs-live (live can only adjust up to "now"). **BUT** this pipeline consumes scale-invariant
+   transforms (log-returns + ratio-based bar thresholds), so the global future factor **cancels** — the
+   leak survives only at the handful of ex-dividend/split bars per year. Materiality: **GLD = exactly zero**
+   (no splits/divs); UUP/IWM/SPY negligible (~4 ex-div bars/yr); **USO-family the only notable case**
+   (2020 reverse split). Sources: `quantconnect.com/docs/v2/writing-algorithms/securities/asset-classes/
+   us-equity/requesting-data` (entire-history back-adjustment + `ScaledRaw` point-in-time mode + API),
+   `.../corporate-actions` (live vs backtest timing; dividends credited as cash under Raw).
+   **Recommendation:** set `data_normalization_mode=DataNormalizationMode.RAW` (or `ScaledRaw` for
+   gap-free point-in-time) explicitly at **every** `add_equity`, consistently across all templates so
+   train/infer/online/verify/live agree. Raw is point-in-time-correct and live-matching; PnL is preserved
+   (dividends → cash, splits → share-qty). **Not applied here** — it changes historical results (GLD
+   unaffected; USO-family needs explicit re-check) and so requires a full re-validation pass via the
+   driver, which cannot run in this session. Awaiting the go/keep decision.
 2. **Multi-param non-`BUILDER_CLASSES` axes are online-unverified (C14/C32).** entropy, fracdiff, diurnal,
    kalman, newma carry frozen fitted params, are excluded from `BUILDER_CLASSES`, and skip `verify.py` +
    `infer_online` byte-exact replay. Not deployable-online-safely. *Mitigated:* no champion uses them —
@@ -113,6 +125,31 @@ are in the per-round keep-gate — multiple-testing is no longer a pure gap.
 10. **`verify_online_bars.py` hardcoded pairs (C39).** the standalone harness covers only GLD/IWM/TLT;
     parameterize to every current book axis (USO revert / UUP imbalance / oil names). *Mitigated:*
     `verify.py` already runs per-deployed-axis each train.
+
+## Fixes applied (2026-06-07)
+
+All four are **byte-identical for the gating OOS Calmar of existing champions** (verified: champion
+train/infer_online/verify renders compile + minify clean; `tests/test_bar_threshold_leak.py` passes;
+`train_purge` defaults off). No book re-validation is needed for these.
+
+1. **Confirmed finding — live_trade entropy grid phase.** `footer` now persists `oos_start_abs` (the
+   2009-origin axis-bar index of the first OOS bar) in every model bundle (metadata only — `infer*`/
+   `verify` ignore it). `live_trade.py` anchors on its first live bar and reconstructs the true 2009-origin
+   index so the entropy stride-grid phase matches training; the frozen model now receives the same entropy
+   features it was trained on. Legacy bundles without the key fall back to prior behaviour (never worse).
+2. **`infer_online` cross-check hardened** (verifier only — cannot affect results): `_XSTRIDE` 20→5 (4×
+   coverage); feature-length drift is now **fatal**; `preds_match` additionally requires full coverage of
+   the sampled OOS bars (`n_unmatched==0`) so a bar-SET/timestamp divergence can't be silently inner-joined
+   away; new stats `n_oos_seen`/`n_sampled`/`n_unmatched`/`bars_count_match`/`featlen_bad`.
+3. **None-reach labelers now declare their forward reach** (`modules/labeler.py`): `mh_consensus` →
+   `max(horizons)`, `trend_scan` → `max(Ls)=80`, `dc_trend` → `0` (causal). All ≤200 today so the embargo
+   is unchanged now, but it follows automatically if a horizon ever widens past the 200 floor.
+4. **TRAIN→VAL symmetric purge** added as a **default-off** lever (`CONFIG['train_purge']`, distinct `_tp`
+   cell). Off → byte-identical. Enabling it drops the last ~`_EMBARGO` train bars whose forward labels reach
+   into early VAL. *Follow-up:* wire `__TRAINPURGE__` into the driver/orchestrator to expose it; enabling
+   changes val_auc selection and needs re-validation.
+
+**Not applied (needs a decision + re-validation):** the adjusted-price → Raw flip (gap 1 above).
 
 ## Bottom line
 
