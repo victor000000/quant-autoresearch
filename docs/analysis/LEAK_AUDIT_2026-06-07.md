@@ -302,3 +302,14 @@ diluted). **New optimal deployable book = GLD + USO + XBI (6.14): gold-trend + o
 three orthogonal mechanisms.** Lesson: the single-ticker frontier was NOT converged — breadth exploration
 across the volatile-non-drifting sectors found a real decorrelated edge. Secondary unverified leads: FXZ
 (materials trend 1.07), VDE (energy revert 1.47, redundant).
+
+## 2nd new decorrelated edge: ILF (Latin America) — book improves to 6.22
+
+Batch-3 found ILF (iShares Latin America 40) logdollar/trend_leg/dd_overlay/infogain = 1.4545 vs BH 0.56,
+permute-PASS, Bonferroni PASS (PSR 0.985), driver KEEP. Book-additive: **GLD+USO+XBI+ILF = Calmar 6.22**
+(Sharpe 2.78, MaxDD 3.96%), with MaxDD steadily dropping as decorrelated edges are added (4.47→4.2→3.96%).
+**New optimal book = GLD + USO + XBI + ILF: gold-trend + oil-reversion + biotech-trend + LatAm-trend — four
+orthogonal mechanisms.** (PJP/FBT looked like hits on A-leg monitoring but were window artifacts — val_auc
+collapsed on clean A/B; only driver-KEEP/permute/Bonferroni verdicts count.) Confirmed lesson: decorrelated
+trend edges live in volatile, deep-drawdown, weak-buy-hold sectors/regions — the breadth sweep keeps finding
+them (2 book-additive edges in 2 batches). The frontier was NOT converged; it just needed breadth.
