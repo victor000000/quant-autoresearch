@@ -953,10 +953,13 @@
     "ROUND3: binary realized-drawdown STOP overlays (step flat past an underwater threshold, re-enter near peak) are a DEAD END on drift-up / V-shaped-recovery assets (QQQ): they sell the dip, miss the rebound, and WORSEN both Calmar (1.11->0.26) and DA (22.83->76.54), and fail G2 (2 trades). Do NOT retry drawdown-stop / de-risking overlays on drift assets in ANY form (continuous R2, binary R3 both failed). Such a stop may only help an asset with SUSTAINED (non-V) bear legs.",
     "ROUND4: forcing the VOL axis on all 7 ETFs is wrong - it is the wrong axis for equities (QQQ/IWM); and pairing it with carry (which fails on equities) makes every cell tie/lose to buy-hold. Use per-ETF optimal axis + kmeans2stage (history hypothesis, under test R5). Stop tweaking sizing on the vol axis.",
     "ROUND5: a label-INDEPENDENT inverse-vol overlay multiplied onto the bet makes the labeler untestable (it dominates the path). To test whether ② labeling matters, the sizing must be LABEL-DRIVEN (position responds to the model prob / goes flat when p<=tau), not a vol overlay.",
-    "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs."
+    "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs.",
+    "real-yield FRED features on GLD (R1854-1855): built+leak-safe but FRED data not available on QC (first non-equity attempt; A==B) -> blocked on data access, thesis untested not refuted",
+    "GLD<-TIP real-rate proxy (R1856, 2026-06-09): cross-asset termstruct on TIPS-bond ETF HURTS GLD 4.02->3.18 (val_auc 0.735->0.773 UP but Calmar DOWN = overfit/over-selection on MI). Reproduces GLD<-UUP (R1242 4.02->3.18) almost exactly => the cross-asset ETF-PRICE-proxy channel is PROXY-AGNOSTIC closed for GLD (dollar UUP AND real-rate TIP both -> 3.18). Implication: a tradeable price proxy is provably insufficient for the gold<-real-rate thesis; only the CLEAN FRED yield LEVEL (data-access-blocked) is untested. (Cell GLD_..._ig_ts used cross_asset=TIP; template reverted to UUP.)",
+    "External-data WALL confirmed (R1857): QC-native Treasury USTYCR ALSO delivers no data (after FRED R1854-55) -> project 31338454 has no non-equity data access (API-validated: both train, neither delivers). Real-yield/options/COT all need a USER QC-data-access step."
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "DIRECTION (2026-06-09, real-yield report): price/volume single-ticker frontier is CLOSED (axes/labelers/features/sizers exhausted; cross-asset ETF-PRICE proxies closed R1242). The one untested credible channel is EXOGENOUS FUNDAMENTAL-MACRO features. NEXT A/B: add 10y TIPS real yield (FRED DFII10 z-score + N-bar delta) + 2s10s slope (DGS10-DGS2) as exogenous daily features on GLD (champion GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40, Calmar 4.02), reduce=infogain, lag 1 trading day, forward-fill onto event bars, mirror add_data into all deploy templates. GATE: BEAT Calmar 4.02 (a lift), val_auc>0.52, permuted-label COLLAPSE, DSR/Bonferroni best-of-N, online==saved <=1e-6. Honest prior ~1-in-4 lift; else it CLOSES the last feature channel on the best name. Edge-LIFTER not a 4th mechanism. Run honesty tooling (block-bootstrap CIs, Lo-SE DSR fix, online-FDR) in parallel. Beyond this needs a new AUTHORIZED input (options IV market-implied / COT / flows) = user decision. Doc: docs/research/DIRECTION_REALYIELD_GLD_2026-06-09.md. [prev: FRONTIER EXHAUSTED (single-ticker, current data) -- comprehensively mapped this session (21 experiments). Only GLD (DSR 0.950) + USO (DSR 0.752 N_eff) survive the full honesty stack. DEPLOYABLE WIN: USO reduce=infogain crown 2.18->3.42 (+57...]",
+  "next_idea": "DEFINITIVE EXTERNAL-DATA WALL (R1854-1857, 2026-06-09): the real-yield / any-new-modality direction is BLOCKED AT THE PROJECT LEVEL, API-validated. Tested TWO documented external data sources via add_data: FRED (DFII10/DGS10/DGS2, R1854-55) AND QC-native US Treasury Yield Curve (USTreasuryYieldCurveRate/'USTYCR', R1857). BOTH render+train without crashing (API/class CORRECT) but deliver ZERO data => A==B bit-identical (4.0218) via graceful fallback. Conclusion: QC project 31338454 has NO external (non-equity) data access (every prior round is add_equity-only). This is a USER/QC ACCOUNT step (enable data subscriptions / use a data-enabled project), NOT a code/API fix. The real-yield wiring is built+leak-safe+ready (features.py realyield_feats unit-tested; footer Treasury+lag+join+fallback; cell-key _ry) and will work the moment external data flows. Until then: NO autonomous edge experiment can reach a new edge (price/volume closed; cross-asset ETF-PRICE proxies overfit-closed GLD<-TIP/UUP -> 3.18; external data walled). Book is optimized (R12-16: lean conservative 6-name; recent OOS third favors it over the sleeve). Loop has DEFINITIVELY exhausted autonomous possibilities. Docs: docs/analysis/LOOP_SESSION_2026-06-09.md, docs/research/DIRECTION_REALYIELD_GLD_2026-06-09.md.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -13776,6 +13779,30 @@
         "type": "round",
         "phase": "EWG",
         "label": "R1797 EWG DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.8882 (prev best +1.8882). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1798",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1798 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1799",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1799 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1800",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1800 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1801",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1801 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -23742,6 +23769,26 @@
       {
         "src": "r1796",
         "dst": "r1797",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1797",
+        "dst": "r1798",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1798",
+        "dst": "r1799",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1799",
+        "dst": "r1800",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1800",
+        "dst": "r1801",
         "label": "no improvement"
       }
     ],

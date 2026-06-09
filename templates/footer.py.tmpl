@@ -198,6 +198,26 @@ class AutoresearchPipeline(QCAlgorithm):
         self.cll = []
         self.vll = []
         self.spy_cll = []  # SPY close prices for cross-asset features
+        # EXOGENOUS YIELD channel (2026-06-09 direction; opt-in features="realyield").
+        # GUARDED: every line below is inert unless the mode is on, so the champion path and
+        # every other experiment stay byte-identical. gold <- nominal 10y yield level + 2s10s
+        # slope, from the QC-native US Treasury Yield Curve (USTYCR), the add_data wrapped in
+        # try/except so an unsubscribed/absent dataset degrades to off instead of breaking the run.
+        self._realyield = (CONFIG.get("features") == "realyield")
+        self.ry_cll = []   # 1-day-lagged 10y yield level, co-indexed with primary bars
+        self.sl_cll = []   # 1-day-lagged 2s10s slope, co-indexed with primary bars
+        self._ry_act = None; self._ry_pend = None
+        self._sl_act = None; self._sl_pend = None
+        self._ry_day = None
+        if self._realyield:
+            try:
+                # QC-NATIVE US Treasury Yield Curve (USTYCR), documented daily API. Swapped in for FRED
+                # (DFII10/DGS10/DGS2), which delivered NO data on this project (R1854-1855, A==B). One
+                # subscription gives the whole curve: ry = nominal 10y level (partial real-rate proxy),
+                # sl = 2s10s slope (ten_year - two_year). Also a definitive external-data probe.
+                self.ry_sym = self.add_data(USTreasuryYieldCurveRate, "USTYCR").symbol
+            except Exception:
+                self._realyield = False   # dataset unavailable -> degrade (never breaks the run)
 
     def on_data(self, slice):
         if self.sym not in slice.bars:
@@ -210,6 +230,30 @@ class AutoresearchPipeline(QCAlgorithm):
             self.spy_cll.append(float(slice.bars[self.spy].close))
         else:
             self.spy_cll.append(self.spy_cll[-1] if self.spy_cll else 0.0)
+        if self._realyield:
+            # Promote pending FRED reads ONLY when the calendar day advances => a >=1 trading-day
+            # lag (DFII10/DGS are published next-morning; never use the same-day print = causal,
+            # leak-safe). The slice reads are wrapped so a wrong FRED accessor degrades to NaN
+            # (-> bars dropped by the validity mask) instead of crashing the run; the appends sit
+            # OUTSIDE the try so ry_cll/sl_cll stay co-indexed with cll (one per primary bar).
+            try:
+                _d = b.end_time.date()
+                if self._ry_day is not None and _d != self._ry_day:
+                    if self._ry_pend is not None:
+                        self._ry_act = self._ry_pend
+                    if self._sl_pend is not None:
+                        self._sl_act = self._sl_pend
+                self._ry_day = _d
+                if slice.contains_key(self.ry_sym):
+                    _yc = slice[self.ry_sym]
+                    if _yc is not None and _yc.ten_year is not None:
+                        self._ry_pend = float(_yc.ten_year)             # nominal 10y level
+                        if _yc.two_year is not None:
+                            self._sl_pend = float(_yc.ten_year) - float(_yc.two_year)  # 2s10s slope
+            except Exception:
+                pass
+            self.ry_cll.append(self._ry_act if self._ry_act is not None else float("nan"))
+            self.sl_cll.append(self._sl_act if self._sl_act is not None else float("nan"))
 
     # --------------------------------------------------------------------- #
     # FIXED downstream pipeline for one (axis, labeler) cell.               #
@@ -605,6 +649,41 @@ class AutoresearchPipeline(QCAlgorithm):
                 spy_lc = None
                 spy_lr = None
 
+            # EXOGENOUS REAL-YIELD as-of join (guarded). SAME causal searchsorted + ffill as the
+            # cross-asset block above; NO bfill — leading bars before the first FRED read stay NaN
+            # and are dropped by the feature-validity mask, never future-seeded. The 1-day lag is
+            # already applied at accumulation time. ry = DFII10 level, sl = DGS10-DGS2 slope.
+            ry = None
+            sl = None
+            if self._realyield:
+                try:
+                    ry_min = np.array(self.ry_cll, dtype=float)
+                    sl_min = np.array(self.sl_cll, dtype=float)
+                    if len(ry_min) == len(ts_arr) and len(ry_min) > 0:
+                        _rmins = np.array([np.datetime64(str(t)) for t in ts_arr])
+                        _rpbts = np.array([np.datetime64(str(t)) for t in bar_ts])
+                        _ridx = np.clip(np.searchsorted(_rmins, _rpbts, side="right") - 1, 0, len(ry_min) - 1)
+                        ry = pd.Series(ry_min[_ridx]).ffill().to_numpy()   # causal: past/current only
+                        sl = pd.Series(sl_min[_ridx]).ffill().to_numpy()
+                except Exception:
+                    ry = None
+                    sl = None
+            # ROBUSTNESS + DIAGNOSTIC (2026-06-09): if FRED real-yield data did NOT flow
+            # (subscription absent / slice-read API mismatch), ry is all-NaN -> appending it
+            # would NaN every feature row and drop ALL bars (the 0-trades trap we just hit).
+            # Record how many bars carried a real-yield value (visible in the QC report), and
+            # FALL BACK to base features when too few are valid, so the leg still trains and
+            # A==B then cleanly signals "real-yield did not engage" instead of a phantom 0-trades.
+            if ry is not None:
+                _nv = int(np.isfinite(ry).sum())
+                try:
+                    self.set_runtime_statistic("ry_valid_" + str(axis), str(_nv) + "/" + str(len(ry)))
+                except Exception:
+                    pass
+                if _nv < max(300, len(ry) // 2):
+                    ry = None
+                    sl = None
+
             bar_ts_np = np.array([np.datetime64(str(t)) for t in bar_ts])
             tr_m = bar_ts_np < np.datetime64(TRAIN_END)
             va_m = (bar_ts_np >= np.datetime64(TRAIN_END)) & (bar_ts_np < np.datetime64(VAL_END))
@@ -640,8 +719,9 @@ class AutoresearchPipeline(QCAlgorithm):
             _evt = (CONFIG.get("features") == "evt")
             _disp = (CONFIG.get("features") == "disp")
             _sig = (CONFIG.get("features") == "sig")
+            _realyield = self._realyield
             try:
-                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts, evt=_evt, disp=_disp, sig=_sig)
+                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts, evt=_evt, disp=_disp, sig=_sig, ry=ry, sl=sl, realyield=_realyield)
             except NameError:
                 continue
             except TypeError:

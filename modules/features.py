@@ -136,7 +136,48 @@ def signature_lead_lag(x1, x2):
     return s12 / sd, s21 / sd, 0.5 * (s12 - s21) / sd   # (s12, s21, Levy area)
 
 
-def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False):
+def realyield_feats(ry, sl=None, N=None):
+    """Causal exogenous REAL-YIELD features for gold (GLD <- real rates).
+
+    ry = 10y TIPS real-yield LEVEL (FRED DFII10), aligned 1:1 to the bar grid,
+    1-day-lagged and forward-filled onto the event bars by the caller (footer).
+    sl = the 2s10s nominal slope (DGS10-DGS2), same alignment, optional.
+
+    Gold is a long-duration zero-coupon REAL asset: a RISING real yield raises the
+    opportunity cost of holding a non-yielding store of value (headwind), a FALLING
+    real yield is a tailwind. So the predictive content is the real-yield LEVEL-vs-
+    regime and its CHANGE, not a price ratio. Every transform is rolling/shift =
+    PAST-ONLY (causal): the feature at bar i uses only ry[:i+1], so an online
+    trailing window reproduces the batch value exactly (append-OOS-invariant). A
+    yield is already offset-free (not a share price), so raw levels are kept.
+
+    Returns a list of float32 arrays (len N each); [] if ry is unusable.
+    """
+    ry = np.asarray(ry, dtype=float)
+    n = len(ry)
+    if n == 0 or (N is not None and n != N):
+        return []
+    out = []
+    s = pd.Series(ry)
+    out.append(s.astype(np.float32).to_numpy())                       # real-yield LEVEL (regime; offset-free)
+    for W in (60, 252):                                               # level z-score vs its own recent range
+        m = s.rolling(W, min_periods=W).mean()
+        sd = s.rolling(W, min_periods=W).std()
+        out.append(((s - m) / (sd + 1e-9)).astype(np.float32).to_numpy())
+    for k in (5, 20, 60):                                             # real-yield CHANGE (the gold driver)
+        out.append((s - s.shift(k)).astype(np.float32).to_numpy())
+    if sl is not None:
+        sls = pd.Series(np.asarray(sl, dtype=float))
+        if len(sls) == n:
+            out.append(sls.astype(np.float32).to_numpy())             # 2s10s slope LEVEL (already a difference)
+            m = sls.rolling(252, min_periods=252).mean()
+            sd = sls.rolling(252, min_periods=252).std()
+            out.append(((sls - m) / (sd + 1e-9)).astype(np.float32).to_numpy())  # slope regime z-score
+            out.append((sls - sls.shift(20)).astype(np.float32).to_numpy())      # slope CHANGE
+    return out
+
+
+def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False, ry=None, sl=None, realyield=False):
     """Build feature matrix from log-close and log-return arrays.
 
     Args:
@@ -338,5 +379,13 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, terms
                     s12[i], s21[i], lev[i] = a, b, l
             for arr in (s12, s21, lev):
                 feats.append(pd.Series(arr).ffill().fillna(0.0).astype(np.float32).to_numpy())
+
+    # EXOGENOUS REAL-YIELD features (opt-in, reduce=infogain; 2026-06-09 direction).
+    # The one untested fundamental-macro channel: gold <- 10y TIPS real yield (DFII10)
+    # + 2s10s slope, threaded as a 1-day-lagged daily series the footer forward-fills
+    # onto the event bars. Causal (rolling/shift past-only) -> online-reproducible.
+    # Distinct from the closed cross-asset ETF-PRICE proxy (GLD<-UUP, R1242).
+    if realyield and ry is not None:
+        feats.extend(realyield_feats(ry, sl, N))
 
     return np.column_stack(feats).astype(np.float32)

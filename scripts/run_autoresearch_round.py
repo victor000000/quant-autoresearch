@@ -494,9 +494,9 @@ def _validate_cfg(cfg):
     cfg["rebal_band"] = float(cfg.get("rebal_band", 0.01))           # optional net-of-cost dead-band lever (default 0.01)
     if not (0.0 <= cfg["rebal_band"] <= 0.20):
         raise ValueError(f"rebal_band {cfg['rebal_band']} must be in [0.0,0.20]")
-    cfg["features"] = str(cfg.get("features", "base"))               # feature-set lever (base|rich|termstruct|evt|disp|sig)
-    if cfg["features"] not in ("base", "rich", "termstruct", "evt", "disp", "sig"):
-        raise ValueError(f"features {cfg['features']!r} must be base|rich|termstruct|evt|disp|sig")
+    cfg["features"] = str(cfg.get("features", "base"))               # feature-set lever (base|rich|termstruct|evt|disp|sig|realyield)
+    if cfg["features"] not in ("base", "rich", "termstruct", "evt", "disp", "sig", "realyield"):
+        raise ValueError(f"features {cfg['features']!r} must be base|rich|termstruct|evt|disp|sig|realyield")
     return cfg
 
 
@@ -692,7 +692,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}") + ("" if not cfg.get("horizons") else "_hz" + "x".join(str(int(h)) for h in cfg["horizons"])) + ("" if cfg.get("reduce","correlation")=="correlation" else "_ig" if cfg.get("reduce")=="infogain" else "_rd"+str(cfg.get("reduce"))) + ("" if cfg.get("features","base")=="base" else "_fr" if cfg.get("features")=="rich" else "_ts" if cfg.get("features")=="termstruct" else "_fx") + ("" if cfg.get("calibration","isotonic")=="isotonic" else "_va")   # MUST mirror header.py.tmpl _PSUF EXACTLY (the footer save-key): base="" / rich=_fr / termstruct=_ts / evt|disp|sig=_fx; _va = Venn-Abers calibration. (2026-06-08: a prior "_fx{set}" variant here MISMATCHED _PSUF -> infer read a nonexistent cell -> 0 trades.)
+            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}") + ("" if not cfg.get("horizons") else "_hz" + "x".join(str(int(h)) for h in cfg["horizons"])) + ("" if cfg.get("reduce","correlation")=="correlation" else "_ig" if cfg.get("reduce")=="infogain" else "_rd"+str(cfg.get("reduce"))) + ("" if cfg.get("features","base")=="base" else "_fr" if cfg.get("features")=="rich" else "_ts" if cfg.get("features")=="termstruct" else "_ry" if cfg.get("features")=="realyield" else "_fx") + ("" if cfg.get("calibration","isotonic")=="isotonic" else "_va")   # MUST mirror header.py.tmpl _PSUF EXACTLY (the footer save-key): base="" / rich=_fr / termstruct=_ts / realyield=_ry / evt|disp|sig=_fx; _va = Venn-Abers calibration. (2026-06-08: a prior "_fx{set}" variant here MISMATCHED _PSUF -> infer read a nonexistent cell -> 0 trades.)
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")
