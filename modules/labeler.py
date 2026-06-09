@@ -78,6 +78,114 @@ def compute_forward_metrics(lc, lr, horizons=[50, 100, 200]):
 
 
 # --------------------------------------------------------------------------- #
+# Survival / AFT (deep-v2 B1): time-to-upper-barrier, right-censored.          #
+# --------------------------------------------------------------------------- #
+# Module global carrying the AFT censoring bounds from the survival labeler to
+# the footer's survival:aft training branch (the labeler's (labels,cfg,horizon)
+# return signature can't carry the continuous bounds). Reset on each call.
+SURVIVAL_BOUNDS = {}
+
+
+def generate_labels_survival_aft(lc, lr, tr_m, va_m, te_m, fv,
+                                 fwd_ret, fwd_vol, horizons=[50, 100, 200], U=2.0):
+    """Survival/AFT target (deep-v2 B1, Barnwal-Cho-Hocking 2022): the NEW MECHANISM is
+    speed-of-payoff, not direction. For each bar t with a forward window: walk the cumulative
+    log-return path; if the upper barrier (+U*sigma) is touched at offset j<=H, the event is
+    OBSERVED -> AFT interval [j, j] (uncensored); else RIGHT-CENSORED -> [H, +inf). The footer
+    trains XGBoost(objective='survival:aft') on these intervals (a native objective — no torch,
+    no custom loop) and converts predicted time-to-barrier into conviction (short time => strong
+    long). sigma is the SAME causal TRAIN-anchored rolling vol as triple_barrier (leak-safe).
+
+    Returns int EVENT labels (1=barrier-hit, 0=censored, -1=no window) for the masks/val_auc,
+    and stashes (lower, upper) bounds in SURVIVAL_BOUNDS for the footer. One horizon (widest)."""
+    N = len(lc)
+    vol_window = 50
+    sigma = pd.Series(lr).rolling(vol_window, min_periods=vol_window).std().to_numpy()
+    tr_idx = np.where(tr_m)[0]
+    if len(tr_idx) > 0:
+        ts = sigma[tr_idx]
+        ts = ts[~np.isnan(ts)]
+        sigma_floor = float(np.median(ts)) if len(ts) > 0 else 1e-6
+    else:
+        sigma_floor = 1e-6
+    if not np.isfinite(sigma_floor) or sigma_floor <= 0:
+        sigma_floor = 1e-6
+    sigma = np.where(np.isnan(sigma) | (sigma <= 0), sigma_floor, sigma)
+
+    H = int(max(horizons)) if horizons else 100
+    lower = np.full(N, np.nan, dtype=float)
+    upper = np.full(N, np.nan, dtype=float)
+    y = np.full(N, -1, dtype=int)
+    for t in range(N - H):
+        if not fv[t]:
+            continue
+        up_b = U * sigma[t]
+        cum = 0.0
+        t_hit = None
+        for j in range(1, H + 1):
+            cum += lr[t + j]
+            if cum >= up_b:
+                t_hit = j
+                break
+        if t_hit is not None:
+            lower[t] = float(t_hit)
+            upper[t] = float(t_hit)   # uncensored: exact time-to-barrier
+            y[t] = 1
+        else:
+            lower[t] = float(H)
+            upper[t] = float("inf")   # right-censored at the vertical barrier
+            y[t] = 0
+    SURVIVAL_BOUNDS.clear()
+    SURVIVAL_BOUNDS["lower"] = lower
+    SURVIVAL_BOUNDS["upper"] = upper
+    SURVIVAL_BOUNDS["H"] = H
+    return y, f"survival_aft_U{U}_H{H}", H
+
+
+def generate_labels_dp_oracle(lc, lr, tr_m, va_m, te_m, fv,
+                              fwd_ret, fwd_vol, horizons=[50, 100, 200], cost=0.0005):
+    """COST-AWARE PERFECT-FORESIGHT ORACLE labeler (new-methods research 2026-06-09, L1 — a NEW TARGET
+    PRINCIPLE the book lacks: cost / trade-frequency awareness, not a trend/regime/change-point heuristic).
+
+    For each bar t, a BOUNDED forward dynamic program over [t, t+H] finds the optimal LONG/FLAT/SHORT
+    position path maximizing cumulative forward return MINUS transaction cost (`cost` per |position change|):
+        maximize  sum_k  pos_k * r_{t+1+k}  -  cost * sum_k |pos_k - pos_{k-1}|     (pos_{-1}=flat)
+    The label is 1 if the oracle's optimal FIRST action at t is LONG, else 0 (flat/short). So the model
+    learns 'when is going long worth the transaction cost?' — strictly more informative than a barrier/
+    sign label, which ignores cost. Forward reach = H (embargo-covered, like every labeler). Backward DP
+    is O(H*3*3) per bar, vectorized. Returns (labels, cfg, H); H chosen by best TRAIN label balance."""
+    N = len(lc)
+    states = np.array([-1.0, 0.0, 1.0])
+    abscost = cost * np.abs(states[:, None] - states[None, :])   # 3x3 transition cost |s_i - s_j|
+    flatcost = cost * np.abs(states - 0.0)                       # entry cost from flat
+    best = None
+    for H in horizons:
+        H = int(H)
+        y = np.full(N, -1, dtype=int)
+        for t in range(N - H):
+            if not fv[t]:
+                continue
+            r = lr[t + 1:t + H + 1]
+            B = states * r[-1]                                  # B[H-1][s] = s * r_last
+            for k in range(len(r) - 2, -1, -1):
+                # B_new[j] = states[j]*r[k] + max_{i}( B[i] - cost*|s_i - s_j| )
+                B = states * r[k] + np.max(B[:, None] - abscost, axis=0)
+            p0 = int(np.argmax(B - flatcost))                   # optimal first action from flat
+            y[t] = 1 if states[p0] > 0.5 else 0
+        ly = y >= 0
+        tx = fv & ly & tr_m
+        if int(tx.sum()) < 200:
+            continue
+        bal = float(y[tx].mean())
+        score = -abs(bal - 0.5)                                 # prefer the most balanced (informative) H
+        if best is None or score > best[0]:
+            best = (score, y.copy(), f"dp_oracle_c{int(round(cost * 1e4))}_H{H}", H)
+    if best is None:
+        return None, "dp_oracle_none", None
+    return best[1], best[2], best[3]
+
+
+# --------------------------------------------------------------------------- #
 # Featured: KMeans two-stage (vol regime -> direction)                        #
 # --------------------------------------------------------------------------- #
 def generate_labels_kmeans_two_stage(lc, lr, tr_m, va_m, te_m, fv,
@@ -3423,6 +3531,8 @@ LABELERS = {
     "bocpd_label": generate_labels_bocpd_label,        # Bayesian online break-AHEAD precursor (joint mean+variance changepoint; new, non-HMM)
     "setar": generate_labels_setar,                    # observable-threshold AR regime (momentum-vs-reversion switch; non-latent; new, non-HMM)
     "tlb_reversal": generate_labels_tlb_reversal,      # Three-Line-Break leg-exhaustion reversal-vs-continuation (adaptive-leg geometry; new, non-HMM)
+    "survival_aft": generate_labels_survival_aft,      # SURVIVAL/AFT time-to-upper-barrier, right-censored (deep-v2 B1; native xgb survival:aft; NEW speed-of-payoff mechanism)
+    "dp_oracle": generate_labels_dp_oracle,            # COST-AWARE perfect-foresight Bellman oracle (new-methods 2026-06-09 L1; NEW target principle = trade-cost awareness)
     "kmeans2stage": generate_labels_kmeans_two_stage,
     "dc_trend": generate_labels_dc_trend,
     "dc_reversal": generate_labels_dc_reversal,

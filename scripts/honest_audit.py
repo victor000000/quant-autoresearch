@@ -21,7 +21,8 @@ import csv, math, json, os, statistics as st
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from stats_rigor import (probabilistic_sharpe_ratio, expected_max_sharpe,
-                         deflated_sharpe_ratio, holm_bonferroni, benjamini_hochberg)
+                         deflated_sharpe_ratio, holm_bonferroni, benjamini_hochberg,
+                         min_backtest_length)
 
 PPY = 252.0
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -66,8 +67,11 @@ def main():
         psr0 = probabilistic_sharpe_ratio(c_obs, champ["n"], champ["skew"], champ["kurt"], 0.0)
         emax = expected_max_sharpe(var_obs, N)
         dsr = deflated_sharpe_ratio(c_obs, champ["n"], champ["skew"], champ["kurt"], N, var_obs)
+        oos_years = champ["n"] / PPY                       # actual OOS track length (n_days -> years)
+        minbtl = min_backtest_length(champ["sr"], N)       # years needed to clear best-of-N at this search size
         audited.append({"tk": tk, "N": N, "cal": champ["cal"], "sr_ann": champ["sr"],
                         "emax_ann": emax * math.sqrt(PPY), "psr0": psr0, "dsr": dsr,
+                        "minbtl": minbtl, "oos_years": oos_years, "suff": minbtl <= oos_years,
                         "p": max(0.0, 1.0 - dsr), "lab": champ["lab"]})
 
     audited.sort(key=lambda a: -a["cal"])
@@ -79,7 +83,7 @@ def main():
     lines.append(f"Audited {sum(len(v) for v in by.values())} model trials across {len(audited)} assets "
                  f"with >=5 trials & positive champion. Holm-Bonferroni FWER<=0.05, BH FDR<=0.10.")
     lines.append("")
-    hdr = f"{'ETF':5s} {'N':>4s} {'Calmar':>7s} {'SR_ann':>7s} {'Emax_ann':>9s} {'PSR>0':>6s} {'DSR':>6s} {'Holm':>5s} {'BH':>4s}  verdict"
+    hdr = f"{'ETF':5s} {'N':>4s} {'Calmar':>7s} {'SR_ann':>7s} {'Emax_ann':>9s} {'PSR>0':>6s} {'DSR':>6s} {'MinBTL':>7s} {'Suff':>5s} {'Holm':>5s} {'BH':>4s}  verdict"
     lines.append("```")
     lines.append(hdr)
     lines.append("-" * len(hdr))
@@ -88,8 +92,10 @@ def main():
         verdict = "REAL (survives best-of-N)" if a["dsr"] >= 0.95 else (
             "marginal" if a["dsr"] >= 0.90 else "FAILS deflation")
         flag = ("Holm+BH" if hj else ("BH-only" if bj else "neither"))
+        _mb = f"{a['minbtl']:.2f}y" if a['minbtl'] != float('inf') else "inf"
         row = (f"{a['tk']:5s} {a['N']:4d} {a['cal']:7.3f} {a['sr_ann']:7.3f} {a['emax_ann']:9.3f} "
-               f"{a['psr0']:6.3f} {a['dsr']:6.3f} {str(hj):>5s} {str(bj):>4s}  {verdict} [{flag}]")
+               f"{a['psr0']:6.3f} {a['dsr']:6.3f} {_mb:>7s} {('Y' if a['suff'] else 'n'):>5s} "
+               f"{str(hj):>5s} {str(bj):>4s}  {verdict} [{flag}]")
         lines.append(row)
         print(row)
     lines.append("```")
@@ -109,6 +115,8 @@ def main():
                 pe[a["tk"]]["dsr"] = round(a["dsr"], 4)
                 pe[a["tk"]]["dsr_n_trials"] = a["N"]
                 pe[a["tk"]]["dsr_survives_holm"] = bool(hj)
+                pe[a["tk"]]["minbtl_years"] = round(a["minbtl"], 3) if a["minbtl"] != float("inf") else None
+                pe[a["tk"]]["minbtl_sufficient"] = bool(a["suff"])
         json.dump(K, open(KNOW, "w"), indent=2)
         print("updated per_etf_best DSR fields in knowledge.json")
     except Exception as e:

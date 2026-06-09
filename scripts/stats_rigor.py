@@ -9,6 +9,7 @@ Benjamini-Hochberg FDR (1995). Pure stdlib so it runs anywhere; no mlfinlab/scip
 Run `python3 scripts/stats_rigor.py` for the self-test.
 """
 import math, itertools
+import numpy as np   # used by stationary_bootstrap / hansen_spa (deep-v3 T4/T1)
 from statistics import NormalDist
 
 _ND = NormalDist()
@@ -39,6 +40,147 @@ def deflated_sharpe_ratio(sr, n, skew, kurt, n_trials, var_trials_sr):
     """DSR = PSR against the best-of-N-trials benchmark. Prob the edge is real given the search size."""
     return probabilistic_sharpe_ratio(sr, n, skew, kurt,
                                       sr_benchmark=expected_max_sharpe(var_trials_sr, n_trials))
+
+
+def min_backtest_length(sr_annual, n_trials):
+    """Minimum Backtest Length (Bailey, Borwein, Lopez de Prado & Zhu 2014, 'Pseudo-Mathematics and
+    Financial Charlatanism'): the track-record length (in the SAME annualization unit as sr_annual,
+    i.e. YEARS if sr_annual is annualized) needed for an observed Sharpe `sr_annual` to clear the
+    expected-MAXIMUM Sharpe of n_trials iid null (true-SR=0) strategies. If the ACTUAL OOS length <
+    MinBTL, the Sharpe is NOT trustworthy given the search size -- a SUFFICIENCY gate complementing
+    DSR (DSR deflates the value; MinBTL asks whether the sample is even long enough to have found it).
+
+        MinBTL = ( E[max SR_N | var=1] / sr_annual )^2
+
+    where E[max SR_N | var=1] = expected_max_sharpe(1.0, n_trials) is the best-of-N noise Sharpe for
+    unit-variance trial Sharpes. Returns +inf for sr_annual<=0 (no length suffices). Especially acute
+    for this project: at n_trials ~ the full session burden (>1500 rounds) the bar is steep, so a
+    short OOS Sharpe that 'passes' DSR may still FAIL sufficiency -- the honest staleness check."""
+    if sr_annual <= 0 or n_trials < 2:
+        return float("inf")
+    emax_unit = expected_max_sharpe(1.0, n_trials)
+    return (emax_unit / sr_annual) ** 2
+
+
+def online_fdr_lond(pvalues, alpha=0.05):
+    """LOND online FDR control (Javanmard & Montanari 2018, 'Online rules for control of FDR') —
+    the anytime-valid multiple-testing ledger for a SEQUENCE of trials (our 1500+ rounds): you may
+    stop at any round and the FDR among rejections is <= alpha (under independence). Reject test t iff
+
+        p_t <= alpha_t = gamma_t * alpha * (1 + D_{t-1})
+
+    where D_{t-1} = #discoveries before t and {gamma_t = (6/pi^2)/t^2} is a fixed sequence summing
+    to 1. Unlike a one-shot Holm/BH over a frozen trial count, this updates as rounds ARRIVE and
+    never needs re-running the whole history. Returns (rejects: list[bool], alpha_t: list[float])."""
+    C = 6.0 / (math.pi ** 2)
+    rejects, alphas, D = [], [], 0
+    for t, p in enumerate(pvalues, start=1):
+        a_t = C / (t * t) * alpha * (1 + D)
+        rej = (p is not None) and (p <= a_t)
+        rejects.append(bool(rej))
+        alphas.append(a_t)
+        if rej:
+            D += 1
+    return rejects, alphas
+
+
+def lo_sharpe_se_factor(returns, q=None):
+    """Lo (2002) autocorrelation correction to the Sharpe-ratio standard error. The iid Sharpe SE
+    (~sqrt(1/n)) is WRONG when returns are serially correlated — which they ALWAYS are here, because
+    overlapping forward-return labels make adjacent per-bar returns autocorrelated. Lo's inflation
+    factor (Newey-West / Bartlett weights):
+
+        eta = sqrt( 1 + 2 * sum_{k=1..q} (1 - k/(q+1)) * rho_k )
+
+    where rho_k = lag-k autocorrelation of `returns`. The autocorrelation-adjusted t-stat is
+    t_adj = t_iid / eta  (eta>1 under positive autocorrelation -> SE up -> t down -> haircuts become
+    CORRECTLY MORE conservative). Defaults q = floor(n**(1/4)) (standard NW rule). Returns eta>=1.0
+    (clamped: positive serial correlation only inflates; we never anti-conservatively shrink)."""
+    x = [float(v) for v in returns if v is not None and math.isfinite(float(v))]
+    n = len(x)
+    if n < 8:
+        return 1.0
+    if q is None:
+        q = max(1, int(n ** 0.25))
+    q = min(q, n - 2)
+    m = sum(x) / n
+    var = sum((v - m) ** 2 for v in x) / n
+    if var <= 1e-18:
+        return 1.0
+    s = 0.0
+    for k in range(1, q + 1):
+        ck = sum((x[i] - m) * (x[i - k] - m) for i in range(k, n)) / n
+        rho = ck / var
+        s += (1.0 - k / (q + 1.0)) * rho
+    fac = 1.0 + 2.0 * s
+    return math.sqrt(fac) if fac > 1.0 else 1.0   # clamp: serial-corr correction is conservative-only
+
+
+def _stationary_indices(n, p, rng):
+    """Politis-Romano stationary-bootstrap index sequence: geometric-length blocks (restart prob p)."""
+    restart = rng.random(n) < p
+    starts = rng.integers(0, n, size=n)
+    idx = np.empty(n, dtype=int)
+    cur = int(starts[0])
+    for t in range(n):
+        if t == 0 or restart[t]:
+            cur = int(starts[t])
+        else:
+            cur = (cur + 1) % n
+        idx[t] = cur
+    return idx
+
+
+def stationary_bootstrap(x, avg_block=20, B=2000, seed=42, statfn=None):
+    """Politis-Romano (1994) STATIONARY BLOCK BOOTSTRAP (deep-v3 T4). Resamples x in geometric-length
+    blocks (mean avg_block bars), PRESERVING serial dependence — the autocorrelation-aware Monte-Carlo
+    null that COMPLEMENTS the iid label-permute control (permute DESTROYS serial structure, so it can't
+    detect a strategy profiting from autocorrelation/momentum-in-noise). Returns the bootstrap
+    distribution (length B) of statfn(resample); default stat = annualized Sharpe (ppy=252)."""
+    x = np.asarray(x, dtype=float)
+    n = len(x)
+    rng = np.random.default_rng(seed)
+    p = 1.0 / max(2, avg_block)
+    if statfn is None:
+        def statfn(r):
+            s = float(np.std(r))
+            return (float(np.mean(r)) / s * math.sqrt(252.0)) if s > 1e-12 else 0.0
+    out = np.empty(B)
+    for b in range(B):
+        out[b] = statfn(x[_stationary_indices(n, p, rng)])
+    return out
+
+
+def hansen_spa(D, avg_block=20, B=2000, seed=42):
+    """Hansen (2005) SUPERIOR PREDICTIVE ABILITY test (consistent variant) / White Reality Check (deep-v3 T1).
+    D = (n, K) matrix of per-period OUTPERFORMANCE of K candidate strategies over a benchmark
+    (d[t,k] = strat_k_ret - benchmark_ret). H0: NO strategy beats the benchmark (max_k E[d_k] <= 0).
+    Answers the DATA-SNOOPING question DSR/PBO/LOND don't pose: does the BEST of K searched strategies
+    genuinely beat the benchmark, accounting for the K-trial search AND serial/cross dependence? The
+    stationary-bootstrap null preserves both. Returns (p_value, T_spa, per_strategy_t); the best is a
+    real discovery iff p_value < alpha."""
+    D = np.asarray(D, dtype=float)
+    n, K = D.shape
+    mu = D.mean(0)
+    sd = D.std(0)
+    sd = np.where(sd < 1e-12, 1e-12, sd)
+    tk = math.sqrt(n) * mu / sd
+    T = max(float(np.max(tk)), 0.0)
+    # Hansen consistent recentering: drop strategies whose mean is too far below 0 from the null.
+    thr = -np.sqrt((sd ** 2 / n) * 2.0 * math.log(math.log(max(3, n))))
+    keep = mu >= thr
+    rng = np.random.default_rng(seed)
+    p = 1.0 / max(2, avg_block)
+    cnt = 0
+    for _b in range(B):
+        idx = _stationary_indices(n, p, rng)
+        mub = D[idx].mean(0)
+        zk = math.sqrt(n) * (mub - mu) / sd            # recenter around the sample mean
+        zk = np.where(keep, zk, np.minimum(zk, 0.0))   # too-low strategies can't drive the null up
+        Tb = max(float(np.max(zk)), 0.0)
+        if Tb >= T:
+            cnt += 1
+    return cnt / B, T, tk
 
 
 def holm_bonferroni(pvalues, alpha=0.05):
@@ -256,6 +398,59 @@ if __name__ == "__main__":
           probabilistic_sharpe_ratio(0.08, 100, 0, 3))
     # expected_max_sharpe grows with n_trials
     check("E[maxSR] grows with n_trials", expected_max_sharpe(0.04, 50) > expected_max_sharpe(0.04, 5))
+    # MinBTL: grows with n_trials (more search -> need longer record), shrinks with higher Sharpe, inf at sr<=0
+    check("MinBTL grows with n_trials", min_backtest_length(1.0, 1000) > min_backtest_length(1.0, 10))
+    check("MinBTL shrinks with higher Sharpe", min_backtest_length(2.0, 100) < min_backtest_length(1.0, 100))
+    check("MinBTL inf at sr<=0", min_backtest_length(0.0, 100) == float("inf"))
+    # Lo autocorr SE factor: ~1.0 for iid, >1.0 for positively-autocorrelated (overlapping) returns.
+    import numpy as _np2
+    _r = _np2.random.default_rng(1)
+    _iid = list(_r.normal(0, 1, 2000))
+    _eta_iid = lo_sharpe_se_factor(_iid)
+    # AR(1)-ish positive autocorrelation (mimics overlapping forward-return labels)
+    _ar = [0.0] * 2000
+    for _i in range(1, 2000):
+        _ar[_i] = 0.6 * _ar[_i - 1] + float(_r.normal(0, 1))
+    _eta_ar = lo_sharpe_se_factor(_ar)
+    check(f"Lo eta~1 for iid ({_eta_iid:.2f})", 0.85 <= _eta_iid <= 1.20)
+    check(f"Lo eta>1 for autocorrelated ({_eta_ar:.2f}>1.2)", _eta_ar > 1.2)
+    check("Lo eta>=1 clamp", lo_sharpe_se_factor([1.0, -1.0] * 50) >= 1.0)
+    # Stationary bootstrap: distribution of Sharpe centers near the sample Sharpe (unbiased resampler).
+    import numpy as _npb
+    _rb = _npb.random.default_rng(3)
+    _xr = _rb.normal(0.05, 1.0, 600)
+    _bd = stationary_bootstrap(_xr, avg_block=20, B=1000, seed=7)
+    _samp_sh = float(_npb.mean(_xr) / _npb.std(_xr) * math.sqrt(252.0))
+    check(f"stat-boot centers on sample Sharpe ({_npb.median(_bd):.2f}~{_samp_sh:.2f})",
+          abs(float(_npb.median(_bd)) - _samp_sh) < 0.6 * abs(_samp_sh) + 0.5)
+    # Hansen SPA: a NOISE universe (K zero-mean strategies) must NOT yield a significant best...
+    _rs = _npb.random.default_rng(11)
+    _Dnoise = _rs.normal(0.0, 0.01, (300, 20))
+    _p_noise, _, _ = hansen_spa(_Dnoise, avg_block=15, B=800, seed=5)
+    check(f"SPA noise universe not-significant (p={_p_noise:.2f}>0.10)", _p_noise > 0.10)
+    # ...but a real edge planted among the noise IS detected.
+    _Dreal = _rs.normal(0.0, 0.01, (300, 20))
+    _Dreal[:, 7] += 0.004                      # strategy 7 has a real +0.4%/period edge
+    _p_real, _, _ = hansen_spa(_Dreal, avg_block=15, B=800, seed=5)
+    check(f"SPA detects planted real edge (p={_p_real:.3f}<0.05)", _p_real < 0.05)
+    # LOND online-FDR: EMPIRICALLY confirm FDR<=alpha on a synthetic null/signal mix (the guarantee,
+    # validated by simulation rather than assumed). 90% nulls ~U(0,1), 10% signals ~tiny p.
+    import numpy as _np
+    _rng = _np.random.default_rng(0)
+    _alpha, _M, _pi1, _reps = 0.05, 1500, 0.10, 40
+    _fdrs, _powers = [], []
+    for _ in range(_reps):
+        _is_sig = _rng.random(_M) < _pi1
+        _p = _np.where(_is_sig, _rng.uniform(0, 0.001, _M), _rng.uniform(0, 1, _M))
+        _rej, _ = online_fdr_lond(list(_p), alpha=_alpha)
+        _rej = _np.array(_rej)
+        _R = int(_rej.sum())
+        _V = int((_rej & ~_is_sig).sum())            # false rejections
+        _fdrs.append(_V / max(1, _R))
+        _powers.append(int((_rej & _is_sig).sum()) / max(1, int(_is_sig.sum())))
+    _mean_fdr = sum(_fdrs) / len(_fdrs)
+    check(f"LOND controls FDR<=alpha (emp {_mean_fdr:.3f}<=0.05)", _mean_fdr <= _alpha + 1e-6)
+    check("LOND has power>0 (discovers signals)", sum(_powers) / len(_powers) > 0.0)
     # DSR < PSR(>0) when there were many trials (benchmark > 0)
     check("DSR <= PSR>0", deflated_sharpe_ratio(0.08, 252, 0, 3, 50, 0.04) <=
           probabilistic_sharpe_ratio(0.08, 252, 0, 3, 0.0) + 1e-9)

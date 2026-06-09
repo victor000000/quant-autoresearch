@@ -30,7 +30,7 @@ INJECT = TARGET + (
     "                pass\n"
 )
 
-TICKERS = ["GLD", "QQQ", "USO", "UCO"]   # expect GLD~0.5 (trend), QQQ>>0.5 (buyhold), USO/UCO<0.5 (reversion)
+TICKERS = ["IXP", "AAXJ", "EWL", "DJP", "VTI", "IVV"]   # 2026-06-08 hypothesis: sleeve fits (IXP/AAXJ/EWL/DJP) ~0.5 (timing-exploitable) vs US-equity NO-FITs (VTI/IVV) >>0.6 (buy-hold drift)
 
 
 def route(b200):

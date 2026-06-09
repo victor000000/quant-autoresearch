@@ -158,7 +158,8 @@ def render_train_config(config):
               .replace("__REBALBAND__", repr(float(config.get("rebal_band", 0.01))))
               .replace("__HORIZONS__", json.dumps(config.get("horizons")))   # intraday horizons override (or null)
               .replace("__REDUCE__", str(config.get("reduce", "correlation")))   # Wang ④ dim-reduce method (correlation|infogain)
-              .replace("__FEATURES__", str(config.get("features", "base"))))   # feature set (base|rich); rich appends VR features for IG to select
+              .replace("__FEATURES__", str(config.get("features", "base")))   # feature set (base|rich); rich appends VR features for IG to select
+              .replace("__CALIB__", str(config.get("calibration", "isotonic"))))   # calibration: isotonic | venn_abers (deep-v2 B4)
     # Separate bar_builder.py file: standalone (TRAIN_END default None -> injected by main).
     bb = "TRAIN_END = None\n" + read_module("bar_builder.py")
     return _minify(script), {"bar_builder.py": _minify(bb)}

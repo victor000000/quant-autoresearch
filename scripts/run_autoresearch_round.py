@@ -147,7 +147,8 @@ def _round_count():
 
 VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset",
               # 2026-06-06 new-methods-backlog axes (mirror bar_builder._AXES_ORDER tail):
-              "semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar"]
+              "semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar",
+              "vratio"]   # new-methods 2026-06-09 A3: variance-ratio / price-efficiency clock
 VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
                   "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon",
@@ -157,8 +158,13 @@ VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry di
                   "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment",
                   # 2026-06-06 new-methods-backlog labelers (mirror labeler.LABELERS):
                   "kllt", "diurnal_anomaly", "rskew", "icss_var", "bocpd_label", "setar", "tlb_reversal",
+                  "dp_oracle",   # new-methods 2026-06-09 L1: cost-aware perfect-foresight oracle labeler
+                  # "survival_aft" — deep-v2 B1 (built: labeler + footer survival:aft branch) but DISABLED:
+                  # xgb.train(objective='survival:aft') C-CRASHES QC's XGBoost runtime (uncatchable "Runtime
+                  # Error", empty logs), like the platform-blocked extratrees branch. Native model-objective
+                  # innovations are QC-blocked; the code is kept (documented) but removed here to prevent crash-racing.
                   "hmm", "sticky_hmm", "always_long"]
-VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto", "ddbreaker"]
+VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto", "ddbreaker", "aim", "aim_dd", "aim_cdf"]
 
 # 2-node pool params (reused from run_axis_label_parallel.py).
 TIMEOUT = 300          # hard 5-min cap per backtest
@@ -488,9 +494,9 @@ def _validate_cfg(cfg):
     cfg["rebal_band"] = float(cfg.get("rebal_band", 0.01))           # optional net-of-cost dead-band lever (default 0.01)
     if not (0.0 <= cfg["rebal_band"] <= 0.20):
         raise ValueError(f"rebal_band {cfg['rebal_band']} must be in [0.0,0.20]")
-    cfg["features"] = str(cfg.get("features", "base"))               # feature-set lever (base|rich|termstruct)
-    if cfg["features"] not in ("base", "rich", "termstruct"):
-        raise ValueError(f"features {cfg['features']!r} must be base|rich|termstruct")
+    cfg["features"] = str(cfg.get("features", "base"))               # feature-set lever (base|rich|termstruct|evt|disp|sig)
+    if cfg["features"] not in ("base", "rich", "termstruct", "evt", "disp", "sig"):
+        raise ValueError(f"features {cfg['features']!r} must be base|rich|termstruct|evt|disp|sig")
     return cfg
 
 
@@ -686,7 +692,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}") + ("" if not cfg.get("horizons") else "_hz" + "x".join(str(int(h)) for h in cfg["horizons"])) + ("" if cfg.get("reduce","correlation")=="correlation" else "_ig" if cfg.get("reduce")=="infogain" else "_rd"+str(cfg.get("reduce"))) + ("" if cfg.get("features","base")=="base" else "_fr" if cfg.get("features")=="rich" else "_ts")   # config-unique; dot- AND plus-free (QC ObjectStore path); _perm = falsification, _b = dead-band, _hz = intraday-horizon, _ig = Wang info-gain reduce cell, _fr = rich VR feature set, _ts = VIX term-structure cross-asset features
+            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}") + ("" if not cfg.get("horizons") else "_hz" + "x".join(str(int(h)) for h in cfg["horizons"])) + ("" if cfg.get("reduce","correlation")=="correlation" else "_ig" if cfg.get("reduce")=="infogain" else "_rd"+str(cfg.get("reduce"))) + ("" if cfg.get("features","base")=="base" else "_fr" if cfg.get("features")=="rich" else "_ts" if cfg.get("features")=="termstruct" else "_fx") + ("" if cfg.get("calibration","isotonic")=="isotonic" else "_va")   # MUST mirror header.py.tmpl _PSUF EXACTLY (the footer save-key): base="" / rich=_fr / termstruct=_ts / evt|disp|sig=_fx; _va = Venn-Abers calibration. (2026-06-08: a prior "_fx{set}" variant here MISMATCHED _PSUF -> infer read a nonexistent cell -> 0 trades.)
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")

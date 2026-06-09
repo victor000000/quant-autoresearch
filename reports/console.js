@@ -55,17 +55,22 @@
     rows.forEach(function (r) { tb.appendChild(r); });
   }
 
+  // sort the table that owns this sortable header (shared by click + keyboard).
+  function sortFromHeader(th) {
+    var table = th.closest("table");
+    if (!table) return;
+    var id = table.id || "_t";
+    var st = SORT[id];
+    if (st && st.key === th.dataset.k) st.dir *= -1;
+    else SORT[id] = { key: th.dataset.k, dir: th.dataset.t === "s" ? 1 : -1 };
+    sortTable(table, th.dataset.k, th.dataset.t || "n");
+  }
+
   // -- 3/4. delegated clicks: sort headers, filter chips, show-all -----------
   document.addEventListener("click", function (e) {
     var th = e.target.closest("thead th[data-k]");
     if (th) {
-      var table = th.closest("table");
-      if (!table) return;
-      var id = table.id || "_t";
-      var st = SORT[id];
-      if (st && st.key === th.dataset.k) st.dir *= -1;
-      else SORT[id] = { key: th.dataset.k, dir: th.dataset.t === "s" ? 1 : -1 };
-      sortTable(table, th.dataset.k, th.dataset.t || "n");
+      sortFromHeader(th);
       return;
     }
     var fc = e.target.closest(".fchip");
@@ -89,6 +94,20 @@
     var lb = document.getElementById("lb");
     if (lb) sortTable(lb, "calmar", "n");
   })();
+
+  // a11y: make sortable headers keyboard-focusable + operable, then mirror the
+  // click-sort on Enter / Space (the click delegation above is mouse-only).
+  [].forEach.call(document.querySelectorAll("thead th[data-k]"), function (th) {
+    if (!th.hasAttribute("tabindex")) th.setAttribute("tabindex", "0");
+    if (!th.hasAttribute("role")) th.setAttribute("role", "button");
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    var th = e.target.closest && e.target.closest("thead th[data-k]");
+    if (!th) return;
+    e.preventDefault();
+    sortFromHeader(th);
+  });
 
   // -- 4. lazy rounds pagination (/rounds.json?page=) ------------------------
   var roundsBusy = false;
@@ -234,11 +253,19 @@
     io.observe(gw);
   }
 
-  // smooth-scroll old deep links (#overview -> #leaderboard, etc.)
+  // smooth-scroll old deep links (#champions/#intro -> #book, #overview -> #leaderboard, etc.)
   function jump() {
-    var h = (location.hash || "").replace("#overview", "#leaderboard").replace("#map", "#leaderboard").replace("#story", "#arc").replace("#insights", "#arc");
+    var h = (location.hash || "")
+      .replace("#champions", "#book").replace("#intro", "#book")
+      .replace("#overview", "#leaderboard").replace("#map", "#leaderboard")
+      .replace("#story", "#arc").replace("#insights", "#arc");
     var t = h && document.querySelector(h);
-    if (t) t.scrollIntoView({ behavior: "smooth" });
+    if (!t) return;
+    // if the target now lives inside a collapsed appendix drawer, open every
+    // ancestor <details> so the smooth-scroll lands on visible content.
+    var d = t.closest && t.closest("details");
+    while (d) { d.open = true; d = d.parentElement && d.parentElement.closest("details"); }
+    t.scrollIntoView({ behavior: "smooth" });
   }
   window.addEventListener("hashchange", jump);
   if (location.hash) setTimeout(jump, 200);

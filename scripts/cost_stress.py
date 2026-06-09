@@ -15,13 +15,14 @@ sys.path.insert(0, "harness")
 from harness.orchestrator import render_infer_cell
 from harness.qc_client import submit_and_wait
 
-ANCHOR = 'self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol'
+ANCHOR = 'self.sym = self.add_equity(TICKER, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol'  # updated 2026-06-08 for the RAW-normalization leak-audit change
 INJECT = ANCHOR + '\n        self.securities[self.sym].set_slippage_model(ConstantSlippageModel(%s))'
 
-CROWNS = [   # the 2026-06 leak-free CURRENT crowns (updated 2026-06-04: GLD IG crown 4.02, IWM provisional)
-    ("GLD", "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3_ig", 4.022),
-    ("UUP", "imbalance_bgm_x_sadf_explosive_x_ker_cdf_overlay_t50", 1.847),
-    ("IWM", "logdollar_trend_leg_cdf_overlay_t45_ig", 0.665),
+CROWNS = [   # 2026-06-08: cost-stress the equity-sleeve members (final deployment gate). Low turnover
+             # expected (IXP 274 / AAXJ 124 / EWL 141 trades over ~3yr) -> minimal erosion vs GLD's 602.
+    ("IXP", "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3_ig", 1.975),
+    ("AAXJ", "logdollar_sadf_explosive_cdf_overlay_t50", 2.433),
+    ("EWL", "logdollar_ker_dd_overlay_t45", 1.980),
 ]
 SLIP = [0.0005, 0.0010]  # 5 bp, 10 bp per fill
 

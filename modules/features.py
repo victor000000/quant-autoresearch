@@ -33,7 +33,110 @@ def sample_entropy(x, m=2, r_factor=0.2, max_comp=40):
     return -math.log((A / tA) / (B / tB)) if tA > 0 and tB > 0 else 0.0
 
 
-def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False):
+def _gpd_mom(exceed):
+    """Method-of-moments GPD fit (Hosking-Wallis) over peak exceedances — pure numpy, no scipy.
+    GPD mean m = sigma/(1-xi), var v = sigma^2/((1-xi)^2(1-2xi))  =>  xi = 0.5*(1 - m^2/v),
+    sigma = m*(1-xi). Returns (xi, sigma) clamped to a numerically safe heavy-tail range. This is
+    the closed-form that lets us run EVT tail detection in QuantConnect (no scipy MLE)."""
+    n = exceed.size
+    if n < 8:
+        return 0.0, max(float(np.mean(exceed)) if n else 1e-6, 1e-6)
+    m = float(np.mean(exceed))
+    v = float(np.var(exceed))
+    if not np.isfinite(m) or not np.isfinite(v) or v <= 1e-18 or m <= 1e-12:
+        return 0.0, max(m, 1e-6)
+    xi = 0.5 * (1.0 - (m * m) / v)
+    xi = float(np.clip(xi, -0.5, 0.45))          # >0.5 -> infinite variance; clamp for stability
+    sigma = max(m * (1.0 - xi), 1e-9)
+    return xi, sigma
+
+
+def evt_tail_score(losses, q=0.90):
+    """Self-calibrating EVT (peaks-over-threshold) tail-extremeness score for the LAST point of a
+    trailing window of `losses` (e.g. -log_return; a crash is a big positive loss). DSPOT-style but
+    rolling-window (causal + online-reproducible) rather than a stateful stream:
+
+      u = window quantile(q); peaks = losses[losses>u]-u; (xi,sigma)=GPD-MoM(peaks);
+      current loss y -> upper-tail prob p = (n_peaks/W)*(1+xi*(y-u)/sigma)^(-1/xi)  [y>u]
+      feature = -log(p+eps)  (LARGE when the current move sits deep in a self-calibrated tail).
+
+    Past-only (the window is trailing bars), so it is leak-free, and a trailing window online
+    reproduces the same value as the full-series build -> deploys like sample_entropy."""
+    w = losses.size
+    if w < 20:
+        return 0.0
+    finite = losses[np.isfinite(losses)]
+    if finite.size < 20:
+        return 0.0
+    u = float(np.quantile(finite, q))
+    peaks = finite[finite > u] - u
+    if peaks.size < 8:
+        return 0.0
+    xi, sigma = _gpd_mom(peaks)
+    y = float(losses[-1])
+    if not np.isfinite(y) or y <= u:
+        return 0.0                                # not in the tail -> no extremeness signal
+    z = (y - u) / sigma
+    if abs(xi) < 1e-6:
+        surv = math.exp(-z)                       # xi->0 limit: exponential tail
+    else:
+        base = 1.0 + xi * z
+        surv = base ** (-1.0 / xi) if base > 0 else 0.0
+    p = (peaks.size / float(w)) * surv            # P(loss > y): tiny when extreme
+    return float(-math.log(p + 1e-9))             # tail-risk score: large = deep tail
+
+
+def dispersion_entropy(x, m=2, c=6):
+    """Dispersion entropy (Rostaghi & Azami 2016) — O(N) AND amplitude-aware, the quadrant our
+    sample_entropy (amplitude-aware but O(W^2)) and permutation-entropy (O(N) but ordinal-only,
+    which DEGRADED edges) both miss. NCDF-symbolize the window to c classes, count m-length
+    dispersion patterns, return normalized Shannon entropy of the pattern distribution in [0,1].
+    Pure numpy, causal when fed a trailing window."""
+    n = len(x)
+    if n < m + 2:
+        return 0.0
+    sd = float(np.std(x))
+    if not np.isfinite(sd) or sd <= 1e-12:
+        return 0.0
+    mu = float(np.mean(x))
+    # NCDF map -> classes 1..c (0.5*(1+erf) is the normal CDF; vectorized)
+    z = (np.asarray(x, dtype=float) - mu) / sd
+    cdf = 0.5 * (1.0 + np.vectorize(math.erf)(z / math.sqrt(2.0)))
+    y = np.clip(np.round(c * cdf + 0.5).astype(int), 1, c)      # class labels
+    # dispersion patterns: base-c index of each m-gram (delay 1)
+    idx = np.zeros(n - m + 1, dtype=int)
+    for k in range(m):
+        idx = idx * c + (y[k:n - m + 1 + k] - 1)
+    counts = np.bincount(idx, minlength=c ** m).astype(float)
+    tot = counts.sum()
+    if tot <= 0:
+        return 0.0
+    p = counts[counts > 0] / tot
+    ent = -float(np.sum(p * np.log(p)))
+    return ent / math.log(c ** m)                                # normalize to [0,1]
+
+
+def signature_lead_lag(x1, x2):
+    """Level-2 path-signature CROSS terms (truncated-signature method, Chevyrev-Kormilitzin) between
+    two channels over a window — ORDER-AWARE lead-lag geometry that scalar features (z-score, corr,
+    termstruct) are blind to. S^{ij}=int (x^i - x^i_0) dx^j (iterated integral); the antisymmetric
+    part = Levy area = signed lead-lag (x1 leads x2 vs x2 leads x1). Returns (s12, s21, levy),
+    vol-normalized so they're stationary. Pure numpy, causal on a trailing window. Built to mine the
+    GLD<-UUP (gold<-dollar) timing relationship as a feature without forming a pair."""
+    n = len(x1)
+    if n < 5 or len(x2) != n:
+        return 0.0, 0.0, 0.0
+    a = np.asarray(x1, dtype=float) - float(x1[0])      # path centered at window start
+    b = np.asarray(x2, dtype=float) - float(x2[0])
+    da = np.diff(a)
+    db = np.diff(b)
+    s12 = float(np.sum(a[:-1] * db))                    # int (x1-x1_0) dx2
+    s21 = float(np.sum(b[:-1] * da))                    # int (x2-x2_0) dx1
+    sd = (float(np.std(da)) * float(np.std(db)) * n) + 1e-12   # vol*length normalizer -> stationary
+    return s12 / sd, s21 / sd, 0.5 * (s12 - s21) / sd   # (s12, s21, Levy area)
+
+
+def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False):
     """Build feature matrix from log-close and log-return arrays.
 
     Args:
@@ -185,5 +288,55 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, terms
                 m = slc.rolling(W, min_periods=W).mean()
                 s = slc.rolling(W, min_periods=W).std()
                 feats.append(((slc - m) / (s + 1e-9)).astype(np.float32).to_numpy())
+
+    # EVT TAIL-RISK features (opt-in, reduce=infogain; 2026-06-08). Self-calibrating peaks-over-
+    # threshold tail-extremeness score (evt_tail_score, GPD method-of-moments — no scipy). Built to
+    # CONVERT the SPY crash-veto lead: crash_ahead's fixed -k*sigma threshold is brittle (re-run
+    # collapsed 43 trades -> 1); a streaming-EVT self-calibrating tail signal gives the crash model a
+    # distribution-aware extremeness measure that should fire more stably (target: deployable trades).
+    # Causal: computed on a TRAILING window of losses (=-logret) on the SAME abs_start stride-grid as
+    # the entropy features, so an online trailing window reproduces the full-series value (verified
+    # online==batch <1e-12). 2 features (W in {100,200}).
+    if evt:
+        losses_arr = -np.diff(lc, prepend=lc[0])          # crash = large positive loss
+        for W in [100, 200]:
+            ev = np.full(N, np.nan, dtype=np.float32)
+            stride = max(1, W // 5)
+            for i in range(W, N):
+                if (abs_start + i - W) % stride == 0:
+                    ev[i] = evt_tail_score(losses_arr[i - W + 1:i + 1], q=0.90)
+            feats.append(pd.Series(ev).ffill().fillna(0.0).astype(np.float32).to_numpy())
+
+    # DISPERSION-ENTROPY features (opt-in, reduce=infogain; 2026-06-08). O(N) AND amplitude-aware
+    # complexity (Rostaghi-Azami 2016) — the quadrant sample_entropy (amplitude-aware but slow) and
+    # permutation-entropy (fast but ordinal-only, which DEGRADED edges) both miss. Causal trailing
+    # window on the SAME abs_start stride-grid as the sample-entropy features -> online-reproducible.
+    # 3 features (W in {50,100,200}).
+    if disp:
+        for W in [50, 100, 200]:
+            de = np.full(N, np.nan, dtype=np.float32)
+            stride = max(1, W // 5)
+            for i in range(W, N):
+                if (abs_start + i - W) % stride == 0:
+                    de[i] = dispersion_entropy(lc[i - W:i], m=2, c=6)
+            feats.append(pd.Series(de).ffill().fillna(0.0).astype(np.float32).to_numpy())
+
+    # PATH-SIGNATURE lead-lag features (opt-in, reduce=infogain; 2026-06-08). Level-2 cross signature
+    # between the asset and its exogenous DRIVER (spy_lc, e.g. GLD<-UUP dollar) = ORDER-AWARE lead-lag
+    # the scalar termstruct features (IG-dropped on GLD R1233) cannot see. Causal trailing window on
+    # the abs_start stride-grid -> online-reproducible. 3 features x 2 windows. Engages only when the
+    # exogenous channel is present (single-ticker: we still TRADE only the primary asset).
+    if sig and spy_lc is not None and len(spy_lc) == N:
+        for W in [60, 200]:
+            s12 = np.full(N, np.nan, dtype=np.float32)
+            s21 = np.full(N, np.nan, dtype=np.float32)
+            lev = np.full(N, np.nan, dtype=np.float32)
+            stride = max(1, W // 5)
+            for i in range(W, N):
+                if (abs_start + i - W) % stride == 0:
+                    a, b, l = signature_lead_lag(lc[i - W:i], spy_lc[i - W:i])
+                    s12[i], s21[i], lev[i] = a, b, l
+            for arr in (s12, s21, lev):
+                feats.append(pd.Series(arr).ffill().fillna(0.0).astype(np.float32).to_numpy())
 
     return np.column_stack(feats).astype(np.float32)

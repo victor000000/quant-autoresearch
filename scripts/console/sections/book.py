@@ -47,7 +47,13 @@ def render(ctx):
              f'{P.chip(str(b["n"]) + " names", "pos")} '
              f'{P.chip("leak-free", "edge")}</h1>')
 
-    # KPI row — large tabular numerals, EVERY value from book_resolver.
+    # one-sentence orientation lede (the project abstract, moved out of the colophon).
+    lede = ('<p class="orient">Autoresearch is an autonomous loop that invents and '
+            'back-tests single-ticker ETF edges on real QuantConnect data, keeping only '
+            'leak-free edges that beat buy-and-hold and survive out-of-sample + '
+            'multiple-testing checks.</p>')
+
+    # KPI row — the four headline numerals, EVERY value from book_resolver.
     kpis = "".join([
         P.kpi("Calmar", _fmt(b.get("calmar")), tone="pos",
               sub="annual return ÷ worst drawdown",
@@ -55,8 +61,6 @@ def render(ctx):
         P.kpi("Sharpe", _fmt(b.get("sharpe")), sub="risk-adjusted return"),
         P.kpi("MaxDD", _fmt(b.get("mdd_pct"), "%"), tone="pos", sub="worst peak-to-trough"),
         P.kpi("CAGR", _fmt(b.get("cagr_pct"), "%"), tone="pos", sub="annualized growth"),
-        P.kpi("Positive yrs", _esc(b.get("positive_years")), sub="every calendar year"),
-        P.kpi("Names", str(b.get("n", "")), sub="decorrelated members"),
     ])
     kpirow = f'<div class="stats">{kpis}</div>'
 
@@ -79,7 +83,7 @@ def render(ctx):
                         eyebrow_text="PROPOSED UPGRADE · awaiting human/Opus crown")
                + "</div>")
 
-    left = f"<div>{eyebrow}{title}{kpirow}{members}{verdict}{upgrade}</div>"
+    left = f"<div>{eyebrow}{title}{lede}{kpirow}{members}{verdict}{upgrade}</div>"
 
     # ---- RIGHT: live poller + "what backs it" stat tower -------------------
     # #nowrunning is the live target the existing 8s /data.json poll overwrites;
@@ -88,17 +92,7 @@ def render(ctx):
                   '<p class="small">loading live state… <code>data.json</code> polled every 8s</p></div>')
     live = P.card(live_inner, kind="metric", eyebrow_text="LIVE")
 
-    t = b.get("stat_tower", {}) or {}
-    tower_body = " ".join([
-        P.chip(f'{t.get("mechanisms", 3)} confirmed mechanisms', "edge"),
-        P.chip(f'{t.get("screened", 42)}/{t.get("screened_total", 42)} fit-prone ETFs screened', "muted"),
-        P.chip(f'{t.get("lenses", 7)} honesty lenses', "muted"),
-    ])
-    tower = (f'<div style="margin-top:1.1rem">'
-             + P.card(tower_body, kind="muted", eyebrow_text="WHAT BACKS IT")
-             + "</div>")
-
-    right = f"<div>{live}{tower}</div>"
+    right = f"<div>{live}</div>"
 
     # ---- assemble the band -------------------------------------------------
     band = f'<div class="statushero">{left}{right}</div>'

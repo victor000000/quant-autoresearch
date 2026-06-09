@@ -59,6 +59,22 @@ _CLASSES_ALL = ["Commodity", "Leveraged/Inverse", "Fixed Income",
                 "International Equity", "Real Estate", "Currency"]
 
 
+# ---- the ONE canonical funnel chain (stated identically in screen + colophon) ----
+def _funnel_chain(ctx):
+    """The single reconciled funnel string, sourced from ctx so it cannot go stale:
+    '311 QC-confirmed universe -> 42 fit-prone screened -> 8 strong fits -> 3 mechanisms'.
+    fit-prone = the book stat-tower's screened_total (same number the hero + arc show);
+    strong = the valid+trust+prov tiers; mechanisms = the confirmed edge count."""
+    sm = ctx.get("screen_summary") or {}
+    tower = (ctx.get("book") or {}).get("stat_tower") or {}
+    universe = sm.get("universe", 311)
+    fitprone = tower.get("screened_total", 42)
+    strong = (sm.get("n_valid", 0) + sm.get("n_trust", 0) + sm.get("n_prov", 0)) or 8
+    mechs = len(ctx.get("edges") or []) or 3
+    return (f"{universe} QC-confirmed universe → {fitprone} fit-prone screened → "
+            f"{strong} strong fits → {mechs} deployed mechanisms")
+
+
 # ---- tiny inline-styled progress bar (no class dependency; :root tokens only) ----
 def _bar(pct):
     p = max(0.0, min(100.0, pct))
@@ -224,7 +240,8 @@ def _mech_cards(top, marg):
     zero = [c for c in _CLASSES_ALL if by_class.get(c, 0) == 0]
     zero_txt = ", ".join(zero) if zero else "none"
     note = (f'<div class="small">zero STRONG fits in: {P._esc(zero_txt)} — the mechanism fits the '
-            'commodity &amp; leveraged-equity classes, not broad equity / rates.</div>')
+            'commodity &amp; leveraged-equity classes, not broad equity / rates. '
+            'The 3 deployed mechanisms are detailed in <a href="#mechanisms">→ #mechanisms</a>.</div>')
     return ('<div class="stats">'
             + P.card(_bars(by_axis), kind="mech", eyebrow_text="WINNING AXIS · fits + marginal")
             + P.card(_bars(by_lab), kind="mech", eyebrow_text="WINNING LABELER · fits + marginal")
@@ -248,7 +265,8 @@ def render(ctx):
     sm = ctx.get("screen_summary") or {}
 
     head = (P.eyebrow("THE FUNNEL · 311-ETF UNIVERSE SCREEN")
-            + "<h2>Universe screen — the funnel that surfaced oil</h2>")
+            + "<h2>Universe screen — the funnel that surfaced oil</h2>"
+            + P.provenance("FUNNEL · " + _funnel_chain(ctx)))
 
     if not rows:
         body = head + '<p class="small">(screen results pending)</p>'

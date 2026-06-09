@@ -161,8 +161,7 @@ def _compositions_table(pf, book):
             _metric(d, "mdd_pct", "mdd"), _metric(d, "cagr_pct", "cagr", "car_pct"),
             _metric(d, "n"), _members_str(d), d.get("note", "")))
 
-    # ---- the two headline rows, sourced through book_resolver (never raw) ----
-    up = book.get("upgrade") or {}
+    # ---- the deployed book as the table's reference row (book_resolver) ----
     body.append(_comp_row(
         "Current deployable book", "", False,
         _f(book.get("calmar")), _f(book.get("sharpe")), _f(book.get("mdd_pct")),
@@ -171,15 +170,19 @@ def _compositions_table(pf, book):
         "Current deployable book — 1 ML edge (GLD) + UUP regime decorrelator + 4 "
         "decorrelated buy-hold diversifiers; weight ∝Calmar², gross≤1, no leverage.",
         lead="CURRENT · DEPLOYED"))
-    prop = pf.get("proposed_with_USO_2026_06_06") or {}
-    body.append(_comp_row(
-        "Proposed book + USO", "", False,
-        _f(up.get("calmar_to")), _f(up.get("sharpe_to")), _f(up.get("mdd_to")),
-        _metric(prop, "cagr_pct", "cagr"), _f(len(up.get("to_members") or []) or prop.get("n")),
-        " · ".join(up.get("to_members") or []),
-        "Proposed — add USO (oil mean-reversion, the 3rd mechanism): Calmar +12%, "
-        "Sharpe +12%. USO(1x) not UCO(2x). Awaiting human/Opus crown.",
-        lead="PROPOSED"))
+    # ---- the proposed +USO upgrade: deduped to a cross-reference into the book hero
+    # (the ONE place its numbers live) rather than a re-rendered hero KPI row ----
+    prop_link = ('<a href="#book">'
+                 + P.chip("PROPOSED +USO → see the book hero", "amber",
+                          "the +USO upgrade and its Calmar / Sharpe lift live in the book hero")
+                 + "</a>")
+    body.append(P.tr([
+        P.cell("<b>Proposed book + USO</b> " + prop_link),
+        P.cell("—", num=True), P.cell("—", num=True), P.cell("—", num=True),
+        P.cell("—", num=True), P.cell("—", num=True),
+        P.cell("+ USO"),
+        P.cell("Adds the 3rd mechanism (oil mean-reversion); numbers in the book hero."),
+    ]))
     return P.table(cols, body, id="complab")
 
 

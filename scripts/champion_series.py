@@ -43,7 +43,11 @@ CHAMPS = [   # the 2026-06 leak-free, this-session edges (updated 2026-06-04) â€
     ({"ticker": "SSO", "axis": "imbalance", "labeler": "bgm+ker", "thresh": 0.5,
       "sizing": "cdf_overlay"}, "imbalance_bgm_x_ker_cdf_overlay_t50"),
 ]
-CHAMPS = [CHAMPS[-1]]   # focused SSO-only decay run (book members decay-checked at R-decay earlier this session)
+CHAMPS = [   # 2026-06-08: decay-test DJP (commodity-timing ker 2.01, the DBC-upgrade candidate). Gate:
+             # does broad-commodity timing persist, or is it 2022-commodity-bull-front-loaded?
+    ({"ticker": "DJP", "axis": "logdollar", "labeler": "ker", "thresh": 0.45,
+      "sizing": "dd_overlay"}, "logdollar_ker_dd_overlay_t45"),
+]
 
 
 def equity_series(bid):

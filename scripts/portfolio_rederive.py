@@ -33,6 +33,17 @@ MEMBERS = {
     # 2026-06-06: oil mean-reversion (3rd mechanism), fully validated (permute/decay/cost/DSR 0.915). __CELL__ -> latest_key (just-trained revert cell).
     "UCO":  (dict(ticker="UCO", axis="logdollar", labeler="revert", thresh=0.45, sizing="cdf_overlay"), "__CELL__", 3.506),
     "USO":  (dict(ticker="USO", axis="logdollar", labeler="revert", thresh=0.45, sizing="cdf_overlay"), "__CELL__", 2.175),
+    # 2026-06-08 book-additivity test: IXP (global telecom trend) — screen's cleanest real (permute), decay-healthy,
+    # non-redundant find, BUT idiosyncratic + Bonferroni-marginal. Does decorrelation outweigh fragility in the book?
+    "IXP":  (dict(ticker="IXP", axis="logdollar", labeler="trend_leg+regime_gmm", thresh=0.40, sizing="dd_overlay", n_components=15, rebal_band=0.03, reduce="infogain"), "logdollar_trend_leg_x_regime_gmm_dd_overlay_t40_n15_b3_ig", 1.975),
+    # 2026-06-08 equity-sleeve redundancy test: AAXJ (Asia sadf, event-concentrated) + EWL (Swiss ker, low-DA),
+    # the other 2 permute-real screen finds. Do they add on top of IXP or are they redundant intl-equity?
+    "AAXJ": (dict(ticker="AAXJ", axis="logdollar", labeler="sadf_explosive", thresh=0.50, sizing="cdf_overlay"), "__CELL__", 2.433),
+    "EWL":  (dict(ticker="EWL", axis="logdollar", labeler="ker", thresh=0.45, sizing="dd_overlay"), "__CELL__", 1.980),
+    # 2026-06-08 redundancy test: VV (US large-cap, sadf_explosive 2.05) — same event-concentration as AAXJ?
+    "VV":   (dict(ticker="VV", axis="logdollar", labeler="sadf_explosive", thresh=0.50, sizing="cdf_overlay"), "__CELL__", 2.052),
+    # 2026-06-08 DJP commodity-TIMING (ker 2.01, permute-real) — upgrade DBC's commodity buy-hold?
+    "DJP":  (dict(ticker="DJP", axis="logdollar", labeler="ker", thresh=0.45, sizing="dd_overlay"), "__CELL__", 2.011),
 }
 CAL = {k: v[2] for k, v in MEMBERS.items()}
 
@@ -120,6 +131,15 @@ def main():
         ("alpha core (GLD/UUP/IWM)", ["GLD", "UUP", "IWM"]),
         ("alpha core + USO 1x", ["GLD", "UUP", "IWM", "USO"]),
         ("alpha core + UCO 2x", ["GLD", "UUP", "IWM", "UCO"]),
+        # 2026-06-08 IXP (telecom-trend) book-additivity test:
+        ("+ IXP telecom-trend (7)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "IXP"]),
+        ("+ USO + IXP (8)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO", "IXP"]),
+        ("IXP replaces decayed IWM (6)", ["GLD", "UUP", "IXP", "TIP", "DBC", "HYG"]),
+        ("+ USO + IXP + AAXJ + EWL equity sleeve (10)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO", "IXP", "AAXJ", "EWL"]),
+        ("equity sleeve only (GLD/USO/IXP/AAXJ/EWL)", ["GLD", "USO", "IXP", "AAXJ", "EWL"]),
+        ("sleeve(10) + VV (11) — redundant w/ AAXJ?", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO", "IXP", "AAXJ", "EWL", "VV"]),
+        ("sleeve(10) + DJP (11)", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO", "IXP", "AAXJ", "EWL", "DJP"]),
+        ("sleeve, DJP replaces DBC buy-hold (10)", ["GLD", "UUP", "IWM", "TIP", "DJP", "HYG", "USO", "IXP", "AAXJ", "EWL"]),
     ]
     lines = ["", "## Honest book re-derivation (real OOS series; decorr champion predates SOXX + audits)", "",
              f"Weights ∝ Calmar² (the deployed scheme), gross=1, on {len(common)}-pt common OOS grid.", "", "```",
@@ -134,6 +154,22 @@ def main():
         row = f"{label:44s} {m['calmar']:7.3f} {m['cagr']:6.2f} {m['mdd']:7.2f} {m['sharpe']:7.3f}"
         print(row, flush=True)
         lines.append(row)
+    lines.append("```")
+    # 2026-06-08 SPLIT-HALF OOS stability: does the equity-sleeve lift hold in BOTH halves (robust) or one (window-fit)?
+    h = len(common) // 2
+    early, late = common[:h], common[h:]
+    lines.append("\nSplit-half OOS stability (Calmar/Sharpe early | late):")
+    lines.append("```")
+    for label, names in [("6-name CURRENT", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG"]),
+                         ("10-name +USO+IXP+AAXJ+EWL", ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO", "IXP", "AAXJ", "EWL"]),
+                         ("10-name DJP-replaces-DBC", ["GLD", "UUP", "IWM", "TIP", "DJP", "HYG", "USO", "IXP", "AAXJ", "EWL"]),
+                         ("robust core GLD/USO/IXP", ["GLD", "USO", "IXP"])]:
+        ns = [n for n in names if n in avail]
+        pe, _ = book(series, early, ns, "cal2")
+        pl, _ = book(series, late, ns, "cal2")
+        me, ml = metrics(pe, ppy), metrics(pl, ppy)
+        row = f"  {label:30s} early Cal={me['calmar']:6.2f} Sh={me['sharpe']:5.2f} | late Cal={ml['calmar']:6.2f} Sh={ml['sharpe']:5.2f}"
+        print(row, flush=True); lines.append(row)
     lines.append("```")
     prev = open(OUT).read() if os.path.exists(OUT) else ""
     marker = "## Honest book re-derivation"

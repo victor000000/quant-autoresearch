@@ -120,8 +120,15 @@ def _cstats_sized(probs, lc_arr, log_rets, thresh, sizing, tc=0.0005):
     last_pos = 0.0
     trades = 0
     rbuf = []
+    _aim_a = float(CONFIG.get("aim_a", 0.3))   # Garleanu-Pedersen partial-adjustment coefficient
+    # 'aim' wraps a BASE sizing: partial-adjust toward that overlay's per-bar target. aim=plain CDF
+    # bet; aim_dd=over dd_overlay (keep drawdown protection + cut turnover); aim_cdf=over cdf_overlay.
+    _AIM_BASE = {"aim": "cdf_plain", "aim_dd": "dd_overlay", "aim_cdf": "cdf_overlay"}
     for i in range(n):
-        target = _size(float(probs[i]), thresh, sizing, rbuf)
+        _sz = _AIM_BASE.get(sizing, sizing)
+        target = _size(float(probs[i]), thresh, _sz, rbuf)
+        if sizing in _AIM_BASE:                # trade PARTIALLY toward the (overlaid) aim (Garleanu-Pedersen 2013):
+            target = (1.0 - _aim_a) * last_pos + _aim_a * target   # x_t=(1-a)x_{t-1}+a*aim -> cuts turnover, keeps base overlay
         # Abs-delta dead-band — mirrors infer.py's rebalance band so val turnover/cost
         # matches OOS for long/short sizings too (the old long-only-flavoured condition
         # under-counted short flips).
@@ -152,6 +159,28 @@ def _cstats_sized(probs, lc_arr, log_rets, thresh, sizing, tc=0.0005):
     da = float(np.sum(1.0 - np.exp(dd)))              # compounded underwater area
     cal = cagr / mdd if mdd > 0.001 else 0
     return cal, trades, float(np.sum(strat_rets)), mdd, cagr, da
+
+
+def _venn_abers(cal_s, cal_y, test_s):
+    """Inductive Venn-Abers calibration (Vovk-Petej 2014; deep-v2 B4). For each test score s*, fit
+    isotonic on the calibration set with (s*,0) appended -> p0 and with (s*,1) appended -> p1; the
+    VA probability is p1/(1-p0+p1). Provably better-calibrated than a single isotonic fit (a
+    multiprobability merge). Runs ONCE in the footer (post-training), reuses the embargoed-VAL
+    calibration set; the resulting probs are saved + replayed by infer exactly like isotonic's."""
+    from sklearn.isotonic import IsotonicRegression
+    cs = np.asarray(cal_s, dtype=float)
+    cy = np.asarray(cal_y, dtype=float)
+    out = np.empty(len(test_s), dtype=float)
+    base0 = IsotonicRegression(out_of_bounds="clip", y_min=0.0, y_max=1.0)
+    for i, s in enumerate(test_s):
+        s = float(s)
+        g0 = base0.fit(np.append(cs, s), np.append(cy, 0.0))
+        p0 = float(g0.predict([s])[0])
+        g1 = IsotonicRegression(out_of_bounds="clip", y_min=0.0, y_max=1.0).fit(np.append(cs, s), np.append(cy, 1.0))
+        p1 = float(g1.predict([s])[0])
+        den = 1.0 - p0 + p1
+        out[i] = (p1 / den) if den > 1e-9 else p1
+    return out
 
 
 class AutoresearchPipeline(QCAlgorithm):
@@ -253,7 +282,55 @@ class AutoresearchPipeline(QCAlgorithm):
         n_pos = int(y[tx].sum())
         n_neg = int((1 - y[tx]).sum())
 
-        if n_pos == 0 or n_neg == 0:
+        if CONFIG.get("labeler") == "survival_aft" and n_pos > 0 and n_neg > 0:
+            # ⚠️ QC-PLATFORM-BLOCKED (deep-v2 B1, 2026-06-08): xgb.train(objective='survival:aft')
+            # C-CRASHES QC's XGBoost runtime (uncatchable Runtime Error, empty logs) — like the
+            # extratrees branch. Kept for documentation/future-platforms; disabled in VALID_LABELERS.
+            # SURVIVAL/AFT branch (deep-v2 B1): NEW speed-of-payoff mechanism. Train XGBoost's
+            # NATIVE survival:aft objective on the time-to-upper-barrier intervals (uncensored
+            # [t,t]; right-censored [H,inf)) from labeler.SURVIVAL_BOUNDS. The model predicts a
+            # time-to-barrier; conviction = monotone-decreasing map (short time => strong long),
+            # normalized by the TRAIN median time. Bypasses the classifier + isotonic; pv_cal/pe_cal
+            # ARE the conviction (a pseudo-probability fed to the SAME _size()/threshold/sizing).
+            try:
+                _lo = np.asarray(SURVIVAL_BOUNDS["lower"], dtype=float)
+                _up = np.asarray(SURVIVAL_BOUNDS["upper"], dtype=float)
+                _lo_t = _lo[tx].copy()
+                _up_t = _up[tx].copy()
+                if CONFIG.get("permute_labels"):     # falsification: shuffle the intervals (paired)
+                    _pi = np.random.RandomState(1234).permutation(len(_lo_t))
+                    _lo_t = _lo_t[_pi]
+                    _up_t = _up_t[_pi]
+                # right-censored upper is +inf in AFT theory, but XGBoost's C AFT kernel can
+                # ABORT on inf (uncatchable) -> use a large finite sentinel (>> any real H).
+                _BIG = 1.0e6
+                _lo_t = np.clip(np.nan_to_num(_lo_t, nan=1.0, posinf=_BIG), 1.0, _BIG)
+                _up_t = np.clip(np.nan_to_num(_up_t, nan=_BIG, posinf=_BIG), 1.0, _BIG)
+                dtr = xgb.DMatrix(Xt)
+                dtr.set_float_info("label_lower_bound", _lo_t)   # version-robust API
+                dtr.set_float_info("label_upper_bound", _up_t)
+                _sp = {"objective": "survival:aft",
+                       "aft_loss_distribution": "normal", "aft_loss_distribution_scale": 1.0,
+                       "max_depth": int(CONFIG.get("max_depth", 3)), "eta": 0.03,
+                       "tree_method": "hist", "seed": 42}
+                bst = xgb.train(_sp, dtr, num_boost_round=200)
+                _tt = bst.predict(xgb.DMatrix(Xt))
+                _tv = bst.predict(xgb.DMatrix(Xv))
+                _te = bst.predict(xgb.DMatrix(Xe))
+                _fin = _tt[np.isfinite(_tt) & (_tt > 0)]
+                _sc = float(np.median(_fin)) if _fin.size else 1.0
+                if not np.isfinite(_sc) or _sc <= 0:
+                    _sc = 1.0
+                pv_cal = 1.0 / (1.0 + np.clip(_tv, 0.0, None) / _sc)   # short time -> ~1
+                pe_cal = 1.0 / (1.0 + np.clip(_te, 0.0, None) / _sc)
+                try:
+                    train_auc = float(roc_auc_score(y[tx], 1.0 / (1.0 + np.clip(_tt, 0.0, None) / _sc)))
+                    val_auc = float(roc_auc_score(y[vx_lab], (1.0 / (1.0 + np.clip(_tv, 0.0, None) / _sc))[vlab]))
+                except ValueError:
+                    train_auc = val_auc = 0.5
+            except Exception:
+                return None
+        elif n_pos == 0 or n_neg == 0:
             # Single-class baseline (e.g. always_long): bypass the model with a
             # constant long signal == buy-and-hold. No fit, no AUC.
             pv_cal = np.ones(len(vi))
@@ -291,12 +368,20 @@ class AutoresearchPipeline(QCAlgorithm):
                 train_auc = 0.5
                 val_auc = 0.5
             # FIXED: isotonic calibration, fit on labeled VAL; applied to ALL bars.
+            # CONFIG['calibration']=='venn_abers' (deep-v2 B4) swaps in Inductive Venn-Abers
+            # (better-calibrated multiprobability); default 'isotonic' is byte-identical legacy.
             try:
-                from sklearn.isotonic import IsotonicRegression
-                cal = IsotonicRegression(out_of_bounds='clip', y_min=0.0, y_max=1.0)
-                cal.fit(np.clip(pv_raw[vlab], 1e-6, 1 - 1e-6), y[vx_lab])
-                pv_cal = cal.transform(np.clip(pv_raw, 1e-6, 1 - 1e-6))
-                pe_cal = cal.transform(np.clip(pe_raw, 1e-6, 1 - 1e-6))
+                _cs = np.clip(pv_raw[vlab], 1e-6, 1 - 1e-6)
+                _cy = y[vx_lab]
+                if CONFIG.get("calibration") == "venn_abers":
+                    pv_cal = _venn_abers(_cs, _cy, np.clip(pv_raw, 1e-6, 1 - 1e-6))
+                    pe_cal = _venn_abers(_cs, _cy, np.clip(pe_raw, 1e-6, 1 - 1e-6))
+                else:
+                    from sklearn.isotonic import IsotonicRegression
+                    cal = IsotonicRegression(out_of_bounds='clip', y_min=0.0, y_max=1.0)
+                    cal.fit(_cs, _cy)
+                    pv_cal = cal.transform(np.clip(pv_raw, 1e-6, 1 - 1e-6))
+                    pe_cal = cal.transform(np.clip(pe_raw, 1e-6, 1 - 1e-6))
             except Exception:
                 pv_cal, pe_cal = pv_raw, pe_raw
 
@@ -498,7 +583,19 @@ class AutoresearchPipeline(QCAlgorithm):
                     _mins = np.array([np.datetime64(str(t)) for t in ts_arr])
                     _pbts = np.array([np.datetime64(str(t)) for t in bar_ts])
                     _midx = np.clip(np.searchsorted(_mins, _pbts, side="right") - 1, 0, len(spy_close) - 1)
-                    _sc = np.maximum(spy_close[_midx], 1e-9)   # secondary close AT each primary bar close
+                    # secondary close AT each primary bar close. CAUSAL forward-fill of missing/zero
+                    # minutes (carry last valid forward only) — NO bfill: backward-fill would seed
+                    # LEADING bars (before the secondary's first valid close) with FUTURE values =
+                    # look-ahead leak (2026-06-08 leak audit). Leading bars with no causal secondary
+                    # value get the PRIMARY's own close -> term-structure (lc-spy_lc) ~ 0 = neutral, causal.
+                    _scs = pd.Series(spy_close[_midx].astype(float))
+                    _scs[_scs <= 0] = np.nan
+                    _scs = _scs.ffill()                              # causal: past/current only
+                    _sc = _scs.to_numpy()
+                    _lead = ~np.isfinite(_sc)                        # leading bars: no prior valid secondary close
+                    if _lead.any():
+                        _sc = np.where(_lead, np.exp(lc), _sc)       # causal neutral (primary's own close; NO future secondary)
+                    _sc = np.maximum(_sc, 1e-9)
                     spy_lc = np.log(_sc)
                     spy_lr = np.concatenate([[0.0], np.diff(spy_lc)])
                 else:
@@ -540,8 +637,11 @@ class AutoresearchPipeline(QCAlgorithm):
 
             _rich = (CONFIG.get("features") == "rich")
             _ts = (CONFIG.get("features") == "termstruct")
+            _evt = (CONFIG.get("features") == "evt")
+            _disp = (CONFIG.get("features") == "disp")
+            _sig = (CONFIG.get("features") == "sig")
             try:
-                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts)
+                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts, evt=_evt, disp=_disp, sig=_sig)
             except NameError:
                 continue
             except TypeError:

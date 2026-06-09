@@ -261,6 +261,55 @@ class ZCusumBarBuilder:
         return None
 
 
+class VRatioBarBuilder:
+    """Variance-RATIO / price-EFFICIENCY clock (new-methods research 2026-06-09, A3; Lo-MacKinlay 1988).
+    Emits a bar when the cumulative martingale-DEVIATION |VR(q)-1| crosses T. VR(q) = Var(q-period ret) /
+    (q * Var(1-period ret)): VR>1 = trending/super-diffusive, VR<1 = mean-reverting/sub-diffusive, VR~1 =
+    clean random walk. So this samples DENSELY when price discovery is INEFFICIENT (either direction) and
+    sparsely under a clean random walk — a cross-horizon EFFICIENCY clock, distinct from the variance-LEVEL
+    clocks (vol/volofvol/semivar). EWMA variances (fixed decay a) + a q-deep log-close ring + lone TRAIN
+    threshold T -> O(1)/update, byte-exact for batch==online replay. Trailing-only (no future) -> leak-free."""
+
+    def __init__(self, threshold, q=20, a=0.02):
+        self.thresh = float(threshold)
+        self.q = int(q)
+        self.a = float(a)
+        self._ring = [0.0] * self.q
+        self._cnt = 0
+        self.V1 = None
+        self.Vq = None
+        self.acc = 0.0
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        pos = self._cnt % self.q
+        lc_q = self._ring[pos] if self._cnt >= self.q else None          # value being evicted = lc[t-q]
+        prev = self._ring[(self._cnt - 1) % self.q] if self._cnt >= 1 else None   # lc[t-1]
+        self._ring[pos] = lc
+        self._cnt += 1
+        if prev is None or lc_q is None:
+            return None
+        r1 = lc - prev
+        rq = lc - lc_q
+        if self.V1 is None:
+            self.V1, self.Vq = r1 * r1, rq * rq
+        else:
+            self.V1 = (1.0 - self.a) * self.V1 + self.a * r1 * r1
+            self.Vq = (1.0 - self.a) * self.Vq + self.a * rq * rq
+        if self.V1 <= 1e-18:
+            return None
+        vr = self.Vq / (self.q * self.V1)
+        self.acc += abs(vr - 1.0)
+        if self.acc >= self.thresh:
+            self.acc = 0.0
+            return {"ts_close": ts, "log_close": lc}
+        return None
+
+
 class EntropyBarBuilder:
     """Entropy / information-surprise bar (NEW, information-driven).
 
@@ -1258,7 +1307,7 @@ class NewmaBarBuilder:
 
 # Registry — names must be EXACTLY these and in this order.
 # ----------------------------------------------------------------------------
-_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset", "semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar"]
+_AXES_ORDER = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset", "semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar", "vratio"]
 AXES = {
     "dollar": DollarBarBuilder,
     "tick": TickBarBuilder,
@@ -1272,6 +1321,7 @@ AXES = {
     "fracdiff": FracDiffBarBuilder,
     "dc": DirectionalChangeBarBuilder,
     "zcusum": ZCusumBarBuilder,
+    "vratio": VRatioBarBuilder,
     "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder,
     "spectral": SpectralCycleBarBuilder,
@@ -2039,6 +2089,32 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         m = max(1.0, len(close) / max(1, int(target_bars)))
         return ZCusumBarBuilder(math.sqrt(m))
 
+    if bar_type == "vratio":
+        # Variance-ratio / price-efficiency clock. Calibrate T = TRAIN-avg per-minute |VR-1| x
+        # (full length / target_bars) -- a TRAIN-only rate (causal, like dollar/logdollar); a full-series
+        # rate would leak OOS. VECTORIZED (pandas EWM, == the builder's recursive EWMA with adjust=False)
+        # over the contiguous TRAIN block so calibration is O(N) C-speed, not a Python per-minute loop.
+        _q, _a = 20, 0.02
+        c = np.asarray(close, dtype=float)
+        tr = _train_minute_mask(ts_arr)
+        lc_all = np.where(c > 0, np.log(np.maximum(c, 1e-12)), np.nan)
+        lc = lc_all[tr]
+        lc = lc[np.isfinite(lc)]
+        if len(lc) < max(200, 3 * _q):
+            return None
+        r1 = np.diff(lc, prepend=lc[0])
+        rq = np.empty_like(lc)
+        rq[:_q] = 0.0
+        rq[_q:] = lc[_q:] - lc[:-_q]
+        V1 = pd.Series(r1 * r1).ewm(alpha=_a, adjust=False).mean().to_numpy()
+        Vq = pd.Series(rq * rq).ewm(alpha=_a, adjust=False).mean().to_numpy()
+        vr = Vq / (_q * np.maximum(V1, 1e-18))
+        rate = float(np.mean(np.abs(vr[_q:] - 1.0)))   # avg per-minute |VR-1| over TRAIN (skip warm-up)
+        if rate <= 0.0:
+            return None
+        total = rate * len(c)                          # TRAIN rate x full length
+        return VRatioBarBuilder(_safe_thresh(total, target_bars), q=_q, a=_a)
+
     if bar_type == "entropy":
         edges, probs, T = _fit_entropy_axis(close, vol, ts_arr, target_bars)
         if edges is None:
@@ -2467,7 +2543,7 @@ BUILDER_CLASSES = {
     "range": RangeBarBuilder, "logdollar": LogDollarBarBuilder,
     "imbalance": DollarImbalanceBarBuilder, "tickimb": TickImbalanceBarBuilder,
     "volumeimb": VolumeImbalanceBarBuilder, "dc": DirectionalChangeBarBuilder,
-    "zcusum": ZCusumBarBuilder, "kyle": KyleImpactBarBuilder,
+    "zcusum": ZCusumBarBuilder, "vratio": VRatioBarBuilder, "kyle": KyleImpactBarBuilder,
     "run": RunBarBuilder, "spectral": SpectralCycleBarBuilder,
     "vpin": VpinBarBuilder, "jump": JumpBarBuilder,
     "volofvol": VolOfVolBarBuilder, "wavelet": WaveletBarBuilder, "amihud": AmihudBarBuilder, "ddonset": DrawdownOnsetBarBuilder,

@@ -395,23 +395,26 @@ def screen_summary(rows=None):
 # from the research state ("pending"/stale-SOXX bug becomes impossible).
 # ============================================================================
 def book_resolver(K):
-    """Deployable-book metrics — sourced from portfolio.deployed_book_2026_06_06
-    (== proposed_with_USO_2026_06_06.vs_current_6: 4.617 / 2.46 / 2.46), NEVER from
-    portfolio.champion (the stale SOXX-listing honest_book_leakfree_2026_06_03).
+    """Deployable-book metrics — the HERO is the honestly-DEPLOYED 6-name book
+    (portfolio.deployed_book_2026_06_06.prior_6name_2026_06_06: Calmar 4.617 / Sharpe 2.46
+    / MaxDD 2.46% / 6 names GLD-UUP-IWM-TIP-DBC-HYG), matching program.md where USO is still
+    "awaiting human/Opus crown". NEVER from portfolio.champion (the stale SOXX book).
 
-    Returns a dict whose 'calmar' is ALWAYS the live number (4.617), never 'pending'.
-    Members carry a tint role: 'edge' (GLD, true standalone ML edge), 'decorr' (UUP,
-    regime decorrelator), 'muted' (IWM/TIP/DBC/HYG, buy-hold diversifiers)."""
+    The 7-name 5.16 record (deployed_book_2026_06_06.calmar, USO already folded in) is surfaced
+    ONLY as the '+USO' upgrade pill — sourcing the hero from it would contradict the page's own
+    "PROPOSED" pill (hero 5.16/7 names vs pill "+USO 4.62->5.16"). 'calmar' is ALWAYS the live
+    number (4.617), never 'pending'. Member tints: 'edge' (GLD), 'decorr' (UUP), 'muted' (rest)."""
     pf = (K.get("portfolio") or {})
     db = pf.get("deployed_book_2026_06_06") or {}
+    p6 = db.get("prior_6name_2026_06_06") or {}        # the DEPLOYED 6-name book (USO not yet crowned)
     prop = pf.get("proposed_with_USO_2026_06_06") or {}
     vsc = prop.get("vs_current_6") or {}
-    # KPIs: prefer the explicit deployed_book record, fall back to vs_current_6.
-    calmar = db.get("calmar", vsc.get("calmar"))
-    sharpe = db.get("sharpe", vsc.get("sharpe"))
-    mdd = db.get("mdd_pct", vsc.get("mdd_pct"))
-    cagr = db.get("cagr_pct")
-    members = db.get("members") or [m for m in (prop.get("members") or []) if m != "USO"]
+    # KPIs from the 6-name record; vs_current_6 / deployed_book are graceful fallbacks.
+    calmar = p6.get("calmar", vsc.get("calmar"))
+    sharpe = p6.get("sharpe", vsc.get("sharpe"))
+    mdd = p6.get("mdd_pct", vsc.get("mdd_pct"))
+    cagr = p6.get("cagr_pct", db.get("cagr_pct"))
+    members = p6.get("members") or [m for m in (prop.get("members") or []) if m != "USO"]
     tint = {"GLD": "edge", "UUP": "decorr"}
     role = {"GLD": "ML trend edge", "UUP": "regime decorrelator"}
     mem = [{"ticker": t, "tint": tint.get(t, "muted"),
@@ -435,10 +438,11 @@ def book_resolver(K):
         "scheme": db.get("scheme", "weight prop Calmar^2, gross<=1, no leverage"),
         "positive_years": db.get("positive_years", "2023-26"),
         "leak_free": db.get("leak_free", True),
-        "source_key": "portfolio.deployed_book_2026_06_06",
-        "verdict": ("Three ML edges (GLD trend 4.02 / UUP dollar-regime decorrelator / "
-                    "USO oil-reversion 2.18, N_eff-crowned) + decorrelated buy-hold "
-                    "diversifiers; weight prop Calmar^2, gross<=1, positive every calendar year."),
+        "source_key": "portfolio.deployed_book_2026_06_06.prior_6name_2026_06_06",
+        "verdict": ("Two standalone ML edges (GLD trend 4.02 / UUP dollar-regime decorrelator) + "
+                    "decorrelated buy-hold diversifiers (IWM/TIP/DBC/HYG); weight prop Calmar^2, "
+                    "gross<=1, positive every calendar year. USO oil-reversion proposed (+12% -> 5.16, "
+                    "awaiting crown)."),
         "freshness": (f'book re-derived 2026-06-06 leak-free · oil arc R1196-1206 · '
                       f'last round {len(_scan_rounds_csv())}'),
         "stat_tower": {"mechanisms": 3, "screened": 42, "screened_total": 42, "lenses": 7},
@@ -469,11 +473,14 @@ def edges_resolver(K, screen=None):
 
       [0] TREND-MOMENTUM   GLD   (per_etf_best)
       [1] MACRO-REGIME     UUP   (per_etf_best) — framed as a decorrelator
-      [2] OIL MEAN-REVERSION  USO/UCO/XOP  (screen CSV + per_etf_best.XOP DSR)
+      [2] OIL MEAN-REVERSION  USO  (per_etf_best, leak-fixed revert cell) + UCO/XOP panel
 
-    USO/UCO are ABSENT from per_etf_best, so the oil card's traded numbers come from
-    the screen CSV (USO 2.175/0.979 STRONG, UCO 1.102 STRONG) and the data-backed DSR
-    from per_etf_best.XOP (0.835, significant). It does NOT fabricate a USO DSR."""
+    USO IS in per_etf_best (real_calmar 3.85 / DSR 0.71 / 414 trades / significant, the
+    leak-fixed `USO_logdollar_revert_cdf_plain` revert cell) — the oil card's headline traded
+    number comes from there, NOT the screen 2.18 proxy. UCO is still absent (panel-only, from the
+    screen CSV); per_etf_best.XOP DSR (0.79) is kept as an oil-cluster cross-check. The single-ticker
+    crown 3.85 (full OOS) differs from the book-lift window where USO≈2.18 (common-grid) — do not
+    conflate them."""
     if screen is None:
         screen = load_screen()
     pe = K.get("per_etf_best", {}) or {}
@@ -492,6 +499,7 @@ def edges_resolver(K, screen=None):
     gld = _edge("GLD")
     uup = _edge("UUP")
     xop = _edge("XOP")
+    uso_pe = _edge("USO")              # leak-fixed revert crown: calmar 3.85 / DSR 0.71 / 414 trades
     oil_members = _oil_members(screen)
     uso = next((m for m in oil_members if m["ticker"] == "USO"), {})
 
@@ -512,14 +520,18 @@ def edges_resolver(K, screen=None):
         "id": "oil", "mechanism": "OIL MEAN-REVERSION", "tint": "oil", "new": True,
         "assets": ["USO", "UCO", "XOP"], "asset_label": "USO / UCO / XOP",
         "character": CHARACTER.get("USO", ""),
-        "calmar": uso.get("calmar"), "buyhold": uso.get("buyhold"), "edge": uso.get("edge"),
-        "val_auc": uso.get("val_auc"), "trades": uso.get("trades"), "verdict": uso.get("verdict"),
-        "dsr": xop.get("dsr"), "dsr_source": "XOP (oil-cluster proxy; USO/UCO not in per_etf_best)",
-        "significant": xop.get("significant"), "n_trials": xop.get("n_trials"),
-        "recipe": "imbalance x bgm+ker (reversion) · trend (USO screen panel)",
+        "calmar": uso_pe.get("calmar"), "buyhold": uso.get("buyhold"), "edge": uso.get("edge"),
+        "val_auc": uso.get("val_auc"), "trades": uso_pe.get("trades"), "verdict": uso.get("verdict"),
+        "dsr": uso_pe.get("dsr"), "dsr_source": "USO per_etf_best (leak-fixed revert cell)",
+        "significant": uso_pe.get("significant"), "n_trials": uso_pe.get("n_trials"),
+        "xop_dsr": xop.get("dsr"),   # oil-cluster cross-check (XOP 0.79, significant)
+        "cell": uso_pe.get("cell", ""),
+        "recipe": "logdollar x revert (mean-reversion) · cdf_plain",
         "members": oil_members,
-        "why": ("fades two-sided oil swings; permute-collapses (~-0.09), cost + decay survive, "
-                "DSR-positive, book-additive (+USO 4.62->5.16)."),
+        "why": ("fades two-sided oil swings; single-ticker crown Calmar 3.85 (DSR 0.71, 414 trades), "
+                "permute-collapses (~-0.09), cost + decay survive. Book-additive at common-grid "
+                "(USO~2.18 -> +USO lifts the book 4.62->5.16); the 3.85 and the book lift are "
+                "different windows."),
         "arc": "R1196-1206: discover -> permute -> decay -> cost -> DSR -> book-additive",
     }
     return [trend, regime, oil]

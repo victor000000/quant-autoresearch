@@ -63,7 +63,13 @@ def _leak_assurance(text):
     if cut != -1:
         prose = prose[:cut]
     link = f'<a href="{P._esc(_AUDIT_DOC)}">{P._esc(_AUDIT_DOC)} →</a>'
-    body = (f'<p>{P._esc(prose)}</p>'
+    # The credential headline beside the matrix: the TRAIN-only bar-threshold leak fix
+    # is the correction that re-validated the entire board.
+    cred = P.chip("train-only bar-threshold leak fix", "pos",
+                  "magnitude thresholds are re-fit on TRAIN-only stats (previously full-series "
+                  "incl. OOS) — the 2026-06-03 correction that re-validated the whole board")
+    body = (f'<div>{cred}</div>'
+            + f'<p>{P._esc(prose)}</p>'
             + f'<div class="small">audit · {link}</div>')
     return P.card(body, kind="metric",
                   eyebrow_text="LEAK-FREE + FULLY ONLINE", id="leak-assurance")
@@ -83,7 +89,8 @@ def render(ctx):
             "3 confirmed edges (GLD · UUP · USO oil) × 7 lenses · "
             "DSR / PSR data-backed from per_etf_best · permute / decay / cost qualitative · "
             "e-value + PBO uncomputed → genuine NA · "
-            "oil row XOP-proxied (USO / UCO not in per_etf_best)")
+            "oil DSR shown via the XOP oil-cluster cross-check (USO's leak-fixed crown "
+            "sits in per_etf_best; UCO absent)")
     )
 
     table = P.matrix(lenses, rows, col_titles=lens_titles)

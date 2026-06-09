@@ -8,16 +8,17 @@ CLOSES the page. It absorbs three things the old monolith duplicated or scattere
     (Calmar / MaxDD / CAGR / Sharpe / Edge / signal / recipe / bar-clock / entry) —
     the ONLY copy on the page (the two old copies, in _intro_html and the leaderboard
     caption, are deleted), so the definitions can never drift apart;
-  * the old "What this is" intro, folded down to a one-line hero abstract here;
-  * a short COLOPHON: the data sources (knowledge.json / round_results.csv /
-    etf_screen.csv), the deployment-gate definition, the leak-free assurance, the
-    doc links (program.md / deployment.md / BACKTEST_AUDIT.md), and the global
-    last-updated stamp.
+  * the orientation abstract now lives in the book hero (not duplicated here);
+  * a short COLOPHON: the reconciled funnel chain, the data sources (knowledge.json /
+    round_results.csv / etf_screen.csv), a single link to the canonical deployment-gate +
+    leak-free assurance section (#honesty), the doc links (program.md / deployment.md /
+    BACKTEST_AUDIT.md), and the global last-updated stamp.
 
 Pure ctx -> HTML. Every LIVE string flows through a resolver already on ctx
-(ctx["book"] for the verdict + freshness stamp, ctx["honesty"] for the canonical
-gate + leak-assurance strings) so this closing block can never contradict the book
-hero or the honesty matrix. The static glossary prose has no resolver — it is the
+(ctx["book"] for the freshness stamp, ctx["screen_summary"]/ctx["edges"] for the
+reconciled funnel chain); the gate-floor + leak-assurance strings are NOT repeated
+here — they live once in #honesty and are linked. The static glossary prose has no
+resolver — it is the
 project's definitions, not research state. Invents no CSS: layout flows through
 console.primitives helpers that OWN their classes, plus the pre-existing
 `.glossary`/`details`/`.small` styling already defined in reports/style.css.
@@ -81,27 +82,30 @@ def _sources(ctx):
             f"<code>{P._esc(sc)}</code> (the 311-ETF universe screen).</div>")
 
 
+def _funnel_chain(ctx):
+    """The ONE reconciled funnel string, kept identical to sections.screen._funnel_chain
+    (orientation lives in the book hero now; the colophon just restates the chain)."""
+    sm = ctx.get("screen_summary") or {}
+    tower = (ctx.get("book") or {}).get("stat_tower") or {}
+    universe = sm.get("universe", 311)
+    fitprone = tower.get("screened_total", 42)
+    strong = (sm.get("n_valid", 0) + sm.get("n_trust", 0) + sm.get("n_prov", 0)) or 8
+    mechs = len(ctx.get("edges") or []) or 3
+    return (f"{universe} QC-confirmed universe → {fitprone} fit-prone screened → "
+            f"{strong} strong fits → {mechs} deployed mechanisms")
+
+
 def _colophon(ctx):
-    """The closing colophon card: one-line abstract + verdict + sources + gates +
-    leak assurance + doc links + the global last-updated stamp. Every live string is
-    pulled from a resolver (ctx['book'] / ctx['honesty']) so it can never diverge."""
+    """The closing colophon card: the reconciled funnel chain + sources + a single link
+    to the canonical gate/leak section + doc links + the global last-updated stamp. The
+    orientation abstract now lives in the book hero, and the gate-floor / leak-assurance
+    strings live ONCE in #honesty (linked here, not repeated verbatim)."""
     book = ctx.get("book") or {}
-    hon = ctx.get("honesty") or {}
-    ss = ctx.get("screen_summary") or {}
-    universe = ss.get("universe", 311)
 
-    abstract = (
-        "<p>An <b>autonomous research loop</b> that invents and back-tests "
-        "<b>single-ticker</b> ETF trading strategies on real market data "
-        "(QuantConnect), keeping only the edges that beat buy-and-hold <i>and</i> "
-        f"survive strict out-of-sample + multiple-testing checks across {universe} "
-        "QC-confirmed ETFs. The AI proposes and runs the experiments; a human steers.</p>")
-    verdict = ('<p class="small">' + P._esc(book.get("verdict", "")) + "</p>") if book.get("verdict") else ""
+    funnel = ('<div class="small">Funnel · ' + P._esc(_funnel_chain(ctx)) + ".</div>")
 
-    gates = ('<div class="small">Deployment gates · ' + P._esc(hon.get("gates", "")) + "</div>") \
-        if hon.get("gates") else ""
-    leak = ('<div class="small">' + P._esc(hon.get("leak_assurance", "")) + "</div>") \
-        if hon.get("leak_assurance") else ""
+    gates_leak = ('<div class="small">Deployment gates &amp; leak-free assurance · '
+                  '<a href="#honesty">→ #honesty</a></div>')
 
     links = ('<div class="small">Docs · '
              '<a href="program.md">program.md</a> · '
@@ -111,7 +115,7 @@ def _colophon(ctx):
     stamp = ('<div class="small">' + P.chip("last updated", "muted", "global freshness stamp")
              + " " + P._esc(book.get("freshness", "")) + "</div>") if book.get("freshness") else ""
 
-    body = abstract + verdict + _sources(ctx) + gates + leak + links + stamp
+    body = funnel + _sources(ctx) + gates_leak + links + stamp
     return P.card(body, kind="muted", eyebrow_text="COLOPHON · DATA, GATES & PROVENANCE",
                   title="data sources, deployment gates, leak assurance, doc links")
 

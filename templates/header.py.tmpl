@@ -80,6 +80,10 @@ CONFIG = {
     # variance-ratio trend-persistence features that HURT under the corr-filter (crowding) but which
     # the label-relevant IG reducer can select without crowding. Pair with reduce=infogain. Distinct _fr cell.
     "features": _cfg_or("__FEATURES__", "__" "FEATURES__", "base"),
+    # Calibration method (deep-v2 B4). Default "isotonic" (byte-identical legacy). "venn_abers" = Inductive
+    # Venn-Abers (Vovk-Petej): per-score p0/p1 via isotonic pinned 0/1 -> VA prob p1/(1-p0+p1); provably
+    # better-calibrated multiprobability. Reuses the embargoed-VAL fit + frozen-replay path. Distinct _va cell.
+    "calibration": _cfg_or("__CALIB__", "__" "CALIB__", "isotonic"),
     # TRAIN->VAL symmetric purge (leak audit 2026-06-07, gap C16). Default "0" => OFF => byte-identical.
     # When "1", _run_cell drops the last ~_EMBARGO TRAIN bars (whose forward labels reach into early VAL)
     # from the model-fit set, mirroring the val->test embargo. Writes a DISTINCT _tp cell. (Driver wiring
@@ -89,4 +93,4 @@ CONFIG = {
 # Cell-key suffix for the permuted-label control (distinct cell -> never overwrites a champion).
 # Precomputed as a plain name so f-string keys stay simple (no nested conditional/quotes, which
 # QC's Python rejects after ast.unparse re-emits the f-string).
-_PSUF = ("_perm" if CONFIG["permute_labels"] else "") + ("" if CONFIG["n_components"] == 20 else "_n" + str(CONFIG["n_components"])) + ("" if CONFIG["rebal_band"] == 0.01 else "_b" + str(int(round(CONFIG["rebal_band"] * 100)))) + ("" if CONFIG["horizons"] is None else "_hz" + "x".join(str(_h) for _h in CONFIG["horizons"])) + ("" if CONFIG["reduce"] == "correlation" else "_ig" if CONFIG["reduce"] == "infogain" else "_rd" + str(CONFIG["reduce"])) + ("" if CONFIG["features"] == "base" else "_fr" if CONFIG["features"] == "rich" else "_ts" if CONFIG["features"] == "termstruct" else "_fx") + ("_tp" if CONFIG["train_purge"] else "")
+_PSUF = ("_perm" if CONFIG["permute_labels"] else "") + ("" if CONFIG["n_components"] == 20 else "_n" + str(CONFIG["n_components"])) + ("" if CONFIG["rebal_band"] == 0.01 else "_b" + str(int(round(CONFIG["rebal_band"] * 100)))) + ("" if CONFIG["horizons"] is None else "_hz" + "x".join(str(_h) for _h in CONFIG["horizons"])) + ("" if CONFIG["reduce"] == "correlation" else "_ig" if CONFIG["reduce"] == "infogain" else "_rd" + str(CONFIG["reduce"])) + ("" if CONFIG["features"] == "base" else "_fr" if CONFIG["features"] == "rich" else "_ts" if CONFIG["features"] == "termstruct" else "_fx") + ("" if CONFIG.get("calibration", "isotonic") == "isotonic" else "_va") + ("_tp" if CONFIG["train_purge"] else "")

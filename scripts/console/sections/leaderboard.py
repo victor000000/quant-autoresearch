@@ -43,7 +43,12 @@ def _reward_verdict(r):
     al = "always_long" in (r.get("cell", "") or "")
     edge = r.get("edge") or 0.0
     cal = r.get("calmar") or 0.0
+    trades = r.get("trades")
     if al:
+        # a degenerate always-long champion (≤1 trade) is a decorrelator seat, NOT a
+        # timing edge — flag it honestly (e.g. IWM / EEM, trades=1).
+        if trades is not None and trades <= 1:
+            return ("degenerate always-long (trades=1) — decorrelator seat", "muted")
         return ("no ML edge — held passively", "muted")
     if cal > 0 and (r.get("significant") is True or edge >= 0.5):
         return ("real ML edge", "edge")
@@ -157,6 +162,9 @@ def render(ctx):
     """ctx -> the full <section id="leaderboard"> HTML fragment."""
     rows = ctx.get("rows") or []
     sb = ctx.get("scoreboard") or {}
+    sm = ctx.get("screen_summary") or {}
+    universe = sm.get("universe", 311)
+    strong = (sm.get("n_valid", 0) + sm.get("n_trust", 0) + sm.get("n_prov", 0)) or 8
     edges = [r for r in rows if (r.get("edge") or 0) > EDGE_FLOOR]
     drift = [r for r in rows if (r.get("edge") or 0) <= EDGE_FLOOR]
 
@@ -167,15 +175,17 @@ def render(ctx):
                'deflated-Sharpe / multiple-testing correction; "likely luck" = it does not, so the '
                'apparent edge is probably selection bias; "not assessed" = too few trades to test. '
                '<b>verdict / what it rewards</b> distil whether each asset carries a real ML edge or '
-               'is best held passively. Full number glossary lives in the colophon. '
+               'is best held passively; the edge types are defined in '
+               '<a href="#mechanisms">→ #mechanisms</a>. Full number glossary lives in the colophon. '
                'Click a header to sort.</p>')
 
     body = (
         P.eyebrow("PER-TICKER EVIDENCE · REAL OOS · LEAK-FREE")
         + "<h2>Single-ticker leaderboard</h2>"
         + P.provenance(
-            "Of 26 ETFs raced, only GLD / UUP / USO clear every gate; the two-sided timing "
-            "edges (EEM / TLT / IWM) decayed as the out-of-sample window grew.")
+            f"Of the {universe}-ETF QC-confirmed universe screened down to {strong} strong fits, "
+            "only GLD / UUP / USO clear every gate; the two-sided timing edges (EEM / TLT / IWM) "
+            "decayed as the out-of-sample window grew.")
         + _stats_strip(sb)
         + _lb_table(edges, "lb")
         + bhfold

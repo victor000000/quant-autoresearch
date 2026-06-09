@@ -31,7 +31,7 @@ if _SCRIPTS not in sys.path:
 
 from console.data import build_ctx, build_data as _build_data  # noqa: E402
 from console.sections import (  # noqa: E402
-    book, mechanisms, honesty, leaderboard, book_lab, screen, arc, graph, rounds, read,
+    book, mechanisms, honesty, arc, appendix,
 )
 
 
@@ -39,25 +39,24 @@ from console.sections import (  # noqa: E402
 # THE REGISTRY — (id, title, render_fn, priority), in final decision-first order.
 # id doubles as the in-page anchor; render_fn is a pure ctx -> <section> builder.
 # ---------------------------------------------------------------------------
+# 2026-06-09 RECONSTRUCTION — a ONE-PAGE NARRATIVE + a single collapsed appendix.
+# The four core sections tell the whole story top-to-bottom; every dense evidence
+# surface (leaderboard, screen, book-lab, graph, rounds, glossary) now lives inside
+# `appendix` as collapsed <details> drawers, so their anchor ids, the live #lb sort,
+# the lazy #graphwrap mount and the /data.json poll all keep working unchanged.
 SECTIONS = [
-    ("book",        "The deployable book",            book.render,        "primary"),
-    ("mechanisms",  "Three confirmed edge mechanisms", mechanisms.render, "primary"),
-    ("honesty",     "Why these edges are real",       honesty.render,     "primary"),
-    ("leaderboard", "Single-ticker leaderboard",      leaderboard.render, "secondary"),
-    ("book-lab",    "Book compositions & sizing lab", book_lab.render,    "secondary"),
-    ("screen",      "Universe screen",                screen.render,      "secondary"),
-    ("arc",         "Research arc & what's next",     arc.render,         "secondary"),
-    ("graph",       "Causal / provenance graph",      graph.render,       "tertiary"),
-    ("rounds",      "Rounds ledger",                  rounds.render,      "tertiary"),
-    ("read",        "How to read the numbers",        read.render,        "tertiary"),
+    ("book",       "The deployable book",        book.render,      "primary"),
+    ("mechanisms", "Three confirmed mechanisms", mechanisms.render, "primary"),
+    ("honesty",    "Why these edges are real",   honesty.render,   "primary"),
+    ("arc",        "What's next",                arc.render,       "primary"),
+    ("appendix",   "Appendix — evidence & ledger", appendix.render, "secondary"),
 ]
 
-# Command-bar chapter anchors (label -> href). Section ids -> in-page anchors; the
-# two trailing links are themed Flask routes (program.md / deployment.md).
-_NAV = [
-    ("book", "#book"), ("mechanisms", "#mechanisms"), ("honesty", "#honesty"),
-    ("leaderboard", "#leaderboard"), ("book-lab", "#book-lab"), ("screen", "#screen"),
-    ("arc", "#arc"), ("graph", "#graph"), ("rounds", "#rounds"),
+# Command-bar chapter anchors DERIVED from SECTIONS (friendly labels for the 4 core
+# beats + the appendix), then the two themed doc routes (program.md / deployment.md).
+_NAV_LABELS = {"book": "book", "mechanisms": "mechanisms", "honesty": "why real",
+               "arc": "what's next", "appendix": "appendix"}
+_NAV = [(_NAV_LABELS.get(sid, sid), f"#{sid}") for sid, _t, _fn, _p in SECTIONS] + [
     ("program.md", "program.md"), ("deploy", "deployment.md"),
 ]
 
@@ -137,9 +136,13 @@ def build_data(K=None):
 
 if __name__ == "__main__":
     html = build_html()
-    print(f"page: {len(html)} bytes · {len(SECTIONS)} sections")
+    n_bytes = len(html.encode("utf-8"))
+    print(f"page: {len(html)} chars · {n_bytes} utf-8 bytes · {len(SECTIONS)} sections")
     for sid, _t, _fn, _p in SECTIONS:
         assert f'id="{sid}"' in html, f"section missing from page: {sid}"
+    # Byte guard at the size that actually ships over the wire (utf-8 bytes, not str len) —
+    # render_index measured len(str); the multibyte glyphs made the real payload larger.
+    assert n_bytes < 200_000, f"build_html is {n_bytes} utf-8 bytes (>= 200000) — perf regression"
     assert "4.62" in html or "4.617" in html, "book hero Calmar missing"
     # The stale-SOXX bug rendered a metric as the literal text 'pending' (e.g.
     # '<div class="cnum">pending<span>'). Guard that exact value-leak pattern — NOT the

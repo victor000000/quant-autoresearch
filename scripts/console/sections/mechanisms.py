@@ -97,18 +97,20 @@ def _meta_chips(e):
     return " ".join(out)
 
 
-def _upgrade_callout(up):
-    """The +USO upgrade pill living inside the oil card (book_resolver.upgrade)."""
-    cf, ct = up.get("calmar_from"), up.get("calmar_to")
-    lift = up.get("calmar_lift_pct")
-    pill = P.chip(f"book Calmar {_fmt(cf)} → {_fmt(ct)} (+{lift}%)", "oil",
-                  up.get("text", ""))
+def _upgrade_callout():
+    """The +USO upgrade — deduped to a single cross-reference into the canonical book
+    hero (the ONE place the +USO numbers live), so the page tells the upgrade story once."""
+    link = ('<a href="#book">'
+            + P.chip("+USO → folded into the book", "oil",
+                     "the +USO upgrade and its Calmar lift live in the deployable-book hero")
+            + "</a>")
     return (P.eyebrow("PROPOSED UPGRADE · +USO", "amber")
-            + "<div>" + pill + "</div>"
-            + '<div class="small">USO(1x) not UCO(2x) — awaiting human/Opus crown.</div>')
+            + "<div>" + link + "</div>"
+            + '<div class="small">USO(1x) not UCO(2x) — awaiting human/Opus crown; '
+              'the numbers are in the book hero above.</div>')
 
 
-def _edge_card(e, up):
+def _edge_card(e):
     """One .card--edge per mechanism (teal stripe; primary band)."""
     body = (
         "<div>" + _asset_chips(e) + "</div>"
@@ -120,7 +122,7 @@ def _edge_card(e, up):
     if e.get("id") == "oil":
         if e.get("arc"):
             body += P.provenance("arc · " + e["arc"])
-        body += _upgrade_callout(up)
+        body += _upgrade_callout()
     return P.card(body, kind="edge", eyebrow_text=e.get("mechanism", ""),
                   id="mech-" + str(e.get("id", "")), title=e.get("character", ""))
 
@@ -130,8 +132,7 @@ def render(ctx):
     """ctx -> the full <section id="mechanisms"> HTML fragment."""
     edges = ctx.get("edges") or []
     book = ctx.get("book") or {}
-    up = book.get("upgrade") or {}
-    cards = "".join(_edge_card(e, up) for e in edges)
+    cards = "".join(_edge_card(e) for e in edges)
     body = (
         P.eyebrow("THE TAXONOMY · WHAT ACTUALLY WORKS")
         + "<h2>Three confirmed edge mechanisms</h2>"
