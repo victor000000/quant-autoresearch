@@ -62,6 +62,33 @@ OOS window + standing decay monitor settle whether the sleeve advantage resumes.
 individually Bonferroni-marginal on a 2.8y window; the recent fade is consistent with that overfit risk
 beginning to surface.
 
+## 3b. Book RISK characterization + window sufficiency (R22–27) — host-side, every standard axis
+- **R22 (stress correlation):** decorrelation HOLDS in stress — in the worst-quartile weeks avg pairwise corr
+  goes slightly NEGATIVE (sleeve −0.03 vs +0.10 full), the opposite of a crisis correlation-spike. Mechanism:
+  GLD is a safe haven (rises when the equity sleeve falls). True for both books.
+- **R23 (left tail):** the sleeve is MORE tail-efficient despite containing USO (worst-week −6.1%): book
+  worst-week −0.59% vs 6-name −0.81%, CVaR5 −0.35% vs −0.44%, return/|CVaR| 22.5 vs 12.7.
+- **R24 (drawdown depth):** book MaxDD is staggered-DD diversification, not low-vol members — book ~1.0–1.2%
+  is ~3× shallower than the weighted-avg member, ~10–15× shallower than the worst (sleeve 1.00% < 6-name
+  1.20% despite USO's 14.7% member MaxDD).
+- **R25 (drawdown duration):** longest underwater ~0.2–0.3y, ~5–9× shorter than the worst member — diversified
+  on depth AND duration. (Also noted: the cached grid is ~79 bars/yr, ≈4.6-day cadence — earlier absolute
+  annualized Sharpes using ppy=52 were understated ~1.23×, e.g. GLD≈2.16 matching QC; no conclusion changes,
+  all comparisons relative + significance via ppy-independent t-stats.)
+- **R26 (return shape):** neither book is the dangerous high-Sharpe-NEGATIVE-skew trap. 6-name skew −0.14
+  (~symmetric); **sleeve skew +1.50 (POSITIVELY skewed, gain/loss 1.71)** — its fat tails are on the UPSIDE.
+- **R27 (window sufficiency — the rigorous capstone):** at the session's ~1840-trial search burden, MinBTL
+  (Bailey–López de Prado) shows the 2.8y window confirms ONLY GLD (MinBTL 2.46y < 2.83y); every other member
+  is window-INSUFFICIENT (USO 3.87y, IXP 4.54y, IXG 5.10y, XBI 4.86y, UUP 10.7y, IWM 13.0y). **Formal proof:
+  GLD is the one window-confirmed durable edge; every other edge is PROVISIONAL — its realized Sharpe cannot
+  yet be distinguished from a multiple-testing fluke and needs 3.9–13 more years of OOS.** This explains the
+  whole session: only TIME (the growing window), not more experiments, can confirm the sleeve.
+
+**Net risk read:** the sleeve is risk-SUPERIOR on every axis (decorrelated, stress-robust, tail-efficient,
+shallow+short drawdowns, positively skewed) and full-window return-superior — but ONLY GLD is window-confirmed,
+so the sleeve is a provisional bet whose recent return-fade (R16) is the overfit risk MinBTL formally flags.
+The loop cannot resolve this — it needs calendar time or a new INPUT.
+
 ## 4. The decision points (the loop genuinely needs a new input)
 1. **Enable FRED on QC project 31338454** → race the (built, ready) real-yield A/B — now the *only* way to
    test the gold↔real-rate thesis (proxies proven insufficient).
