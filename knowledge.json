@@ -15930,6 +15930,30 @@
         "type": "round",
         "phase": "EXI",
         "label": "R2117 EXI DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0747 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2118",
+        "type": "round",
+        "phase": "EXI",
+        "label": "R2118 EXI DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.0308 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2119",
+        "type": "round",
+        "phase": "FXO",
+        "label": "R2119 FXO DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.5237 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2120",
+        "type": "round",
+        "phase": "FXO",
+        "label": "R2120 FXO DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.0223 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2121",
+        "type": "round",
+        "phase": "IYT",
+        "label": "R2121 IYT DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.2232 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27496,6 +27520,26 @@
       {
         "src": "r2116",
         "dst": "r2117",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2117",
+        "dst": "r2118",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2118",
+        "dst": "r2119",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2119",
+        "dst": "r2120",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2120",
+        "dst": "r2121",
         "label": "no improvement"
       }
     ],
