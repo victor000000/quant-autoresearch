@@ -4111,3 +4111,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T21:50:52,IBB,0.0,,B,IBB,logdollar,always_long,0.5,cdf_overlay,0.3426,40.8021,862,True,True,-0.2799,0.5,0.5,0.5513,-0.1508,4.6988,717,True,False,completed,completed
 2026-06-11T21:52:47,FVD,0.0,,A,FVD,logdollar,ker,0.45,dd_overlay,0.5056,2.6165,693,True,True,0.0577,0.6973,0.5116,0.6383,-0.4923,12.2883,717,True,False,completed,completed
 2026-06-11T21:52:47,FVD,0.0,,B,FVD,logdollar,changepoint,0.5,cdf_overlay,0.4688,1.2568,239,True,True,0.0287,0.6432,0.4622,0.5608,0.3084,11.7847,717,False,False,completed,completed
+2026-06-11T21:55:07,FVD,0.0,,A,FVD,logdollar,sadf_explosive,0.5,cdf_overlay,0.0369,13.6223,256,True,True,-0.1388,0.8688,0.5878,0.0817,0.5404,23.089,717,False,False,completed,completed
+2026-06-11T21:55:07,FVD,0.0,,B,FVD,logdollar,always_long,0.5,cdf_overlay,0.51,18.8522,1295,True,True,0.0006,0.5,0.5,0.6216,0.2885,12.0016,717,True,False,completed,completed
+2026-06-11T21:57:29,FTCS,0.0,,A,FTCS,logdollar,ker,0.45,dd_overlay,-0.089,5.8257,2506,True,True,-0.1311,0.7077,0.5178,-0.1274,0.1804,13.7769,717,True,False,completed,completed
+2026-06-11T21:57:29,FTCS,0.0,,B,FTCS,logdollar,changepoint,0.5,cdf_overlay,-0.2657,18.1606,590,True,True,-0.1294,0.689,0.5247,-0.7109,0.0615,29.6494,717,False,False,completed,completed
+2026-06-11T21:59:41,FTCS,0.0,,A,FTCS,logdollar,sadf_explosive,0.5,cdf_overlay,0.4265,5.0033,286,True,True,0.1086,0.777,0.6215,0.4303,0.4272,47.8485,717,False,False,completed,completed
+2026-06-11T21:59:41,FTCS,0.0,,B,FTCS,logdollar,always_long,0.5,cdf_overlay,0.516,17.1671,2270,True,True,-0.0676,0.5,0.5,0.6524,0.4011,16.6774,717,True,False,completed,completed
+2026-06-11T22:02:06,RWL,0.0,,A,RWL,logdollar,ker,0.45,dd_overlay,0.2385,9.8291,1587,True,True,-0.0527,0.71,0.5464,0.4235,0.379,40.2131,717,False,False,completed,completed
+2026-06-11T22:02:06,RWL,0.0,,B,RWL,logdollar,changepoint,0.5,cdf_overlay,0.5416,1.8992,857,True,True,-0.0276,0.7312,0.4805,0.783,-0.7835,22.9974,717,True,False,completed,completed
