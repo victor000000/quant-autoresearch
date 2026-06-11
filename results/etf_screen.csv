@@ -37,6 +37,7 @@ VV,US Equity,sadf,2.052,1.305,0.746,0.423,118,NO-FIT,Vanguard Large Cap Index Fu
 VGK,International Equity,regime,1.92,1.187,0.733,0.557,6,NO-FIT,Vanguard FTSE Europe ETF
 EWG,International Equity,trend,1.888,1.161,0.727,0.556,329,STRONG,iShares MSCI Germany ETF
 SPAB,Fixed Income,sadf,1.13,0.416,0.714,0.719,54,NO-FIT,State Street SPDR Portfolio Aggregate Bo
+DIA,US Equity,regime,1.655,0.95,0.705,0.697,604,STRONG,State Street SPDR Dow Jones Industrial A
 SPTL,Fixed Income,trend,0.516,-0.139,0.656,0.65,620,marginal,State Street SPDR Portfolio Long Term Tr
 ACWI,International Equity,sadf,0.649,0.0,0.649,0.498,68,NO-BASELINE,iShares MSCI ACWI ETF
 EWW,International Equity,sadf,1.009,0.419,0.59,0.7,358,STRONG,iShares MSCI Mexico ETF
@@ -58,6 +59,7 @@ BWX,Fixed Income,sadf,0.465,0.102,0.363,0.809,83,marginal,SPDR Bloomberg Interna
 VWO,International Equity,trend,1.528,1.173,0.355,0.801,594,STRONG,Vanguard Emerging Markets Stock Index Fu
 ERX,Leveraged/Inverse,sadf,0.858,0.51,0.347,0.495,226,NO-FIT,Direxion Daily Energy Bull 2X Shares
 THD,International Equity,trend,0.339,0.059,0.28,0.711,340,marginal,iShares MSCI Thailand ETF
+IWB,US Equity,sadf,1.34,1.067,0.273,0.526,142,NO-FIT,iShares Russell 1000 ETF
 ITOT,US Equity,sadf,1.306,1.037,0.27,0.558,599,marginal,iShares Core S&P Total U.S. Stock Market
 VNQ,Real Estate,sadf,0.698,0.43,0.268,0.567,26,NO-FIT,Vanguard Real Estate Index Fund ETF Shar
 EWQ,International Equity,ker,0.855,0.588,0.267,0.683,607,marginal,iShares MSCI France ETF
@@ -83,16 +85,18 @@ REM,Real Estate,changept,0.289,0.227,0.062,0.56,613,marginal,iShares Mortgage Re
 PFF,Fixed Income,ker,0.543,0.505,0.038,0.445,129,NO-FIT,iShares Preferred and Income Securities 
 FXI,International Equity,ker,0.256,0.229,0.027,0.619,175,marginal,iShares China Large-Cap ETF
 VB,US Equity,changept,0.583,0.559,0.024,0.509,389,NO-FIT,Vanguard Small-Cap Index Fund ETF Shares
+XLF,US Equity,changept,0.979,0.961,0.018,0.594,413,marginal,State Street Financial Select Sector SPD
 EZA,International Equity,changept,0.964,0.95,0.014,0.417,68,NO-FIT,iShares MSCI South Africa ETF
-PWZ,Fixed Income,trend,0.0,0.0,0.0,0.0,0,NO-BASELINE,Invesco California AMT-Free Municipal Bo
 GSY,Fixed Income,trend,0.0,0.0,0.0,0.0,0,NO-BASELINE,Invesco Ultra Short Duration ETF
 EWC,International Equity,changept,1.686,1.686,0.0,0.467,280,NO-FIT,iShares MSCI Canada ETF
+PWZ,Fixed Income,trend,0.0,0.0,0.0,0.0,0,NO-BASELINE,Invesco California AMT-Free Municipal Bo
 EWD,International Equity,sadf,0.638,0.646,-0.008,0.624,177,NO-FIT,iShares MSCI Sweden ETF
 FXE,Currency,changept,0.518,0.529,-0.011,0.549,82,NO-FIT,Invesco CurrencyShares Euro Currency Tru
 PGX,Fixed Income,ker,0.273,0.29,-0.017,0.608,538,NO-FIT,Invesco Preferred ETF
 IYR,Real Estate,sadf,0.478,0.505,-0.027,0.563,83,NO-FIT,iShares U.S. Real Estate ETF
 UWM,Leveraged/Inverse,changept,0.386,0.421,-0.035,0.558,375,NO-FIT,ProShares Ultra Russell2000
 TLH,Fixed Income,trend,0.0,0.039,-0.039,0.0,0,NO-FIT,iShares 10-20 Year Treasury Bond ETF
+IWR,US Equity,trend,0.545,0.598,-0.053,0.741,697,NO-FIT,iShares Russell Mid-Cap ETF
 VBR,US Equity,ker,0.546,0.614,-0.068,0.597,394,NO-FIT,Vanguard Small-Cap Value Index Fund ETF 
 REZ,Real Estate,changept,0.446,0.527,-0.081,0.537,306,NO-FIT,iShares Residential and Multisector Real
 NLR,Commodity,trend,0.161,0.243,-0.082,nan,3292,NO-FIT,VanEck Uranium and Nuclear ETF
@@ -100,9 +104,11 @@ SPDW,International Equity,ker,0.935,1.021,-0.085,0.475,468,NO-FIT,State Street S
 ECH,International Equity,trend,0.354,0.47,-0.117,0.491,446,NO-FIT,iShares MSCI Chile ETF
 IXJ,International Equity,trend,0.0,0.129,-0.129,0.0,0,NO-FIT,iShares Global Healthcare ETF
 NYF,Fixed Income,trend,0.0,0.142,-0.142,0.0,0,NO-FIT,iShares New York Muni Bond ETF
+SPYG,US Equity,ker,0.71,0.853,-0.143,0.495,801,NO-FIT,State Street SPDR Portfolio S&P 500 Grow
 DFJ,International Equity,trend,1.096,1.245,-0.149,0.728,367,NO-FIT,WisdomTree Japan SmallCap Dividend Fund
-JNK,Fixed Income,sadf,1.545,1.713,-0.168,0.49,416,NO-FIT,State Street SPDR Bloomberg High Yield B
 WIP,Fixed Income,regime,0.0,0.168,-0.168,0.0,0,NO-FIT,SPDR FTSE International Government Infla
+JNK,Fixed Income,sadf,1.545,1.713,-0.168,0.49,416,NO-FIT,State Street SPDR Bloomberg High Yield B
+IVE,US Equity,sadf,0.651,0.82,-0.169,0.813,23,NO-FIT,iShares S&P 500 Value ETF
 VGT,US Equity,sadf,1.089,1.26,-0.171,0.312,100,NO-FIT,Vanguard Information Technology Index Fu
 SPLG,US Equity,ker,0.699,0.885,-0.186,0.489,1319,NO-FIT,State Street SPDR Portfolio S&P 500 ETF
 DEM,International Equity,sadf,1.212,1.404,-0.192,0.538,132,NO-FIT,WisdomTree Emerging Markets High Dividen
@@ -134,8 +140,8 @@ MBB,Fixed Income,ker,0.065,0.532,-0.467,0.546,366,NO-FIT,iShares MBS ETF
 EZU,International Equity,trend,0.79,1.265,-0.475,0.814,783,NO-FIT,iShares MSCI Eurozone ETF
 VPL,International Equity,ker,0.868,1.351,-0.483,0.542,84,NO-FIT,Vanguard FTSE Pacific Index Fund ETF Sha
 IVV,US Equity,changept,0.854,1.34,-0.486,0.511,387,NO-FIT,iShares Core S&P 500 ETF
-IXC,International Equity,ker,0.511,1.018,-0.507,0.539,1405,NO-FIT,iShares Global Energy ETF
 VO,US Equity,ker,0.28,0.787,-0.507,0.504,178,NO-FIT,Vanguard Mid-Cap Index Fund ETF Shares
+IXC,International Equity,ker,0.511,1.018,-0.507,0.539,1405,NO-FIT,iShares Global Energy ETF
 EWN,International Equity,trend,0.209,0.744,-0.535,0.594,81,NO-FIT,iShares MSCI Netherlands ETF
 EFG,International Equity,trend,0.0,0.555,-0.555,0.0,0,NO-FIT,iShares MSCI EAFE Growth ETF
 GWX,International Equity,ker,0.376,1.002,-0.626,0.565,324,NO-FIT,State Street SPDR S&P International Smal
