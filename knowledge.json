@@ -15217,6 +15217,36 @@
         "type": "round",
         "phase": "RWL",
         "label": "R2003 RWL DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5416 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2004",
+        "type": "round",
+        "phase": "RWL",
+        "label": "R2004 RWL DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.9332 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2005",
+        "type": "round",
+        "phase": "PPA",
+        "label": "R2005 PPA DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.7297 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2006",
+        "type": "round",
+        "phase": "PPA",
+        "label": "R2006 PPA DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.4898 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2007",
+        "type": "round",
+        "phase": "IGM",
+        "label": "R2007 IGM DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +1.6621 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2008",
+        "type": "round",
+        "phase": "IGM",
+        "label": "R2008 IGM DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.1271 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -26213,6 +26243,31 @@
       {
         "src": "r2002",
         "dst": "r2003",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2003",
+        "dst": "r2004",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2004",
+        "dst": "r2005",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2005",
+        "dst": "r2006",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2006",
+        "dst": "r2007",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2007",
+        "dst": "r2008",
         "label": "no improvement"
       }
     ],
