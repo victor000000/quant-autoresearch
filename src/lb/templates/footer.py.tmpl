@@ -627,8 +627,9 @@ class AutoresearchPipeline(QCAlgorithm):
             _wr = (CONFIG.get("features") == "wangrich")
             _realyield = self._realyield
             _ob = self._oilbasis
+            _regime = (CONFIG.get("features") == "regime")
             try:
-                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts, evt=_evt, disp=_disp, sig=_sig, ry=ry, sl=sl, realyield=_realyield, wangrich=_wr, oilbasis=_ob)
+                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts, evt=_evt, disp=_disp, sig=_sig, ry=ry, sl=sl, realyield=_realyield, wangrich=_wr, oilbasis=_ob, regime=_regime)
             except NameError:
                 continue
             except TypeError:

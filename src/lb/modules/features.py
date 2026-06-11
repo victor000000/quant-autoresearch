@@ -211,7 +211,7 @@ def oilbasis_feats(lc, lr, ob):
     return np.column_stack(cols).astype(np.float32)
 
 
-def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False, ry=None, sl=None, realyield=False, wangrich=False, oilbasis=False):
+def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False, ry=None, sl=None, realyield=False, wangrich=False, oilbasis=False, regime=False):
     """Build feature matrix from log-close and log-return arrays.
 
     Args:
@@ -315,6 +315,37 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, terms
     # NOTE: SPY-relative cross-asset features were tested (round 34) and REGRESSED
     # TLT (0.7679 -> 0.677); a real cross-asset edge needs a 2-symbol PAIRS strategy,
     # not SPY features in a single-asset model. Reverted; left disabled. See f_crossasset.
+
+    # JOINT (return, vol) CONDITIONAL-REGIME features (Wang 2026-06-11 joint-dist talk; opt-in
+    # features="regime", reduce=infogain to select). The genuinely additive signal a tree can't
+    # reconstruct from vol+return separately: the CONDITIONAL CDF position of the current return
+    # within the SAME vol-regime's recent return distribution. Strictly causal — vol is a TRAILING
+    # rolling std, its regime a TRAILING rolling median, and the conditioning return distribution
+    # uses only STRICTLY-PAST bars (lr[lo:i], excludes i). Every index <= i => append-OOS-invariant
+    # (appending future bars never changes a past feature value; verified by the append-invariance
+    # teeth). 2 features: vol-regime indicator + centered conditional-CDF position.
+    if regime:
+        _W, _L = 20, 252
+        _vol = pd.Series(lr).rolling(_W, min_periods=_W).std().to_numpy()
+        _vmed = pd.Series(_vol).rolling(_L, min_periods=_W + 5).median().to_numpy()
+        _lr = np.asarray(lr, dtype=float)
+        _vhigh = np.zeros(N, np.float32)
+        _cq = np.zeros(N, np.float32)
+        for _i in range(N):
+            _v, _vm = _vol[_i], _vmed[_i]
+            if np.isnan(_v) or np.isnan(_vm):
+                continue
+            _hi = _v > _vm
+            _vhigh[_i] = 1.0 if _hi else 0.0
+            _lo = _i - _L if _i - _L > 0 else 0
+            _pv = _vol[_lo:_i]                                   # STRICTLY past (excludes i)
+            _pr = _lr[_lo:_i]
+            _msk = ~np.isnan(_pv) & ((_pv > _vm) == _hi)         # past bars in the same vol regime
+            _br = _pr[_msk]
+            if _br.size > 5:
+                _cq[_i] = np.float32(np.sum(_br < _lr[_i]) / _br.size - 0.5)   # cond. CDF position, centered
+        feats.append(_vhigh)
+        feats.append(_cq)
 
     # RICH feature set (opt-in, reduce=infogain only): variance-ratio trend-persistence (Lo-MacKinlay
     # 1988). VR(k) = Var(k-bar logret)/(k*Var(1-bar logret)); VR>1 = persistent/trending, VR<1 =

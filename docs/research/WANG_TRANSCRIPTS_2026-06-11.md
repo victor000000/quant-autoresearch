@@ -137,7 +137,9 @@ slow-bleed names (DBC, IWM, decayed-UUP) that a single-trough Calmar flatters.
 
 ---
 
-## 4. Next race-ready levers (for the loop, in EV order)
+## 4. Race-ready levers — ALL THREE RACED → REJECTED (2026-06-11)
+
+**Outcome:** #1 cond_es sizer (rejected, above), #2 joint-KDE regime feature (GLD regime+ig 1.58 < base 2.40 — distributional features dilute a trend-matched panel), #3 rank-corr reduce (GLD spearman 1.22 << infogain 2.40 — filter can't beat supervised selection). No new edge; the transcripts corroborate, they don't extend. Durable gain = the drawdown-shape honesty metric (§3). All three method additions (`cond_es`, `features=regime`, `reduce=spearman`) retained in the library. Original EV-ordered descriptions below for the record:
 
 1. ~~**Conditional-ES regime sizer** (`cond_es`)~~ — **BUILT + RACED 2026-06-11, REJECTED.**
    Tail analog of `cdf_overlay`: throttle the cdf bet when recent left-tail loss (fast
