@@ -382,6 +382,15 @@ def bump_global_trials(n, path=None, tag=""):
     return new
 
 
+# Drawdown-SHAPE metrics (Ulcer / Pain / time-under-water / Martin) live in the
+# package so the pipeline, report and honesty scripts share one definition. They
+# capture drawdown depth AND duration — what Calmar/MaxDD (single deepest trough)
+# miss on a long shallow bleed. See src/lb/metrics.py (Wang's 回撤面积 idea).
+from lb.metrics import (  # noqa: E402
+    underwater, max_drawdown, pain_index, ulcer_index, max_dd_duration, martin_ratio,
+)
+
+
 # --------------------------------------------------------------------------- #
 if __name__ == "__main__":
     ok = True
@@ -500,6 +509,27 @@ if __name__ == "__main__":
     check("global trials start 0", read_global_trials(_tp) == 0)
     bump_global_trials(10, _tp, tag="t1"); t2 = bump_global_trials(5, _tp, tag="t2")
     check(f"global trials accumulate ==15 (got {t2})", read_global_trials(_tp) == 15)
+
+    # Drawdown-shape metrics: a strictly rising curve is never under water.
+    _up = [100, 101, 103, 106, 110]
+    check("monotone-up ulcer==0", ulcer_index(_up) == 0.0)
+    check("monotone-up pain==0", pain_index(_up) == 0.0)
+    check("monotone-up max_dd==0", max_drawdown(_up) == 0.0)
+    check("monotone-up duration==0", max_dd_duration(_up) == 0)
+    check("monotone-up martin==inf", martin_ratio(_up) == float("inf"))
+    # V-shape [100,90,100]: underwater [0,-.1,0] -> max_dd .1, pain .1/3, ulcer sqrt(.01/3), dur 1
+    _v = [100, 90, 100]
+    check("V max_dd==0.1", abs(max_drawdown(_v) - 0.1) < 1e-12)
+    check("V pain==0.1/3", abs(pain_index(_v) - 0.1 / 3) < 1e-12)
+    check("V ulcer==sqrt(.01/3)", abs(ulcer_index(_v) - (0.01 / 3) ** 0.5) < 1e-12)
+    check("V duration==1", max_dd_duration(_v) == 1)
+    # Same MaxDD, longer time under water => strictly higher Ulcer AND Pain (the point of these).
+    _short = [100, 90, 100, 100, 100]
+    _long = [100, 90, 90, 90, 100]
+    check("equal MaxDD", abs(max_drawdown(_short) - max_drawdown(_long)) < 1e-12)
+    check("longer-underwater ulcer higher", ulcer_index(_long) > ulcer_index(_short))
+    check("longer-underwater pain higher", pain_index(_long) > pain_index(_short))
+    check("longer-underwater duration higher", max_dd_duration(_long) > max_dd_duration(_short))
 
     print("ALL PASS" if ok else "SOME FAILED")
     raise SystemExit(0 if ok else 1)
