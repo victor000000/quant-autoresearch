@@ -7,11 +7,10 @@ name = "lb"
 version = "0.1.0"
 description = "Autoresearch quant pipeline"
 requires-python = ">=3.10"
-dependencies = ["numpy", "xgboost", "scikit-learn", "scipy", "flask", "requests"]
+dependencies = ["numpy", "xgboost", "scikit-learn", "scipy", "requests"]
 
 [project.scripts]
 lb-round = "lb.cli:round_main"
-lb-report = "lb.console.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -384,19 +384,10 @@ def _append_causal_round_node(target, winner, kept, prev_cal):
 
 
 def _refresh_report():
-    """Regenerate the static reports/index.html via render_index.build_html() so
-    the dashboard is current the moment a round finishes (the Flask app also renders
-    live per-request, but this keeps the on-disk file fresh for static hosting).
-    Fully guarded — a render failure must NEVER fail a round."""
-    try:
-        from lb.console import render_index
-        html = render_index.build_html()
-        out = os.path.join(PROJECT_ROOT, "reports", "index.html")
-        with open(out, "w") as f:
-            f.write(html)
-        print(f"[{_now()}] report refreshed -> {out} ({len(html)} bytes)")
-    except Exception as e:
-        print(f"[warn] report auto-refresh skipped: {e}")
+    """No-op since 2026-06-11: the report website was removed (user) and the console
+    package deleted in the workspace simplification. Results live in round_results.csv
+    + knowledge.json + docs/research/ETF_SCREEN_TABLE.md (the 3-file save)."""
+    pass
 
 
 def _seed_per_etf_best(knowledge):
