@@ -3819,3 +3819,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T13:48:17,IAU,3.3509,IAU_logdollar_sliced_wasserstein_cdf_overlay_t0.45,B,IAU,logdollar,tertile,0.4,cdf_plain,0.6564,4.2621,48,False,False,-0.1155,0.7868,0.6524,0.8978,-0.3247,25.937,717,False,False,completed,completed
 2026-06-11T13:54:38,USO,3.8498,USO_logdollar_revert_cdf_plain_t0.45,A,USO,logdollar,revert,0.45,cdf_plain,2.715,8.4912,700,True,True,1.6391,0.9913,0.9654,1.6736,0.0671,13.5523,717,True,False,completed,completed
 2026-06-11T13:54:38,USO,3.8498,USO_logdollar_revert_cdf_plain_t0.45,B,USO,logdollar,revert,0.45,cdf_plain,2.0098,11.915,481,True,True,1.6597,0.9902,0.9631,1.618,0.0356,14.8477,717,False,False,completed,completed
+2026-06-11T14:05:16,UCO,0.0,,A,UCO,logdollar,revert,0.45,cdf_plain,1.4762,21.0102,252,True,True,1.0264,0.9602,0.9664,1.2654,-1.0472,23.8531,717,True,False,completed,completed
+2026-06-11T14:05:16,UCO,0.0,,B,UCO,logdollar,always_long,0.45,binary,0.2943,176.5238,1,False,False,0.0,0.5,0.5,0.5319,-0.456,5.7865,717,False,False,completed,completed

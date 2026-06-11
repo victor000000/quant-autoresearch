@@ -52,7 +52,7 @@ Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`
 
 Deployed: GLD/UUP/IWM/TIP/DBC/HYG (+USO awaiting crown), weights ∝ **common-grid** Calmar² (never own-window numbers — mixing scales mis-weights), gross ≤ 1. Current book 4.65; +USO → 5.03. Dropping weak names lowers book Calmar — decorrelation pays.
 
-**Three mechanisms, asset-intrinsic** (each labeler fails on the others' assets): trend-momentum (GLD), macro-regime (UUP, decayed), oil mean-reversion (USO — oil-specific; silver/gold/agri/natgas/FX all refuted). Wang's β-lens routes assets (β200≈0.5 symmetric→trend, ≫0.5→buy-hold, <0.45→reversion) and retrodicts the whole book — but it is **clock-dependent** (USO: 0.55 on bar clock, 0.44 on calendar days) and admission-only: β-symmetric XME was predictable-not-profitable (+0.04 over BH).
+**Three mechanisms, asset-intrinsic** (each labeler fails on the others' assets): trend-momentum (GLD), macro-regime (UUP, decayed), oil mean-reversion (USO — oil-specific; silver/gold/agri/natgas/FX all refuted; **REPLICATES on UCO** 2x-WTI val_auc 0.966 ≈ USO 0.965 — real oil-mechanism, not USO-overfit; UCO Calmar 1.48 < USO 2.72 from 2x decay, not book-worthy). **Both engines now out-of-fund replication-confirmed:** gold-trend GLD→IAU (pca 2.18≫infogain), oil-reversion USO→UCO (val_auc 0.97). Wang's β-lens routes assets (β200≈0.5 symmetric→trend, ≫0.5→buy-hold, <0.45→reversion) and retrodicts the whole book — but it is **clock-dependent** (USO: 0.55 on bar clock, 0.44 on calendar days) and admission-only: β-symmetric XME was predictable-not-profitable (+0.04 over BH).
 
 ## Lessons that change decisions
 
