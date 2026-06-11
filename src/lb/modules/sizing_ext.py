@@ -70,6 +70,17 @@ def _size(p, thresh, sizing, rbuf):
             ref = 3.0 * float(np.std(win)) * math.sqrt(len(win))   # vol-normalized DD scale (~3σ)
             if ref > 1e-9:
                 b *= float(min(1.0, max(0.5, 1.0 + dd / ref)))     # 1.0 at peak -> 0.5 floor when deep
+    if sizing == "cond_es":             # CONDITIONAL EXPECTED-SHORTFALL sizing (Wang joint-dist talk):
+        m = len(rbuf)                   # throttle the cdf bet when the asset's RECENT left-tail loss
+        if m >= _VOL_FAST + 2:          # (fast ES) spikes above its baseline (slow ES). ES_q = mean of
+            ff = sorted(rbuf[-_VOL_FAST:])                 # the worst q-fraction of returns; tail-focused —
+            ss = sorted(rbuf[-min(m, _VOL_SLOW):])         # the asymmetric-risk analog of cdf_overlay's std ratio.
+            kf = max(1, int(0.2 * len(ff)))                # causal (rbuf only): rbuf holds returns up to i-1.
+            ks = max(1, int(0.2 * len(ss)))
+            es_fast = -sum(ff[:kf]) / kf                   # >0 = avg loss across the worst kf recent returns
+            es_slow = -sum(ss[:ks]) / ks
+            if es_fast > 1e-9 and es_slow > 0.0:
+                b *= float(min(1.0, max(0.4, es_slow / es_fast)))   # 1.0 calm -> 0.4 floor when tail spikes
     if sizing == "ddbreaker":           # dd_overlay's smooth throttle + a HARD circuit-breaker: go FLAT
         m = len(rbuf)                   # on EXTREME drawdown (frac<0.4) to cut the TAIL (MaxDD), re-enter
         if m >= _VOL_FAST + 2:          # on recovery. Attacks the Calmar denominator harder than the
