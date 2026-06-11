@@ -16068,6 +16068,30 @@
         "type": "round",
         "phase": "AOK",
         "label": "R2140 AOK DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.3496 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2141",
+        "type": "round",
+        "phase": "IHF",
+        "label": "R2141 IHF DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar -0.1136 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2142",
+        "type": "round",
+        "phase": "IHF",
+        "label": "R2142 IHF DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.0009 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2143",
+        "type": "round",
+        "phase": "XRT",
+        "label": "R2143 XRT DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5331 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2144",
+        "type": "round",
+        "phase": "XRT",
+        "label": "R2144 XRT DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.3599 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27749,6 +27773,26 @@
       {
         "src": "r2139",
         "dst": "r2140",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2140",
+        "dst": "r2141",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2141",
+        "dst": "r2142",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2142",
+        "dst": "r2143",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2143",
+        "dst": "r2144",
         "label": "no improvement"
       }
     ],
