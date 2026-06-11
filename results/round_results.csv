@@ -4409,3 +4409,9 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T03:30:08,IAT,0.0,,B,IAT,logdollar,changepoint,0.5,cdf_overlay,0.0366,10.5332,393,True,True,-0.2444,0.6477,0.5495,0.0653,-3.2205,52.6654,717,True,False,completed,completed
 2026-06-12T03:32:19,IAT,0.0,,A,IAT,logdollar,sadf_explosive,0.5,cdf_overlay,1.0979,5.5826,241,True,True,0.7629,0.9307,0.6067,0.9899,1.8589,25.8913,717,True,False,completed,completed
 2026-06-12T03:32:19,IAT,0.0,,B,IAT,logdollar,always_long,0.5,cdf_overlay,0.7226,44.7245,1136,True,True,-0.2494,0.5,0.5,0.819,0.4889,6.4731,717,False,False,completed,completed
+2026-06-12T03:36:38,PNQI,0.0,,A,PNQI,logdollar,ker,0.45,dd_overlay,-0.1125,2.1295,230,True,True,-0.2131,0.6496,0.5107,-0.1898,-0.0425,9.232,717,False,False,completed,completed
+2026-06-12T03:36:38,PNQI,0.0,,B,PNQI,logdollar,changepoint,0.5,cdf_overlay,1.1108,2.4427,169,True,True,-0.1027,0.6803,0.5425,1.3294,1.1423,21.7789,717,True,True,completed,completed
+2026-06-12T03:39:25,PNQI,1.1108,PNQI_logdollar_changepoint_cdf_overlay_t0.50,A,PNQI,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8114,0.5553,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T03:39:25,PNQI,1.1108,PNQI_logdollar_changepoint_cdf_overlay_t0.50,B,PNQI,logdollar,always_long,0.5,cdf_overlay,0.4021,37.1747,1678,True,True,-0.415,0.5,0.5,0.5757,0.1793,8.1189,717,True,False,completed,completed
+2026-06-12T03:42:21,QCLN,0.0,,A,QCLN,logdollar,ker,0.45,dd_overlay,-0.2739,22.4826,1211,True,True,-0.005,0.8541,0.4908,-0.8389,-4.1164,41.5754,717,True,False,completed,completed
+2026-06-12T03:42:21,QCLN,0.0,,B,QCLN,logdollar,changepoint,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.6955,0.4647,0.0,0.0,0.0,0,False,False,completed,completed

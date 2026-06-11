@@ -2466,10 +2466,39 @@
         "permute_labels": false,
         "features": "base"
       }
+    },
+    "PNQI": {
+      "cell": "PNQI_logdollar_changepoint_cdf_overlay_t0.50",
+      "real_calmar": 1.1108,
+      "real_cagr": 1.333,
+      "real_mdd": 1.2,
+      "real_da": 2.4427,
+      "real_sharpe": 1.329,
+      "trades": 169,
+      "g2_pass": true,
+      "round": 2205,
+      "source": "tournament",
+      "psr": 0.9896,
+      "n_trials": 4,
+      "significant": true,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "PNQI",
+        "axis": "logdollar",
+        "labeler": "changepoint",
+        "thresh": 0.5,
+        "sizing": "cdf_overlay",
+        "max_depth": 3,
+        "n_components": 20,
+        "rebal_band": 0.01,
+        "reduce": "correlation",
+        "permute_labels": false,
+        "features": "base"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 2110,
+  "last_round": 2205,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -16116,6 +16145,24 @@
         "type": "round",
         "phase": "IAT",
         "label": "R2148 IAT DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.0979 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2149",
+        "type": "milestone",
+        "phase": "PNQI",
+        "label": "R2149 PNQI KEEP: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +1.1108 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2150",
+        "type": "round",
+        "phase": "PNQI",
+        "label": "R2150 PNQI DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4021 (prev best +1.1108). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2151",
+        "type": "round",
+        "phase": "QCLN",
+        "label": "R2151 QCLN DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar -0.2739 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27837,6 +27884,21 @@
       {
         "src": "r2147",
         "dst": "r2148",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2148",
+        "dst": "r2149",
+        "label": "new best"
+      },
+      {
+        "src": "r2149",
+        "dst": "r2150",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2150",
+        "dst": "r2151",
         "label": "no improvement"
       }
     ],
