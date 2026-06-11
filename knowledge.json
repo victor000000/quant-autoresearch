@@ -15582,6 +15582,36 @@
         "type": "round",
         "phase": "MDYV",
         "label": "R2059 MDYV DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0826 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2060",
+        "type": "round",
+        "phase": "MDYV",
+        "label": "R2060 MDYV DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2061",
+        "type": "round",
+        "phase": "IYJ",
+        "label": "R2061 IYJ DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5956 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2062",
+        "type": "round",
+        "phase": "IYJ",
+        "label": "R2062 IYJ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.7958 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2063",
+        "type": "round",
+        "phase": "FBT",
+        "label": "R2063 FBT DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar -0.0121 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2064",
+        "type": "round",
+        "phase": "FBT",
+        "label": "R2064 FBT DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.5704 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -26858,6 +26888,31 @@
       {
         "src": "r2058",
         "dst": "r2059",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2059",
+        "dst": "r2060",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2060",
+        "dst": "r2061",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2061",
+        "dst": "r2062",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2062",
+        "dst": "r2063",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2063",
+        "dst": "r2064",
         "label": "no improvement"
       }
     ],
