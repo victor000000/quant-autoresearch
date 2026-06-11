@@ -122,3 +122,8 @@ docs/legacy/wang_qa.tex
 docs/legacy/wang_qa_questions.md
 docs/analysis/WANG_INVESTIGATION.md
 .playwright-mcp/
+
+# --- workspace hygiene (2026-06-11 restructure) ---
+scratch/
+qc/
+*.aux
