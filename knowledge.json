@@ -16342,6 +16342,18 @@
         "type": "round",
         "phase": "IAI",
         "label": "R2178 IAI DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +1.3282 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2179",
+        "type": "round",
+        "phase": "PRF",
+        "label": "R2179 PRF DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.1956 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2180",
+        "type": "round",
+        "phase": "IJR",
+        "label": "R2180 IJR DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +0.5332 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28213,6 +28225,16 @@
       {
         "src": "r2177",
         "dst": "r2178",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2178",
+        "dst": "r2179",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2179",
+        "dst": "r2180",
         "label": "no improvement"
       }
     ],

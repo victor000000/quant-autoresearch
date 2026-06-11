@@ -4469,3 +4469,7 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T04:53:07,IAT,0.0,,B,IAT,logdollar,sadf_explosive,0.5,cdf_overlay,-0.2533,48.3454,796,True,True,-0.3404,0.5386,0.5769,-0.7173,-3.3023,86.2752,717,False,False,completed,completed
 2026-06-12T04:56:00,IAI,0.0,,A,IAI,logdollar,changepoint,0.5,cdf_overlay,1.3282,4.2629,974,True,True,-0.1927,0.7487,0.5581,1.0978,4.6384,84.338,717,True,False,completed,completed
 2026-06-12T04:56:00,IAI,0.0,,B,IAI,logdollar,changepoint,0.5,cdf_overlay,0.5852,5.7942,1216,True,True,-0.1955,0.4975,0.5331,0.7987,1.1255,16.0014,717,False,False,completed,completed
+2026-06-12T05:16:24,PRF,0.0,,A,PRF,logdollar,sadf_explosive,0.5,cdf_overlay,-0.015,0.7111,110,True,True,0.0,0.9131,0.5993,-0.037,-0.8208,57.289,717,False,False,completed,completed
+2026-06-12T05:16:24,PRF,0.0,,B,PRF,logdollar,always_long,0.15,cdf_overlay,1.1956,14.9595,1212,True,True,-0.751,0.5,0.5,1.3951,-0.1166,10.3436,717,True,False,completed,completed
+2026-06-12T05:18:53,IJR,0.0,,A,IJR,logdollar,sadf_explosive,0.5,cdf_overlay,0.3035,5.7021,123,True,True,0.1119,0.9517,0.6408,0.4223,2.764,52.3692,717,False,False,completed,completed
+2026-06-12T05:18:53,IJR,0.0,,B,IJR,logdollar,always_long,0.15,cdf_overlay,0.5332,33.894,844,True,True,-0.1136,0.5,0.5,0.7343,0.6216,7.747,717,True,False,completed,completed
