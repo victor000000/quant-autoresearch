@@ -4433,3 +4433,13 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T04:00:00,PJP,0.0,,B,PJP,logdollar,changepoint,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.6231,0.3438,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-12T04:01:59,PJP,0.0,,A,PJP,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-12T04:01:59,PJP,0.0,,B,PJP,logdollar,always_long,0.5,cdf_overlay,0.813,30.3916,147,True,True,-1.2511,0.5,0.5,0.9082,-0.742,7.861,717,True,False,completed,completed
+2026-06-12T04:04:24,KIE,0.0,,A,KIE,logdollar,ker,0.45,dd_overlay,-0.0482,13.1085,1328,True,True,-0.0173,0.7147,0.564,-0.1562,-0.8615,10.4123,717,False,False,completed,completed
+2026-06-12T04:04:24,KIE,0.0,,B,KIE,logdollar,changepoint,0.5,cdf_overlay,0.51,4.4903,607,True,True,-0.0603,0.7118,0.5078,0.696,1.2576,32.4434,717,True,False,completed,completed
+2026-06-12T04:06:38,KIE,0.0,,A,KIE,logdollar,sadf_explosive,0.5,cdf_overlay,0.4061,4.1637,578,True,True,-0.0143,0.8532,0.5457,0.3715,2.3705,38.9175,717,False,False,completed,completed
+2026-06-12T04:06:38,KIE,0.0,,B,KIE,logdollar,always_long,0.5,cdf_overlay,0.9679,24.9879,1770,True,True,0.0434,0.5,0.5,0.8158,0.1345,9.2416,717,True,False,completed,completed
+2026-06-12T04:08:53,IEZ,0.0,,A,IEZ,logdollar,ker,0.45,dd_overlay,0.106,27.4125,769,True,True,0.4804,0.66,0.3704,0.2231,-0.261,6.1396,717,False,False,completed,completed
+2026-06-12T04:08:53,IEZ,0.0,,B,IEZ,logdollar,changepoint,0.5,cdf_overlay,0.5284,11.4576,331,True,True,0.3271,0.5954,0.4846,0.609,0.1463,6.1427,717,True,False,completed,completed
+2026-06-12T04:11:26,IEZ,0.0,,A,IEZ,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,1.1201,0.6569,0.6066,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T04:11:26,IEZ,0.0,,B,IEZ,logdollar,always_long,0.5,cdf_overlay,0.3768,82.7441,834,True,True,0.5581,0.5,0.5,0.5608,0.0106,6.3459,717,True,False,completed,completed
+2026-06-12T04:13:23,RYU,0.0,,A,RYU,logdollar,ker,0.45,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
+2026-06-12T04:13:23,RYU,0.0,,B,RYU,logdollar,changepoint,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed

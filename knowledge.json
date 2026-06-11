@@ -16217,6 +16217,36 @@
         "type": "round",
         "phase": "PJP",
         "label": "R2160 PJP DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8130 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2161",
+        "type": "round",
+        "phase": "KIE",
+        "label": "R2161 KIE DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5100 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2162",
+        "type": "round",
+        "phase": "KIE",
+        "label": "R2162 KIE DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.9679 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2163",
+        "type": "round",
+        "phase": "IEZ",
+        "label": "R2163 IEZ DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5284 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2164",
+        "type": "round",
+        "phase": "IEZ",
+        "label": "R2164 IEZ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.3768 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2165",
+        "type": "round",
+        "phase": "RYU",
+        "label": "R2165 RYU DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27998,6 +28028,31 @@
       {
         "src": "r2159",
         "dst": "r2160",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2160",
+        "dst": "r2161",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2161",
+        "dst": "r2162",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2162",
+        "dst": "r2163",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2163",
+        "dst": "r2164",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2164",
+        "dst": "r2165",
         "label": "no improvement"
       }
     ],
