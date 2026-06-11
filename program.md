@@ -94,4 +94,6 @@ The 2026-06-10 "every loop-runnable lever raced; reopening needs new data" termi
 
 **311-screen pass-2 plan (queued for pass-1 completion):** the admission panel predates the PCA/mechanism-paired-reduce findings. After pass 1 covers all 311: re-race every val_auc>0.6-but-NO-FIT name (the structure shortlist — IVE 0.81, GDX 0.96, etc.) with the new levers (`reduce=pca` for trend-shaped, mechanism-paired reduce); deep-sweep (47-config) any resulting fit; full keep-gates before crown. "Full pipeline × 311" is infeasible (~159k configs/ETF) and self-defeating under deflation — the funnel is the design.
 
+**311-screen OUTCOME (2026-06-12, screen COMPLETE):** 5 permute-confirmed candidates; the two leads passed ALL loop-runnable gates — **PRFZ** sadf_explosive 2.22-vs-0.51 (permute −0.16, deflation-survives +0.49, decay stable, Martin 39) and **DIA** bgm+ker 1.66-vs-0.95 (permute −0.16, deflation +0.34, decay STRENGTHENING). Both = USO-pre-crown tier; crowning into the book is a human decision. FEZ/IAT/IAI permute-pass but weaker. The `sadf_explosive` regime family is alive on 3 independent funds (small/mid-cap, intl, financials) — replication-grade for the FAMILY. Full table: docs/research/ETF_SCREEN_TABLE.md.
+
 Autonomous — decide and run the next experiment, don't ask.
