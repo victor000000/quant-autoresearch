@@ -3951,3 +3951,15 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T18:20:39,XLU,0.0,,B,XLU,logdollar,always_long,0.5,cdf_overlay,0.702,29.9677,854,True,True,-0.0604,0.5,0.5,0.7996,-0.3926,6.9871,717,True,False,completed,completed
 2026-06-11T18:22:31,DVY,0.0,,A,DVY,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.4187,8.1221,1079,True,True,0.0,0.9067,0.7461,0.5173,-0.4498,17.6858,717,True,False,completed,completed
 2026-06-11T18:22:31,DVY,0.0,,B,DVY,imbalance,bgm+ker,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T18:24:24,DVY,0.0,,A,DVY,logdollar,ker,0.45,dd_overlay,0.45,2.549,490,True,True,-0.0656,0.6327,0.567,0.4802,-1.1755,18.8756,717,True,False,completed,completed
+2026-06-11T18:24:24,DVY,0.0,,B,DVY,logdollar,changepoint,0.5,cdf_overlay,0.1286,7.4006,477,True,True,-0.1515,0.7217,0.5606,0.2184,0.3249,24.6311,717,False,False,completed,completed
+2026-06-11T18:26:15,DVY,0.0,,A,DVY,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.7812,0.5841,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T18:26:15,DVY,0.0,,B,DVY,logdollar,always_long,0.5,cdf_overlay,1.1312,19.9095,827,True,True,0.037,0.5,0.5,1.1364,0.2493,8.5721,717,True,False,completed,completed
+2026-06-11T18:28:16,XLY,0.0,,A,XLY,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T18:28:16,XLY,0.0,,B,XLY,imbalance,bgm+ker,0.5,cdf_overlay,0.6625,0.6044,52,False,False,0.0,0.7832,0.5448,0.7218,1.0116,20.2737,717,True,False,completed,completed
+2026-06-11T18:30:10,XLY,0.0,,A,XLY,logdollar,ker,0.45,dd_overlay,0.4063,0.9248,185,True,True,-0.1217,0.6881,0.5109,0.746,4.3224,78.7093,717,False,False,completed,completed
+2026-06-11T18:30:10,XLY,0.0,,B,XLY,logdollar,changepoint,0.5,cdf_overlay,0.808,6.6945,842,True,True,-0.3917,0.6647,0.5399,0.7884,0.2815,15.3895,717,True,False,completed,completed
+2026-06-11T18:32:18,XLY,0.0,,A,XLY,logdollar,sadf_explosive,0.5,cdf_overlay,0.37,0.877,126,True,True,-0.3094,0.971,0.4826,0.5598,0.3681,8.1283,717,False,False,completed,completed
+2026-06-11T18:32:18,XLY,0.0,,B,XLY,logdollar,always_long,0.5,cdf_overlay,0.414,34.5961,783,True,True,-0.1296,0.5,0.5,0.5768,0.1098,4.9898,717,True,False,completed,completed
+2026-06-11T18:34:11,SDY,0.0,,A,SDY,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
+2026-06-11T18:34:11,SDY,0.0,,B,SDY,imbalance,bgm+ker,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed

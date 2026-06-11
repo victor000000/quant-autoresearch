@@ -14713,6 +14713,42 @@
         "type": "round",
         "phase": "DVY",
         "label": "R1919 DVY DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.4187 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1920",
+        "type": "round",
+        "phase": "DVY",
+        "label": "R1920 DVY DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.4500 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1921",
+        "type": "round",
+        "phase": "DVY",
+        "label": "R1921 DVY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.1312 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1922",
+        "type": "round",
+        "phase": "XLY",
+        "label": "R1922 XLY DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6625 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1923",
+        "type": "round",
+        "phase": "XLY",
+        "label": "R1923 XLY DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8080 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1924",
+        "type": "round",
+        "phase": "XLY",
+        "label": "R1924 XLY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4140 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1925",
+        "type": "round",
+        "phase": "SDY",
+        "label": "R1925 SDY DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25289,6 +25325,36 @@
       {
         "src": "r1918",
         "dst": "r1919",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1919",
+        "dst": "r1920",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1920",
+        "dst": "r1921",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1921",
+        "dst": "r1922",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1922",
+        "dst": "r1923",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1923",
+        "dst": "r1924",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1924",
+        "dst": "r1925",
         "label": "no improvement"
       }
     ],
