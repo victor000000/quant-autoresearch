@@ -2408,10 +2408,39 @@
       "deflated_benchmark": 0.9927,
       "deflation_margin": 0.2474,
       "survives_deflation": true
+    },
+    "DIA": {
+      "cell": "DIA_imbalance_bgm+ker_cdf_overlay_t0.50",
+      "real_calmar": 1.6555,
+      "real_cagr": 6.953,
+      "real_mdd": 4.2,
+      "real_da": 4.9312,
+      "real_sharpe": 1.226,
+      "trades": 604,
+      "g2_pass": true,
+      "round": 1940,
+      "source": "tournament",
+      "psr": 0.989,
+      "n_trials": 2,
+      "significant": true,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "DIA",
+        "axis": "imbalance",
+        "labeler": "bgm+ker",
+        "thresh": 0.5,
+        "sizing": "cdf_overlay",
+        "max_depth": 3,
+        "n_components": 20,
+        "rebal_band": 0.01,
+        "reduce": "correlation",
+        "permute_labels": false,
+        "features": "base"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 1794,
+  "last_round": 1940,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -14360,6 +14389,144 @@
         "type": "round",
         "phase": "QQQ",
         "label": "R1865 QQQ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2465 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1866",
+        "type": "round",
+        "phase": "VBR",
+        "label": "R1866 VBR DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.3507 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1867",
+        "type": "round",
+        "phase": "VBR",
+        "label": "R1867 VBR DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.5457 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1868",
+        "type": "round",
+        "phase": "VBR",
+        "label": "R1868 VBR DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.6138 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1869",
+        "type": "round",
+        "phase": "IVW",
+        "label": "R1869 IVW DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1870",
+        "type": "round",
+        "phase": "IVW",
+        "label": "R1870 IVW DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +1.3233 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1871",
+        "type": "round",
+        "phase": "IVW",
+        "label": "R1871 IVW DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.9308 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1872",
+        "type": "round",
+        "phase": "IVE",
+        "label": "R1872 IVE DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1873",
+        "type": "round",
+        "phase": "IVE",
+        "label": "R1873 IVE DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.5380 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1874",
+        "type": "round",
+        "phase": "IVE",
+        "label": "R1874 IVE DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8204 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1875",
+        "type": "round",
+        "phase": "XLF",
+        "label": "R1875 XLF DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6556 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1876",
+        "type": "round",
+        "phase": "XLF",
+        "label": "R1876 XLF DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.9793 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1877",
+        "type": "round",
+        "phase": "XLF",
+        "label": "R1877 XLF DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.9611 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1878",
+        "type": "round",
+        "phase": "IWR",
+        "label": "R1878 IWR DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.5455 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1879",
+        "type": "round",
+        "phase": "IWR",
+        "label": "R1879 IWR DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.4279 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1880",
+        "type": "round",
+        "phase": "IWR",
+        "label": "R1880 IWR DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.5984 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1881",
+        "type": "round",
+        "phase": "IWB",
+        "label": "R1881 IWB DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1882",
+        "type": "round",
+        "phase": "IWB",
+        "label": "R1882 IWB DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar -0.0216 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1883",
+        "type": "round",
+        "phase": "IWB",
+        "label": "R1883 IWB DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.3400 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1884",
+        "type": "milestone",
+        "phase": "DIA",
+        "label": "R1884 DIA KEEP: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.6555 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1885",
+        "type": "round",
+        "phase": "DIA",
+        "label": "R1885 DIA DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.9268 (prev best +1.6555). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1886",
+        "type": "round",
+        "phase": "DIA",
+        "label": "R1886 DIA DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.9502 (prev best +1.6555). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1887",
+        "type": "round",
+        "phase": "SPYG",
+        "label": "R1887 SPYG DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1888",
+        "type": "round",
+        "phase": "DIA",
+        "label": "R1888 DIA DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.6555 (prev best +1.6555). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -24666,6 +24833,121 @@
       {
         "src": "r1864",
         "dst": "r1865",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1865",
+        "dst": "r1866",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1866",
+        "dst": "r1867",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1867",
+        "dst": "r1868",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1868",
+        "dst": "r1869",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1869",
+        "dst": "r1870",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1870",
+        "dst": "r1871",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1871",
+        "dst": "r1872",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1872",
+        "dst": "r1873",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1873",
+        "dst": "r1874",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1874",
+        "dst": "r1875",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1875",
+        "dst": "r1876",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1876",
+        "dst": "r1877",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1877",
+        "dst": "r1878",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1878",
+        "dst": "r1879",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1879",
+        "dst": "r1880",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1880",
+        "dst": "r1881",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1881",
+        "dst": "r1882",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1882",
+        "dst": "r1883",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1883",
+        "dst": "r1884",
+        "label": "new best"
+      },
+      {
+        "src": "r1884",
+        "dst": "r1885",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1885",
+        "dst": "r1886",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1886",
+        "dst": "r1887",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1887",
+        "dst": "r1888",
         "label": "no improvement"
       }
     ],
