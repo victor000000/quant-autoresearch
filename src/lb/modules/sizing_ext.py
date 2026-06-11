@@ -37,6 +37,11 @@ def _size(p, thresh, sizing, rbuf):
         if p <= lo:                    # Smooth ramp -> partial rebalances (trades>80 reachable) and no
             return 1.0                 # single-threshold cliff (the lead's 2.53-vs-0.84 fragility).
         return float(max(0.0, (thresh - p) / (thresh - lo)))
+    if sizing == "tilt":               # LONG-ANCHORED drift tilt (equity-index reversion monetization,
+        return float(max(0.5, min(1.0, 0.5 + p)))   # 2026-06-11): full long at p>=0.5, lean down to a 0.5 FLOOR as the
+                                       # model predicts a down-wiggle. Keeps the drift (the only money on
+                                       # indices) and harvests the auc~0.95 reversion signal as a LEAN,
+                                       # not an in/out gate (in/out loses the drift and pays costs).
     if sizing == "longshort":
         return 1.0 if p > thresh else (-1.0 if p < 1.0 - thresh else 0.0)
     if sizing in ("ls_cdf", "ls_overlay"):

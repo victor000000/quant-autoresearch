@@ -14354,6 +14354,12 @@
         "type": "round",
         "phase": "SPY",
         "label": "R1864 SPY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2893 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1865",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R1865 QQQ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2465 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -24655,6 +24661,11 @@
       {
         "src": "r1863",
         "dst": "r1864",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1864",
+        "dst": "r1865",
         "label": "no improvement"
       }
     ],
