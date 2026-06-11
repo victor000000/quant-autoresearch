@@ -29,7 +29,7 @@ import csv
 from datetime import datetime
 
 # --- make the harness package importable (autoresearch/ has no __init__.py) ---
-from lb.paths import ROOT as PROJECT_ROOT
+from lb.paths import ROOT as PROJECT_ROOT, TEMPLATES_DIR
 AUTORESEARCH_DIR = str(PROJECT_ROOT)
 
 from lb.harness.qc_client import submit_and_wait          # noqa: E402
@@ -37,7 +37,7 @@ from lb.harness.orchestrator import render_script          # noqa: E402
 
 # Where infer.py.tmpl lives (rendered manually per cell — the orchestrator's
 # render_script only renders the TRAIN script).
-INFER_TMPL = os.path.join(AUTORESEARCH_DIR, "templates", "infer.py.tmpl")
+INFER_TMPL = str(TEMPLATES_DIR / "infer.py.tmpl")
 
 RESULTS_DIR = os.path.join(AUTORESEARCH_DIR, "results")
 os.makedirs(RESULTS_DIR, exist_ok=True)

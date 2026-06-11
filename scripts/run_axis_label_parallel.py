@@ -18,14 +18,14 @@ USAGE:
 import os, sys, csv, time
 from datetime import datetime
 
-from lb.paths import ROOT as PROJECT_ROOT
+from lb.paths import ROOT as PROJECT_ROOT, TEMPLATES_DIR
 AR = str(PROJECT_ROOT)
 
 from lb.harness.qc_client import (submit_backtest, read_backtest, read_backtest_status,  # noqa: E402
                                delete_backtest, is_done)
 from lb.harness.orchestrator import render_script  # noqa: E402
 
-INFER_TMPL = os.path.join(AR, "templates", "infer.py.tmpl")
+INFER_TMPL = str(TEMPLATES_DIR / "infer.py.tmpl")
 RESULTS_DIR = os.path.join(AR, "results")
 os.makedirs(RESULTS_DIR, exist_ok=True)
 RESULTS_CSV = os.path.join(RESULTS_DIR, "axis_label_parallel_results.csv")

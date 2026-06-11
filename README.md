@@ -9,18 +9,20 @@ editable, the loop, the rules).
 
 ## Layout
 
-The repo **root IS the project** (flattened 2026-06-04 — `autoresearch/` promoted to root). Note: the QuantConnect ObjectStore keys are still namespaced `autoresearch/{TICKER}/...` (a QC data path, deliberately unchanged).
+The repo uses an editable install (`pip install -e .` via `pyproject.toml`): all importable code lives under `src/lb/` (the `lb` package); mutable state (`knowledge.json`, `results/`, etc.) stays at the repo root, and `lb.paths.ROOT` is derived from the source tree so paths resolve correctly from the checkout. Note: the QuantConnect ObjectStore keys are still namespaced `autoresearch/{TICKER}/...` (a QC data path, deliberately unchanged).
 
 | Path | Purpose |
 |---|---|
 | `program.md` | The contract / instructions (read first). |
-| `harness/` | **LOCKED scorer** — `qc_client.py`, `orchestrator.py`, `evaluator.py` (gates G0–G4), `constants.py`. |
-| `templates/` | `header/footer/infer` rendered into the QC `main.py` (footer downstream + infer sizing are editable). |
-| `modules/` | **Editable pipeline** — `bar_builder.py` ① axis, `labeler.py` ② labels, `features.py` ③, `trainer.py` ④–⑧. |
+| `src/lb/harness/` | **LOCKED scorer** — `qc_client.py`, `orchestrator.py`, `psuf.py` (cell-key helpers), `constants.py`. |
+| `src/lb/templates/` | `header/footer/infer` `*.py.tmpl` rendered into the QC `main.py` (footer downstream + infer sizing are editable). |
+| `src/lb/modules/` | **Editable pipeline** — `bar_builder.py` + `bar_ext.py` ① axis, `labeler.py` ② labels, `features.py` + `ml_ext.py` ③, `trainer.py` + `sizing_ext.py` ④–⑧. |
+| `src/lb/console/` | Flask report server (entry point `lb-report`; restart after any `console/` change). |
+| `src/lb/cli.py` · `src/lb/describe.py` | Entry-point shims (`lb-round` tournament driver; describe utilities). |
 | `reports/` | **Per-round tech reports as HTML** (`round_N.html`, MathJax math) + `index.html` + `TEMPLATE.html`. |
 | `knowledge.json` · `techniques.json` | Shared memory (`per_etf_best`, findings, dead-ends, idea queue). |
 | `results.tsv` · `results/*.csv` | Result logs (`results/round_results.csv` + the axis-label CSVs). |
-| `scripts/` | QC drivers: `run_autoresearch_round.py` (v2 tournament, 2-node A/B), `run_axis_label_parallel.py` (full sweep, 2-node), `run_axis_label_study.py` (serial), `_minify_check.py`; `diag/` scratch. |
+| `scripts/` | QC drivers at top level: `run_round.py` (v2 tournament, 2-node A/B), `run_axis_label_parallel.py` (full sweep, 2-node), `run_axis_label_study.py` (serial); grouped sub-dirs: `research/` (sweep/screen/decay scripts), `audit/` (honesty/DSR/leak scripts), `diag/` (render + report tools). |
 | `hypotheses.json` | Per-ticker queued configs the driver reads each round. |
 | `qc/` | QC Cloud API client + `.creds.json` (gitignored). |
 | `docs/analysis/` | Analysis writeups — `HONEST_AUDIT.md`, `BACKTEST_AUDIT.md`, `DEPLOYMENT.md`, `CHAMPION_DECAY.md`, `RESEARCH_REVIEW*.md`. |
@@ -28,7 +30,7 @@ The repo **root IS the project** (flattened 2026-06-04 — `autoresearch/` promo
 | `refs/` | Reference material — `pdfs/` (AFML/MLAM/causal PDFs) and third-party course transcripts (`uni/`, `uni_yt/`, `qa_doc/`) are gitignored / excluded from the public repo. |
 | `scratch/` (gitignored) | `_archive/` (prior experiments, predecessor pipelines) + `data_cache/`. |
 
-**Root holds only:** the two entry docs (`README.md`, `program.md`), the operational state (`knowledge.json`, `techniques.json`, `hypotheses.json`, `results.tsv`), and the code/output dirs above. Everything else is grouped under `docs/`, `refs/`, `scratch/` (reorganized 2026-06-04).
+**Root holds only:** the two entry docs (`README.md`, `program.md`), the operational state (`knowledge.json`, `techniques.json`, `hypotheses.json`, `results.tsv`), and the output dirs (`reports/`, `results/`, `docs/`). All importable code is under `src/lb/`; everything else is grouped under `docs/`, `refs/`, `scratch/`.
 
 ## Running
 
