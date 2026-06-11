@@ -177,7 +177,41 @@ def realyield_feats(ry, sl=None, N=None):
     return out
 
 
-def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False, ry=None, sl=None, realyield=False):
+def oilbasis_feats(lc, lr, ob):
+    """Realized roll-cost / contango-state features for oil ETFs (2026-06-10).
+    ob = log SPOT WTI (FRED DCOILWTICO, >=7-day publication lag, causal ffill) co-indexed
+    with bars; USO return = spot return + roll yield, so trailing sums of
+    (Delta log spot - bar log return) = the REALIZED basis drift — the contango state the
+    validated oil-reversion mechanism theoretically depends on. Offset-invariant (uses
+    DIFFS of ob only, never the raw spot/ETF level ratio — split/divisor immune). All
+    windows trailing; NaN warmup masked downstream."""
+    N = len(lc)
+    ob = np.asarray(ob, dtype=float)
+    dspot = np.full(N, np.nan)
+    dspot[1:] = ob[1:] - ob[:-1]                       # per-bar spot log-return (steps at FRED updates)
+    drift = dspot - np.asarray(lr, dtype=float)        # per-bar realized basis increment
+    cols = []
+    for W in (20, 60, 120):
+        c = np.full(N, np.nan)
+        cs = np.nancumsum(drift)
+        c[W:] = cs[W:] - cs[:-W]                       # trailing W-bar realized basis drift
+        cols.append(c)
+    for k in (5, 20):
+        m = np.full(N, np.nan)
+        m[k:] = ob[k:] - ob[:-k]                       # spot momentum (log diff, trailing)
+        cols.append(m)
+    for W in (60, 252):
+        z = np.full(N, np.nan)
+        for i in range(W, N):
+            w = ob[i - W:i]
+            sd = np.nanstd(w)
+            if np.isfinite(sd) and sd > 1e-12:
+                z[i] = (ob[i] - np.nanmean(w)) / sd    # spot z vs trailing window
+        cols.append(z)
+    return np.column_stack(cols).astype(np.float32)
+
+
+def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False, ry=None, sl=None, realyield=False, wangrich=False, oilbasis=False):
     """Build feature matrix from log-close and log-return arrays.
 
     Args:
@@ -388,4 +422,23 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, terms
     if realyield and ry is not None:
         feats.extend(realyield_feats(ry, sl, N))
 
-    return np.column_stack(feats).astype(np.float32)
+    X = np.column_stack(feats).astype(np.float32)
+    if oilbasis and ry is not None:
+        try:
+            feats_ob = oilbasis_feats(lc, lr, ry)      # ry channel carries log spot in oilbasis mode
+            X = np.hstack([np.column_stack(feats).astype(np.float32), feats_ob]).astype(np.float32)
+            feats = [X[:, i] for i in range(X.shape[1])]
+        except Exception:
+            pass
+    if wangrich:
+        # Wang integer-diff rich panel (ml_ext.py extension file — 64k budget). Guarded:
+        # a missing ml_ext degrades to the base panel rather than crashing the train.
+        try:
+            try:
+                import ml_ext as _mlx              # QC cloud: flat project files
+            except ImportError:
+                from modules import ml_ext as _mlx  # local repo / tests
+            X = np.hstack([X, _mlx.rich_block(lc, lr)]).astype(np.float32)
+        except Exception:
+            pass
+    return X

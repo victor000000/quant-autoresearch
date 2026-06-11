@@ -1342,6 +1342,24 @@ AXES = {
     "signedjumpvar": SignedJumpVarBarBuilder,  # RS+ minus RS- signed jump variation
 }
 
+# --- bar_ext EXTENSION axes (separate QC file for the 64k budget; 2026-06-10) ---
+# AXES membership is what the footer's HYPOTHESIS MODE checks (cfg_axis in AXES):
+# an unregistered axis silently disengages hypo_mode and falls back to the FULL
+# 28-axis x all-labeler sweep — the "hang" that ate rounds 1868's two timeouts.
+# Guarded import (sanctioned sibling-import exception): missing bar_ext degrades
+# to "axis unavailable", never an import error. NOT added to BUILDER_CLASSES —
+# the adaptive threshold has no frozen scalar, so the online-verify path must skip it.
+try:
+    import bar_ext as _bx_mod              # QC cloud: flat project files
+except ImportError:
+    try:
+        from modules import bar_ext as _bx_mod   # local repo / tests
+    except ImportError:
+        _bx_mod = None
+if _bx_mod is not None:
+    for _xk in _bx_mod.EXT_AXES:
+        AXES[_xk] = _bx_mod.EXT_AXES[_xk]
+
 
 # ----------------------------------------------------------------------------
 # Threshold auto-calibration helpers (run on the minute stream, pre-build).
@@ -2081,6 +2099,11 @@ def _make_builder(bar_type, close, vol, ts_arr, target_bars):
         _trc = max(1, int(np.sum(tr)))
         total = float(np.mean(np.log1p(dv[keep]))) * (int(np.sum(keep)) * len(c) / _trc)
         return LogDollarBarBuilder(_safe_thresh(total, target_bars))
+
+    if _bx_mod is not None and bar_type in _bx_mod.EXT_MAKERS:
+        # bar_ext EXTENSION axes (logdollar_rc / sess2 / gapflow / ...): generic
+        # dispatch — per-axis code + calibration live entirely in bar_ext.py.
+        return _bx_mod.make_ext(bar_type, close, vol, ts_arr, target_bars, _train_minute_mask)
 
     if bar_type == "zcusum":
         # Standardized-cumsum CUSUM clock (Wang's LogDollar). z is unit-variance, so a

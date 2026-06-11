@@ -68,10 +68,12 @@ def compute_forward_metrics(lc, lr, horizons=[50, 100, 200]):
         fv = np.full(N, np.nan)
         for t in range(N - fk):
             wr = lr[t + 1:t + fk + 1]
-            if len(wr) < 2:
+            if len(wr) < 1:
                 continue
             fr[t] = lc[t + fk] - lc[t]
-            fv[t] = float(np.std(wr))
+            # h=1 (sess2 session clock): a single-return window has no std — use |r|
+            # as the 1-bar forward vol (previously h=1 was silently all-NaN).
+            fv[t] = float(np.std(wr)) if len(wr) >= 2 else float(abs(wr[0]))
         fwd_ret[fk] = fr
         fwd_vol[fk] = fv
     return fwd_ret, fwd_vol
@@ -487,7 +489,10 @@ def _jump_viterbi(z, centroids, lam):
 
 def _jump_fit(z, tr_mask, K, lam, n_iter=6):
     """Coordinate descent for the Statistical Jump Model: alternate Viterbi assignment with a
-    centroid M-step fit on TRAIN rows only (leak-safe). Returns the full state sequence or None."""
+    centroid M-step fit on TRAIN rows only (leak-safe). Returns (state_sequence, centroids)
+    or None. CALLER CONTRACT (2026-06-10 leak-review fix): pass ONLY the pre-TEST block —
+    the global Viterbi path couples every row to every other row, so fitting/decoding over
+    rows that include TEST gives TRAIN labels unbounded backward reach into TEST."""
     tr_idx = np.where(tr_mask)[0]
     if len(tr_idx) < K:
         return None
@@ -505,7 +510,7 @@ def _jump_fit(z, tr_mask, K, lam, n_iter=6):
             cents = newc
             break
         cents = newc
-    return _jump_viterbi(z, cents, lam)
+    return _jump_viterbi(z, cents, lam), cents
 
 
 def generate_labels_jump_model(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, horizons=[50, 100]):
@@ -536,11 +541,26 @@ def generate_labels_jump_model(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol, h
         sd = feat[tr_sub].std(axis=0) + 1e-9
         z = (feat - mu) / sd                                # standardized on TRAIN
         base = float(np.mean(np.sum(z[tr_sub] ** 2, axis=1))) + 1e-9   # per-bar cost scale
+        # BLOCK-DECODE at the OOS boundary (2026-06-10 leak-review MEDIUM fix): the global
+        # jump-penalized Viterbi made TRAIN/VAL labels a function of TEST observations
+        # (unbounded backward reach — host-proven 400-bar flips). Same precedent as
+        # sticky_hmm/kllt: FIT + decode strictly PRE-TEST; decode the TEST block separately
+        # with the frozen centroids. Append-OOS-invariant by construction.
+        te_sub = te_m[sel]
+        _tpos = np.where(te_sub)[0]
+        cut = int(_tpos[0]) if len(_tpos) else len(z)
         for K in (2, 3):
             for lam_mult in (0.0, 3.0):                      # 0 = plain k-means, 3*base = persistent
-                st = _jump_fit(z, tr_sub, K, lam_mult * base)
-                if st is None:
+                if int(tr_sub[:cut].sum()) < 100:
                     continue
+                fit = _jump_fit(z[:cut], tr_sub[:cut], K, lam_mult * base)
+                if fit is None:
+                    continue
+                st_pre, _cents = fit
+                if cut < len(z):
+                    st = np.concatenate([st_pre, _jump_viterbi(z[cut:], _cents, lam_mult * base)])
+                else:
+                    st = st_pre
                 tr_st = st[tr_sub]
                 tr_fr = fr[tr_sub]
                 means = [float(tr_fr[tr_st == k].mean()) if (tr_st == k).any() else -1e18 for k in range(K)]
@@ -2885,7 +2905,10 @@ def generate_labels_visgraph(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
                     best_score, best, best_cfg, best_h = score, y, f"visgraph_H{H}_q{q}", H
     if best is None:
         return None, "visgraph_no_balanced", None
-    return best, best_cfg, best_h
+    # Declared reach = H + 1: the target window is lc[i+1 : i+2+H] = H+1 forward closes
+    # (2026-06-10 leak-review LOW fix — the off-by-one only binds if horizons >= 200,
+    # where the declared-H embargo would fall 1 bar short of the true reach).
+    return best, best_cfg, best_h + 1
 
 
 # --------------------------------------------------------------------------- #
@@ -3499,6 +3522,81 @@ def generate_labels_tlb_reversal(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best[1], best[2], best[3]
 
 
+def generate_labels_moe_law(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                            horizons=[60, 120]):
+    """MIXTURE-OF-EXPERTS LAW labeler (moe_law, 2026-06-10 invention round; EM core in
+    ml_ext.py). Regimes = which causal-x -> forward-y LAW holds (mixture of linear
+    regressions with a learned softmax gate), unlike regime_gmm (x-density) or bgm
+    (y-clusters). Label = sign of the argmax-RESPONSIBILITY expert's TRAIN mean;
+    ABSTAIN (-1) when the CAUSAL gate disagrees with the responsibility assignment —
+    label learnability is part of the label's own objective (built-in defense against
+    predictable-not-profitable). Fits TRAIN-only; responsibilities use the row's own
+    forward y (target use, G3-legal, reach = fk <= 120 < embargo); no cross-row
+    smoothing => no block-decode needed. Returns (labels, cfg, horizon)."""
+    try:
+        import ml_ext as _mlx
+    except ImportError:
+        try:
+            from modules import ml_ext as _mlx
+        except ImportError:
+            return None, "moe_law_no_ml_ext", None
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for Hb in (30, 60):
+        # causal inputs at i: momentum, vol, KER efficiency over the trailing window
+        m = np.full(N, np.nan); v = np.full(N, np.nan); g = np.full(N, np.nan)
+        for i in range(Hb, N):
+            w = lr[i - Hb:i]
+            m[i] = float(np.mean(w))
+            sd = float(np.std(w))
+            v[i] = sd
+            denom = float(np.sum(np.abs(w)))
+            g[i] = abs(float(lc[i - 1] - lc[i - Hb])) / denom if denom > 1e-12 else 0.0
+        X0 = np.column_stack([m, v, g])
+        for fk in horizons:
+            if fk not in fwd_ret:
+                continue
+            y0 = fwd_ret[fk]
+            ok = fv & np.isfinite(X0).all(axis=1) & np.isfinite(y0)
+            tr_ok = ok & tr_m
+            if int(tr_ok.sum()) < 300:
+                continue
+            mu = X0[tr_ok].mean(axis=0); sd = X0[tr_ok].std(axis=0) + 1e-12
+            Z = (X0 - mu) / sd                                     # TRAIN-z-scored
+            for K in (2, 3):
+                try:
+                    A, b, s2, W, c, rtr = _mlx.moe_law_fit(Z[tr_ok], y0[tr_ok], K)
+                except Exception:
+                    continue
+                emean = np.zeros(K)
+                for k in range(K):
+                    wk = rtr[:, k] + 1e-9
+                    emean[k] = float((wk * y0[tr_ok]).sum() / wk.sum())   # TRAIN expectancy
+                resp, gate = _mlx.moe_law_assign(Z[ok], y0[ok], A, b, s2, W, c)
+                idx = np.where(ok)[0]
+                y_lab = np.full(N, -1, dtype=int)
+                agree = resp == gate                                # causal-gate agreement filter
+                strong = np.abs(emean[resp]) > 0.05 * float(np.std(y0[tr_ok]))   # expectancy bar (0.05*sigma/bar is already a large edge; agreement is the primary filter)
+                lab = (emean[resp] > 0).astype(int)
+                keep = agree & strong
+                y_lab[idx[keep]] = lab[keep]
+                ly = y_lab >= 0
+                tx = fv & ly & tr_m
+                vx = fv & ly & va_m
+                if int(tx.sum()) < 100 or int(vx.sum()) < 20:
+                    continue
+                bal = float(y_lab[tx].mean())
+                if 0.2 < bal < 0.8:
+                    score = float(np.mean(resp[np.isin(idx, np.where(tr_m)[0])] ==
+                                          gate[np.isin(idx, np.where(tr_m)[0])]))
+                    if score > best_score:
+                        best_score = score
+                        best, best_cfg, best_h = y_lab, f"moe_law_H{Hb}_f{fk}_K{K}", fk
+    if best is None:
+        return None, "moe_law_no_balanced", None
+    return best, best_cfg, best_h
+
+
 LABELERS = {
     "accel": generate_labels_accel,                   # trend-acceleration (new, non-HMM, orthogonal)
     "ker": generate_labels_ker,                       # Kaufman efficiency-ratio clean-trend (new, non-HMM)
@@ -3529,7 +3627,8 @@ LABELERS = {
     "rskew": generate_labels_rskew,                    # forward realized-SKEWNESS sign (3rd realized moment / down-tail asymmetry; new, non-HMM)
     "icss_var": generate_labels_icss_var,              # Inclan-Tiao CUSUM-of-squares variance-break onset-DIRECTION (vol-regime meta gate; new, non-HMM)
     "bocpd_label": generate_labels_bocpd_label,        # Bayesian online break-AHEAD precursor (joint mean+variance changepoint; new, non-HMM)
-    "setar": generate_labels_setar,                    # observable-threshold AR regime (momentum-vs-reversion switch; non-latent; new, non-HMM)
+    "setar": generate_labels_setar,
+    "moe_law": generate_labels_moe_law,                # mixture-of-experts LAW regimes + gate-agreement abstention (2026-06-10, ml_ext)                    # observable-threshold AR regime (momentum-vs-reversion switch; non-latent; new, non-HMM)
     "tlb_reversal": generate_labels_tlb_reversal,      # Three-Line-Break leg-exhaustion reversal-vs-continuation (adaptive-leg geometry; new, non-HMM)
     "survival_aft": generate_labels_survival_aft,      # SURVIVAL/AFT time-to-upper-barrier, right-censored (deep-v2 B1; native xgb survival:aft; NEW speed-of-payoff mechanism)
     "dp_oracle": generate_labels_dp_oracle,            # COST-AWARE perfect-foresight Bellman oracle (new-methods 2026-06-09 L1; NEW target principle = trade-cost awareness)
