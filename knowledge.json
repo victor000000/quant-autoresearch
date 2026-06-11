@@ -15067,6 +15067,36 @@
         "type": "round",
         "phase": "VDE",
         "label": "R1978 VDE DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.7129 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1979",
+        "type": "round",
+        "phase": "VPU",
+        "label": "R1979 VPU DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.9961 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1980",
+        "type": "round",
+        "phase": "VPU",
+        "label": "R1980 VPU DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.6851 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1981",
+        "type": "round",
+        "phase": "MGC",
+        "label": "R1981 MGC DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5400 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1982",
+        "type": "round",
+        "phase": "MGC",
+        "label": "R1982 MGC DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.1623 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1983",
+        "type": "round",
+        "phase": "IGF",
+        "label": "R1983 IGF DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.7550 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25938,6 +25968,31 @@
       {
         "src": "r1977",
         "dst": "r1978",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1978",
+        "dst": "r1979",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1979",
+        "dst": "r1980",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1980",
+        "dst": "r1981",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1981",
+        "dst": "r1982",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1982",
+        "dst": "r1983",
         "label": "no improvement"
       }
     ],
