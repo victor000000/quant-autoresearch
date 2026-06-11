@@ -14689,6 +14689,30 @@
         "type": "round",
         "phase": "MDY",
         "label": "R1915 MDY DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6253 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1916",
+        "type": "round",
+        "phase": "XLU",
+        "label": "R1916 XLU DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.1920 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1917",
+        "type": "round",
+        "phase": "XLU",
+        "label": "R1917 XLU DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.9260 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1918",
+        "type": "round",
+        "phase": "XLU",
+        "label": "R1918 XLU DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.7020 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1919",
+        "type": "round",
+        "phase": "DVY",
+        "label": "R1919 DVY DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.4187 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25245,6 +25269,26 @@
       {
         "src": "r1914",
         "dst": "r1915",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1915",
+        "dst": "r1916",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1916",
+        "dst": "r1917",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1917",
+        "dst": "r1918",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1918",
+        "dst": "r1919",
         "label": "no improvement"
       }
     ],
