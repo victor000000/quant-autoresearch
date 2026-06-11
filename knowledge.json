@@ -15774,6 +15774,30 @@
         "type": "round",
         "phase": "RPG",
         "label": "R2091 RPG DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.4291 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2092",
+        "type": "round",
+        "phase": "RPG",
+        "label": "R2092 RPG DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8165 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2093",
+        "type": "round",
+        "phase": "JKH",
+        "label": "R2093 JKH DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1168 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2094",
+        "type": "round",
+        "phase": "JKH",
+        "label": "R2094 JKH DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4119 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2095",
+        "type": "round",
+        "phase": "PWB",
+        "label": "R2095 PWB DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.7042 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27210,6 +27234,26 @@
       {
         "src": "r2090",
         "dst": "r2091",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2091",
+        "dst": "r2092",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2092",
+        "dst": "r2093",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2093",
+        "dst": "r2094",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2094",
+        "dst": "r2095",
         "label": "no improvement"
       }
     ],
