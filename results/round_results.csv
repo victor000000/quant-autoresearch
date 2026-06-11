@@ -4303,3 +4303,13 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T01:30:28,JKH,0.0,,B,JKH,logdollar,always_long,0.5,cdf_overlay,0.4119,27.9851,3203,True,True,-0.0527,0.5,0.5,0.6538,0.1221,9.2465,717,True,False,completed,completed
 2026-06-12T01:33:01,PWB,0.0,,A,PWB,logdollar,ker,0.45,dd_overlay,0.7042,1.035,162,True,True,0.1626,0.8846,0.5261,1.2653,-0.4369,25.5418,717,True,False,completed,completed
 2026-06-12T01:33:01,PWB,0.0,,B,PWB,logdollar,changepoint,0.5,cdf_overlay,0.0925,12.0658,650,True,True,-0.3612,0.8164,0.6925,0.1977,-0.196,11.9687,717,False,False,completed,completed
+2026-06-12T01:35:39,PWB,0.0,,A,PWB,logdollar,sadf_explosive,0.5,cdf_overlay,0.0677,4.1656,110,True,True,0.0413,0.8717,0.5021,0.1262,-1.032,12.0011,717,False,False,completed,completed
+2026-06-12T01:35:39,PWB,0.0,,B,PWB,logdollar,always_long,0.5,cdf_overlay,1.3384,17.6829,672,True,True,-0.2305,0.5,0.5,1.3753,0.5201,10.1914,717,True,False,completed,completed
+2026-06-12T01:37:33,IYM,0.0,,A,IYM,logdollar,ker,0.45,dd_overlay,0.7889,4.94,162,True,True,0.0012,0.5984,0.5337,0.8969,-0.3535,7.6797,717,True,False,completed,completed
+2026-06-12T01:37:33,IYM,0.0,,B,IYM,logdollar,changepoint,0.5,cdf_overlay,0.2702,9.5155,121,True,True,0.1108,0.5785,0.5055,0.5524,-0.3757,5.0942,717,False,False,completed,completed
+2026-06-12T01:39:28,IYM,0.0,,A,IYM,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.7629,0.3901,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T01:39:28,IYM,0.0,,B,IYM,logdollar,always_long,0.5,cdf_overlay,0.4024,38.0904,263,True,True,-0.133,0.5,0.5,0.6287,-0.3419,5.6811,717,True,False,completed,completed
+2026-06-12T01:41:21,IYE,0.0,,A,IYE,logdollar,ker,0.45,dd_overlay,-0.1334,56.6566,1107,True,True,0.7941,0.8861,0.6074,-0.2696,-2.739,40.5258,717,False,False,completed,completed
+2026-06-12T01:41:21,IYE,0.0,,B,IYE,logdollar,changepoint,0.5,cdf_overlay,0.1367,16.4952,514,True,True,-0.1987,0.7553,0.5286,0.2506,7.0558,213.969,717,True,False,completed,completed
+2026-06-12T01:43:53,IYE,0.0,,A,IYE,logdollar,sadf_explosive,0.5,cdf_overlay,0.814,9.8002,397,True,True,0.8149,0.618,0.4847,0.8018,-0.1768,7.2219,717,True,False,completed,completed
+2026-06-12T01:43:53,IYE,0.0,,B,IYE,logdollar,always_long,0.5,cdf_overlay,0.6688,41.122,766,True,True,0.6907,0.5,0.5,0.7109,-0.3702,7.1042,717,False,False,completed,completed
