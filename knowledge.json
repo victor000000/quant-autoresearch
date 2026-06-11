@@ -16413,6 +16413,12 @@
         "type": "round",
         "phase": "USO",
         "label": "R2190 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.8226 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2191",
+        "type": "round",
+        "phase": "IAU",
+        "label": "R2191 IAU DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, entry 0.40. -> Calmar +1.7235 (prev best +3.3509). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28344,6 +28350,11 @@
       {
         "src": "r2189",
         "dst": "r2190",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2190",
+        "dst": "r2191",
         "label": "no improvement"
       }
     ],

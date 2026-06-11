@@ -45,7 +45,7 @@ Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`
 
 | Ticker | Config | Calmar | Status |
 |---|---|---:|---|
-| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t.40 / **n16 rdvae mlgbm** | **4.36** | The anchor, re-crowned 2026-06-12 on **LightGBM** (capacity-matched depth-3 family swap via `ml_ext.fit_model`): lgbm 4.357 > xgb-vae 3.954 > pca 3.843; permute 4.36→0.76 (82% collapse, val_auc 0.45); bit-exact ×2; Bonferroni PASS N=264. First model-module win ever. |
+| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t.40 / **n16 rdvae mlgbm** | **4.36** | The anchor, re-crowned 2026-06-12 on **LightGBM** (capacity-matched depth-3 family swap via `ml_ext.fit_model`): lgbm 4.357 > xgb-vae 3.954 > pca 3.843; permute 4.36→0.76 (82% collapse, val_auc 0.45); bit-exact ×3; Bonferroni PASS N=264. First model-module win ever — but **GLD-specific**: lgbm LOSES on USO (2.62<2.82) and IAU (1.16<1.72), catboost loses on GLD (3.81). Not a trend-mechanism law; one more reason the live fallback (xgb-vae 3.954) stays warm. |
 | **USO** | logdollar / `revert` / cdf_plain / t.45 | **2.72** | Oil mean-reversion engine, current-window number. Bit-exact, decay-strengthening. |
 | UUP | imbalance / `bgm+sadf_explosive+ker` / cdf_overlay | 0.60 | Decayed (was 1.85). **06-11 extended window: timing 0.29 < own BH 0.47 — retire to `always_long`.** |
 | IWM | `always_long` | 0.56 | Timing retired (trend_leg 0.48 < BH 0.56). |
