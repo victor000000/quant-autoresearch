@@ -85,6 +85,50 @@ def vix_feats(vix, lr, N=None):
     return _np.column_stack(out).astype(_np.float32)
 
 
+def xgb_plain(scale_w, md=3):
+    """The footer's fixed depth-3 xgb spec WITHOUT early stopping (purged-CV folds +
+    meta secondary use it). Centralized here for the 64k budget."""
+    import xgboost as _xgb
+    return _xgb.XGBClassifier(
+        n_estimators=200, max_depth=md, learning_rate=0.03,
+        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+        scale_pos_weight=scale_w, objective="binary:logistic",
+        eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
+        base_score=0.5)
+
+
+def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
+    """Capacity-matched supervised model swap (CONFIG['model']). Lives here, NOT in
+    footer, for 64k budget reasons. Same depth/lr/n/reg/subsample across families —
+    a model-FAMILY A/B at fixed capacity (depth>3 stays closed). Returns (m, errs):
+    errs carries any lgbm primary-fit exception (surfaced as a runtime stat by the
+    caller) before the plain-fit fallback (fixed 200 trees, no early stop)."""
+    errs = []
+    if model == "lgbm":
+        import lightgbm as _lgb
+        m = _lgb.LGBMClassifier(
+            n_estimators=200, max_depth=md, learning_rate=0.03,
+            reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+            scale_pos_weight=scale_w, objective="binary",
+            random_state=42, n_jobs=1, verbose=-1)
+        try:
+            m.fit(Xt, yt.astype(int), eval_set=[(Xv, yv.astype(int))],
+                  eval_metric="auc", callbacks=[_lgb.early_stopping(30, verbose=False)])
+        except Exception as e:
+            errs.append(type(e).__name__ + ":" + str(e)[:70])
+            m.fit(Xt, yt.astype(int))
+    else:
+        import xgboost as _xgb
+        m = _xgb.XGBClassifier(
+            n_estimators=200, max_depth=md, learning_rate=0.03,
+            reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+            scale_pos_weight=scale_w, objective="binary:logistic",
+            eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
+            early_stopping_rounds=30, base_score=0.5)
+        m.fit(Xt, yt, eval_set=[(Xv, yv)], verbose=False)
+    return m, errs
+
+
 def reduce_ml(method, X_train, X_val, X_test, n_components, y_train=None):
     """'pca' (sklearn, TRAIN-fit linear control) or 'ae_np' (numpy nonlinear AE,
     manual Adam backprop, TRAIN-fit). Returns the reduce_dims contract tuple:

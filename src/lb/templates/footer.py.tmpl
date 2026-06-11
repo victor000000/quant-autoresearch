@@ -50,6 +50,11 @@ except ImportError:
 _sx.CONFIG = CONFIG
 _size = _sx._size
 _cstats_sized = _sx._cstats_sized
+try:
+    import ml_ext as _mx
+except ImportError:
+    from lb.modules import ml_ext as _mx
+_MERR = []  # model-fit error stash, surfaced as runtime stat (lgbm debug)
 
 class AutoresearchPipeline(QCAlgorithm):
     def initialize(self):
@@ -310,36 +315,19 @@ class AutoresearchPipeline(QCAlgorithm):
             # XGBoost lr0.03 / n200 / scale_pos_weight. depth defaults to 3 (shallow,
             # regularized); CONFIG['max_depth'] can override for capacity A/B (leak-safe
             # hyperparameter — train/val/embargo logic unchanged).
-            # XGBoost lr0.03 / n200 / scale_pos_weight. depth defaults to 3 (shallow,
-            # regularized); CONFIG['max_depth'] can override for capacity A/B (leak-safe
-            # hyperparameter — train/val/embargo logic unchanged).
             # NOTE: a CONFIG['model']='extratrees' branch was tried (2026-06-03) — sklearn
             # ExtraTrees ERRORS in QC's on_end_of_algorithm runtime (platform-blocked, even
             # bounded to 200 trees/depth12). XGBoost is the QC-supported learner. Reverted.
             scale_w = n_neg / max(1, n_pos)
             _md = int(CONFIG.get("max_depth", 3))
             try:
-                if CONFIG.get("model") == "lgbm":
-                    # capacity-MATCHED LightGBM swap (user 2026-06-11; lgbm 4.6.0 confirmed on QC).
-                    # Same depth/lr/n/regularization/subsample as the xgb baseline — a model-FAMILY
-                    # test at fixed capacity, not a capacity add (depth>3 stays closed).
-                    import lightgbm as _lgb
-                    m = _lgb.LGBMClassifier(
-                        n_estimators=200, max_depth=_md, learning_rate=0.03,
-                        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
-                        scale_pos_weight=scale_w, objective="binary",
-                        random_state=42, n_jobs=1, verbose=-1)
-                    m.fit(Xt, y_fit[tx], eval_set=[(Xv[vlab], y[vx_lab])],
-                          eval_metric="auc", callbacks=[_lgb.early_stopping(30, verbose=False)])
-                else:
-                    m = xgb.XGBClassifier(
-                        n_estimators=200, max_depth=_md, learning_rate=0.03,
-                        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
-                        scale_pos_weight=scale_w, objective="binary:logistic",
-                        eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
-                        early_stopping_rounds=30, base_score=0.5)
-                    m.fit(Xt, y_fit[tx], eval_set=[(Xv[vlab], y[vx_lab])], verbose=False)
-            except Exception:
+                # model family swap (xgb default / lgbm) lives in ml_ext.fit_model
+                # (64k budget); capacity-matched, depth>3 stays closed.
+                m, _fe = _mx.fit_model(CONFIG.get("model", "xgb"), Xt, y_fit[tx],
+                                       Xv[vlab], y[vx_lab], scale_w, _md)
+                _MERR.extend(_fe)
+            except Exception as _fe2:
+                _MERR.append(type(_fe2).__name__ + ":" + str(_fe2)[:70])
                 return None
             pt_raw = m.predict_proba(Xt)[:, 1]
             pv_raw = m.predict_proba(Xv)[:, 1]        # ALL val bars
@@ -395,24 +383,14 @@ class AutoresearchPipeline(QCAlgorithm):
                     if keep.sum() < 100 or len(np.unique(ytx[keep])) < 2:
                         continue
                     swk = float(np.sum(ytx[keep] == 0)) / max(1, int(np.sum(ytx[keep] == 1)))
-                    mk = xgb.XGBClassifier(
-                        n_estimators=200, max_depth=3, learning_rate=0.03,
-                        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
-                        scale_pos_weight=swk, objective="binary:logistic",
-                        eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
-                        base_score=0.5)
+                    mk = _mx.xgb_plain(swk)
                     mk.fit(Xt[keep], ytx[keep])
                     oos_pt[a:b] = mk.predict_proba(Xt[a:b])[:, 1]
                 ok = ~np.isnan(oos_pt)
                 meta_y = ((oos_pt[ok] >= 0.5).astype(int) == ytx[ok]).astype(int)
                 if int(ok.sum()) > 200 and len(np.unique(meta_y)) == 2:
                     swm = float(np.sum(meta_y == 0)) / max(1, int(np.sum(meta_y == 1)))
-                    ms = xgb.XGBClassifier(
-                        n_estimators=200, max_depth=3, learning_rate=0.03,
-                        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
-                        scale_pos_weight=swm, objective="binary:logistic",
-                        eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
-                        base_score=0.5)
+                    ms = _mx.xgb_plain(swm)
                     ms.fit(Xt[ok], meta_y)
                     pmeta_v = ms.predict_proba(Xv)[:, 1]
                     pmeta_e = ms.predict_proba(Xe)[:, 1]
@@ -460,7 +438,12 @@ class AutoresearchPipeline(QCAlgorithm):
                            "scaler_mean": [float(x) for x in sc.mean_],
                            "scaler_scale": [float(x) for x in sc.scale_],
                            "kept_idx": [int(i) for i in kept_idx],
-                           "booster": m.get_booster().save_raw("json").decode("utf-8"),
+                           # lgbm has no get_booster; Lean can't even CATCH that AttributeError
+                           # (uncatchable-in-try, crashed run d61ec92), so branch via hasattr.
+                           # family!=xgb bundles are A/B-only: infer.py replay works, live xgb-only.
+                           "booster": (m.get_booster().save_raw("json").decode("utf-8")
+                                       if hasattr(m, "get_booster") else m.booster_.model_to_string()),
+                           "family": ("xgb" if hasattr(m, "get_booster") else "lgbm"),
                            "best_iter": int(getattr(m, "best_iteration", 0) or 0),
                            "n_features": int(len(sc.mean_)),
                            "cal_x": (_cx.tolist() if _cx is not None else []),
@@ -498,6 +481,8 @@ class AutoresearchPipeline(QCAlgorithm):
         try:
             self.set_runtime_statistic("n_test_bars", str(int(ex.sum())))
             self.set_runtime_statistic("n_pred", str(len(test_preds)))
+            if _MERR:
+                self.set_runtime_statistic("model_err", _MERR[-1][:80])
         except Exception:
             pass
         cfg = f"{label_cfg}_corr{nk}_xgbd3_iso"

@@ -1212,18 +1212,18 @@
       "minbtl_sufficient": false
     },
     "GLD": {
-      "cell": "GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40_n16_rdvae",
-      "real_calmar": 3.9537,
-      "real_cagr": 13.674,
-      "real_mdd": 3.4,
-      "real_da": 8.0552,
-      "real_sharpe": 2.169,
-      "trades": 602,
+      "cell": "GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
+      "real_calmar": 4.357,
+      "real_cagr": 11.764,
+      "real_mdd": 2.7,
+      "real_da": 5.005,
+      "real_sharpe": 2.349,
+      "trades": 1200,
       "g2_pass": true,
-      "round": 52,
+      "round": 2243,
       "source": "tournament",
-      "psr": 0.9998,
-      "n_trials": 114,
+      "psr": 1.0,
+      "n_trials": 264,
       "significant": true,
       "leak_fixed": true,
       "config": {
@@ -1232,20 +1232,13 @@
         "labeler": "trend_leg+regime_gmm",
         "thresh": 0.4,
         "sizing": "dd_overlay",
-        "n_components": 15,
-        "rebal_band": 0.03,
-        "reduce": "infogain"
-      },
-      "dsr": 0.7753,
-      "dsr_n_trials": 148,
-      "dsr_survives_holm": false,
-      "minbtl_years": 1.511,
-      "minbtl_sufficient": true,
-      "deflation_metric": "Sharpe",
-      "deflated_benchmark": 1.9033,
-      "deflation_margin": 0.9378,
-      "survives_deflation": true,
-      "note": "RE-VALIDATION CROWN 2026-06-12: reduce=vae (torch K=16) \u2014 current-window honest. Same window: vae 3.9537 > pca 3.8430 > infogain 2.7517 (re-validated champion). Permute-confirmed (3.95->0.98), bit-exact x3, leak-clean, decay-strengthening lineage. Prior stored 4.0218 (logdollar/infogain) was STALE-WINDOW (leaderboard-goes-stale rule); archived: prev_cell=GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40 prev_calmar=4.0218"
+        "max_depth": 3,
+        "n_components": 16,
+        "rebal_band": 0.01,
+        "reduce": "vae",
+        "permute_labels": false,
+        "features": "base"
+      }
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -2521,7 +2514,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 2205,
+  "last_round": 2243,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -16390,6 +16383,24 @@
         "type": "round",
         "phase": "UUP",
         "label": "R2185 UUP DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +0.3687 (prev best +0.4469). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2186",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R2186 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.9537 (prev best +3.9537). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2187",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R2187 GLD KEEP: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.3570 (prev best +3.9537). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2188",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R2188 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.3570 (prev best +4.3570). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28296,6 +28307,21 @@
       {
         "src": "r2184",
         "dst": "r2185",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2185",
+        "dst": "r2186",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2186",
+        "dst": "r2187",
+        "label": "new best"
+      },
+      {
+        "src": "r2187",
+        "dst": "r2188",
         "label": "no improvement"
       }
     ],
