@@ -24,10 +24,12 @@ from stats_rigor import (probabilistic_sharpe_ratio, expected_max_sharpe,
                          min_backtest_length)
 
 PPY = 252.0
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CSV = os.path.join(HERE, "results", "round_results.csv")
-KNOW = os.path.join(HERE, "knowledge.json")
-OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
+# Paths from lb.paths (single source of truth) — the old dirname(dirname(__file__))
+# resolved to scripts/ after this file moved to scripts/audit/ in the restructure.
+from lb.paths import ROOT, ROUND_RESULTS_CSV, KNOWLEDGE_JSON
+CSV = str(ROUND_RESULTS_CSV)
+KNOW = str(KNOWLEDGE_JSON)
+OUT = str(ROOT / "docs" / "analysis" / "HONEST_AUDIT.md")
 
 
 def fnum(x):

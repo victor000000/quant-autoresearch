@@ -1,23 +1,23 @@
 # Session-scale honest audit (Deflated Sharpe at true trial counts)
 
-Audited 2975 model trials across 155 assets with >=5 trials & positive champion. Holm-Bonferroni FWER<=0.05, BH FDR<=0.10.
+Audited 3016 model trials across 155 assets with >=5 trials & positive champion. Holm-Bonferroni FWER<=0.05, BH FDR<=0.10.
 
 ```
 ETF      N  Calmar  SR_ann  Emax_ann  PSR>0    DSR  MinBTL  Suff  Holm   BH  verdict
 ------------------------------------------------------------------------------------
 EWT     13   5.133   2.213     1.357  1.000  0.980   0.59y     Y False False  REAL (survives best-of-N) [neither]
-GLD    133   4.022   2.169     1.763  1.000  0.750   1.47y     Y False False  FAILS deflation [neither]
-USO     71   3.850   2.033     1.427  1.000  0.842   1.40y     Y False False  FAILS deflation [neither]
+GLD    141   4.022   2.169     1.731  1.000  0.767   1.49y     Y False False  FAILS deflation [neither]
+USO     74   3.850   2.033     1.468  1.000  0.825   1.42y     Y False False  FAILS deflation [neither]
 UCO     55   3.506   1.712     0.942  0.998  0.900   1.82y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 IAU     59   3.351   1.907     1.489  0.999  0.752   1.50y     Y False False  FAILS deflation [neither]
 TLT     48   3.315   0.949     0.898  1.000  0.573   5.67y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 TNA     53   3.195   1.331     0.823  1.000  0.900   2.98y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
-DXJ     12   2.897   1.433     0.930  0.996  0.822   1.35y     Y False False  FAILS deflation [neither]
-IDV     13   2.577   1.904     1.030  0.999  0.934   0.80y     Y False False  marginal [neither]
+DXJ     14   2.897   1.433     1.031  0.996  0.770   1.47y     Y False False  FAILS deflation [neither]
+IDV     17   2.577   1.904     1.238  0.999  0.874   0.92y     Y False False  FAILS deflation [neither]
 SPY     24   2.535   1.893     1.181  1.000  0.894   1.09y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 VUG      5   2.495   1.248     0.793  0.995  0.829   0.91y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 GDX     57   2.478   1.642     1.095  0.997  0.817   2.01y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
-AAXJ    12   2.441   1.813     1.072  0.999  0.898   0.84y     Y False False  FAILS deflation [neither]
+AAXJ    13   2.441   1.813     1.211  0.999  0.849   0.88y     Y False False  FAILS deflation [neither]
 DBA      7   2.382   1.524     0.617  0.996  0.940   0.83y     Y False False  marginal [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 IXG     12   2.284   1.450     0.729  0.998  0.925   1.32y     Y False False  marginal [neither]
 VV       5   2.052   1.169     0.803  0.997  0.804   1.04y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
@@ -77,7 +77,7 @@ SPDW     6   0.935   0.989     0.603  0.952  0.743   1.73y     Y False False  FA
 IWD      5   0.931   1.024     0.552  0.969  0.804   1.36y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 ITB      6   0.906   0.834     0.501  0.924  0.716   2.43y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 KRE     11   0.899   1.018     0.445  0.962  0.841   2.54y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
-IWM     27   0.881   0.910     0.681  0.936  0.649   4.98y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
+IWM     28   0.881   0.910     0.677  0.936  0.652   5.05y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 BIV      7   0.879   1.128     0.642  0.979  0.810   1.51y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 IEO      8   0.875   0.784     0.721  0.902  0.541   3.46y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 EWJ      6   0.875   0.773     0.911  0.902  0.408   2.83y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
@@ -88,7 +88,7 @@ IOO      9   0.864   0.898     0.564  0.932  0.710   2.87y     n False False  FA
 ERX      5   0.858   0.801     0.447  0.906  0.720   2.22y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 EWQ      6   0.855   0.857     0.572  0.925  0.685   2.30y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 IVV      5   0.854   1.088     0.624  0.962  0.776   1.20y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
-EZU      6   0.790   0.730     0.563  0.895  0.612   3.17y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
+EZU      9   0.790   0.730     0.576  0.895  0.604   4.34y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 TECL     5   0.771   1.067     0.766  0.964  0.694   1.25y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 IWF      5   0.771   0.915     0.486  0.935  0.761   1.70y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 VEU      6   0.756   0.822     0.530  0.915  0.687   2.50y     Y False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
@@ -125,7 +125,7 @@ XES      6   0.425   0.548     0.282  0.819  0.670   5.62y     n False False  FA
 UWM      5   0.386   0.627     0.334  0.855  0.690   3.62y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 DGS      6   0.383   0.319     0.422  0.709  0.430  16.59y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 GWX      6   0.376   0.398     0.212  0.753  0.626  10.69y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
-UUP     68   0.366   0.246     1.225  0.660  0.051  94.69y     n False False  FAILS deflation [neither]
+UUP     70   0.366   0.246     1.215  0.660  0.052  95.53y     n False False  FAILS deflation [neither]
 ECH      6   0.354   0.722     0.564  0.887  0.605   3.24y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
 SOXX    53   0.348   0.694     1.178  0.872  0.214  10.99y     n False False  FAILS deflation [neither]
 THD      6   0.339   0.573     0.810  0.833  0.344   5.16y     n False False  FAILS deflation [MAX-CAL PROXY — no CSV row matches deployed config] [neither]
