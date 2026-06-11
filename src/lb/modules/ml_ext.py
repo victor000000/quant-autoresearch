@@ -59,6 +59,29 @@ def reduce_ml(method, X_train, X_val, X_test, n_components):
         p.fit(X_train)
         return (p.transform(X_train).astype(np.float32), p.transform(X_val).astype(np.float32),
                 p.transform(X_test).astype(np.float32), K, f"pca{K}", list(range(K)))
+    if method == "minor_pca":
+        # The COMPLEMENT of pca: project onto the BOTTOM-K eigenvectors (smallest TRAIN-variance
+        # directions). Hypothesis (2026-06-11 variance-structure insight): trend signal lives in
+        # HIGH-variance directions (pca harvests it on GLD), mean-reversion signal in LOW-variance
+        # directions -> minor_pca should help reversion names (USO) and crater trend (GLD), the
+        # mirror of pca. Leak-safe: components fit on TRAIN only, frozen loadings applied to val/test.
+        from sklearn.decomposition import PCA
+        p = PCA(random_state=42)
+        p.fit(X_train)
+        comp = p.components_[-K:]                       # (K, F) smallest-eigenvalue eigenvectors
+        mean = p.mean_
+        def _pr(X):
+            return ((np.asarray(X, dtype=np.float64) - mean) @ comp.T).astype(np.float32)
+        return (_pr(X_train), _pr(X_val), _pr(X_test), K, f"minorpca{K}", list(range(K)))
+    if method == "whiten":
+        # PCA-WHITEN: top-K directions but each rescaled to UNIT variance — removes the
+        # variance-weighting so low-variance (reversion) directions stand on equal footing with
+        # high-variance (trend) ones. Leak-safe: fit TRAIN, frozen transform applied to val/test.
+        from sklearn.decomposition import PCA
+        p = PCA(n_components=K, whiten=True, random_state=42)
+        p.fit(X_train)
+        return (p.transform(X_train).astype(np.float32), p.transform(X_val).astype(np.float32),
+                p.transform(X_test).astype(np.float32), K, f"whiten{K}", list(range(K)))
     if method != "ae_np":
         raise ValueError(method)
     # numpy autoencoder F -> H(tanh) -> K(linear) -> H(tanh) -> F, MSE, Adam, seed 42.
