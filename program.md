@@ -45,12 +45,18 @@ Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`
 
 | Ticker | Config | Calmar | Status |
 |---|---|---:|---|
-| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t.40 / infogain | **4.02** | The anchor. Bit-exact ×3, decay-strengthening (5.0→5.9), genuine permute-pass, Hansen-SPA p=.017. |
-| **USO** | logdollar / `revert` / cdf_plain / t.45 | **3.85** | 3rd mechanism. Bit-exact, +2.93 over BH, decay-strengthening (4.5→7.7). **Crown proposed: +USO at natural Calmar² weight → book 5.03 / Sharpe 2.74.** |
+| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t.40 / **n16 rdvae** | **3.95** | The anchor, re-crowned 2026-06-11 on torch-VAE reduce (vae 3.95 > pca 3.84 > re-validated infogain 2.75, same window; permute 3.95→0.98; bit-exact ×3). |
+| **USO** | logdollar / `revert` / cdf_plain / t.45 | **2.72** | Oil mean-reversion engine, current-window number. Bit-exact, decay-strengthening. |
 | UUP | imbalance / `bgm+sadf_explosive+ker` / cdf_overlay | 0.60 | Decayed (was 1.85). **06-11 extended window: timing 0.29 < own BH 0.47 — retire to `always_long`.** |
 | IWM | `always_long` | 0.56 | Timing retired (trend_leg 0.48 < BH 0.56). |
 
-Deployed: GLD/UUP/IWM/TIP/DBC/HYG (+USO awaiting crown), weights ∝ **common-grid** Calmar² (never own-window numbers — mixing scales mis-weights), gross ≤ 1. Current book 4.65; +USO → 5.03. Dropping weak names lowers book Calmar — decorrelation pays.
+Deployed: GLD/UUP/IWM/TIP/DBC/HYG (+USO awaiting crown), weights ∝ **common-grid** Calmar² (never own-window numbers — mixing scales mis-weights), gross ≤ 1. Dropping weak names lowers book Calmar — decorrelation pays.
+
+### Common-grid book rebuild — PROPOSED 2026-06-12 (awaiting human decision)
+
+All legs re-raced on the SAME window (TEST_END 2026-06-11/12): GLD-vae **3.954** · USO **2.715** · HYG `always_long`×cdf **1.967** · DIA bgm+ker **1.656** (screen find, fully gated, strongest candidate) · FEZ sadf **1.342** (cohort-best strict-DSR 0.93, EU decorrelation) · TIP **0.898** · DBC **0.687** · IWM **0.496** · UUP `always_long` **0.369** · [PRFZ sadf 2.216 — replication-FAILED on PRF/IJR, risky].
+
+**Proposal A (conservative, no PRFZ), Calmar² weights:** GLD 47.3% / USO 22.3% / HYG 11.7% / DIA 8.3% / FEZ 5.4% / TIP 2.4% / DBC 1.4% / IWM 0.7% / UUP 0.4%. **Proposal B (+PRFZ probation):** GLD 41.2 / USO 19.4 / PRFZ 12.9 / HYG 10.2 / DIA 7.2 / FEZ 4.8 / rest pro-rata. Human decisions: A vs B vs status-quo; PRFZ probation; deployment. Note common-grid numbers are smaller than the archived own-window crowns (4.02/3.85) — that is the honest restatement, not decay of the proposal.
 
 **Three mechanisms, asset-intrinsic** (each labeler fails on the others' assets): trend-momentum (GLD), macro-regime (UUP, decayed), oil mean-reversion (USO — oil-specific; silver/gold/agri/natgas/FX all refuted; **REPLICATES on UCO** 2x-WTI val_auc 0.966 ≈ USO 0.965 — real oil-mechanism, not USO-overfit; UCO Calmar 1.48 < USO 2.72 from 2x decay, not book-worthy). **Both engines now out-of-fund replication-confirmed:** gold-trend GLD→IAU (pca 2.18≫infogain), oil-reversion USO→UCO (val_auc 0.97). Wang's β-lens routes assets (β200≈0.5 symmetric→trend, ≫0.5→buy-hold, <0.45→reversion) and retrodicts the whole book — but it is **clock-dependent** (USO: 0.55 on bar clock, 0.44 on calendar days) and admission-only: β-symmetric XME was predictable-not-profitable (+0.04 over BH).
 
