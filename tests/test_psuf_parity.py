@@ -1,38 +1,46 @@
-"""I5 guard: the header's _PSUF (QC side) must equal the driver's _cell_key suffix (local).
+"""I5 guard: the QC header's _PSUF, the driver's _cell_key suffix, and the single
+canonical lb.harness.psuf.cell_suffix must all produce the SAME ObjectStore cell-key
+suffix for every config.
 
-_cell_key in scripts/run_autoresearch_round.py produces the FULL cell key:
-    {axis}_{labeler}_{sizing}_t{thresh*100}  +  SUFFIX
+Why this matters: the cell key suffix is computed on the QC side (header _PSUF) and on
+the local side (driver _cell_key). If they diverge by even one character, infer.py looks
+up a NON-EXISTENT ObjectStore cell -> 0 trades -> Calmar 0.0 reported silently. The
+inline copies diverged twice historically. Task 5 collapsed both to ONE definition:
 
-The header's _PSUF is ONLY the SUFFIX portion of that key.
+    lb.harness.psuf.cell_suffix(cfg)
 
-This test strips the fixed prefix from _cell_key's output and verifies that the
-remaining suffix equals _PSUF for a range of CONFIG combinations. A mismatch means
-infer.py would look up a non-existent ObjectStore cell, returning 0 trades and
-Calmar 0.0 silently.
+  - the driver's _cell_key delegates to it (suffix portion), and
+  - the orchestrator INJECTS its source into the rendered QC header (replacing the
+    __PSUF_FN__ placeholder), so the header computes `_PSUF = cell_suffix(CONFIG)`.
 
-_cell_key is extracted and exec'd in isolation (no network calls; the function
-depends only on its 'cfg' argument and stdlib built-ins).
+This test proves the full chain end-to-end:
+  (a) the suffix extracted from the ACTUALLY-RENDERED header (post inspect.getsource
+      injection AND minification) == cell_suffix(cfg)   [QC side is byte-identical], and
+  (b) the driver's _cell_key suffix (prefix stripped)   == cell_suffix(cfg)   [local side].
+(a) genuinely exercises the rendered artifact: cell_suffix is pulled back OUT of the
+rendered main.py and executed — if injection failed, extraction or output would differ.
 """
+import ast
 import textwrap
 
-from lb.paths import ROOT, TEMPLATES_DIR
+from lb.harness import orchestrator
+from lb.harness.psuf import cell_suffix
+from lb.paths import ROOT
 
-HEADER = str(TEMPLATES_DIR / "header.py.tmpl")
 DRIVER = str(ROOT / "scripts" / "run_autoresearch_round.py")
 
+
 # ---------------------------------------------------------------------------
-# Extract _cell_key from the driver in isolation (safe; no network calls).
-# Read just the function lines and exec them so we don't trigger the module's
-# harness/QC imports.
+# Extract _cell_key from the driver in isolation (safe; no network calls). The
+# driver delegates the SUFFIX to cell_suffix, so we provide that name in the exec
+# namespace; the PREFIX logic under test lives in the sliced function itself.
 # ---------------------------------------------------------------------------
 
 def _load_cell_key():
     """Parse and exec ONLY the _cell_key function from run_autoresearch_round.py."""
     src = open(DRIVER, encoding="utf-8").read()
     lines = src.splitlines()
-    # Find start: first line of _cell_key definition
     start = next(i for i, l in enumerate(lines) if l.startswith("def _cell_key("))
-    # Find end: next top-level definition or end of file after start
     end = len(lines)
     for i in range(start + 1, len(lines)):
         l = lines[i]
@@ -40,7 +48,7 @@ def _load_cell_key():
             end = i
             break
     fn_src = textwrap.dedent("\n".join(lines[start:end]))
-    ns = {}
+    ns = {"cell_suffix": cell_suffix}   # driver delegates the suffix to the canonical fn
     exec(fn_src, ns)
     return ns["_cell_key"]
 
@@ -48,23 +56,33 @@ _cell_key = _load_cell_key()
 
 
 # ---------------------------------------------------------------------------
-# Extract _PSUF computation from the header template.
-# _PSUF is defined on a single logical line in the template; exec it with a CONFIG.
+# Extract _PSUF from the ACTUALLY-RENDERED header (post-injection + minify).
+# render_train_config -> _load_header (injects inspect.getsource(cell_suffix) at the
+# __PSUF_FN__ placeholder) -> _minify. We pull the injected cell_suffix def and the
+# `_PSUF = cell_suffix(CONFIG)` assignment back out of the rendered main.py and exec
+# them with CONFIG=cfg, obtaining the suffix exactly as QuantConnect would compute it.
 # ---------------------------------------------------------------------------
 
-def _header_psuf(cfg):
-    """Evaluate the header's _PSUF expression with CONFIG=cfg."""
-    src = open(HEADER, encoding="utf-8").read()
-    line = next(l for l in src.splitlines() if l.strip().startswith("_PSUF"))
-    ns = {"CONFIG": cfg}
-    exec(line, ns)
-    assert "_PSUF" in ns, f"exec of {line!r} did not bind _PSUF; update extractor"
+def _rendered_psuf(cfg):
+    """Evaluate _PSUF as defined in the rendered (injected) QC header, with CONFIG=cfg."""
+    main, _extra = orchestrator.render_train_config(dict(cfg, ticker=cfg.get("ticker", "GLD")))
+    tree = ast.parse(main)
+    fn = next((n for n in tree.body
+               if isinstance(n, ast.FunctionDef) and n.name == "cell_suffix"), None)
+    assert fn is not None, "rendered header is missing the injected cell_suffix def (__PSUF_FN__ not substituted?)"
+    assign = next((n for n in tree.body
+                   if isinstance(n, ast.Assign)
+                   and any(getattr(t, "id", None) == "_PSUF" for t in n.targets)), None)
+    assert assign is not None, "rendered header is missing the _PSUF = cell_suffix(CONFIG) assignment"
+    code = ast.unparse(ast.Module(body=[fn, assign], type_ignores=[]))
+    ns = {"CONFIG": dict(cfg)}
+    exec(code, ns)
     return ns["_PSUF"]
 
 
 # ---------------------------------------------------------------------------
 # Helper: strip the fixed axis/labeler/sizing/thresh prefix from _cell_key
-# output to isolate the suffix — the part that must equal _PSUF.
+# output to isolate the suffix — the part that must equal cell_suffix / _PSUF.
 # ---------------------------------------------------------------------------
 
 def _driver_suffix(cfg):
@@ -109,14 +127,18 @@ CONFIGS = [
 ]
 
 
-def test_header_psuf_matches_driver_cell_key_suffix():
-    """_PSUF (header/QC side) must equal the suffix of _cell_key (driver/local side)."""
+def test_canonical_cell_suffix_matches_driver_and_rendered_header():
+    """cell_suffix == driver _cell_key suffix == rendered-header _PSUF, for every config."""
     for cfg in CONFIGS:
         full_cfg = dict(_ANCHOR, **cfg)
-        header_suffix = _header_psuf(full_cfg)
-        driver_suffix = _driver_suffix(full_cfg)
-        assert header_suffix == driver_suffix, (
-            f"_PSUF mismatch for {cfg}:\n"
-            f"  header _PSUF   = {header_suffix!r}\n"
-            f"  driver suffix  = {driver_suffix!r}"
+        canonical = cell_suffix(full_cfg)
+        driver = _driver_suffix(full_cfg)
+        rendered = _rendered_psuf(full_cfg)
+        assert driver == canonical, (
+            f"driver _cell_key suffix != canonical cell_suffix for {cfg}:\n"
+            f"  driver    = {driver!r}\n  canonical = {canonical!r}"
+        )
+        assert rendered == canonical, (
+            f"rendered-header _PSUF != canonical cell_suffix for {cfg}:\n"
+            f"  rendered  = {rendered!r}\n  canonical = {canonical!r}"
         )

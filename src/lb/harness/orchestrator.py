@@ -1,6 +1,6 @@
 """Loop orchestrator: two-phase train→infer with REAL Calmar from QC backtest."""
 
-import os, sys, time, json, subprocess, ast
+import os, sys, time, json, subprocess, ast, inspect
 from datetime import datetime
 
 
@@ -23,7 +23,20 @@ from .constants import (CORE_7_ETFS, TEMPLATES_DIR, MODULES_DIR, QC_SCRIPTS_DIR,
                         RESULTS_TSV, KNOWLEDGE_JSON, TECHNIQUES_JSON)
 from .qc_client import submit_and_wait
 from .evaluator import evaluate
+from .psuf import cell_suffix
 from lb.paths import ROOT as PROJECT_ROOT
+
+
+def _load_header():
+    """Read header.py.tmpl and INJECT the canonical cell_suffix source at the
+    __PSUF_FN__ placeholder (which sits at column 0 on its own line, so the injected
+    top-level def lands correctly). The header then computes _PSUF = cell_suffix(CONFIG),
+    guaranteeing the QC-side suffix is byte-identical to the driver's _cell_key (invariant
+    I5). Injection happens BEFORE minification; the def's docstring is stripped by _minify.
+    inspect.getsource returns the def at column 0, matching the placeholder's indentation."""
+    with open(os.path.join(TEMPLATES_DIR, "header.py.tmpl")) as f:
+        header = f.read()
+    return header.replace("__PSUF_FN__", inspect.getsource(cell_suffix))
 
 
 def read_module(name):
@@ -93,9 +106,8 @@ def render_script(ticker, axis=None):
     that one axis; if None, the literal '__AXIS__' remains and the footer sweeps
     ALL axes.
     """
-    header_path = os.path.join(TEMPLATES_DIR, "header.py.tmpl")
     footer_path = os.path.join(TEMPLATES_DIR, "footer.py.tmpl")
-    with open(header_path) as f: script = f.read()
+    script = _load_header()
     for mod in ["bar_builder.py", "labeler.py", "features.py", "trainer.py"]:
         script += f"\n# === {mod} ===\n" + read_module(mod) + "\n"
     with open(footer_path) as f: script += f.read()
@@ -128,9 +140,8 @@ def render_train_config(config):
     infer/verify renders still concatenate bar_builder (they're small) so the leak-safe online
     replay path is untouched. Returns (main_code, {"bar_builder.py": bar_builder_code}).
     """
-    header_path = os.path.join(TEMPLATES_DIR, "header.py.tmpl")
     footer_path = os.path.join(TEMPLATES_DIR, "footer.py.tmpl")
-    with open(header_path) as f: script = f.read()
+    script = _load_header()
     # bar_builder is a SEPARATE file: import it + inject TRAIN_END (defined above in the
     # header) into its module namespace, then pull the names the footer uses into scope.
     script += ("\nimport bar_builder as _bbmod\n_bbmod.TRAIN_END = TRAIN_END\n"

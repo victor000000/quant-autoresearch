@@ -71,6 +71,7 @@ from datetime import datetime
 from lb.harness.qc_client import (submit_backtest, read_backtest_status, read_backtest,
                                   delete_backtest, is_done)
 from lb.harness.orchestrator import render_train_config, render_infer_cell
+from lb.harness.psuf import cell_suffix  # ONE canonical cell-key suffix (also injected into the QC header)
 from lb.paths import (ROOT as PROJECT_ROOT, KNOWLEDGE_JSON, HYPOTHESES_JSON,
                       RESULTS_DIR, ROUND_RESULTS_CSV, STATUS_JSON)
 
@@ -627,34 +628,17 @@ def _append_round_results(rows, weakest, prev_best, winner, kept):
 
 
 def _cell_key(cfg):
-    """The footer's ObjectStore cell suffix — MUST mirror templates/header.py.tmpl _PSUF
-    EXACTLY (order: _perm, _n, _b, _hz, reduce, features, calib, _tp). A mismatch makes
-    infer read a NONEXISTENT cell -> 0 trades -> Calmar 0.0. In the permute gate that
-    read as a vacuous "perfect collapse" AUTO-PASS for every suffix-keyed config
-    (2026-06-10 leak-review HIGH finding: GLD's _n15_b3_ig control was a no-op).
-    ONE shared builder so the two call sites can never diverge again (the same bug
-    class also hit 2026-06-08 via an _fx{set} variant)."""
-    s = (f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}"
-         f"_t{int(round(float(cfg['thresh'])*100))}")
-    if cfg.get("permute_labels"):
-        s += "_perm"
-    if int(cfg.get("n_components", 20)) != 20:
-        s += f"_n{int(cfg.get('n_components', 20))}"
-    if float(cfg.get("rebal_band", 0.01)) != 0.01:
-        s += f"_b{int(round(float(cfg.get('rebal_band', 0.01)) * 100))}"
-    if cfg.get("horizons"):
-        s += "_hz" + "x".join(str(int(h)) for h in cfg["horizons"])
-    _r = cfg.get("reduce", "correlation")
-    if _r != "correlation":
-        s += "_ig" if _r == "infogain" else "_rd" + str(_r)
-    _f_ = cfg.get("features", "base")
-    if _f_ != "base":
-        s += {"rich": "_fr", "termstruct": "_ts", "realyield": "_ry"}.get(_f_, "_fx")
-    if cfg.get("calibration", "isotonic") != "isotonic":
-        s += "_va"
-    if cfg.get("train_purge"):
-        s += "_tp"
-    return s
+    """The footer's ObjectStore cell key = fixed prefix + canonical suffix. The suffix
+    MUST mirror templates/header.py.tmpl _PSUF EXACTLY (order: _perm, _n, _b, _hz, reduce,
+    features, calib, _tp). A mismatch makes infer read a NONEXISTENT cell -> 0 trades ->
+    Calmar 0.0; in the permute gate that read as a vacuous "perfect collapse" AUTO-PASS for
+    every suffix-keyed config (2026-06-10 leak-review HIGH finding: GLD's _n15_b3_ig control
+    was a no-op). The suffix is now the SINGLE definition in lb.harness.psuf.cell_suffix —
+    the SAME source is injected into the QC header's _PSUF, so the two call sites can never
+    diverge again (the same bug class also hit 2026-06-08 via an _fx{set} variant)."""
+    prefix = (f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}"
+              f"_t{int(round(float(cfg['thresh'])*100))}")
+    return prefix + cell_suffix(cfg)
 
 
 def _run_one_config(target, cfg, tag="permval"):
