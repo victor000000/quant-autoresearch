@@ -4079,3 +4079,17 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T21:10:13,MGC,0.0,,B,MGC,logdollar,always_long,0.5,cdf_overlay,1.1623,13.7426,825,True,True,0.0005,0.5,0.5,1.3116,0.4456,12.9217,717,True,False,completed,completed
 2026-06-11T21:12:33,IGF,0.0,,A,IGF,logdollar,ker,0.45,dd_overlay,0.0526,8.459,1349,True,True,0.1468,0.7612,0.5327,0.0837,-3.3309,55.3217,717,False,False,completed,completed
 2026-06-11T21:12:33,IGF,0.0,,B,IGF,logdollar,changepoint,0.5,cdf_overlay,0.755,1.8347,732,True,True,-0.0445,0.6115,0.5075,0.9699,-0.4746,8.2888,717,True,False,completed,completed
+2026-06-11T21:14:38,IGF,0.0,,A,IGF,logdollar,sadf_explosive,0.5,cdf_overlay,-0.2579,22.2179,401,True,True,-0.0716,0.882,0.6435,-0.5597,-0.721,15.9287,717,False,False,completed,completed
+2026-06-11T21:14:38,IGF,0.0,,B,IGF,logdollar,always_long,0.5,cdf_overlay,1.0884,16.4658,1558,True,True,0.0132,0.5,0.5,1.1312,-0.3992,7.0533,717,True,False,completed,completed
+2026-06-11T21:16:29,IJK,0.0,,A,IJK,logdollar,ker,0.45,dd_overlay,-0.111,17.4372,557,True,True,0.4192,0.7247,0.5306,-0.1457,0.2723,33.4506,717,False,False,completed,completed
+2026-06-11T21:16:29,IJK,0.0,,B,IJK,logdollar,changepoint,0.5,cdf_overlay,0.2402,7.762,402,True,True,-0.2489,0.7375,0.5048,0.4006,-2.5315,51.0135,717,True,False,completed,completed
+2026-06-11T21:18:37,IJK,0.0,,A,IJK,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8224,0.5286,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T21:18:37,IJK,0.0,,B,IJK,logdollar,always_long,0.5,cdf_overlay,0.582,27.2874,809,True,True,-0.1231,0.5,0.5,0.8259,0.5426,8.4742,717,True,False,completed,completed
+2026-06-11T21:20:30,VDC,0.0,,A,VDC,logdollar,ker,0.45,dd_overlay,0.3903,4.1643,329,True,True,0.5916,0.6997,0.5695,0.4833,1.2606,20.4597,717,True,False,completed,completed
+2026-06-11T21:20:30,VDC,0.0,,B,VDC,logdollar,changepoint,0.5,cdf_overlay,-0.0664,8.6657,303,True,True,0.7018,0.6745,0.5677,-0.1831,-0.5076,12.7902,717,False,False,completed,completed
+2026-06-11T21:22:41,VDC,0.0,,A,VDC,logdollar,sadf_explosive,0.5,cdf_overlay,0.6595,12.3308,614,True,True,-0.4158,0.8587,0.8023,0.5493,-0.0176,21.028,717,True,False,completed,completed
+2026-06-11T21:22:41,VDC,0.0,,B,VDC,logdollar,always_long,0.5,cdf_overlay,0.4971,21.8061,690,True,True,0.1741,0.5,0.5,0.4976,-0.3548,7.8357,717,False,False,completed,completed
+2026-06-11T21:25:21,IGV,0.0,,A,IGV,logdollar,ker,0.45,dd_overlay,0.0826,10.128,1008,True,True,0.2673,0.7266,0.5775,0.1614,0.1046,20.1373,717,True,False,completed,completed
+2026-06-11T21:25:21,IGV,0.0,,B,IGV,logdollar,changepoint,0.5,cdf_overlay,-0.0761,9.2965,268,True,True,-0.1274,0.7081,0.4858,-0.1621,1.8788,35.4984,717,False,False,completed,completed
+2026-06-11T21:32:19,SPY,0.0,,A,SPY,logdollar,crash_ahead,0.3,crashsoft,0.9438,14.524,1,False,False,0.0,0.9989,0.4175,1.2184,0.128,16.3174,717,False,False,completed,completed
+2026-06-11T21:32:19,SPY,0.0,,B,SPY,logdollar,always_long,0.15,cdf_overlay,1.2893,12.9427,671,True,True,0.0025,0.5,0.5,1.4019,0.0717,7.4205,717,True,False,completed,completed

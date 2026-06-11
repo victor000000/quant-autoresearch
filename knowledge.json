@@ -15097,6 +15097,48 @@
         "type": "round",
         "phase": "IGF",
         "label": "R1983 IGF DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.7550 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1984",
+        "type": "round",
+        "phase": "IGF",
+        "label": "R1984 IGF DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.0884 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1985",
+        "type": "round",
+        "phase": "IJK",
+        "label": "R1985 IJK DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.2402 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1986",
+        "type": "round",
+        "phase": "IJK",
+        "label": "R1986 IJK DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.5820 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1987",
+        "type": "round",
+        "phase": "VDC",
+        "label": "R1987 VDC DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3903 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1988",
+        "type": "round",
+        "phase": "VDC",
+        "label": "R1988 VDC DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6595 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1989",
+        "type": "round",
+        "phase": "IGV",
+        "label": "R1989 IGV DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.0826 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1990",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1990 SPY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2893 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25993,6 +26035,41 @@
       {
         "src": "r1982",
         "dst": "r1983",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1983",
+        "dst": "r1984",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1984",
+        "dst": "r1985",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1985",
+        "dst": "r1986",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1986",
+        "dst": "r1987",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1987",
+        "dst": "r1988",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1988",
+        "dst": "r1989",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1989",
+        "dst": "r1990",
         "label": "no improvement"
       }
     ],
