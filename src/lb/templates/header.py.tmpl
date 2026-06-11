@@ -54,6 +54,7 @@ CONFIG = {
     "labeler": _cfg_or("__LABELER__", "__" "LABELER__", None),
     "thresh": float(_cfg_or("__THRESH__", "__" "THRESH__", "nan")),
     "sizing": _cfg_or("__SIZING__", "__" "SIZING__", "cdf_overlay"),
+    "model": _cfg_or("__MODEL__", "__" "MODEL__", "xgb"),
     # Model capacity (XGBoost tree depth). Defaults to 3 (shallow, regularized) so
     # every legacy render is byte-identical; an explicit override enables capacity A/B.
     "max_depth": int(_cfg_or("__MAXDEPTH__", "__" "MAXDEPTH__", "3")),

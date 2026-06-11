@@ -14839,6 +14839,36 @@
         "type": "round",
         "phase": "XLP",
         "label": "R1940 XLP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8930 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1941",
+        "type": "round",
+        "phase": "XLP",
+        "label": "R1941 XLP DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1906 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1942",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1942 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.9537 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1943",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1943 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.9537 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1944",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1944 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.9537 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1945",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1945 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.9537 (prev best +4.0218). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25520,6 +25550,31 @@
       {
         "src": "r1939",
         "dst": "r1940",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1940",
+        "dst": "r1941",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1941",
+        "dst": "r1942",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1942",
+        "dst": "r1943",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1943",
+        "dst": "r1944",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1944",
+        "dst": "r1945",
         "label": "no improvement"
       }
     ],

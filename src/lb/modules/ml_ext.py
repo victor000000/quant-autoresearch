@@ -47,7 +47,7 @@ def _adam_step(p, g, m, v, t, lr=1e-3, b1=0.9, b2=0.999, eps=1e-8):
     p -= lr * mh / (np.sqrt(vh) + eps)
 
 
-def reduce_ml(method, X_train, X_val, X_test, n_components):
+def reduce_ml(method, X_train, X_val, X_test, n_components, y_train=None):
     """'pca' (sklearn, TRAIN-fit linear control) or 'ae_np' (numpy nonlinear AE,
     manual Adam backprop, TRAIN-fit). Returns the reduce_dims contract tuple:
     (Xtr, Xv, Xte, nk, tag, kept_idx_placeholder). Raises on failure — the caller
@@ -82,6 +82,57 @@ def reduce_ml(method, X_train, X_val, X_test, n_components):
         p.fit(X_train)
         return (p.transform(X_train).astype(np.float32), p.transform(X_val).astype(np.float32),
                 p.transform(X_test).astype(np.float32), K, f"whiten{K}", list(range(K)))
+    if method in ("vae", "vae_rl"):
+        # REAL torch VAE (user 2026-06-11: torch IS available on QC — the old "no-torch"
+        # record was false; the numpy-AE closure was a stand-in, not Wang's spec).
+        # Wang spec: nonlinear reduce, K latents, KL-weighted, mu-encoding at inference.
+        # TRAIN-fit, frozen encode for val/test (pca-identical leak contract). Deterministic.
+        import torch
+        torch.manual_seed(42)
+        Xt = torch.tensor(np.asarray(X_train, dtype=np.float32))
+        F = Xt.shape[1]; H = 64; beta = 1e-3
+        enc = torch.nn.Sequential(torch.nn.Linear(F, H), torch.nn.Tanh())
+        mu_l = torch.nn.Linear(H, K); lv_l = torch.nn.Linear(H, K)
+        dec = torch.nn.Sequential(torch.nn.Linear(K, H), torch.nn.Tanh(), torch.nn.Linear(H, F))
+        params = list(enc.parameters()) + list(mu_l.parameters()) + list(lv_l.parameters()) + list(dec.parameters())
+        opt = torch.optim.Adam(params, lr=1e-3)
+        n = Xt.shape[0]; bs = min(512, n)
+        for _ep in range(60):
+            perm = torch.randperm(n)
+            for s0 in range(0, n, bs):
+                xb = Xt[perm[s0:s0 + bs]]
+                h = enc(xb); mu = mu_l(h); lv = lv_l(h)
+                z = mu + torch.exp(0.5 * lv) * torch.randn_like(mu)
+                xr = dec(z)
+                rec = ((xr - xb) ** 2).mean()
+                kl = (-0.5 * (1.0 + lv - mu ** 2 - torch.exp(lv)).sum(dim=1)).mean()
+                loss = rec + beta * kl
+                opt.zero_grad(); loss.backward(); opt.step()
+        def _enc(X):
+            with torch.no_grad():
+                return mu_l(enc(torch.tensor(np.asarray(X, dtype=np.float32)))).numpy().astype(np.float32)
+        Ztr, Zv, Zte = _enc(X_train), _enc(X_val), _enc(X_test)
+        if method == "vae":
+            return (Ztr, Zv, Zte, K, "vae" + str(K), list(range(K)))
+        # vae_rl: append an RL POLICY feature (user: "rl for features"). Tiny policy net
+        # p=tanh(w·x) trained on TRAIN to maximize mean(p * reward) - lam*mean(|dp|)
+        # (reward = +1/-1 from the TRAIN label; turnover penalty -> smoothed/hysteretic
+        # positioning, not plain regression). TRAIN-fit, frozen -> leak-safe.
+        torch.manual_seed(43)
+        yt = torch.tensor((2.0 * np.asarray(y_train, dtype=np.float32) - 1.0))
+        pol = torch.nn.Sequential(torch.nn.Linear(F, 16), torch.nn.Tanh(), torch.nn.Linear(16, 1), torch.nn.Tanh())
+        opt2 = torch.optim.Adam(pol.parameters(), lr=1e-3)
+        lam = 0.1
+        for _ep in range(80):
+            p = pol(Xt).squeeze(-1)
+            j = (p * yt).mean() - lam * (p[1:] - p[:-1]).abs().mean()
+            loss2 = -j
+            opt2.zero_grad(); loss2.backward(); opt2.step()
+        def _pol(X):
+            with torch.no_grad():
+                return pol(torch.tensor(np.asarray(X, dtype=np.float32))).numpy().astype(np.float32)
+        Ztr = np.hstack([Ztr, _pol(X_train)]); Zv = np.hstack([Zv, _pol(X_val)]); Zte = np.hstack([Zte, _pol(X_test)])
+        return (Ztr, Zv, Zte, K + 1, "vaerl" + str(K), list(range(K + 1)))
     if method != "ae_np":
         raise ValueError(method)
     # numpy autoencoder F -> H(tanh) -> K(linear) -> H(tanh) -> F, MSE, Adam, seed 42.

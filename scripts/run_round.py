@@ -457,6 +457,8 @@ def _validate_cfg(cfg):
         raise ValueError(f"ticker {cfg['ticker']!r} not in CORE_7 nor the {len(CONFIRMED_ETFS)} QC-confirmed ETFs")
     if cfg["axis"] not in VALID_AXES:
         raise ValueError(f"axis {cfg['axis']!r} not in {VALID_AXES}")
+    if cfg.get("model", "xgb") not in ("xgb", "lgbm"):
+        raise ValueError(f"model {cfg.get('model')!r} must be xgb|lgbm")
     # labeler may be a single name OR a "+"-joined ENSEMBLE (⑦), e.g. "triple_barrier+bgm".
     for _lp in str(cfg["labeler"]).split("+"):
         if _lp not in VALID_LABELERS:
@@ -482,7 +484,7 @@ def _validate_cfg(cfg):
     if not (5 <= cfg["n_components"] <= 60):
         raise ValueError(f"n_components {cfg['n_components']} must be in [5,60]")
     cfg["reduce"] = str(cfg.get("reduce", "correlation"))            # Wang ④ dim-reduce lever (default correlation)
-    if cfg["reduce"] not in ("correlation", "infogain", "variance", "autoencoder", "mrmr", "pca", "ae_np", "spearman", "minor_pca", "whiten"):
+    if cfg["reduce"] not in ("correlation", "infogain", "variance", "autoencoder", "mrmr", "pca", "ae_np", "spearman", "minor_pca", "whiten", "vae", "vae_rl"):
         raise ValueError(f"reduce {cfg['reduce']!r} must be correlation|infogain|variance|autoencoder|mrmr|spearman")
     cfg["rebal_band"] = float(cfg.get("rebal_band", 0.01))           # optional net-of-cost dead-band lever (default 0.01)
     if not (0.0 <= cfg["rebal_band"] <= 0.20):

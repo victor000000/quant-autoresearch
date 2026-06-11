@@ -298,13 +298,26 @@ class AutoresearchPipeline(QCAlgorithm):
             scale_w = n_neg / max(1, n_pos)
             _md = int(CONFIG.get("max_depth", 3))
             try:
-                m = xgb.XGBClassifier(
-                    n_estimators=200, max_depth=_md, learning_rate=0.03,
-                    reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
-                    scale_pos_weight=scale_w, objective="binary:logistic",
-                    eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
-                    early_stopping_rounds=30, base_score=0.5)
-                m.fit(Xt, y_fit[tx], eval_set=[(Xv[vlab], y[vx_lab])], verbose=False)
+                if CONFIG.get("model") == "lgbm":
+                    # capacity-MATCHED LightGBM swap (user 2026-06-11; lgbm 4.6.0 confirmed on QC).
+                    # Same depth/lr/n/regularization/subsample as the xgb baseline — a model-FAMILY
+                    # test at fixed capacity, not a capacity add (depth>3 stays closed).
+                    import lightgbm as _lgb
+                    m = _lgb.LGBMClassifier(
+                        n_estimators=200, max_depth=_md, learning_rate=0.03,
+                        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+                        scale_pos_weight=scale_w, objective="binary",
+                        random_state=42, n_jobs=1, verbose=-1)
+                    m.fit(Xt, y_fit[tx], eval_set=[(Xv[vlab], y[vx_lab])],
+                          eval_metric="auc", callbacks=[_lgb.early_stopping(30, verbose=False)])
+                else:
+                    m = xgb.XGBClassifier(
+                        n_estimators=200, max_depth=_md, learning_rate=0.03,
+                        reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+                        scale_pos_weight=scale_w, objective="binary:logistic",
+                        eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
+                        early_stopping_rounds=30, base_score=0.5)
+                    m.fit(Xt, y_fit[tx], eval_set=[(Xv[vlab], y[vx_lab])], verbose=False)
             except Exception:
                 return None
             pt_raw = m.predict_proba(Xt)[:, 1]

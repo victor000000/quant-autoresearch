@@ -34,5 +34,6 @@ def cell_suffix(cfg) -> str:
         + ("" if cfg.get("reduce", "correlation") == "correlation" else "_ig" if cfg.get("reduce") == "infogain" else "_rd" + str(cfg.get("reduce")))
         + ("" if cfg.get("features", "base") == "base" else "_fr" if cfg.get("features") == "rich" else "_ts" if cfg.get("features") == "termstruct" else "_ry" if cfg.get("features") == "realyield" else "_fx")
         + ("" if cfg.get("calibration", "isotonic") == "isotonic" else "_va")
+        + ("" if cfg.get("model", "xgb") == "xgb" else "_m" + str(cfg.get("model")))
         + ("_tp" if cfg.get("train_purge") else "")
     )
