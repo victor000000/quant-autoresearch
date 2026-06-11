@@ -15744,6 +15744,36 @@
         "type": "round",
         "phase": "QQEW",
         "label": "R2086 QQEW DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4881 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2087",
+        "type": "round",
+        "phase": "RWJ",
+        "label": "R2087 RWJ DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.6256 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2088",
+        "type": "round",
+        "phase": "RWJ",
+        "label": "R2088 RWJ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.1816 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2089",
+        "type": "round",
+        "phase": "IAI",
+        "label": "R2089 IAI DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +1.3282 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2090",
+        "type": "round",
+        "phase": "IAI",
+        "label": "R2090 IAI DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.9073 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2091",
+        "type": "round",
+        "phase": "RPG",
+        "label": "R2091 RPG DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.4291 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27155,6 +27185,31 @@
       {
         "src": "r2085",
         "dst": "r2086",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2086",
+        "dst": "r2087",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2087",
+        "dst": "r2088",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2088",
+        "dst": "r2089",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2089",
+        "dst": "r2090",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2090",
+        "dst": "r2091",
         "label": "no improvement"
       }
     ],
