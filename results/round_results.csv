@@ -3821,3 +3821,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T13:54:38,USO,3.8498,USO_logdollar_revert_cdf_plain_t0.45,B,USO,logdollar,revert,0.45,cdf_plain,2.0098,11.915,481,True,True,1.6597,0.9902,0.9631,1.618,0.0356,14.8477,717,False,False,completed,completed
 2026-06-11T14:05:16,UCO,0.0,,A,UCO,logdollar,revert,0.45,cdf_plain,1.4762,21.0102,252,True,True,1.0264,0.9602,0.9664,1.2654,-1.0472,23.8531,717,True,False,completed,completed
 2026-06-11T14:05:16,UCO,0.0,,B,UCO,logdollar,always_long,0.45,binary,0.2943,176.5238,1,False,False,0.0,0.5,0.5,0.5319,-0.456,5.7865,717,False,False,completed,completed
+2026-06-11T14:15:08,VIXY,0.0,,A,VIXY,logdollar,tertile,0.45,ls_cdf,-0.1147,178.2764,478,True,True,0.8164,0.8806,0.5701,0.1426,0.391,56.2379,717,True,False,completed,completed
+2026-06-11T14:15:08,VIXY,0.0,,B,VIXY,logdollar,bgm,0.45,ls_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
