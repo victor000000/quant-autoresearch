@@ -121,3 +121,23 @@ Items 1–3 are the recommended next races (after the 311 screen completes). Eve
 else from the corpus is either built, closed by experiment with stronger evidence than
 Wang's demos, out-of-rule, or out-of-data. Full per-lecture extraction tables live in the
 five agent reports (session transcripts); garble glossaries included there.
+
+## 4. Course-PDF deep crack (read first-hand, all 7 pages)
+
+The syllabus (`wang_course_2026-06.pdf`: Shanghai 2026-06-13/14, ¥24,800) names his 7
+"first-ever-public" levers; each decodes via the lecture corpus and reconciles to us:
+① Calmar>3 full training = the QA 5-module recipe → we hold an HONEST equivalent (GLD
+pca 3.84, permute+IAU-replication+deflation — gates he doesn't teach). ② custom-axis
+system → built; the real secret is M3's last bullet "implement OTHER axes whose 1st-diff
+approaches normal" = axis DESIGN against a normality objective (our queued race #1).
+③ trendiness labels with "density tuned by trend behavior" = the trend-degree ladder
+knob (soft ensemble raced/lost; ladder-knob sweep open). ④ nonlinear DR = VAE (raced/
+closed here) — but M6 spends 2/4 bullets on "the problem LINEAR DR causes in live
+inference and how to fix it" → the PCA-live-deploy FREEZE GUARD is a prerequisite for
+crowning the GLD pca config into live trading (backtest immune; live_trade render must
+freeze loadings). ⑤ secondary decision model = meta-prob-as-sizing (gate form raced/
+closed; sizing-source variant open, low prior). ⑥ capital-scale = smoother equity via
+multi-asset/axis/period COMBINATION → scale (in-rule version = our decorrelated book).
+⑦ full code = n/a. M8 confirms his cross-asset-features lane ≡ our closed exogenous
+channel. Core-value page: the claimed moat is whole-pipeline 统筹/协同 — i.e. the system,
+not any module; this repo is that system with a stronger honesty layer.
