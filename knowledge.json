@@ -15978,6 +15978,42 @@
         "type": "round",
         "phase": "KXI",
         "label": "R2125 KXI DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar -0.2825 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2126",
+        "type": "round",
+        "phase": "KXI",
+        "label": "R2126 KXI DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.3686 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2127",
+        "type": "round",
+        "phase": "RHS",
+        "label": "R2127 RHS DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2128",
+        "type": "round",
+        "phase": "RHS",
+        "label": "R2128 RHS DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2129",
+        "type": "round",
+        "phase": "RYH",
+        "label": "R2129 RYH DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2130",
+        "type": "round",
+        "phase": "RYH",
+        "label": "R2130 RYH DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2131",
+        "type": "round",
+        "phase": "FDD",
+        "label": "R2131 FDD DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.6360 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27584,6 +27620,36 @@
       {
         "src": "r2124",
         "dst": "r2125",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2125",
+        "dst": "r2126",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2126",
+        "dst": "r2127",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2127",
+        "dst": "r2128",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2128",
+        "dst": "r2129",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2129",
+        "dst": "r2130",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2130",
+        "dst": "r2131",
         "label": "no improvement"
       }
     ],
