@@ -1,94 +1,77 @@
 # autoresearch
 
-An autonomous loop that hunts single-ticker trading edges on ETFs. Each round the researcher — Claude — reads this file + the provenance graph (`knowledge.json`) + past findings, designs ONE recipe for the weakest ticker, races it A/B against the champion on real out-of-sample (OOS) Calmar in QuantConnect (project 31338454), and keeps it only if every honesty gate passes. One ticker at a time, no cross-ticker ensembling, simple over complex.
+An autonomous loop that hunts single-ticker trading edges on ETFs. Each round: read this file + `knowledge.json`, design ONE recipe, race it A/B against the champion on real out-of-sample Calmar in QuantConnect (project 31338454), keep iff every honesty gate passes. Single ticker, no cross-ticker ensembling, simple over complex.
 
-It's an LLM pointed at a number it can game, so **most of this file is gates, not method.** A bad edge fails silently: a backtest will happily report a great Calmar that is a leak, a multiple-testing fluke, or plain buy-hold drift. Telling a real edge from those three impostors is the whole job.
+This is an LLM pointed at a number it can game, so **most of this file is gates, not method**. A backtest happily reports a great Calmar that is a leak, a multiple-testing fluke, or plain drift. Telling a real edge from those three impostors is the whole job.
 
 ## The loop
 
-1. **Pick the weakest ticker** — lowest re-validated OOS Calmar in the book (a name failing the trade-count gate sorts weaker). Stored Calmars go stale as the OOS window grows; re-validate first.
-2. **Design the whole recipe** — `axis × label × features × reduce × model × sizing`, reasoning over the graph. Don't swap one knob; reach for a new axis or labeler first (every confirmed edge came from an axis or labeler change, not knob-tuning), but a win can land anywhere — infogain lifted GLD 3.47→4.02.
-3. **Race A/B vs champion** — `scripts/run_autoresearch_round.py '<A>' '<B>'`. A hypothesis is `{ticker, axis, labeler, thresh, sizing}` + optional `{reduce, n_components, features, horizons, permute_labels, ...}`; labelers can ensemble (`"bgm+ker"`). Both legs train+infer on the 2 QC nodes in parallel; the script writes results/report/log, never commits.
-4. **Keep iff every gate passes**, else discard. Log either way — a discard raises every co-tested name's deflation bar, and the graph is the audit trail. A human/Opus commits.
+1. **Re-validate, then target.** Stored Calmars go stale as the OOS window grows (UUP 1.85→0.60 in 8 days). Re-race champion-vs-`always_long` before trusting any stored number.
+2. **Design one recipe** — `axis × label × features × reduce × model × sizing`. Every confirmed edge came from a NEW axis, labeler, or mechanism — never knob-tuning. Knob-permutation on a structureless name only raises everyone's deflation bar.
+3. **Race** — `scripts/run_autoresearch_round.py '<A>' '<B>'`. A hypothesis is `{ticker, axis, labeler, thresh, sizing}` + optional `{reduce, n_components, features, horizons, permute_labels, ...}`; labelers ensemble with `+`. Writes results/report; never commits.
+4. **Keep iff ALL gates pass; log either way** (a discard raises every co-tested name's deflation bar). A human/Opus commits and crowns.
 
 ### Keep gates — all must hold
 
 | Gate | Threshold |
 |---|---|
-| Deployable | trades > 80, train+infer both completed, directional accuracy present |
+| Deployable | trades > 80, train+infer completed, DA present |
 | Beats champion | winner Calmar > re-validated previous best |
-| Positive | Calmar > 0 |
-| Learnable structure | val_auc > 0.52 (below = coin-flip, a window artifact) |
-| Survives deflation | winner Calmar > expected-max of N noise trials (Bailey–López de Prado best-of-N; `always_long` and <3-trial cases exempt) |
-| PSR significance | Bonferroni-deflated probabilistic Sharpe `psr > 1 − 0.05/N_trials` |
-| Permuted-label control | the decisive real-vs-artifact test (below): real edge over buy-hold > 0.15 AND permuted < 40% of real |
+| Learnable structure | val_auc > 0.52 (below = coin-flip artifact) |
+| Survives deflation | > expected-max of N noise trials (best-of-N; `always_long` exempt) |
+| PSR significance | Bonferroni-deflated `psr > 1 − 0.05/N_trials` |
+| Permuted-label control | real edge over buy-hold > 0.15 AND permuted < 40% of real |
 
-### The permuted-label control — the decisive test
+**The permute control is the decisive test** — shuffle only the TRAIN labels (`"permute_labels": true`, separate `_perm` cell); a real edge collapses toward buy-hold. GLD's genuine run: real edge +2.44 → permuted +0.09 (96% collapse). **The control must FAIL LOUD**: a 0-trade/failed control leg is indistinguishable from reading a nonexistent cell and refuses the KEEP (2026-06-10: a `_PSUF` cell-key mismatch made the gate silently vacuous for every suffix-keyed config — the third bug of that class; cell keys now come from the single `_cell_key()` builder, never inline).
 
-Re-run a gate-passing winner with `"permute_labels": true` — shuffles **only the TRAIN labels** (leak-safe, separate `_perm` cell). A real edge collapses toward buy-hold when its labels are scrambled; a survivor was drift, sizing, or leak — not signal. Pass iff real edge over buy-hold > 0.15 AND permuted < 40% of real. Caught SPY/SLV/QQQ fakes; UUP collapses 1.30 → −0.08. Orthogonal to the deflation haircuts — keep both.
-
-## The pipeline (Wang backbone, fixed, `random_state=42`)
+## Pipeline + leak contract (fixed, `random_state=42`)
 
 ```
-bars → StandardScaler → reduce(correlation | infogain) → XGBoost(depth 3, lr .03, n 200)
-     → isotonic calibrate (embargoed VAL) → de Prado CDF bet × causal inverse-vol overlay
+event bars → StandardScaler → reduce(correlation|infogain) → XGBoost(depth 3, lr .03, n 200)
+           → isotonic calibrate (embargoed VAL) → de Prado CDF bet × causal overlay
 ```
 
-- **Causality.** Bar thresholds fit on TRAIN only and extrapolated identically in OOS; the label may look ahead (it's the target); the model sees past-only features; sizing is identical in backtest and live. Detectors are trend-scan / change-point / clustering — **never HMM** (can't run online).
-- **Levers are closed.** Only `logdollar` (trend) and `imbalance` (regime) axes ever carry edges — axis choice is asset physics, not tuning. 28 axes (23 deployable) / 54 labelers / all sizers are built + leak-safe; everything else is dormant. `kyle/run/spectral/vpin/dp_oracle/vratio` all lose to the asset-intrinsic champions.
-- **Multi-file render.** `bar_builder.py` is a separate QC file imported by `main.py`, so the 64k char/file limit is per file and 3-way ensembles fit. Keep QC files lint-clean (no `getattr`, no nested-quote f-strings).
-
-## Leak contract (non-negotiable)
-
-The OOS backtest is **online, leak-free, model-only-from-ObjectStore** (audited: `BACKTEST_AUDIT.md`).
-
-- `infer.py` holds no model — pure replay of saved predictions + the causal `_size()`. Every `.fit` is on TRAIN (+ embargoed VAL) only; features past-only; `_EMBARGO = max(200, max(horizons))` covers the full forward-label horizon. Ensembles deploy live (footer saves a multi-member bundle; `live_trade.py` averages calibrated+gated member probs online).
-- **Two proofs, run them.** `verify.py`: online-rebuilt bars match batch ≤1e-9. `infer_online.py`: live preds match saved ≤1e-6. Don't trust a champion until its `infer_online` reports preds_match=1.
-- **Leaks are found by re-running, not by reading code.** The logdollar bar-threshold leak — thresholds scaled by a full-series count that included OOS — inflated GLD 4.71→2.76 (SOXX 3.02→0.81) and survived a 13-agent review; only the re-run with the fix revealed it. `tests/test_bar_threshold_leak.py` forbids that signature — **run it after any `bar_builder.py` change.**
+- **Causality:** bar thresholds fit on TRAIN only, extrapolated identically OOS; labels may look ahead (they're targets) but never beyond `_EMBARGO = max(200, horizons, declared reach)`; full-sequence smoothers (Viterbi/backward passes) must **block-decode at the OOS boundary**; features past-only; sizing identical in backtest and live.
+- **The OOS backtest is online, leak-free, ObjectStore-replay-only** (`BACKTEST_AUDIT.md`, re-audited 2026-06-10: 28/28 axes byte-invariant under post-TRAIN randomization). `infer.py` holds no model. Two proofs, run them: `verify.py` (bars ≤1e-9), `infer_online.py` (preds ≤1e-6).
+- **Leaks are found by re-running, not reading.** The logdollar threshold leak survived a 13-agent review; the "external data wall" was an `on_data` ordering bug; the vacuous permute gate survived months. After any `bar_builder.py`/`bar_ext.py` change run `tests/test_bar_threshold_leak.py`; when a feed reports "no data", probe the channel directly (`set_runtime_statistic`, not `debug`).
+- **QC limits:** 64,000 UTF-8 **bytes**/file (comments are minified away — only code counts). Extension files each get their own budget: new axes → `bar_ext.py`, features/reduces → `ml_ext.py`, the sizing engine lives in `sizing_ext.py` (moved 2026-06-10, bit-exact-verified; main.py now has ~4.4k headroom). Lint-clean QC files: no `getattr`, no nested-quote f-strings.
 
 ## The honesty stack
 
-Seven lenses, three roles. **Never crown on LLM judgment — only on real QC Calmar.**
+Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`deflated_audit.py`) · session DSR Holm-Bonferroni (`honest_audit.py`) · the permute control · decay monitor (`champion_series.py`, early-vs-late Sharpe) · e-values · PBO/CSCV · cost stress (book holds at 5bp). Standing facts: nothing survives Holm-Bonferroni at the full ~2500-trial burden except GLD (DSR 0.96); MinBTL says only GLD is window-confirmed — every other edge is provisional until the calendar grows. Weight conviction by DSR, not raw Calmar.
 
-- **Per-round gates** — deflated Sharpe (`deflated_audit.py`, beat the best-of-N noise floor) · session-wide DSR (`honest_audit.py`, Holm-Bonferroni + Benjamini-Hochberg, ≥0.95 = real) · the **permuted-label control (decisive)**.
-- **Standing monitors** — decay (`champion_series.py`, early- vs late-half OOS Sharpe + Page-Hinkley; caught UUP front-loaded 2.67→0.74 while GLD/IWM strengthen) · e-value (`evalue_oos`, native in `infer.py` — anytime-valid liveness).
-- **Post-crown** — PBO via CSCV (`pbo_gld.py`) · cost-stress + Harvey-Liu haircut (`cost_stress.py`; book holds at 5bp).
+## The book (re-validated 2026-06-10; **extended-window 2026-06-11**: TEST_END advanced to 06-11 — GLD **2.12** (BH 1.33, edge +0.80), USO **2.69** (BH 0.86, edge +1.83; now the stronger engine). Stored 4.02/3.85 are the old-window numbers; bar recalibration on the grown series restates everything — the phase-cert predicted this: honest GLD ≈ its family median, not its lucky top.)
 
-Standing fact: nothing survives Holm-Bonferroni across the full ~2400-trial session burden (only GLD comes close, DSR 0.96). Weight conviction by DSR, not raw Calmar.
-
-## The book
-
-Durable single-ticker alpha is scarce and asset-intrinsic. Leak-free, permute-confirmed. Conviction **GLD > UUP > IWM**.
-
-| Ticker | Config | Calmar | Notes |
+| Ticker | Config | Calmar | Status |
 |---|---|---:|---|
-| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t0.40 reduce=infogain | **4.02** | The one durable edge. Decay-healthy, bit-exact (4.0218), gold-specific (not SLV). Hansen-SPA data-snooping-robust (p=0.017). |
-| **UUP** | imbalance / `bgm+sadf_explosive+ker` / cdf_overlay | **1.85** | Permute-real but decay-stale (alpha front-loaded 2014–15), Bonferroni-boundary. Earns its seat by decorrelation. |
-| **IWM** | logdollar / `trend_leg` / cdf_overlay / reduce=infogain | **0.67** | Beats buy-hold (0.55), permute-pass, decay-healthy. Fails strict deflation. Now mostly a buy-hold diversifier. |
+| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t.40 / infogain | **4.02** | The anchor. Bit-exact ×3, decay-strengthening (5.0→5.9), genuine permute-pass, Hansen-SPA p=.017. |
+| **USO** | logdollar / `revert` / cdf_plain / t.45 | **3.85** | 3rd mechanism. Bit-exact, +2.93 over BH, decay-strengthening (4.5→7.7). **Crown proposed: +USO at natural Calmar² weight → book 5.03 / Sharpe 2.74.** |
+| UUP | imbalance / `bgm+sadf_explosive+ker` / cdf_overlay | 0.60 | Decayed (was 1.85). **06-11 extended window: timing 0.29 < own BH 0.47 — retire to `always_long`.** |
+| IWM | `always_long` | 0.56 | Timing retired (trend_leg 0.48 < BH 0.56). |
 
-Deployed: **GLD / UUP / IWM / TIP / DBC / HYG**, weight ∝ Calmar², gross ≤ 1. TIP/DBC/HYG are `always_long` diversifiers — no timing edge, they earn seats by decorrelation. Weekly grid Calmar **4.62** / MaxDD **2.46%** / Sharpe **2.46**; net ~3.4 @5bp. Dropping a weak name lowers book Calmar — keep them. **USO oil-reversion (3.85, the 3rd mechanism) is proposed (+USO → 5.16), awaiting crown.**
+Deployed: GLD/UUP/IWM/TIP/DBC/HYG (+USO awaiting crown), weights ∝ **common-grid** Calmar² (never own-window numbers — mixing scales mis-weights), gross ≤ 1. Current book 4.65; +USO → 5.03. Dropping weak names lowers book Calmar — decorrelation pays.
 
-### Three mechanisms — edges are asset-intrinsic
-
-- **Trend-momentum** (`trend_leg` > `ker`) on trend-predictable-drawdown names where trim-cost < MaxDD-saved — GLD/IWM on the logdollar clock.
-- **Regime** (`bgm`) on macro oscillation — UUP on the imbalance clock.
-- **Mean-reversion** (`revert`) on oil — USO/UCO/XOP, fully validated (permute/decay/cost/DSR ≈ GLD). Oil-specific; fails on every other commodity.
-
-Each mechanism's labeler fails on the others' assets; swapping a mechanism's implementation always loses. Which mechanism + axis wins is a property of the asset, not a choice.
+**Three mechanisms, asset-intrinsic** (each labeler fails on the others' assets): trend-momentum (GLD), macro-regime (UUP, decayed), oil mean-reversion (USO — oil-specific; silver/gold/agri/natgas/FX all refuted). Wang's β-lens routes assets (β200≈0.5 symmetric→trend, ≫0.5→buy-hold, <0.45→reversion) and retrodicts the whole book — but it is **clock-dependent** (USO: 0.55 on bar clock, 0.44 on calendar days) and admission-only: β-symmetric XME was predictable-not-profitable (+0.04 over BH).
 
 ## Lessons that change decisions
 
-- **Label-relevance ≠ profit-relevance.** High val_auc + low Calmar = predictable-not-profitable; high Calmar + low val_auc = drift/luck. The val_auc>0.52 gate + permute + deflation jointly catch both. Infogain amplifies a real edge, never manufactures one.
-- **Clean drifters (val_auc≈0.5) are buy-hold-optimal** — timing just sacrifices carry (HYG/QQQ/SPY/TIP/DBC). New methods help only where val_auc>0.6.
-- **Don't grind deflation-dead names.** On static data, permuting knobs on a structureless name only raises every co-tested name's deflation bar for ~0 EV. A genuinely new axis/label is allowed; permuting knobs is not.
-- **Closed, don't re-grind:** depth 3 · XGBoost only (sklearn/torch blocked at QC inference) · meta-labeling (< ker) · universe siblings (SLV≠GLD, SMH≠SOXX) · sample-uniqueness weights (overlap IS the signal) · cross-asset ETF-**price** features (R1242).
+- **Label-relevance ≠ profit-relevance.** High val_auc + no Calmar edge = predictable-not-profitable (sticky-HMM 0.40@auc.88, XME +.04@auc.72). The val_auc gate + permute + deflation jointly catch both failure modes.
+- **Drifters (val_auc≈0.5, β200≫0.5) are buy-hold-optimal:** SPY/QQQ/HYG/TIP/DBC/IWM. New methods only help where structure exists (val_auc>0.6).
+- **Exogenous features on GLD are closed in every form:** ETF-price proxies (UUP/TIP 4.02→3.18), nominal yield (→3.38), true DFII10 real yield (→3.12, full data, val_auc up Calmar down = the overfit signature).
+- **Closed, don't re-grind:** depth-3 XGBoost only · meta-labeling · universe siblings (SLV≠GLD) · uniqueness weights · sticky-HMM · cross-asset price features · reduce on 80-feat panel (infogain won) · FXE/metals reversion.
+- **One source of truth for keys/configs** — inline copies of `_PSUF` diverged three times; helpers, not duplication.
 
-## The frontier
+## The frontier (2026-06-10)
 
-The **price+volume frontier is mapped and closed**: every axis/labeler/feature/sizer lever is exhausted, three asset-intrinsic mechanisms survive, and the outside literature agrees (single-asset timing edges mostly vanish OOS after a multiple-testing haircut). Static OOS = no new info per tick, so config grinding only inflates the deflation bar. Reopening needs a new INPUT:
+Price/volume levers on existing names are exhausted; the last free feature channel (real yield) closed by experiment. Open, in EV order (Wang-synthesis panel, skeptic-verified — `docs/research/WANG_WORKFLOW_SYNTHESIS_2026-06-10.md`):
 
-1. **The one untested feature channel — exogenous fundamental macro.** NEXT A/B: add the 10y TIPS real yield (FRED `DFII10`, z-score + N-bar Δ) + the 2s10s slope (`DGS10−DGS2`) to GLD's trend model and try to beat Calmar 4.02. Free, QC-native, leak-clean at a 1-day lag; distinct from the closed UUP-price proxy. Gold is a real-rate duration asset — its cleanest upstream driver. Honest prior ~1-in-4 it lifts GLD; else it closes the last feature channel. (`docs/research/DIRECTION_REALYIELD_GLD_2026-06-09.md`)
-2. **A new data modality (needs the user)** — options IV/skew, positioning (COT, ETF flows), credit spreads, VIX term-structure. New information, not new tuning.
-3. **Honesty tooling (tightens, never creates edge)** — block-bootstrap Calmar CIs, Lo-SE DSR fix, Hansen SPA / Romano-Wolf, online-FDR ledger. Run in parallel.
+1. ~~De-scaled axis~~ — **tested, rejected** (R1869: `logdollar_rc` 1.79 < 3.85 on USO; smoothing kills the overreaction concentration revert harvests; axis retained in `bar_ext.py`).
+2. ~~Multi-axis netting~~ — **tested, rejected** (netted 3.57 < 4.02; Wang's device needs PEER-strength legs — ours were 4.02/0.90; re-open only if a 2nd GLD model reaches ≥2.5).
+3. ~~Phase-invariance cert~~ — **done, PASS with restatement** (5 phases: 4.02/3.18/3.18/3.15/2.92, all ≫ BH; phase-median ≈3.2 ⇒ ~+0.85 of the headline is alignment luck — weight conviction by ~3.2).
+4. ~~SPY session momentum~~ — **tested, rejected** (sess2 clock + h=1 tertile: val_auc 0.556 = the documented effect IS weakly learnable, but Calmar 0.51 < BH 1.04 at 20 trades — predictable-not-profitable at ETF cost scale; `sess2` axis + h=1 forward metrics retained).
+5. ~~Rich features × compressor~~ — **tested, rejected** (4-cell grid on GLD: champion 80×infogain 4.02 > wangrich×{ae_np 2.97 ≡ pca 2.97} > wangrich×infogain 2.14; nonlinearity adds nothing, the rich panel dilutes selection; `ml_ext.py` retained).
+6. **New data modality (needs the user):** options IV, COT, flows. The loop cannot mine these from current data.
+
+**Frontier state 2026-06-10 EOD: every loop-runnable lever has been raced to a verdict.** Five Wang-panel items answered in one day (1 pass-with-restatement, 4 rejections — each a clean, gate-checked experiment). The book stands: GLD 4.02 (honest ≈3.2) + USO 3.85 (+USO book 5.03, awaiting crown) + decorrelation seats. Reopening the frontier requires item 6 — a new authorized data modality — which is a user decision, not something the loop can mine.
 
 Autonomous — decide and run the next experiment, don't ask.

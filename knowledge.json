@@ -778,14 +778,14 @@
       "real_da": 12.4,
       "trades": 663,
       "round": 52,
-      "note": "⑦ ensemble dilutes (strong+weak); TLT one dominant signal"
+      "note": "\u2466 ensemble dilutes (strong+weak); TLT one dominant signal"
     },
     "TLT_range_triple_barrier_ls_overlay_MEANREV_R53": {
       "real_calmar": 1.5221,
       "real_da": 3.84,
       "trades": 333,
       "round": 53,
-      "note": "KEPT - ③ mean-rev features unlock range axis; TLT 0.77->1.52"
+      "note": "KEPT - \u2462 mean-rev features unlock range axis; TLT 0.77->1.52"
     },
     "TLT_logdollar_triple_barrier_ls_overlay_MEANREV_R53": {
       "real_calmar": 0.4081,
@@ -813,7 +813,7 @@
       "real_da": 3.42,
       "trades": 908,
       "round": 55,
-      "note": "KEPT - triple_barrier+③feats generalizes from TLT to IWM (0.88->0.93)"
+      "note": "KEPT - triple_barrier+\u2462feats generalizes from TLT to IWM (0.88->0.93)"
     },
     "IWM_imbalance_bgm_cdf_overlay_t40_underfeats_R55": {
       "real_calmar": 0.8325,
@@ -841,7 +841,7 @@
       "real_da": 3.53,
       "trades": 1339,
       "round": 57,
-      "note": "KEPT - ⑦ ENSEMBLE (tb+bgm) of comparable signals beats both legs; IWM 0.93->1.01"
+      "note": "KEPT - \u2466 ENSEMBLE (tb+bgm) of comparable signals beats both legs; IWM 0.93->1.01"
     },
     "IWM_imbalance_multi_horizon_cdf_overlay_t40_R57": {
       "real_calmar": 0.7977,
@@ -889,7 +889,7 @@
     "ROUND2: carry == always_long to 4 dp under the new sizing (both 0.5387 / 7.0697 / 431 trades). The outcome is driven ENTIRELY by the vol-targeting overlay, INDEPENDENT of the labeler (a real AUC-0.80 model and a constant-long signal give the identical exposure path). Re-confirms R1: the labeler is not the lever; module 8 is.",
     "ROUND2: the new VAL synth_cal = -0.3511 CORRECTLY predicted OOS underperformance (R1 synth_cal was a flat uninformative 0.0). Restoring train/infer sizing consistency restored a usable in-sample selection signal.",
     "ROUND3: a binary stay-long-by-default DD circuit-breaker (flat at 12% underwater, re-enter within 4% of peak, hysteresis) on QQQ vol made BOTH metrics WORSE: Calmar 1.11->0.26 AND DA 22.83->76.54 (3x worse). On a drift-up asset with V-shaped recoveries, stepping flat sells the dip and the hysteresis re-enters only near new highs => the strategy is flat through the entire rebound => equity stays underwater far longer (DA explodes) and CAGR collapses. Drawdown STOPS are PRO-CYCLICAL on mean-reverting-up assets. carry==always_long once more (breaker dominates). Reverted.",
-    "ROUND4: de-tuned active sizing (CDF recentered on tau x inverse-vol, floor 0.6) on VOL axis, 7 ETFs. Recovered QQQ Calmar 0.54->0.90 (629 trades, DA 14.9<buy-hold) - best active config - but NO ETF beats its buy-hold Calmar; XLE collapses 0.11, EEM under-trades (23, G2 fail). carry==always_long AGAIN. Conclusion: 3 rounds of SIZING tweaks on the vol axis never beat buy-hold => the bottleneck was likely ① axis x ② labeler being WRONG for the asset, not ⑧ sizing.",
+    "ROUND4: de-tuned active sizing (CDF recentered on tau x inverse-vol, floor 0.6) on VOL axis, 7 ETFs. Recovered QQQ Calmar 0.54->0.90 (629 trades, DA 14.9<buy-hold) - best active config - but NO ETF beats its buy-hold Calmar; XLE collapses 0.11, EEM under-trades (23, G2 fail). carry==always_long AGAIN. Conclusion: 3 rounds of SIZING tweaks on the vol axis never beat buy-hold => the bottleneck was likely \u2460 axis x \u2461 labeler being WRONG for the asset, not \u2467 sizing.",
     "ROUND5: dollar axis x {kmeans2stage,carry,always_long} x 7 ETFs (2-node parallel). EVERY labeler IDENTICAL to 4dp within each ETF (even IWM where the model has AUC 0.88). History hypothesis 'kmeans2stage beats carry' FALSE/untestable. ROOT CAUSE (key finding): the inverse-vol overlay g=clip(sigma_slow/sigma_fast,0.6,1) is LABEL-INDEPENDENT and dominates the position path; on up-trending ETFs calibrated p is mostly high so _cdf_bet(p)~1 for every labeler => w~g, identical regardless of label. 'Labeler irrelevant' (R1-R5) is an ARTIFACT OF THE SIZING OVERLAY, not the axis/labels. Best ACTIVE configs so far: EEM dollar 1.33 (DA 4.4, 113 trades, G2 pass), HYG dollar 1.26 (DA 4.0, 1310 trades). Dollar genuinely helps EEM/HYG vs vol. Still << G1 (3.0). TLT -0.15 (neg control).",
     "ROUND6: turned the inverse-vol overlay OFF (VOL_FLOOR=1.0, w=cdf_bet(p,tau)). Result: EVERY cell = 1 trade = buy-and-hold, all labelers IDENTICAL. With no overlay the position never goes flat because on up-trending ETFs the calibrated p is almost always > tau (model predicts 'up' nearly everywhere) -> always long -> buy-hold. So overlay-ON (R5) washes the label via the overlay; overlay-OFF (R6) washes it via the always-long model. SIX-ROUND CONCLUSION (confirmed, not assumed): single-asset long-only ML on trending ETFs CANNOT beat buy-hold; axis/labeler/sizing are all washed out. Best single ~1.6 (HYG 1.65, GLD 1.62 buy-hold). The >3.0 frontier is CROSS-ASSET (archive pair 2.91 >> single 1.6).",
     "ROUND7 (first valid v2 tournament; 3 harness bugs fixed first - cell-key collision, dot-in-ObjectStore-path, infer fallback-guard clobbered by render). TLT, binary sizing both legs: A vol/carry/0.55 = -0.1431/17 trades (G2 FAIL, under-trades); B dollar/kmeans2stage/0.45 = 0 trades (never crossed thresh). DISCARD. Learning: binary@high-thresh under-trades TLT; and TLT long-only over a rate-rise can only be positive by being FLAT in declines, but flat-most-of-time can't reach 80 trades -> TLT likely unwinnable long-only (wants a short/relative leg = pairs).",
@@ -916,7 +916,7 @@
     "ROUND29 WIN: TLT 0.6263 -> +0.7654 (KEPT). NEW sizing ls_overlay = ls_cdf x clip(slow/fast vol,0.6,1) (causal). Clean A/B (only sizing differs from ls_cdf control 0.6263): +0.14 purely from vol-targeting the short magnitude -> trims MaxDD on rate-shock spikes (DA 5.1, 565tr). Fully causal, no leak signature. TLT now BEATS IWM (0.7146) -> loop moves to IWM. GENERALIZABLE: ls_overlay/vol-targeting wherever MaxDD is the binding constraint on a short-capable two-sided asset.",
     "ROUND30 WIN: IWM 0.7146 -> +0.7788 (KEPT). multi_horizon GENERALIZES to IWM (trending-up): beats bgm control 0.7146 in clean A/B (only labeler differs) and HALVES DA (11.97->5.73). Confirms f_multihorizon beyond XLE - multi_horizon is a strong CAUSAL trend-target on any trending-up asset. Bottom cluster now tight: TLT 0.7654, IWM 0.7788, GLD 0.7792.",
     "ROUND31: TLT DISCARD (stays 0.7654). (1) honest tertile -0.02 (DA 31) -> tertile's old 'wins' (R12/R13) were the look-ahead leak; honest it has little edge. (2) ls_overlay does NOT rescue the range axis (range/tb/ls_overlay 0.33 << logdollar/tb/ls_overlay 0.77) -> f_axiscross: axis+labeler is the locked recipe, sizing is a multiplier. TLT config-exhausted at 0.7654.",
-    "ROUND32: TLT ls_overlay floor 0.6->0.45 = +0.003 (NOISE; 0.7654->0.7679). The de-lever floor rarely binds for TLT (fast vol seldom >> slow vol). TLT at honest single-asset ceiling ~0.768, still < IWM 0.7788. Floor lever exhausted -> next = ①② labeling module (triple_barrier barrier WIDTH).",
+    "ROUND32: TLT ls_overlay floor 0.6->0.45 = +0.003 (NOISE; 0.7654->0.7679). The de-lever floor rarely binds for TLT (fast vol seldom >> slow vol). TLT at honest single-asset ceiling ~0.768, still < IWM 0.7788. Floor lever exhausted -> next = \u2460\u2461 labeling module (triple_barrier barrier WIDTH).",
     "ROUND33: TLT tighter triple_barrier (U=L=1.5) = 0.17 << default 2.0's 0.77 (over-trades 828 on noise). TLT's edge is in LARGER rate-shock moves; default barrier well-tuned. SINGLE-ASSET LEVERS EXHAUSTED for TLT (axis/labeler/sizing/floor/barrier all explored) -> ceiling ~0.768, within noise of IWM 0.779. Documented frontier = CROSS-ASSET (TLT = flight-to-quality, equity risk-off driven); SPY already loaded -> enable causal SPY-relative features.",
     "ROUND34: cross-asset SPY-relative features REGRESSED TLT (0.7679->0.677; multi_horizon leg 0.01). Not catastrophic crowd-out (445tr) but the features displaced useful price features and diluted the edge. CONFIRMS: TLT's cross-asset edge needs a 2-symbol PAIRS strategy (trade TLT-SPY spread), not SPY features in a single-asset model. REVERTED features.py + n_components 26->20. TLT single-asset ceiling = 0.7679, tied with IWM/GLD ~0.78. Frontier = pairs harness (sign-off-worthy).",
     "ROUND35: TLT agglomerative +0.01 / bgm +0.35 (both << triple_barrier 0.7679). Every labeler now tested on TLT's optimal logdollar/ls_overlay -> triple_barrier UNIQUELY best. TLT DEFINITIVELY exhausted single-asset at 0.7679, tied with IWM 0.7788 within noise. Only remaining lever = 2-symbol PAIRS harness (sign-off-worthy). Alt: modernize stale-best ETFs (GLD/QQQ/HYG/EEM = buy-hold-overlay) with multi_horizon/ls_overlay.",
@@ -932,18 +932,18 @@
     "ROUND43: workflow's NOVEL unsupervised labelers fail on TLT - regime_gmm (GMM on causal features) DEGENERATE (0 trades, feature-clusters don't separate forward direction; kmeans pattern); cusum_regime over-trades (2753 trades, DA 79, -0.23; change-points too sensitive). Both causal/leak-free but no edge. bgm/imbalance 0.59 stays best unsupervised TLT. Causal-feature clustering alone doesn't carry TLT's directional edge - bgm's vol-gated forward-return mixture does.",
     "ROUND44: new axes don't help bgm on TLT - fracdiff/bgm -0.01 (memory axis, no edge), volumeimb/bgm transient QC build-cache crash (train OK; broadened retry). bgm axis sweep complete: dollar-imbalance 0.59 >> logdollar 0.35 >> fracdiff -0.01 ~ tickimb -0.02. The DOLLAR-WEIGHTED directional clock is uniquely good for bgm. Unsupervised labeling caps ~0.59 on TLT < supervised triple_barrier/logdollar 0.77.",
     "ROUND45: dollar-imbalance x bgm synergy GENERALIZES to IWM - imbalance/bgm/cdf_overlay 0.7476 (vs bgm/logdollar 0.71), DA 1.92 (exceptional). Just under IWM multi_horizon best 0.7788. imbalance HURTS multi_horizon (0.54 vs logdollar 0.78) -> axis x labeler co-design: imbalance suits UNSUPERVISED bgm, not forward labelers. bgm/imbalance is a general low-DA unsupervised combo (TLT 0.59, IWM 0.7476); the tiny DA means it's UNDER-LEVERED -> sizing headroom.",
-    "ROUND46 WIN: IWM 0.7788 -> +0.8831 (KEPT) via imbalance/bgm/cdf_overlay@thresh0.40 - an UNSUPERVISED labeler (bgm) on the custom dollar-imbalance axis BEATS the supervised multi_horizon. Key: bgm/imbalance is a low-DA regime-timer that was UNDER-LEVERED (R45 DA 1.92); lowering the entry threshold 0.45->0.40 raised exposure -> Calmar 0.88, DA still 3.78. cdf_plain@0.45 also beat (0.79, DA 2.0). The ①② exploration (custom axis + unsupervised labeling + exposure) delivers a real win. Leak-clean (beats always_long control 0.57). New leaderboard: TLT 0.768 (sole weakest), IWM 0.883, QQQ 1.30, EEM 1.40, GLD 1.80, HYG 1.89, XLE 2.26.",
+    "ROUND46 WIN: IWM 0.7788 -> +0.8831 (KEPT) via imbalance/bgm/cdf_overlay@thresh0.40 - an UNSUPERVISED labeler (bgm) on the custom dollar-imbalance axis BEATS the supervised multi_horizon. Key: bgm/imbalance is a low-DA regime-timer that was UNDER-LEVERED (R45 DA 1.92); lowering the entry threshold 0.45->0.40 raised exposure -> Calmar 0.88, DA still 3.78. cdf_plain@0.45 also beat (0.79, DA 2.0). The \u2460\u2461 exploration (custom axis + unsupervised labeling + exposure) delivers a real win. Leak-clean (beats always_long control 0.57). New leaderboard: TLT 0.768 (sole weakest), IWM 0.883, QQQ 1.30, EEM 1.40, GLD 1.80, HYG 1.89, XLE 2.26.",
     "ROUND47: new axes (fracdiff/volumeimb) BREAK triple_barrier on TLT (-0.05/-0.21) - reconfirms f_axiscross (triple_barrier wants logdollar; magnitude-calibrated sigma-barriers mis-fire on memory/volume clocks). New axes help UNSUPERVISED bgm (R45/46), NOT supervised forward labelers - axis x labeler co-design holds. TLT supervised ceiling stays logdollar/triple_barrier/ls_overlay 0.7679.",
     "ROUND48: bgm/imbalance synergy does NOT universally generalize - degenerate (0 trades) on EEM. Asset-specific (TLT 0.59, IWM 0.88; EEM degenerate). bgm's vol-regime gate needs the asset's imbalance bars to form a balanced separable regime. EEM stays buy-hold 1.40.",
-    "ROUND49: Directional-Change method FAILS on TLT - dc/dc_trend -0.03 (DA 87!), logdollar/dc_trend -0.11. dc_trend TREND-FOLLOWS; it whipsaws -> FINDING: TLT is MEAN-REVERTING around rate regimes (not trending), which is why barrier-based triple_barrier wins (reversal-shock) and trend-following loses. Implication: a DC-REVERSAL label (mean-reversion) is the right sign. Now broadening beyond ①② (user): explore long/short + other modules (⑧ sizing, ⑦ ensemble).",
-    "ROUND50 (long/short, ⑧): TLT needs CONTINUOUS long+short. binary longshort 0.39 << continuous ls_overlay 0.77 (binary over-shoots, DA 34). long-only cdf_overlay@0.55 = 0 trades DEGENERATE -> the SHORT leg is essential (triple_barrier rarely predicts strong-up on mostly-down/two-sided TLT). Confirms ls_overlay (continuous L+S) is the right sizing for TLT.",
-    "ROUND51: dc_reversal (mean-rev) -0.17 (over-trades 1881) - BOTH DC labelers fail on TLT (trend -0.03, reversal -0.17); DC framework doesn't fit TLT (barrier structure is uniquely right). Overlay isolation: ls_cdf 0.6489 vs ls_overlay 0.7679 -> vol-overlay adds +0.12. TLT single-asset EXHAUSTIVELY explored (every axis/labeler incl 2 DC + workflow regime_gmm/cusum / sizing / long-short) -> ceiling 0.7679. Last untried module = ⑦ ensemble.",
-    "ROUND52: ⑦ ensemble DILUTES on TLT - triple_barrier+bgm 0.23, +multi_horizon 0.18 (avg of dominant 0.77 + weak same-axis leg washes out edge, over-trades). Ensembles need comparable decorrelated signals; TLT has ONE dominant barrier signal. CONCLUSIVE: TLT single-asset MAXED at 0.7679 across ALL Wang modules ①②⑦⑧ + character (mean-reverting, continuous L+S, one dominant signal). Last untried module class = ③ features. Frontier = cross-asset pairs (sign-off).",
-    "ROUND53 BREAKTHROUGH: TLT 0.7679 -> +1.5221 (KEPT, DA 3.84) via ③ MEAN-REVERSION FEATURES (RSI + Bollinger %b) on the RANGE axis with triple_barrier/ls_overlay. range/triple_barrier was 0.31 WITHOUT feats (R15) -> 1.52 WITH. TLT is mean-reverting; oscillators read overbought/oversold + range bars sample at reversals = times the rate-shock turning points. On logdollar the feats HURT (0.77->0.41) - axis x feature interaction. Causal (RSI/Bollinger backward-only). The NON-①② module (③ features, per user guidance) broke the ceiling after ①②⑦⑧ plateaued. New weakest = IWM 0.8831.",
-    "ROUND54 (verify TLT 1.52): CONTROL range/always_long/ls_overlay = -0.14 (features+axis alone, NO edge) << 1.52 -> the +1.52 is genuinely the triple_barrier labeler reading the mean-rev oscillators (leak-clean, causal). Unlock is triple_barrier-SPECIFIC (range/bgm 0.065). TLT SOLVED 0.77->1.52. ③ mean-rev features now GLOBAL. New weakest = IWM 0.8831.",
-    "ROUND55 WIN: IWM 0.8831 -> +0.9316 (KEPT) via imbalance/triple_barrier/cdf_overlay + ③ mean-rev features. The triple_barrier+oscillators recipe GENERALIZES (TLT range 1.52, IWM imbalance 0.93): features HELP barrier-timing (triple_barrier), slightly HURT regime-clustering (bgm 0.88->0.83). ③ features x triple_barrier is a GENERAL synergy. IWM still weakest (0.9316 < QQQ 1.30).",
-    "ROUND56: IWM push DISCARD (stays 0.9316). range/triple_barrier 0.38 (range suits mean-reverting TLT, not trending IWM), imbalance@0.30 0.73 (over-trades). IWM recipe LOCKED: imbalance/triple_barrier/cdf_overlay@0.40 + ③feats = 0.9316. Axis/thresh are character-specific (imbalance+0.40 trending IWM; range two-sided TLT).",
-    "ROUND57 WIN: IWM 0.9316 -> +1.0126 (KEPT) via ⑦ ENSEMBLE imbalance/triple_barrier+bgm/cdf_overlay. Averaging TWO COMPARABLE decorrelated signals (tb 0.93 + bgm 0.83) cut joint DA to 3.53 and lifted Calmar PAST 1.0 - the diversification win that couldn't happen on TLT (one dominant signal). VALIDATES ⑦: ensembles help with comparable signals, dilute with strong+weak. ③feats + ⑦ensemble: IWM 0.88->0.93->1.01.",
+    "ROUND49: Directional-Change method FAILS on TLT - dc/dc_trend -0.03 (DA 87!), logdollar/dc_trend -0.11. dc_trend TREND-FOLLOWS; it whipsaws -> FINDING: TLT is MEAN-REVERTING around rate regimes (not trending), which is why barrier-based triple_barrier wins (reversal-shock) and trend-following loses. Implication: a DC-REVERSAL label (mean-reversion) is the right sign. Now broadening beyond \u2460\u2461 (user): explore long/short + other modules (\u2467 sizing, \u2466 ensemble).",
+    "ROUND50 (long/short, \u2467): TLT needs CONTINUOUS long+short. binary longshort 0.39 << continuous ls_overlay 0.77 (binary over-shoots, DA 34). long-only cdf_overlay@0.55 = 0 trades DEGENERATE -> the SHORT leg is essential (triple_barrier rarely predicts strong-up on mostly-down/two-sided TLT). Confirms ls_overlay (continuous L+S) is the right sizing for TLT.",
+    "ROUND51: dc_reversal (mean-rev) -0.17 (over-trades 1881) - BOTH DC labelers fail on TLT (trend -0.03, reversal -0.17); DC framework doesn't fit TLT (barrier structure is uniquely right). Overlay isolation: ls_cdf 0.6489 vs ls_overlay 0.7679 -> vol-overlay adds +0.12. TLT single-asset EXHAUSTIVELY explored (every axis/labeler incl 2 DC + workflow regime_gmm/cusum / sizing / long-short) -> ceiling 0.7679. Last untried module = \u2466 ensemble.",
+    "ROUND52: \u2466 ensemble DILUTES on TLT - triple_barrier+bgm 0.23, +multi_horizon 0.18 (avg of dominant 0.77 + weak same-axis leg washes out edge, over-trades). Ensembles need comparable decorrelated signals; TLT has ONE dominant barrier signal. CONCLUSIVE: TLT single-asset MAXED at 0.7679 across ALL Wang modules \u2460\u2461\u2466\u2467 + character (mean-reverting, continuous L+S, one dominant signal). Last untried module class = \u2462 features. Frontier = cross-asset pairs (sign-off).",
+    "ROUND53 BREAKTHROUGH: TLT 0.7679 -> +1.5221 (KEPT, DA 3.84) via \u2462 MEAN-REVERSION FEATURES (RSI + Bollinger %b) on the RANGE axis with triple_barrier/ls_overlay. range/triple_barrier was 0.31 WITHOUT feats (R15) -> 1.52 WITH. TLT is mean-reverting; oscillators read overbought/oversold + range bars sample at reversals = times the rate-shock turning points. On logdollar the feats HURT (0.77->0.41) - axis x feature interaction. Causal (RSI/Bollinger backward-only). The NON-\u2460\u2461 module (\u2462 features, per user guidance) broke the ceiling after \u2460\u2461\u2466\u2467 plateaued. New weakest = IWM 0.8831.",
+    "ROUND54 (verify TLT 1.52): CONTROL range/always_long/ls_overlay = -0.14 (features+axis alone, NO edge) << 1.52 -> the +1.52 is genuinely the triple_barrier labeler reading the mean-rev oscillators (leak-clean, causal). Unlock is triple_barrier-SPECIFIC (range/bgm 0.065). TLT SOLVED 0.77->1.52. \u2462 mean-rev features now GLOBAL. New weakest = IWM 0.8831.",
+    "ROUND55 WIN: IWM 0.8831 -> +0.9316 (KEPT) via imbalance/triple_barrier/cdf_overlay + \u2462 mean-rev features. The triple_barrier+oscillators recipe GENERALIZES (TLT range 1.52, IWM imbalance 0.93): features HELP barrier-timing (triple_barrier), slightly HURT regime-clustering (bgm 0.88->0.83). \u2462 features x triple_barrier is a GENERAL synergy. IWM still weakest (0.9316 < QQQ 1.30).",
+    "ROUND56: IWM push DISCARD (stays 0.9316). range/triple_barrier 0.38 (range suits mean-reverting TLT, not trending IWM), imbalance@0.30 0.73 (over-trades). IWM recipe LOCKED: imbalance/triple_barrier/cdf_overlay@0.40 + \u2462feats = 0.9316. Axis/thresh are character-specific (imbalance+0.40 trending IWM; range two-sided TLT).",
+    "ROUND57 WIN: IWM 0.9316 -> +1.0126 (KEPT) via \u2466 ENSEMBLE imbalance/triple_barrier+bgm/cdf_overlay. Averaging TWO COMPARABLE decorrelated signals (tb 0.93 + bgm 0.83) cut joint DA to 3.53 and lifted Calmar PAST 1.0 - the diversification win that couldn't happen on TLT (one dominant signal). VALIDATES \u2466: ensembles help with comparable signals, dilute with strong+weak. \u2462feats + \u2466ensemble: IWM 0.88->0.93->1.01.",
     "ROUND58: IWM ensemble tuning DISCARD (stays 1.0126). thresh 0.35 over-trades (0.86); 3-way (+multi_horizon) DILUTES (0.87) - adding a weaker leg drags the comparable tb+bgm pair down (strong+weak dilution). Optimal = 2 COMPARABLE legs (tb+bgm) @0.40. IWM locked 1.0126, still weakest (<QQQ 1.30)."
   ],
   "dead_ends": [
@@ -952,14 +952,23 @@
     "ROUND2: a CDF map centered at p=0.5 + an aggressive inverse-vol overlay (floor 0.25, fast=20/slow=100) is TOO AGGRESSIVE for drift assets -- it cuts CAGR faster than MaxDD and halves Calmar. Do NOT use floor 0.25 / center-0.5 again. The DA win (-69%) is real but useless if CAGR collapses. The fix is to STAY INVESTED BY DEFAULT and only de-lever in genuine turbulence.",
     "ROUND3: binary realized-drawdown STOP overlays (step flat past an underwater threshold, re-enter near peak) are a DEAD END on drift-up / V-shaped-recovery assets (QQQ): they sell the dip, miss the rebound, and WORSEN both Calmar (1.11->0.26) and DA (22.83->76.54), and fail G2 (2 trades). Do NOT retry drawdown-stop / de-risking overlays on drift assets in ANY form (continuous R2, binary R3 both failed). Such a stop may only help an asset with SUSTAINED (non-V) bear legs.",
     "ROUND4: forcing the VOL axis on all 7 ETFs is wrong - it is the wrong axis for equities (QQQ/IWM); and pairing it with carry (which fails on equities) makes every cell tie/lose to buy-hold. Use per-ETF optimal axis + kmeans2stage (history hypothesis, under test R5). Stop tweaking sizing on the vol axis.",
-    "ROUND5: a label-INDEPENDENT inverse-vol overlay multiplied onto the bet makes the labeler untestable (it dominates the path). To test whether ② labeling matters, the sizing must be LABEL-DRIVEN (position responds to the model prob / goes flat when p<=tau), not a vol overlay.",
+    "ROUND5: a label-INDEPENDENT inverse-vol overlay multiplied onto the bet makes the labeler untestable (it dominates the path). To test whether \u2461 labeling matters, the sizing must be LABEL-DRIVEN (position responds to the model prob / goes flat when p<=tau), not a vol overlay.",
     "ROUND6: removing the overlay does NOT make the label matter -- it just reverts to buy-hold (model is always-long on trending assets). The single-asset axis x labeling x sizing space is EXHAUSTED (null): do not run more single-asset long-only rounds expecting to beat buy-hold. Pivot to cross-asset pairs.",
     "real-yield FRED features on GLD (R1854-1855): built+leak-safe but FRED data not available on QC (first non-equity attempt; A==B) -> blocked on data access, thesis untested not refuted",
     "GLD<-TIP real-rate proxy (R1856, 2026-06-09): cross-asset termstruct on TIPS-bond ETF HURTS GLD 4.02->3.18 (val_auc 0.735->0.773 UP but Calmar DOWN = overfit/over-selection on MI). Reproduces GLD<-UUP (R1242 4.02->3.18) almost exactly => the cross-asset ETF-PRICE-proxy channel is PROXY-AGNOSTIC closed for GLD (dollar UUP AND real-rate TIP both -> 3.18). Implication: a tradeable price proxy is provably insufficient for the gold<-real-rate thesis; only the CLEAN FRED yield LEVEL (data-access-blocked) is untested. (Cell GLD_..._ig_ts used cross_asset=TIP; template reverted to UUP.)",
-    "External-data WALL confirmed (R1857): QC-native Treasury USTYCR ALSO delivers no data (after FRED R1854-55) -> project 31338454 has no non-equity data access (API-validated: both train, neither delivers). Real-yield/options/COT all need a USER QC-data-access step."
+    "External-data WALL confirmed (R1857): QC-native Treasury USTYCR ALSO delivers no data (after FRED R1854-55) -> project 31338454 has no non-equity data access (API-validated: both train, neither delivers). Real-yield/options/COT all need a USER QC-data-access step.",
+    "realyield/exogenous-yield on GLD (all forms: proxy/nominal/DFII10)",
+    "logdollar_rc de-scaled axis on reversion (smoothing kills overreaction concentration)",
+    "multi-axis position netting at 4.02/0.90 leg asymmetry",
+    "wangrich 160-dim panel under any reduce (ae_np==pca 2.97, infogain 2.14 vs champion 4.02)",
+    "SPY sess2 session momentum (learnable auc 0.556, unprofitable 0.51<BH 1.04)",
+    "EWT 5.13 adoption (phase-fragile: min-phase 1.56 < BH; alignment-luck extreme)",
+    "moe_law mixture-of-experts labeler (honest-but-inert: abstains on all real names incl. DXJ 2.90; works on synthetic two-law data)",
+    "EZU structure (ker baseline 0.23 despite val_auc 0.814 \u2014 predictable-not-profitable)",
+    "UUP timing ensemble on extended window (0.2922 < own BH 0.4670) \u2014 retire to always_long"
   ],
   "gates": "HARD, on REAL OOS: G1 Calmar>3.0, G2 trades>80, G3 no-lookahead, G4 |train_auc-val_auc|<0.05. G2 EXEMPTS the buy-and-hold baseline (1 trade) -- it is the reference CEILING, not a deployable result. Every DEPLOYABLE config must trade >80 times. So buy-hold (1 trade) and the R3 breaker (2 trades) cannot be 'kept' regardless of Calmar; only an ACTIVELY-trading config (R2 gave 431) can pass.",
-  "next_idea": "DEFINITIVE EXTERNAL-DATA WALL (R1854-1857, 2026-06-09): the real-yield / any-new-modality direction is BLOCKED AT THE PROJECT LEVEL, API-validated. Tested TWO documented external data sources via add_data: FRED (DFII10/DGS10/DGS2, R1854-55) AND QC-native US Treasury Yield Curve (USTreasuryYieldCurveRate/'USTYCR', R1857). BOTH render+train without crashing (API/class CORRECT) but deliver ZERO data => A==B bit-identical (4.0218) via graceful fallback. Conclusion: QC project 31338454 has NO external (non-equity) data access (every prior round is add_equity-only). This is a USER/QC ACCOUNT step (enable data subscriptions / use a data-enabled project), NOT a code/API fix. The real-yield wiring is built+leak-safe+ready (features.py realyield_feats unit-tested; footer Treasury+lag+join+fallback; cell-key _ry) and will work the moment external data flows. Until then: NO autonomous edge experiment can reach a new edge (price/volume closed; cross-asset ETF-PRICE proxies overfit-closed GLD<-TIP/UUP -> 3.18; external data walled). Book is optimized (R12-16: lean conservative 6-name; recent OOS third favors it over the sleeve). Loop has DEFINITIVELY exhausted autonomous possibilities. Docs: docs/analysis/LOOP_SESSION_2026-06-09.md, docs/research/DIRECTION_REALYIELD_GLD_2026-06-09.md.",
+  "next_idea": "EXTENDED-WINDOW STATE (TEST_END 2026-06-11, the loop's current truth): GLD 2.1228 (BH 1.3272, edge +0.80, real) \u00b7 USO 2.6901 (BH 0.8560, edge +1.83, THE strongest engine) \u00b7 UUP timing 0.2922 < its own BH 0.4670 = RETIRE to always_long (decorrelation seat only, like IWM 0.448<0.525). Stored per_etf_best numbers are OLD-WINDOW; fixed TARGET_BARS on a grown series recalibrates all bars = wholesale restatement each window advance (re-derive the book after each). Phase-cert called GLD's drop (honest = family median, not lucky-top). EXTENDED-WINDOW BOOK (re-derived 06-11, all-fresh curves, ~11-day grid): 7-name WITH USO = Calmar 4.81 / CAGR 20.3% / MaxDD -4.2% / Sharpe 2.38 (raw Calmar^2 puts USO at 51% \u2014 cap to ~11-15% for concentration safety at modest Calmar cost); 6-name without = 3.87. +USO adds ~+0.9 Calmar AFTER the restatement. DECISIONS FOR HUMAN/OPUS: (1) crown +USO on extended-window numbers (weighting: raw vs capped); (2) retire UUP's timing model to always_long; (3) authorize a new data modality to reopen the frontier (everything loop-runnable is raced to a verdict \u2014 see the 06-10 ledger). Harness: QC API is FORM-ENCODED now (JSON broke server-side). Docs: docs/analysis/LEAK_REVIEW_2026-06-10.md, docs/research/WANG_WORKFLOW_SYNTHESIS_2026-06-10.md, program.md.",
   "frontier": "CROSS-ASSET PAIRS. Single-asset long-only ML is confirmed-exhausted at the buy-hold ceiling (~1.6) over 6 rounds. >3.0 requires pairs/spread (history: 2.91), which needs a 2-symbol harness extension (sign-off-worthy scorer change).",
   "notes": "clean slate 2026-06-01. R1=landscape, bottleneck=module 8 sizing. R2=de-saturated CDF-x-vol sizing: cleared G2 (431 trades)+DA -69% on QQQ vol but over-de-levered => Calmar 1.11->0.54, reverted. R3=binary DD circuit-breaker: FAILED G2 (2 trades)+worse on both (Calmar 0.26, DA 76.5), reverted -- drawdown stops are pro-cyclical on drift-up assets. REFRAME (user): G2>80 trades EXEMPTS buy-hold as reference; every deployable config MUST trade actively. R2's active sizing is the right regime; tune it (raise floor, recenter CDF on tau) to keep CAGR. carry==always_long in both R2 and R3 => labeler is not the lever; sizing is. | R4: vol-for-all+detuned-sizing => active but sub-buy-hold on all; carry==always_long (4th). PIVOT (history-informed, user-confirmed re-validation): per-ETF optimal axis + kmeans2stage. Audit fix applied: VAL inverse-vol off-by-one (mild VAL-only lookahead) -> append log_rets[i-1] for exact train/infer parity; cost dead-band unified to 0.01. REAL OOS numbers unaffected (from infer). R5 uses the 2-node PARALLEL driver.",
   "project_history": {
@@ -1000,7 +1009,7 @@
       "real_skew": -0.1693,
       "real_kurt": 5.4363,
       "ceilinged": true,
-      "status": "CEILINGED — trend_scan 1.02 / KER 0.89 < buy-hold 1.24; tech up-trender, timing trims upside. Buy-hold 1.24 deployable champion.",
+      "status": "CEILINGED \u2014 trend_scan 1.02 / KER 0.89 < buy-hold 1.24; tech up-trender, timing trims upside. Buy-hold 1.24 deployable champion.",
       "dsr": 0.6766,
       "dsr_n_trials": 22,
       "dsr_survives_holm": false,
@@ -1019,7 +1028,7 @@
       "real_calmar": 0.5496,
       "significant": false,
       "deflation": "N/A_buyhold",
-      "status": "CEILINGED — 8 label×axis combos (trend_scan/bgm/regime_gmm/cusum_regime/dc_reversal/multi_horizon/tertile/dc_trend) all < buy-hold 0.55 or < deflation floor 0.82. Buy-hold 0.55 is the deployable champion. Excluded from lowest-pick.",
+      "status": "CEILINGED \u2014 8 label\u00d7axis combos (trend_scan/bgm/regime_gmm/cusum_regime/dc_reversal/multi_horizon/tertile/dc_trend) all < buy-hold 0.55 or < deflation floor 0.82. Buy-hold 0.55 is the deployable champion. Excluded from lowest-pick.",
       "real_cagr": 15.664,
       "real_mdd": 28.5,
       "real_da": 40.8239,
@@ -1031,10 +1040,10 @@
       "n_trials": 48,
       "psr": 0.8978,
       "ceilinged": true,
-      "dsr": 0.6551,
-      "dsr_n_trials": 32,
+      "dsr": 0.6494,
+      "dsr_n_trials": 27,
       "dsr_survives_holm": false,
-      "minbtl_years": 5.328,
+      "minbtl_years": 4.978,
       "minbtl_sufficient": false
     },
     "EEM": {
@@ -1063,7 +1072,7 @@
       "revalidated": "2026-06-02",
       "revalidated_trades": 470,
       "val_auc_reval": "0.4962",
-      "status": "CEILINGED — meta collapsed (window artifact); trend_scan/cusum_regime ls_overlay both NEGATIVE (shorting hurt, EM net-up). Buy-hold 1.29 deployable champion.",
+      "status": "CEILINGED \u2014 meta collapsed (window artifact); trend_scan/cusum_regime ls_overlay both NEGATIVE (shorting hurt, EM net-up). Buy-hold 1.29 deployable champion.",
       "deflation": "N/A_buyhold",
       "sharpe": 1.2049,
       "n_days": 710,
@@ -1111,15 +1120,15 @@
       "real_skew": -0.2919,
       "real_kurt": 5.6787,
       "ceilinged": true,
-      "status": "CEILINGED — tertile/bgm/trend_scan/KER all fail deflation (floor 1.36, 37 trials); KER val_auc 0.42 confirms NO learnable structure (asset-driven ceiling, not a method gap). Honest champion = buy-hold 0.64.",
-      "dsr": 0.6588,
-      "dsr_n_trials": 13,
+      "status": "CEILINGED \u2014 tertile/bgm/trend_scan/KER all fail deflation (floor 1.36, 37 trials); KER val_auc 0.42 confirms NO learnable structure (asset-driven ceiling, not a method gap). Honest champion = buy-hold 0.64.",
+      "dsr": 0.6677,
+      "dsr_n_trials": 18,
       "dsr_survives_holm": false,
       "real_calmar_leaky": 0.8588,
       "leak_fixed_2026_06_03": true,
       "leak_note": "leak SUPPRESSED XLE: 0.86->1.35 leak-free (leak adds variance, not uniform inflation)",
-      "minbtl_years": 2.664,
-      "minbtl_sufficient": true
+      "minbtl_years": 3.577,
+      "minbtl_sufficient": false
     },
     "HYG": {
       "cell": "HYG_logdollar_always_long_cdf_overlay_t0.55",
@@ -1152,13 +1161,13 @@
       "real_skew": 0.457,
       "real_kurt": 8.1525,
       "ceilinged": true,
-      "status": "CEILINGED — trend_scan 0.05 / cusum_regime 0.91 << buy-hold 1.83; credit carry beats timing. Buy-hold 1.83 deployable champion.",
+      "status": "CEILINGED \u2014 trend_scan 0.05 / cusum_regime 0.91 << buy-hold 1.83; credit carry beats timing. Buy-hold 1.83 deployable champion.",
       "evalue_oos": 2.51,
       "evalue_verdict": "weak (e>=1)",
-      "dsr": 0.7624,
-      "dsr_n_trials": 12,
+      "dsr": 0.8316,
+      "dsr_n_trials": 10,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.43,
+      "minbtl_years": 1.279,
       "minbtl_sufficient": true
     },
     "TLT": {
@@ -1196,7 +1205,7 @@
       "real_kurt": 8.7013,
       "exhausted_out": true,
       "ceilinged": true,
-      "dsr": 0.6559,
+      "dsr": 0.573,
       "dsr_n_trials": 48,
       "dsr_survives_holm": false,
       "minbtl_years": 5.672,
@@ -1227,10 +1236,10 @@
         "rebal_band": 0.03,
         "reduce": "infogain"
       },
-      "dsr": 0.9561,
-      "dsr_n_trials": 157,
+      "dsr": 0.75,
+      "dsr_n_trials": 133,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.025,
+      "minbtl_years": 1.47,
       "minbtl_sufficient": true
     },
     "EFA": {
@@ -1265,7 +1274,7 @@
       "real_skew": -0.1403,
       "real_kurt": 6.8631,
       "ceilinged": true,
-      "status": "CEILINGED — trend_scan 1.385 BEAT buy-hold 1.286 but val_auc 0.466<0.52 (no predictive validity, window/path artifact); bgm 0.67. Buy-hold 1.286 deployable champion.",
+      "status": "CEILINGED \u2014 trend_scan 1.385 BEAT buy-hold 1.286 but val_auc 0.466<0.52 (no predictive validity, window/path artifact); bgm 0.67. Buy-hold 1.286 deployable champion.",
       "dsr": 0.841,
       "dsr_n_trials": 6,
       "dsr_survives_holm": false,
@@ -1304,13 +1313,13 @@
       "real_skew": -0.3954,
       "real_kurt": 6.1746,
       "ceilinged": true,
-      "status": "CEILINGED — 5 method-families (trend_scan/KER/bgm/cusum_regime/tertile) all < buy-hold 0.91; commodity up-drifter, timing misses upside. Buy-hold 0.91 deployable champion.",
-      "dsr": 0.7133,
-      "dsr_n_trials": 23,
+      "status": "CEILINGED \u2014 5 method-families (trend_scan/KER/bgm/cusum_regime/tertile) all < buy-hold 0.91; commodity up-drifter, timing misses upside. Buy-hold 0.91 deployable champion.",
+      "dsr": 0.7831,
+      "dsr_n_trials": 20,
       "dsr_survives_holm": false,
       "evalue_oos": 1.26,
       "evalue_verdict": "weak (e>=1)",
-      "minbtl_years": 2.578,
+      "minbtl_years": 2.421,
       "minbtl_sufficient": true
     },
     "UUP": {
@@ -1337,13 +1346,13 @@
       },
       "status": "REAL EDGE 1.30 (imbalance bgm+ker). meta-labeling tested: triple_barrier_meta -0.26 / tight_meta +0.19, both non-deployable (gate over-filters to 62-71 trades). ker/accel/meta all tried -> 1.30 optimal.",
       "ceilinged": true,
-      "dsr": 0.4364,
-      "dsr_n_trials": 84,
+      "dsr": 0.0506,
+      "dsr_n_trials": 68,
       "dsr_survives_holm": false,
       "evalue_oos": 1.31,
       "evalue_verdict": "weak (e>=1)",
       "evalue_leak_free": true,
-      "minbtl_years": 3.751,
+      "minbtl_years": 94.686,
       "minbtl_sufficient": false,
       "stale_calmar_was": 1.2958,
       "sizing_revalidated": "dd_overlay",
@@ -1381,7 +1390,7 @@
       "real_skew": 0.675,
       "real_kurt": 7.7273,
       "ceilinged": true,
-      "status": "CEILINGED — trend_scan/bgm both G2-FAIL (45/13 trades<80) + < buy-hold 1.15. Low-vol inflation bond: timing under-trades (same as TLT). Buy-hold 1.15 deployable champion.",
+      "status": "CEILINGED \u2014 trend_scan/bgm both G2-FAIL (45/13 trades<80) + < buy-hold 1.15. Low-vol inflation bond: timing under-trades (same as TLT). Buy-hold 1.15 deployable champion.",
       "evalue_oos": 1.58,
       "evalue_verdict": "weak (e>=1)",
       "dsr": 0.6627,
@@ -1399,10 +1408,10 @@
       "val_auc": 0.5,
       "ceilinged": true,
       "status": "DRIFTER (buy-hold 1.26). GLD's tradeable-trend edge does NOT generalize: ker+trend_scan timing 1.19 < buy-hold 1.26 (val_auc 0.5, no structure). GLD's edge is idiosyncratic to gold, not a precious-metals property.",
-      "dsr": 0.8339,
-      "dsr_n_trials": 22,
+      "dsr": 0.8274,
+      "dsr_n_trials": 19,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.665,
+      "minbtl_years": 1.557,
       "minbtl_sufficient": true
     },
     "SOXX": {
@@ -1427,8 +1436,8 @@
         "thresh": 0.5,
         "sizing": "cdf_overlay"
       },
-      "dsr": 0.8258,
-      "dsr_n_trials": 54,
+      "dsr": 0.2139,
+      "dsr_n_trials": 53,
       "dsr_survives_holm": false,
       "evalue_oos": 1.2,
       "evalue_verdict": "weak (e>=1)",
@@ -1440,8 +1449,8 @@
       "evalue_oos_PRE_LEAK": 3.09,
       "psr_PRE_LEAK": 0.9987,
       "evalue_leak_free": true,
-      "minbtl_years": 2.298,
-      "minbtl_sufficient": true,
+      "minbtl_years": 10.985,
+      "minbtl_sufficient": false,
       "stale_calmar_was": 0.8074,
       "sizing_revalidated": "dd_overlay",
       "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
@@ -1474,10 +1483,10 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.7029,
-      "dsr_n_trials": 64,
+      "dsr": 0.752,
+      "dsr_n_trials": 59,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.544,
+      "minbtl_years": 1.505,
       "minbtl_sufficient": true
     },
     "BIL": {
@@ -1545,10 +1554,10 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.7898,
-      "dsr_n_trials": 65,
+      "dsr": 0.5809,
+      "dsr_n_trials": 63,
       "dsr_survives_holm": false,
-      "minbtl_years": 2.955,
+      "minbtl_years": 7.012,
       "minbtl_sufficient": false,
       "stale_calmar_was": 1.6256,
       "sizing_revalidated": "cdf_overlay",
@@ -1619,10 +1628,10 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.0303,
-      "dsr_n_trials": 57,
+      "dsr": 0.1201,
+      "dsr_n_trials": 59,
       "dsr_survives_holm": false,
-      "minbtl_years": 7.677,
+      "minbtl_years": 12.144,
       "minbtl_sufficient": false,
       "stale_calmar_was": 2.5108,
       "sizing_revalidated": "dd_overlay",
@@ -1656,11 +1665,11 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.5335,
-      "dsr_n_trials": 57,
+      "dsr": 0.0269,
+      "dsr_n_trials": 59,
       "dsr_survives_holm": false,
-      "minbtl_years": 2.451,
-      "minbtl_sufficient": true,
+      "minbtl_years": 49.907,
+      "minbtl_sufficient": false,
       "stale_calmar_was": 2.4888,
       "sizing_revalidated": "cdf_overlay",
       "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
@@ -1693,11 +1702,11 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.758,
-      "dsr_n_trials": 51,
+      "dsr": 0.6488,
+      "dsr_n_trials": 57,
       "dsr_survives_holm": false,
-      "minbtl_years": 2.107,
-      "minbtl_sufficient": true
+      "minbtl_years": 2.836,
+      "minbtl_sufficient": false
     },
     "VT": {
       "cell": "VT_logdollar_ker_dd_overlay_t0.45",
@@ -1727,10 +1736,10 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.8752,
-      "dsr_n_trials": 6,
+      "dsr": 0.7808,
+      "dsr_n_trials": 12,
       "dsr_survives_holm": false,
-      "minbtl_years": 0.66,
+      "minbtl_years": 1.082,
       "minbtl_sufficient": true
     },
     "EWY": {
@@ -1761,10 +1770,10 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.9246,
-      "dsr_n_trials": 6,
+      "dsr": 0.9162,
+      "dsr_n_trials": 14,
       "dsr_survives_holm": false,
-      "minbtl_years": 0.768,
+      "minbtl_years": 1.362,
       "minbtl_sufficient": true
     },
     "SPXL": {
@@ -1832,10 +1841,10 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.8884,
-      "dsr_n_trials": 54,
+      "dsr": 0.6578,
+      "dsr_n_trials": 58,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.497,
+      "minbtl_years": 2.444,
       "minbtl_sufficient": true,
       "stale_calmar_was": 2.3699,
       "sizing_revalidated": "dd_overlay",
@@ -1869,10 +1878,10 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.8099,
-      "dsr_n_trials": 6,
+      "dsr": 0.6301,
+      "dsr_n_trials": 12,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.212,
+      "minbtl_years": 1.987,
       "minbtl_sufficient": true
     },
     "ACWX": {
@@ -1903,11 +1912,11 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.8866,
-      "dsr_n_trials": 6,
+      "dsr": 0.2237,
+      "dsr_n_trials": 12,
       "dsr_survives_holm": false,
-      "minbtl_years": 0.86,
-      "minbtl_sufficient": true,
+      "minbtl_years": 55.041,
+      "minbtl_sufficient": false,
       "stale_calmar_was": 2.41,
       "sizing_revalidated": "dd_overlay",
       "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
@@ -1940,10 +1949,10 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.7052,
-      "dsr_n_trials": 83,
+      "dsr": 0.8421,
+      "dsr_n_trials": 71,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.469,
+      "minbtl_years": 1.402,
       "minbtl_sufficient": true
     },
     "EWT": {
@@ -1959,7 +1968,7 @@
       "source": "tournament",
       "psr": 1.0,
       "n_trials": 14,
-      "significant": true,
+      "significant": false,
       "leak_fixed": true,
       "config": {
         "ticker": "EWT",
@@ -1973,7 +1982,13 @@
         "reduce": "correlation",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.9803,
+      "dsr_n_trials": 13,
+      "dsr_survives_holm": false,
+      "minbtl_years": 0.592,
+      "minbtl_sufficient": true,
+      "phase_cert": "FAIL 2026-06-10: 5 pre-registered bar-phase offsets -> 5.133/2.890/2.690/3.208/1.561 (min 1.56 < BH 1.87, spread 3.57). The 5.13 crown is the extreme of its own phase family (cf. historical prints 5.133/3.728/0.586). ADOPTION RETRACTED \u2014 phase-median ~2.9 is the honest ceiling; do not book-seat without re-certification."
     },
     "IDV": {
       "cell": "IDV_logdollar_ker_cdf_overlay_t0.45",
@@ -2002,7 +2017,12 @@
         "reduce": "infogain",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.934,
+      "dsr_n_trials": 13,
+      "dsr_survives_holm": false,
+      "minbtl_years": 0.8,
+      "minbtl_sufficient": true
     },
     "ILF": {
       "cell": "ILF_logdollar_trend_leg_dd_overlay_t0.45",
@@ -2031,7 +2051,12 @@
         "reduce": "infogain",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.7411,
+      "dsr_n_trials": 13,
+      "dsr_survives_holm": false,
+      "minbtl_years": 1.698,
+      "minbtl_sufficient": true
     },
     "IXG": {
       "cell": "IXG_logdollar_trend_leg_dd_overlay_t0.45",
@@ -2060,7 +2085,12 @@
         "reduce": "infogain",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.9247,
+      "dsr_n_trials": 12,
+      "dsr_survives_holm": false,
+      "minbtl_years": 1.318,
+      "minbtl_sufficient": true
     },
     "EPI": {
       "cell": "EPI_logdollar_trend_leg_dd_overlay_t0.45",
@@ -2089,7 +2119,12 @@
         "reduce": "infogain",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.6528,
+      "dsr_n_trials": 11,
+      "dsr_survives_holm": false,
+      "minbtl_years": 1.379,
+      "minbtl_sufficient": true
     },
     "EWG": {
       "cell": "EWG_logdollar_trend_leg_cdf_overlay_t0.45",
@@ -2118,7 +2153,12 @@
         "reduce": "infogain",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.4979,
+      "dsr_n_trials": 15,
+      "dsr_survives_holm": false,
+      "minbtl_years": 1.694,
+      "minbtl_sufficient": true
     },
     "DXJ": {
       "cell": "DXJ_logdollar_ker_cdf_overlay_t0.45",
@@ -2147,7 +2187,12 @@
         "reduce": "infogain",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.8222,
+      "dsr_n_trials": 12,
+      "dsr_survives_holm": false,
+      "minbtl_years": 1.35,
+      "minbtl_sufficient": true
     },
     "AAXJ": {
       "cell": "AAXJ_logdollar_sadf_explosive_dd_overlay_t0.50",
@@ -2176,7 +2221,13 @@
         "reduce": "correlation",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.8982,
+      "dsr_n_trials": 12,
+      "dsr_survives_holm": false,
+      "minbtl_years": 0.843,
+      "minbtl_sufficient": true,
+      "permute_confirmed": "PASS 2026-06-10: replication 2.4406 bit-exact; genuine 257-trade shuffled-label control -0.1725 (edge over BH +1.04 -> -1.57, total collapse). Weak-real (DSR 0.898) \u2014 permute-confirmed, not crown-grade."
     },
     "EPP": {
       "cell": "EPP_logdollar_ker_cdf_overlay_t0.45",
@@ -2205,7 +2256,12 @@
         "reduce": "correlation",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.8267,
+      "dsr_n_trials": 12,
+      "dsr_survives_holm": false,
+      "minbtl_years": 1.155,
+      "minbtl_sufficient": true
     },
     "EWL": {
       "cell": "EWL_logdollar_ker_dd_overlay_t0.45",
@@ -2234,7 +2290,12 @@
         "reduce": "correlation",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "dsr": 0.7338,
+      "dsr_n_trials": 12,
+      "dsr_survives_holm": false,
+      "minbtl_years": 1.941,
+      "minbtl_sufficient": true
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -2672,7 +2733,7 @@
         "id": "r46",
         "type": "milestone",
         "phase": "IWM",
-        "label": "R46 WIN: IWM 0.78->0.88 - UNSUPERVISED bgm/imbalance + exposure tune beats supervised multi_horizon. ①② win"
+        "label": "R46 WIN: IWM 0.78->0.88 - UNSUPERVISED bgm/imbalance + exposure tune beats supervised multi_horizon. \u2460\u2461 win"
       },
       {
         "id": "r47",
@@ -2696,37 +2757,37 @@
         "id": "f_tlt_meanrev",
         "type": "finding",
         "phase": "TLT",
-        "label": "FINDING: TLT is MEAN-REVERTING around rate regimes - trend-following (dc_trend) whipsaws (DA 87); barrier/reversal labels (triple_barrier) win. Broaden beyond ①②: try long/short + ⑦ensemble/⑧sizing"
+        "label": "FINDING: TLT is MEAN-REVERTING around rate regimes - trend-following (dc_trend) whipsaws (DA 87); barrier/reversal labels (triple_barrier) win. Broaden beyond \u2460\u2461: try long/short + \u2466ensemble/\u2467sizing"
       },
       {
         "id": "r50",
         "type": "round",
         "phase": "TLT",
-        "label": "R50 (⑧ long/short): TLT needs CONTINUOUS L+S - binary 0.39<<ls_overlay 0.77; long-only degenerate (short essential)"
+        "label": "R50 (\u2467 long/short): TLT needs CONTINUOUS L+S - binary 0.39<<ls_overlay 0.77; long-only degenerate (short essential)"
       },
       {
         "id": "r51",
         "type": "round",
         "phase": "TLT",
-        "label": "R51: dc_reversal -0.17 (both DC labelers fail); ls_overlay adds +0.12 vs ls_cdf. TLT exhausted single-asset -> try ⑦ ensemble"
+        "label": "R51: dc_reversal -0.17 (both DC labelers fail); ls_overlay adds +0.12 vs ls_cdf. TLT exhausted single-asset -> try \u2466 ensemble"
       },
       {
         "id": "r52",
         "type": "round",
         "phase": "TLT",
-        "label": "R52 ⑦ ensemble DILUTES (0.23/0.18) - one dominant signal. TLT MAXED single-asset across ①②⑦⑧"
+        "label": "R52 \u2466 ensemble DILUTES (0.23/0.18) - one dominant signal. TLT MAXED single-asset across \u2460\u2461\u2466\u2467"
       },
       {
         "id": "r53",
         "type": "milestone",
         "phase": "TLT",
-        "label": "R53 BREAKTHROUGH: TLT 0.77 -> 1.52 via ③ MEAN-REV FEATURES (RSI+Bollinger) on RANGE axis. Non-①② module broke the ceiling"
+        "label": "R53 BREAKTHROUGH: TLT 0.77 -> 1.52 via \u2462 MEAN-REV FEATURES (RSI+Bollinger) on RANGE axis. Non-\u2460\u2461 module broke the ceiling"
       },
       {
         "id": "f_meanrev_feat",
         "type": "finding",
         "phase": "TLT",
-        "label": "FINDING: ③ mean-rev features (RSI/Bollinger) + triple_barrier = GENERAL synergy (TLT range 0.31->1.52; IWM imbalance 0.88->0.93). Oscillators sharpen barrier-timing; help triple_barrier, slightly hurt bgm. The non-①② module generalizes"
+        "label": "FINDING: \u2462 mean-rev features (RSI/Bollinger) + triple_barrier = GENERAL synergy (TLT range 0.31->1.52; IWM imbalance 0.88->0.93). Oscillators sharpen barrier-timing; help triple_barrier, slightly hurt bgm. The non-\u2460\u2461 module generalizes"
       },
       {
         "id": "r54",
@@ -2738,7 +2799,7 @@
         "id": "r55",
         "type": "milestone",
         "phase": "IWM",
-        "label": "R55 WIN: IWM 0.88->0.93 - triple_barrier+③feats GENERALIZES from TLT. Oscillators sharpen barrier-timing across assets"
+        "label": "R55 WIN: IWM 0.88->0.93 - triple_barrier+\u2462feats GENERALIZES from TLT. Oscillators sharpen barrier-timing across assets"
       },
       {
         "id": "r56",
@@ -2750,7 +2811,7 @@
         "id": "r57",
         "type": "milestone",
         "phase": "IWM",
-        "label": "R57 WIN: IWM 0.93->1.01 via ⑦ ENSEMBLE (tb+bgm comparable signals; DA 3.53). Ensemble pays off where TLT diluted"
+        "label": "R57 WIN: IWM 0.93->1.01 via \u2466 ENSEMBLE (tb+bgm comparable signals; DA 3.53). Ensemble pays off where TLT diluted"
       },
       {
         "id": "r58",
@@ -3044,7 +3105,7 @@
         "id": "f_online_verified",
         "type": "milestone",
         "phase": "IWM",
-        "label": "VERIFIED on QC: online == batch OOS bars, byte-identical. Rebuilt OOS bars ONLINE from the frozen TRAIN threshold (logdollar/imbalance/range): bars_match=1, max_lc_diff=0.0 for all 3. Batch-build is causally equivalent to online (warm-up from origin required) | new GLD trend_scan champion also byte-exact online (max_pred_diff 2.1e-8) — label-agnostic inference confirmed."
+        "label": "VERIFIED on QC: online == batch OOS bars, byte-identical. Rebuilt OOS bars ONLINE from the frozen TRAIN threshold (logdollar/imbalance/range): bars_match=1, max_lc_diff=0.0 for all 3. Batch-build is causally equivalent to online (warm-up from origin required) | new GLD trend_scan champion also byte-exact online (max_pred_diff 2.1e-8) \u2014 label-agnostic inference confirmed."
       },
       {
         "id": "f_selbias",
@@ -3074,7 +3135,7 @@
         "id": "r89",
         "type": "finding",
         "phase": "IWM",
-        "label": "R89 IWM: EEM recipe (logdollar/triple_barrier+selectivity) does NOT transfer — 0.19 long, -0.27 L/S vs 1.14. Timing recipes ASSET-SPECIFIC; IWM needs its imbalance axis. Long/short now 0-for-2 (drags EEM+IWM)"
+        "label": "R89 IWM: EEM recipe (logdollar/triple_barrier+selectivity) does NOT transfer \u2014 0.19 long, -0.27 L/S vs 1.14. Timing recipes ASSET-SPECIFIC; IWM needs its imbalance axis. Long/short now 0-for-2 (drags EEM+IWM)"
       },
       {
         "id": "r90",
@@ -3086,13 +3147,13 @@
         "id": "f_frontier",
         "type": "finding",
         "phase": "ALL",
-        "label": "FRONTIER MAPPED: single-config swaps converged (3 straight DISCARDs R87/R89/R90). Edge types are asset-intrinsic — timing (EEM/TLT), drift (QQQ/GLD/HYG), axis-bound (IWM), ceiling (XLE). New edges need new METHODS, not swaps"
+        "label": "FRONTIER MAPPED: single-config swaps converged (3 straight DISCARDs R87/R89/R90). Edge types are asset-intrinsic \u2014 timing (EEM/TLT), drift (QQQ/GLD/HYG), axis-bound (IWM), ceiling (XLE). New edges need new METHODS, not swaps"
       },
       {
         "id": "r91",
         "type": "finding",
         "phase": "TLT",
-        "label": "R91 TLT: selectivity is EEM-specific — 0.55 & 0.60 give IDENTICAL 1.5174 (signal mass below 0.55), both < 0.50 champion 1.5221. TLT converged at 1.52. 4 straight config-swap DISCARDs => tournament converged"
+        "label": "R91 TLT: selectivity is EEM-specific \u2014 0.55 & 0.60 give IDENTICAL 1.5174 (signal mass below 0.55), both < 0.50 champion 1.5221. TLT converged at 1.52. 4 straight config-swap DISCARDs => tournament converged"
       },
       {
         "id": "r92",
@@ -3122,7 +3183,7 @@
         "id": "f_meta",
         "type": "finding",
         "phase": "ALL",
-        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias | SCOPE: helps LONG-ONLY triple_barrier (EEM 4.03), HURTS long/short (TLT 1.52->0.59). | needs a STRONG primary (failed IWM's weak single triple_barrier 1.14). | EEM meta champion PROVEN live-equivalent: infer_online carries the secondary + gate, byte-exact (max_pred_diff 0.0). | does NOT beat drift (HYG 0.66 vs 2.21 — gate cuts DA but timing loses the carry)."
+        "label": "META-LABELING WORKS: a SECONDARY decision model (purged-CV OOS primary preds -> 'is primary right?' -> GATE flatten where not) lifts the triple_barrier edges. Opposite of sample-uniqueness (label weighting in ONE model failed). Wang's first-public technique. triple_barrier_meta alias | SCOPE: helps LONG-ONLY triple_barrier (EEM 4.03), HURTS long/short (TLT 1.52->0.59). | needs a STRONG primary (failed IWM's weak single triple_barrier 1.14). | EEM meta champion PROVEN live-equivalent: infer_online carries the secondary + gate, byte-exact (max_pred_diff 0.0). | does NOT beat drift (HYG 0.66 vs 2.21 \u2014 gate cuts DA but timing loses the carry)."
       },
       {
         "id": "r95",
@@ -3152,19 +3213,19 @@
         "id": "r99",
         "type": "finding",
         "phase": "EEM",
-        "label": "R99 EEM: 1.5σ tight labels HURT meta (1.64 vs 4.03). 2.0σ confirmed optimal label density. EEM 4.03 robust on BOTH threshold (R97) and density (R99). Flagship well-characterised; EEM grinding exhausted"
+        "label": "R99 EEM: 1.5\u03c3 tight labels HURT meta (1.64 vs 4.03). 2.0\u03c3 confirmed optimal label density. EEM 4.03 robust on BOTH threshold (R97) and density (R99). Flagship well-characterised; EEM grinding exhausted"
       },
       {
         "id": "r100",
         "type": "finding",
         "phase": "HYG",
-        "label": "R100 crash-veto FAILS: no OOS crash-prediction skill (1.65<2.21), and rare-trading overlay fails G2>80. DRIFT edges unbeatable — not by timing (R90/R98) nor tail-filtering (R100). Buy-and-hold optimal for HYG/GLD/QQQ. Edge map complete"
+        "label": "R100 crash-veto FAILS: no OOS crash-prediction skill (1.65<2.21), and rare-trading overlay fails G2>80. DRIFT edges unbeatable \u2014 not by timing (R90/R98) nor tail-filtering (R100). Buy-and-hold optimal for HYG/GLD/QQQ. Edge map complete"
       },
       {
         "id": "f_drift_ceiling",
         "type": "finding",
         "phase": "ALL",
-        "label": "DRIFT CEILING: HYG/GLD/QQQ buy-and-hold is optimal — timing forfeits carry (R90/R98), crash-veto has no OOS skill + fails G2 (R100). Their edge IS the carry; can't be improved in this framework | OVERTURNED (R116): trend-scanning beats GLD buy-hold 1.99->2.16. Drift CAN be timed with a trend-capturing label."
+        "label": "DRIFT CEILING: HYG/GLD/QQQ buy-and-hold is optimal \u2014 timing forfeits carry (R90/R98), crash-veto has no OOS skill + fails G2 (R100). Their edge IS the carry; can't be improved in this framework | OVERTURNED (R116): trend-scanning beats GLD buy-hold 1.99->2.16. Drift CAN be timed with a trend-capturing label."
       },
       {
         "id": "r101",
@@ -3188,7 +3249,7 @@
         "id": "r103",
         "type": "milestone",
         "phase": "PORTFOLIO",
-        "label": "R103 conviction-weighting (∝Calmar) BEATS equal: Calmar 3.27->3.36, MaxDD 3.6->3.4%, Sharpe 2.35->2.55, win 70%. Tilt to low-DD proven edges cuts book MaxDD. Deployable champion = conviction-weighted book"
+        "label": "R103 conviction-weighting (\u221dCalmar) BEATS equal: Calmar 3.27->3.36, MaxDD 3.6->3.4%, Sharpe 2.35->2.55, win 70%. Tilt to low-DD proven edges cuts book MaxDD. Deployable champion = conviction-weighted book"
       },
       {
         "id": "r104",
@@ -3200,7 +3261,7 @@
         "id": "r105",
         "type": "milestone",
         "phase": "PORTFOLIO",
-        "label": "R105 ROBUSTNESS: deployable book positive EVERY year (2023 +3%, 2024 +8.3%, 2025 +15.5%, 2026 +5.3%), maxDD ≤3.2% each. Calmar 3.36 is STABLE, not period-luck. Production-ready, robustness-validated system"
+        "label": "R105 ROBUSTNESS: deployable book positive EVERY year (2023 +3%, 2024 +8.3%, 2025 +15.5%, 2026 +5.3%), maxDD \u22643.2% each. Calmar 3.36 is STABLE, not period-luck. Production-ready, robustness-validated system"
       },
       {
         "id": "r106",
@@ -3218,7 +3279,7 @@
         "id": "r108",
         "type": "milestone",
         "phase": "EFA",
-        "label": "R108 UNIVERSE EXPANSION: EFA (developed-intl equity) added. Drift asset — always_long 1.26 beats timing+meta -0.004 (4th drift confirmation). Joins as buy-hold champion; value = portfolio diversification. Universe now 8 ETFs"
+        "label": "R108 UNIVERSE EXPANSION: EFA (developed-intl equity) added. Drift asset \u2014 always_long 1.26 beats timing+meta -0.004 (4th drift confirmation). Joins as buy-hold champion; value = portfolio diversification. Universe now 8 ETFs"
       },
       {
         "id": "r109",
@@ -3230,13 +3291,13 @@
         "id": "r110",
         "type": "finding",
         "phase": "DBC",
-        "label": "R110 DBC (commodities) added: weakest champion (always_long 0.86, huge DA 36 — brutal 2023-26 commodities). Decorrelated from equity book. R109 test: does decorrelation help the book despite DBC's weakness? -> 7+DBC test"
+        "label": "R110 DBC (commodities) added: weakest champion (always_long 0.86, huge DA 36 \u2014 brutal 2023-26 commodities). Decorrelated from equity book. R109 test: does decorrelation help the book despite DBC's weakness? -> 7+DBC test"
       },
       {
         "id": "r111",
         "type": "milestone",
         "phase": "PORTFOLIO",
-        "label": "R111 DECORRELATION CONFIRMED: adding DBC (weakest, 0.86) IMPROVES book — MaxDD 3.2->2.74%, Calmar 3.60->4.22. EFA(strong,correlated) hurt; DBC(weak,decorrelated) helped. Decorrelation > standalone strength. New deployable book = 8 ETFs (7+DBC)"
+        "label": "R111 DECORRELATION CONFIRMED: adding DBC (weakest, 0.86) IMPROVES book \u2014 MaxDD 3.2->2.74%, Calmar 3.60->4.22. EFA(strong,correlated) hurt; DBC(weak,decorrelated) helped. Decorrelation > standalone strength. New deployable book = 8 ETFs (7+DBC)"
       },
       {
         "id": "r112",
@@ -3248,13 +3309,13 @@
         "id": "r113",
         "type": "finding",
         "phase": "PORTFOLIO",
-        "label": "R113 UUP NEUTRAL: genuine hedge (MaxDD 2.74->2.67%, Sharpe 2.52->2.55) but flat Calmar (return drag offsets at ~2% weight). Decorrelation NECESSARY not SUFFICIENT — needs MaxDD cut > return drag (DBC yes, UUP no). Book finalised 7+DBC 4.22. Universe converged"
+        "label": "R113 UUP NEUTRAL: genuine hedge (MaxDD 2.74->2.67%, Sharpe 2.52->2.55) but flat Calmar (return drag offsets at ~2% weight). Decorrelation NECESSARY not SUFFICIENT \u2014 needs MaxDD cut > return drag (DBC yes, UUP no). Book finalised 7+DBC 4.22. Universe converged"
       },
       {
         "id": "r114",
         "type": "finding",
         "phase": "PORTFOLIO",
-        "label": "R114 ∝Calmar^1 weighting CONFIRMED optimal (4.22; unimodal: ^0.5=3.59, ^2=3.80/Sharpe2.75). Book optimised on EVERY dim: members(7+DBC)/weighting(^1)/leverage. Objective-dependent: ^2 max Sharpe, ^1 max Calmar. System comprehensively complete"
+        "label": "R114 \u221dCalmar^1 weighting CONFIRMED optimal (4.22; unimodal: ^0.5=3.59, ^2=3.80/Sharpe2.75). Book optimised on EVERY dim: members(7+DBC)/weighting(^1)/leverage. Objective-dependent: ^2 max Sharpe, ^1 max Calmar. System comprehensively complete"
       },
       {
         "id": "r115",
@@ -3296,7 +3357,7 @@
         "id": "r119",
         "type": "finding",
         "phase": "DBC",
-        "label": "R119 DBC: proven recipes fail (trend_scan 0.28, imbalance/bgm 0.49 vs 0.858). DBC is a CHOPPY commodity BASKET, not a clean trender (GLD) or macro instrument (UUP) — recipe transfer is character-matched. Try coarse tertile + DC reversal-clock next"
+        "label": "R119 DBC: proven recipes fail (trend_scan 0.28, imbalance/bgm 0.49 vs 0.858). DBC is a CHOPPY commodity BASKET, not a clean trender (GLD) or macro instrument (UUP) \u2014 recipe transfer is character-matched. Try coarse tertile + DC reversal-clock next"
       },
       {
         "id": "r120",
@@ -3314,7 +3375,7 @@
         "id": "r122",
         "type": "finding",
         "phase": "DBC",
-        "label": "R122 zcusum (new axis) fails DBC too (0.34/0.13 vs 0.858) but is MECHANICALLY SOUND (957tr, dense). DBC ceilinged across labels AND axes — untimeable basket. zcusum axis functional; validate on directional XLE next"
+        "label": "R122 zcusum (new axis) fails DBC too (0.34/0.13 vs 0.858) but is MECHANICALLY SOUND (957tr, dense). DBC ceilinged across labels AND axes \u2014 untimeable basket. zcusum axis functional; validate on directional XLE next"
       },
       {
         "id": "r123",
@@ -3338,7 +3399,7 @@
         "id": "r125",
         "type": "finding",
         "phase": "TIP",
-        "label": "R125 TIP added: always_long 1.15 (timing 0.89 underperforms — drift bond, buy-hold per R124). Decorrelated book-member candidate (inflation/real-rate). Book test next: does it lift 4.22 like DBC (R111)?"
+        "label": "R125 TIP added: always_long 1.15 (timing 0.89 underperforms \u2014 drift bond, buy-hold per R124). Decorrelated book-member candidate (inflation/real-rate). Book test next: does it lift 4.22 like DBC (R111)?"
       },
       {
         "id": "r126",
@@ -3356,19 +3417,19 @@
         "id": "r128",
         "type": "milestone",
         "phase": "PORTFOLIO",
-        "label": "R128 R124 sweep COMPLETE: IWM/TLT keep timing cells (always_long hurts 3.34/2.92 vs 4.22 — their DD-reduction is book-needed). Only clean drifter GLD wanted buy-hold. Book verified book-optimal at 4.22 across members/cells/weighting/leverage"
+        "label": "R128 R124 sweep COMPLETE: IWM/TLT keep timing cells (always_long hurts 3.34/2.92 vs 4.22 \u2014 their DD-reduction is book-needed). Only clean drifter GLD wanted buy-hold. Book verified book-optimal at 4.22 across members/cells/weighting/leverage"
       },
       {
         "id": "r129",
         "type": "finding",
         "phase": "IWM",
-        "label": "R129 IWM workflow top-2 fail: meta-on-ENSEMBLE 0.31 (gate HURTS the blend — meta needs a strong primary, IWM's tb leg isn't one even in the ensemble; R96 holds at ensemble level). volumeimb degenerate (0tr). IWM ceiling 1.14 holds; book role already optimal (R128). Try crash_ahead next"
+        "label": "R129 IWM workflow top-2 fail: meta-on-ENSEMBLE 0.31 (gate HURTS the blend \u2014 meta needs a strong primary, IWM's tb leg isn't one even in the ensemble; R96 holds at ensemble level). volumeimb degenerate (0tr). IWM ceiling 1.14 holds; book role already optimal (R128). Try crash_ahead next"
       },
       {
         "id": "r130",
         "type": "finding",
         "phase": "IWM",
-        "label": "R130 IWM crash_ahead G2-fail (1 trade, no crash skill — like HYG R100). Workflow top-3 ALL fail (meta-ens 0.31, volumeimb degenerate, crash_ahead). IWM conclusively ceilinged 1.14; book role optimal (R128). Weak-ETF space (DBC/XLE/IWM) EXHAUSTED; book verified-optimal 4.22. Next: FFD features (Wang-canon gap, new-featuring priority)"
+        "label": "R130 IWM crash_ahead G2-fail (1 trade, no crash skill \u2014 like HYG R100). Workflow top-3 ALL fail (meta-ens 0.31, volumeimb degenerate, crash_ahead). IWM conclusively ceilinged 1.14; book role optimal (R128). Weak-ETF space (DBC/XLE/IWM) EXHAUSTED; book verified-optimal 4.22. Next: FFD features (Wang-canon gap, new-featuring priority)"
       },
       {
         "id": "r131",
@@ -3380,19 +3441,19 @@
         "id": "f_stale",
         "type": "finding",
         "phase": "AUDIT",
-        "label": "FINDING: REPORT STALENESS — the rounds ledger + causal-graph round-nodes were rendered from FROZEN files (round_*.html stop at 131; graph hand-curated). The book/leaderboard auto-updated from knowledge.json but the ledger silently fell behind. Fix: render the ledger LIVE from round_results.csv + auto-refresh the report each round (SIMPLE IS BEST)."
+        "label": "FINDING: REPORT STALENESS \u2014 the rounds ledger + causal-graph round-nodes were rendered from FROZEN files (round_*.html stop at 131; graph hand-curated). The book/leaderboard auto-updated from knowledge.json but the ledger silently fell behind. Fix: render the ledger LIVE from round_results.csv + auto-refresh the report each round (SIMPLE IS BEST)."
       },
       {
         "id": "a132",
         "type": "milestone",
         "phase": "AUDIT",
-        "label": "R132 BACKTEST AUDIT (13-agent): the live OOS pipeline is CLEAN — fully ONLINE (bars/features causal, no full-series stats), LEAK-FREE (TRAIN-only thresholds), and the deployed signal is the frozen model read from QC ObjectStore (train==infer rule). No look-ahead anywhere on the deploy path."
+        "label": "R132 BACKTEST AUDIT (13-agent): the live OOS pipeline is CLEAN \u2014 fully ONLINE (bars/features causal, no full-series stats), LEAK-FREE (TRAIN-only thresholds), and the deployed signal is the frozen model read from QC ObjectStore (train==infer rule). No look-ahead anywhere on the deploy path."
       },
       {
         "id": "f_audit_clean",
         "type": "finding",
         "phase": "AUDIT",
-        "label": "FINDING: DEPLOY PATH TRUSTWORTHY — online + leak-free + model-from-ObjectStore confirmed by independent agents. Results on the board can be trusted as real OOS; remaining risk is SELECTION BIAS (too many trials), not look-ahead -> motivates Tier-1 trials-adjustment."
+        "label": "FINDING: DEPLOY PATH TRUSTWORTHY \u2014 online + leak-free + model-from-ObjectStore confirmed by independent agents. Results on the board can be trusted as real OOS; remaining risk is SELECTION BIAS (too many trials), not look-ahead -> motivates Tier-1 trials-adjustment."
       },
       {
         "id": "a133",
@@ -3404,7 +3465,7 @@
         "id": "f_tier1_rigor",
         "type": "finding",
         "phase": "AUDIT",
-        "label": "FINDING: TRIALS-ADJUSTED TRUTH — with DSR/PBO/Holm/BH the question shifts from 'beats buy-hold?' to 'survives the number of strategies we tried?'. Short-window timing edges that looked strong now must clear the multiple-testing bar to be believed."
+        "label": "FINDING: TRIALS-ADJUSTED TRUTH \u2014 with DSR/PBO/Holm/BH the question shifts from 'beats buy-hold?' to 'survives the number of strategies we tried?'. Short-window timing edges that looked strong now must clear the multiple-testing bar to be believed."
       },
       {
         "id": "a134",
@@ -3416,7 +3477,7 @@
         "id": "f_decorr_core",
         "type": "finding",
         "phase": "PORTFOLIO",
-        "label": "FINDING: DIVERSIFICATION > CONCENTRATION (honest book) — the deployable book is built by DECORRELATION not by max single Calmar. Only GLD (gold trend) + UUP (dollar regime) carry a real ML edge; the rest are decorrelated buy-hold diversifiers that cut drawdown. calmar^2 weights -> book Calmar 3.53."
+        "label": "FINDING: DIVERSIFICATION > CONCENTRATION (honest book) \u2014 the deployable book is built by DECORRELATION not by max single Calmar. Only GLD (gold trend) + UUP (dollar regime) carry a real ML edge; the rest are decorrelated buy-hold diversifiers that cut drawdown. calmar^2 weights -> book Calmar 3.53."
       },
       {
         "id": "a135",
@@ -3428,31 +3489,31 @@
         "id": "f_deflation",
         "type": "finding",
         "phase": "AUDIT",
-        "label": "FINDING: REAL vs ARTIFACT — under deflated-Calmar, durable ML edges are SCARCE: GLD/UUP genuine; XLE/TLT/EEM/IWM timing edges are short-window artifacts. Hold the rest passively; value comes from combining decorrelated holdings, not from timing drifters."
+        "label": "FINDING: REAL vs ARTIFACT \u2014 under deflated-Calmar, durable ML edges are SCARCE: GLD/UUP genuine; XLE/TLT/EEM/IWM timing edges are short-window artifacts. Hold the rest passively; value comes from combining decorrelated holdings, not from timing drifters."
       },
       {
         "id": "a136",
         "type": "finding",
         "phase": "PORTFOLIO",
-        "label": "R136 UNIVERSE-EXPANSION DISCARD: SLV/EMB/LQD/DBMF/SHY all tested as new book members — NONE beat the decorrelated-core 3.53. The book's decorrelation lever is exhausted at the current universe; adding assets does not help."
+        "label": "R136 UNIVERSE-EXPANSION DISCARD: SLV/EMB/LQD/DBMF/SHY all tested as new book members \u2014 NONE beat the decorrelated-core 3.53. The book's decorrelation lever is exhausted at the current universe; adding assets does not help."
       },
       {
         "id": "f_universe",
         "type": "finding",
         "phase": "PORTFOLIO",
-        "label": "FINDING: UNIVERSE LEVER EXHAUSTED — broad candidate scan (SLV/EMB/LQD/DBMF/SHY) fails to lift the 3.53 core. The decorrelated-core book is at its ceiling for the available universe; further gains need genuinely new edges, not more members."
+        "label": "FINDING: UNIVERSE LEVER EXHAUSTED \u2014 broad candidate scan (SLV/EMB/LQD/DBMF/SHY) fails to lift the 3.53 core. The decorrelated-core book is at its ceiling for the available universe; further gains need genuinely new edges, not more members."
       },
       {
         "id": "a137",
         "type": "finding",
         "phase": "GLD",
-        "label": "R137 GLD-ENSEMBLE DISCARD: blending trend_scan with a 2nd leg (cusum_regime / bgm) does NOT beat standalone GLD trend_scan (2.04/1.80 vs 2.16) — the ensemble dilutes the single dominant trend signal (R78 pattern). GLD edge already at its standalone ceiling."
+        "label": "R137 GLD-ENSEMBLE DISCARD: blending trend_scan with a 2nd leg (cusum_regime / bgm) does NOT beat standalone GLD trend_scan (2.04/1.80 vs 2.16) \u2014 the ensemble dilutes the single dominant trend signal (R78 pattern). GLD edge already at its standalone ceiling."
       },
       {
         "id": "f_gld_ensemble",
         "type": "finding",
         "phase": "GLD",
-        "label": "FINDING: ENSEMBLE DILUTES A DOMINANT SIGNAL — for a clean single-signal trender (GLD), adding a second labeler leg lowers Calmar. Ensembles help only when no single leg dominates; GLD trend_scan stands alone at its ceiling."
+        "label": "FINDING: ENSEMBLE DILUTES A DOMINANT SIGNAL \u2014 for a clean single-signal trender (GLD), adding a second labeler leg lowers Calmar. Ensembles help only when no single leg dominates; GLD trend_scan stands alone at its ceiling."
       },
       {
         "id": "r132",
@@ -7280,7 +7341,7 @@
         "id": "r769",
         "type": "round",
         "phase": "GDX",
-        "label": "R769 GDX DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +1.5229 (prev best +0.0000). Auto-logged from round_results.csv."
+        "label": "R769 GDX DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +1.5229 (prev best +0.0000). Auto-logged from round_results.csv."
       },
       {
         "id": "r770",
@@ -7568,7 +7629,7 @@
         "id": "r817",
         "type": "round",
         "phase": "AGQ",
-        "label": "R817 AGQ DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.9722 (prev best +2.4888). Auto-logged from round_results.csv."
+        "label": "R817 AGQ DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.9722 (prev best +2.4888). Auto-logged from round_results.csv."
       },
       {
         "id": "r818",
@@ -8348,7 +8409,7 @@
         "id": "r947",
         "type": "round",
         "phase": "TNA",
-        "label": "R947 TNA DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.4654 (prev best +0.0000). Auto-logged from round_results.csv."
+        "label": "R947 TNA DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.4654 (prev best +0.0000). Auto-logged from round_results.csv."
       },
       {
         "id": "r948",
@@ -8486,7 +8547,7 @@
         "id": "r970",
         "type": "round",
         "phase": "QID",
-        "label": "R970 QID DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar -0.2704 (prev best +0.0000). Auto-logged from round_results.csv."
+        "label": "R970 QID DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar -0.2704 (prev best +0.0000). Auto-logged from round_results.csv."
       },
       {
         "id": "r971",
@@ -8624,7 +8685,7 @@
         "id": "r993",
         "type": "round",
         "phase": "SPXS",
-        "label": "R993 SPXS DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar -0.1239 (prev best +0.0000). Auto-logged from round_results.csv."
+        "label": "R993 SPXS DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar -0.1239 (prev best +0.0000). Auto-logged from round_results.csv."
       },
       {
         "id": "r994",
@@ -8768,7 +8829,7 @@
         "id": "r1017",
         "type": "round",
         "phase": "UGL",
-        "label": "R1017 UGL DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.9854 (prev best +1.3795). Auto-logged from round_results.csv."
+        "label": "R1017 UGL DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.9854 (prev best +1.3795). Auto-logged from round_results.csv."
       },
       {
         "id": "r1018",
@@ -9056,7 +9117,7 @@
         "id": "r1065",
         "type": "round",
         "phase": "PSQ",
-        "label": "R1065 PSQ DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar -0.1952 (prev best +0.0000). Auto-logged from round_results.csv."
+        "label": "R1065 PSQ DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar -0.1952 (prev best +0.0000). Auto-logged from round_results.csv."
       },
       {
         "id": "r1066",
@@ -9188,7 +9249,7 @@
         "id": "r1087",
         "type": "round",
         "phase": "QLD",
-        "label": "R1087 QLD DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.0869 (prev best +4.0561). Auto-logged from round_results.csv."
+        "label": "R1087 QLD DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.0869 (prev best +4.0561). Auto-logged from round_results.csv."
       },
       {
         "id": "r1088",
@@ -9332,7 +9393,7 @@
         "id": "r1111",
         "type": "round",
         "phase": "XME",
-        "label": "R1111 XME DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.0698 (prev best +2.3699). Auto-logged from round_results.csv."
+        "label": "R1111 XME DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.0698 (prev best +2.3699). Auto-logged from round_results.csv."
       },
       {
         "id": "r1112",
@@ -9476,7 +9537,7 @@
         "id": "r1135",
         "type": "round",
         "phase": "UCO",
-        "label": "R1135 UCO DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.4709 (prev best +0.0000). Auto-logged from round_results.csv."
+        "label": "R1135 UCO DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.4709 (prev best +0.0000). Auto-logged from round_results.csv."
       },
       {
         "id": "r1136",
@@ -9620,7 +9681,7 @@
         "id": "r1159",
         "type": "round",
         "phase": "SSO",
-        "label": "R1159 SSO DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +1.2300 (prev best +2.5108). Auto-logged from round_results.csv."
+        "label": "R1159 SSO DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +1.2300 (prev best +2.5108). Auto-logged from round_results.csv."
       },
       {
         "id": "r1160",
@@ -9872,7 +9933,7 @@
         "id": "f1198_xop_revert",
         "type": "finding",
         "phase": "XOP",
-        "label": "FINDING (independence test PASS): oil-reversion is INSTRUMENT-TRANSCENDING. XOP (oil E&P EQUITY) logdollar/revert reproduces 1.0782 (433 tr, val_auc 0.996); permute collapses 77% -> 0.2493 (below BH 0.299, val_auc->0.46). real edge +0.78, permute PASS. => oil-PRICE reversion is real across futures (USO/UCO) AND equity (XOP), NOT a futures-roll/contango artifact. BUT XOP is a POOR vehicle: skew -0.88 / kurt 18.1 (energy-equity crash tails vs UCO's symmetric +0.02), and XOP's own REGIME recipe (imbalance/bgm+ker 1.626) BEATS revert (1.078) — equity beta adds regime structure + dilutes reversion. Family fully characterized: reversion cleanest/strongest on pure oil-futures (UCO best). ONE reversion seat = UCO/USO, not XOP."
+        "label": "FINDING (independence test PASS): oil-reversion is INSTRUMENT-TRANSCENDING. XOP (oil E&P EQUITY) logdollar/revert reproduces 1.0782 (433 tr, val_auc 0.996); permute collapses 77% -> 0.2493 (below BH 0.299, val_auc->0.46). real edge +0.78, permute PASS. => oil-PRICE reversion is real across futures (USO/UCO) AND equity (XOP), NOT a futures-roll/contango artifact. BUT XOP is a POOR vehicle: skew -0.88 / kurt 18.1 (energy-equity crash tails vs UCO's symmetric +0.02), and XOP's own REGIME recipe (imbalance/bgm+ker 1.626) BEATS revert (1.078) \u2014 equity beta adds regime structure + dilutes reversion. Family fully characterized: reversion cleanest/strongest on pure oil-futures (UCO best). ONE reversion seat = UCO/USO, not XOP."
       },
       {
         "id": "f1199_oil_decay",
@@ -9890,19 +9951,19 @@
         "id": "f1201_oil_dsr",
         "type": "finding",
         "phase": "UCO/USO",
-        "label": "FINDING (DSR gate — oil-reversion CLEARS it): session-scale honest_audit DSR: USO 0.939, UCO 0.915 — TIED with GLD 0.941 (book flagship) and FAR above SEATED UUP 0.461 / IWM 0.671. By the program's own 'weight conviction by DSR not raw Calmar', oil-reversion outranks 2 seated members. Nothing survives Holm-Bonferroni (expected, whole-session burden). Audit also reconfirms artifacts SSO 0.05 / SPXL 0.02 / IAU 0.72. NUANCE: on DSR, USO(0.939,1x) edges UCO(0.915,2x) [higher per-obs Sharpe + lower noise floor]; on Calmar+cost+symmetric-tails, UCO wins. Same edge -> vehicle = a RISK choice (USO safer/higher-DSR vs UCO higher-return/cost-robust). ALL GATES PASSED except Holm-Bonferroni. PROPOSE oil-reversion (USO or UCO) as 3rd-mechanism book seat -> user/Opus."
+        "label": "FINDING (DSR gate \u2014 oil-reversion CLEARS it): session-scale honest_audit DSR: USO 0.939, UCO 0.915 \u2014 TIED with GLD 0.941 (book flagship) and FAR above SEATED UUP 0.461 / IWM 0.671. By the program's own 'weight conviction by DSR not raw Calmar', oil-reversion outranks 2 seated members. Nothing survives Holm-Bonferroni (expected, whole-session burden). Audit also reconfirms artifacts SSO 0.05 / SPXL 0.02 / IAU 0.72. NUANCE: on DSR, USO(0.939,1x) edges UCO(0.915,2x) [higher per-obs Sharpe + lower noise floor]; on Calmar+cost+symmetric-tails, UCO wins. Same edge -> vehicle = a RISK choice (USO safer/higher-DSR vs UCO higher-return/cost-robust). ALL GATES PASSED except Holm-Bonferroni. PROPOSE oil-reversion (USO or UCO) as 3rd-mechanism book seat -> user/Opus."
       },
       {
         "id": "f1202_beta_router",
         "type": "finding",
-        "phase": "Wang/β200",
-        "label": "FINDING (β200 router, scripts/beta_router.py): β200 = frac TRAIN bars w/ positive 200-bar fwd return, emitted via leak-safe footer injection. GLD 0.532 (≈Wang's 0.53 EXACT — validates our bars/fwd-returns match his methodology), QQQ 0.797 (drift), USO 0.532, UCO 0.503. KEY: β200 does NOT route trend-vs-reversion — oil (reversion) sits at β≈0.5 just like GLD (trend); both SYMMETRIC. β200 separates SYMMETRIC (≈0.5 -> exploitable structure, run ML) vs DRIFT (≫0.6 -> buy-hold wins, skip) = a BUY-HOLD PRE-FILTER, matching Wang's Q&A ('βn≫0.5 -> always-1 wins -> nothing to discriminate'). Trend-vs-reversion needs a 2nd signal = bar-return AUTOCORRELATION (ρ: + -> trend persistent like GLD; − -> mean-reverting like oil). Refines [[wang-investigation]] β200 claim."
+        "phase": "Wang/\u03b2200",
+        "label": "FINDING (\u03b2200 router, scripts/beta_router.py): \u03b2200 = frac TRAIN bars w/ positive 200-bar fwd return, emitted via leak-safe footer injection. GLD 0.532 (\u2248Wang's 0.53 EXACT \u2014 validates our bars/fwd-returns match his methodology), QQQ 0.797 (drift), USO 0.532, UCO 0.503. KEY: \u03b2200 does NOT route trend-vs-reversion \u2014 oil (reversion) sits at \u03b2\u22480.5 just like GLD (trend); both SYMMETRIC. \u03b2200 separates SYMMETRIC (\u22480.5 -> exploitable structure, run ML) vs DRIFT (\u226b0.6 -> buy-hold wins, skip) = a BUY-HOLD PRE-FILTER, matching Wang's Q&A ('\u03b2n\u226b0.5 -> always-1 wins -> nothing to discriminate'). Trend-vs-reversion needs a 2nd signal = bar-return AUTOCORRELATION (\u03c1: + -> trend persistent like GLD; \u2212 -> mean-reverting like oil). Refines [[wang-investigation]] \u03b2200 claim."
       },
       {
         "id": "f1203_autocorr_null",
         "type": "finding",
         "phase": "Wang/router",
-        "label": "FINDING (autocorr router = informative NULL, scripts/mechanism_router.py): bar-return autocorr rho1/2/3 are ALL noise-level (|rho|<=0.03; GLD rho1 +0.025, USO -0.010, UCO +0.020) — does NOT discriminate trend vs reversion. WHY: rho~0 everywhere = logdollar bars are near-IID, which is Wang's AXIS-DESIGN GOAL achieved -> bars too clean to carry mechanism at lag-1; trend-vs-reversion lives in the FORWARD-RETURN/LABEL structure, not bar autocorr. Also IWM beta200=0.75 (drift, yet marginal 0.665 edge -> beta200 is a PRIOR not absolute). ROUTER CONCLUSION: beta200 = buy-hold filter (WORKS, skip beta>>0.6); trend-vs-reversion needs a small {trend_leg,revert} labeler tournament on the symmetric survivors (no cheap statistic routes it)."
+        "label": "FINDING (autocorr router = informative NULL, scripts/mechanism_router.py): bar-return autocorr rho1/2/3 are ALL noise-level (|rho|<=0.03; GLD rho1 +0.025, USO -0.010, UCO +0.020) \u2014 does NOT discriminate trend vs reversion. WHY: rho~0 everywhere = logdollar bars are near-IID, which is Wang's AXIS-DESIGN GOAL achieved -> bars too clean to carry mechanism at lag-1; trend-vs-reversion lives in the FORWARD-RETURN/LABEL structure, not bar autocorr. Also IWM beta200=0.75 (drift, yet marginal 0.665 edge -> beta200 is a PRIOR not absolute). ROUTER CONCLUSION: beta200 = buy-hold filter (WORKS, skip beta>>0.6); trend-vs-reversion needs a small {trend_leg,revert} labeler tournament on the symmetric survivors (no cheap statistic routes it)."
       },
       {
         "id": "r1199",
@@ -9914,7 +9975,7 @@
         "id": "f1204_sticky_hmm",
         "type": "finding",
         "phase": "Wang/sticky_hmm",
-        "label": "FINDING (Wang's ACTUAL labeler built + fairly tested -> LOSES, instructively): built sticky Gaussian HMM in numpy (modules/labeler.py generate_labels_sticky_hmm; sticky floor A_kk>=0.95 = the feature free-EM generate_labels_hmm omits; smoothed labels; validated 89% synth regime-recovery). GLD A/B in champion downstream: sticky_hmm Calmar 0.40 (val_auc 0.878, 1047 tr) vs trend_leg 2.54 (val_auc 0.535, 255 tr). TEXTBOOK predictable-not-profitable: HMM regimes HIGHLY predictable (auc 0.88) but unprofitable; trend_leg barely predictable (0.535, just over the 0.52 floor) but profitable. VALIDATES: (a) our trend_leg-over-HMM choice (outcome right; 'Wang doesnt use HMM' reasoning was wrong but the pick was right); (b) val_auc as a FLOOR not a target (high-auc favored the WORSE labeler); (c) Wang's own label-relevance≠profit-relevance principle. Q&A-era GLD 5.72 does NOT reproduce leak-free. CAVEAT: GLD=trend asset; HMM-as-regime untested vs bgm on a regime asset."
+        "label": "FINDING (Wang's ACTUAL labeler built + fairly tested -> LOSES, instructively): built sticky Gaussian HMM in numpy (modules/labeler.py generate_labels_sticky_hmm; sticky floor A_kk>=0.95 = the feature free-EM generate_labels_hmm omits; smoothed labels; validated 89% synth regime-recovery). GLD A/B in champion downstream: sticky_hmm Calmar 0.40 (val_auc 0.878, 1047 tr) vs trend_leg 2.54 (val_auc 0.535, 255 tr). TEXTBOOK predictable-not-profitable: HMM regimes HIGHLY predictable (auc 0.88) but unprofitable; trend_leg barely predictable (0.535, just over the 0.52 floor) but profitable. VALIDATES: (a) our trend_leg-over-HMM choice (outcome right; 'Wang doesnt use HMM' reasoning was wrong but the pick was right); (b) val_auc as a FLOOR not a target (high-auc favored the WORSE labeler); (c) Wang's own label-relevance\u2260profit-relevance principle. Q&A-era GLD 5.72 does NOT reproduce leak-free. CAVEAT: GLD=trend asset; HMM-as-regime untested vs bgm on a regime asset."
       },
       {
         "id": "r1200",
@@ -9926,13 +9987,13 @@
         "id": "f1205_oil_complex_done",
         "type": "finding",
         "phase": "oil-complex",
-        "label": "FINDING (oil complex CHARACTERIZED): (1) leveraged-commodity reversion family REFUTED via existing data — revert is OIL-SPECIFIC: AGQ(2x silver) 0.04 & UGL(2x gold) -0.07 both LOSE to buy-hold (1.31/1.54); silver/gold DRIFT (revert predictable-not-profitable, val_auc 0.95 but Calmar~0). Oil's edge = its range-bound/crash-prone history (β≈0.5 symmetric+reverting), not leverage. (2) XOP oil-EQUITY regime edge (imbalance/bgm+ker 1.626) is PERMUTE-REAL (collapses 75% to 0.40) but MARGINAL: val_auc 0.526 (at floor), DSR 0.835 (fails deflation), regime-redundant w/ UUP — IWM-tier. So oil complex = 2 mechanisms by instrument: FUTURES->reversion (UCO/USO strong), EQUITY->regime (XOP weak). Oil complex DONE."
+        "label": "FINDING (oil complex CHARACTERIZED): (1) leveraged-commodity reversion family REFUTED via existing data \u2014 revert is OIL-SPECIFIC: AGQ(2x silver) 0.04 & UGL(2x gold) -0.07 both LOSE to buy-hold (1.31/1.54); silver/gold DRIFT (revert predictable-not-profitable, val_auc 0.95 but Calmar~0). Oil's edge = its range-bound/crash-prone history (\u03b2\u22480.5 symmetric+reverting), not leverage. (2) XOP oil-EQUITY regime edge (imbalance/bgm+ker 1.626) is PERMUTE-REAL (collapses 75% to 0.40) but MARGINAL: val_auc 0.526 (at floor), DSR 0.835 (fails deflation), regime-redundant w/ UUP \u2014 IWM-tier. So oil complex = 2 mechanisms by instrument: FUTURES->reversion (UCO/USO strong), EQUITY->regime (XOP weak). Oil complex DONE."
       },
       {
         "id": "f1206_book_consolidation",
         "type": "finding",
         "phase": "consolidation",
-        "label": "FINDING (CAPSTONE — oil-reversion quantified in the book; vehicle = USO): book re-derivation (portfolio_rederive.py, Calmar^2-weight, cached 6 members + fresh USO/UCO, common 224-pt OOS grid). Adding USO(1x): book Calmar 4.617->5.160 (+12%), Sharpe 2.460->2.756 (+12%), MaxDD 2.46->2.82% — CLEAN upgrade. Adding UCO(2x): Calmar 4.617->4.803 (+4%) but Sharpe DROPS to 2.165 (-12%) + MaxDD DOUBLES to 5.47% (leverage injects vol). So VEHICLE DECISION FLIPS book-vs-standalone: UCO wins standalone (Calmar 3.51) but USO wins the BOOK (lower vol preserves low-MaxDD character + higher DSR 0.939). PROPOSED BOOK (7) = GLD/UUP/IWM/TIP/DBC/HYG + USO. Current book reproduces 4.617 exactly (validates cached series)."
+        "label": "FINDING (CAPSTONE \u2014 oil-reversion quantified in the book; vehicle = USO): book re-derivation (portfolio_rederive.py, Calmar^2-weight, cached 6 members + fresh USO/UCO, common 224-pt OOS grid). Adding USO(1x): book Calmar 4.617->5.160 (+12%), Sharpe 2.460->2.756 (+12%), MaxDD 2.46->2.82% \u2014 CLEAN upgrade. Adding UCO(2x): Calmar 4.617->4.803 (+4%) but Sharpe DROPS to 2.165 (-12%) + MaxDD DOUBLES to 5.47% (leverage injects vol). So VEHICLE DECISION FLIPS book-vs-standalone: UCO wins standalone (Calmar 3.51) but USO wins the BOOK (lower vol preserves low-MaxDD character + higher DSR 0.939). PROPOSED BOOK (7) = GLD/UUP/IWM/TIP/DBC/HYG + USO. Current book reproduces 4.617 exactly (validates cached series)."
       },
       {
         "id": "r1201",
@@ -10994,7 +11055,7 @@
         "id": "r1333",
         "type": "round",
         "phase": "UNG",
-        "label": "R1333 UNG DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.0291 (prev best +0.0000). Auto-logged from round_results.csv."
+        "label": "R1333 UNG DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar +0.0291 (prev best +0.0000). Auto-logged from round_results.csv."
       },
       {
         "id": "r1334",
@@ -11138,7 +11199,7 @@
         "id": "r1357",
         "type": "round",
         "phase": "SPTL",
-        "label": "R1357 SPTL DISCARD: Sample on log-dollar bars; triple-barrier (forward σ-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar -0.3280 (prev best +0.0000). Auto-logged from round_results.csv."
+        "label": "R1357 SPTL DISCARD: Sample on log-dollar bars; triple-barrier (forward \u03c3-barrier) labels (meta-labeled); size long-only, vol-targeted, entry 0.45. -> Calmar -0.3280 (prev best +0.0000). Auto-logged from round_results.csv."
       },
       {
         "id": "r1358",
@@ -13803,6 +13864,192 @@
         "type": "round",
         "phase": "GLD",
         "label": "R1801 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1802",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1802 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1803",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1803 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1804",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1804 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1805",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1805 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1806",
+        "type": "round",
+        "phase": "FXE",
+        "label": "R1806 FXE DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +0.4302 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1807",
+        "type": "round",
+        "phase": "XME",
+        "label": "R1807 XME DISCARD: Sample on volatility bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +1.1374 (prev best +1.1374). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1808",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R1808 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; always-long (buy & hold); size long-only, entry 0.50. -> Calmar +0.4395 (prev best +0.4469). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1809",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R1809 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + explosive-regime (SADF) labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5989 (prev best +0.4469). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1810",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R1810 IWM DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.4758 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1811",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1811 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +3.8498 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1812",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1812 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +3.8498 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1813",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1813 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +3.8498 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1814",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1814 GLD DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.9012 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1815",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1815 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.0218 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1816",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1816 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +2.9650 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1817",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1817 SPY DISCARD: Sample on sess2; always-long (buy & hold); size long-only, entry 0.50. -> Calmar +1.0449 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1818",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1818 SPY DISCARD: Sample on sess2; always-long (buy & hold); size long-only, entry 0.50. -> Calmar +1.0449 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1819",
+        "type": "round",
+        "phase": "DXJ",
+        "label": "R1819 DXJ DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +2.8965 (prev best +2.8965). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1820",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1820 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +3.8498 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1821",
+        "type": "round",
+        "phase": "IDV",
+        "label": "R1821 IDV DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.0000 (prev best +2.5767). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1822",
+        "type": "round",
+        "phase": "IDV",
+        "label": "R1822 IDV DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.2171 (prev best +2.5767). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1823",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R1823 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + explosive-regime (SADF) labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5989 (prev best +0.4469). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1824",
+        "type": "round",
+        "phase": "AAXJ",
+        "label": "R1824 AAXJ DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size drawdown-scaled sizing, entry 0.50. -> Calmar +2.4406 (prev best +2.4406). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1825",
+        "type": "round",
+        "phase": "EZU",
+        "label": "R1825 EZU DISCARD: Sample on log-dollar bars; moe_law; size long-only, vol-targeted, entry 0.45. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1826",
+        "type": "round",
+        "phase": "EZU",
+        "label": "R1826 EZU DISCARD: Sample on log-dollar bars; moe_law; size long-only, vol-targeted, entry 0.45. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1827",
+        "type": "round",
+        "phase": "EZU",
+        "label": "R1827 EZU DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.2300 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1828",
+        "type": "round",
+        "phase": "DXJ",
+        "label": "R1828 DXJ DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +2.8965 (prev best +2.8965). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1829",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1829 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +2.1228 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1830",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1830 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.6901 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1831",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R1831 UUP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + explosive-regime (SADF) labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.2922 (prev best +0.4469). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1832",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R1832 IWM DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.4481 (prev best +0.5496). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -14409,7 +14656,7 @@
       {
         "src": "d_qqq",
         "dst": "r64",
-        "label": "modernize QQQ — attempt 1"
+        "label": "modernize QQQ \u2014 attempt 1"
       },
       {
         "src": "r64",
@@ -14419,7 +14666,7 @@
       {
         "src": "r64",
         "dst": "r65",
-        "label": "lower threshold — still 0 trades"
+        "label": "lower threshold \u2014 still 0 trades"
       },
       {
         "src": "r65",
@@ -14524,7 +14771,7 @@
       {
         "src": "f_eem_timing",
         "dst": "f_eem_ceiling",
-        "label": "REVISES — not a ceiling"
+        "label": "REVISES \u2014 not a ceiling"
       },
       {
         "src": "r71",
@@ -14549,7 +14796,7 @@
       {
         "src": "r71",
         "dst": "r73",
-        "label": "EEM recipe tested on XLE — fails (noisy)"
+        "label": "EEM recipe tested on XLE \u2014 fails (noisy)"
       },
       {
         "src": "r73",
@@ -14569,7 +14816,7 @@
       {
         "src": "r75",
         "dst": "f_signal",
-        "label": "shorting needs a predictive signal — XLE lacks it"
+        "label": "shorting needs a predictive signal \u2014 XLE lacks it"
       },
       {
         "src": "r74",
@@ -14664,7 +14911,7 @@
       {
         "src": "f_tertile",
         "dst": "f_xle_ceiling",
-        "label": "REVISES — XLE not fully ceilinged"
+        "label": "REVISES \u2014 XLE not fully ceilinged"
       },
       {
         "src": "r81",
@@ -14829,7 +15076,7 @@
       {
         "src": "r91",
         "dst": "f_frontier",
-        "label": "TLT converged — 4th straight DISCARD"
+        "label": "TLT converged \u2014 4th straight DISCARD"
       },
       {
         "src": "f_frontier",
@@ -14919,7 +15166,7 @@
       {
         "src": "r90",
         "dst": "r98",
-        "label": "drift beats timing — confirmed with meta"
+        "label": "drift beats timing \u2014 confirmed with meta"
       },
       {
         "src": "r97",
@@ -14929,7 +15176,7 @@
       {
         "src": "r99",
         "dst": "f_meta",
-        "label": "2.0σ optimal; EEM robust"
+        "label": "2.0\u03c3 optimal; EEM robust"
       },
       {
         "src": "r98",
@@ -14959,7 +15206,7 @@
       {
         "src": "r101",
         "dst": "f_frontier",
-        "label": "EEM exhaustively characterised — search complete"
+        "label": "EEM exhaustively characterised \u2014 search complete"
       },
       {
         "src": "r101",
@@ -15034,7 +15281,7 @@
       {
         "src": "r108",
         "dst": "f_drift_ceiling",
-        "label": "EFA drift — timing rejected (4th)"
+        "label": "EFA drift \u2014 timing rejected (4th)"
       },
       {
         "src": "r108",
@@ -15089,7 +15336,7 @@
       {
         "src": "r114",
         "dst": "f_portfolio",
-        "label": "∝Calmar^1 optimal; book fully optimised"
+        "label": "\u221dCalmar^1 optimal; book fully optimised"
       },
       {
         "src": "r114",
@@ -15269,7 +15516,7 @@
       {
         "src": "r129",
         "dst": "f_meta",
-        "label": "meta needs a strong primary — IWM lacks one even in the ensemble"
+        "label": "meta needs a strong primary \u2014 IWM lacks one even in the ensemble"
       },
       {
         "src": "r129",
@@ -15299,7 +15546,7 @@
       {
         "src": "f_book_objective",
         "dst": "f_stale",
-        "label": "book auto-updates but the ledger/graph were frozen — fix the report"
+        "label": "book auto-updates but the ledger/graph were frozen \u2014 fix the report"
       },
       {
         "src": "r131",
@@ -20754,7 +21001,7 @@
       {
         "src": "f1201_oil_dsr",
         "dst": "f1202_beta_router",
-        "label": "Wang lever B1: β200 = buyhold filter (not mechanism router)"
+        "label": "Wang lever B1: \u03b2200 = buyhold filter (not mechanism router)"
       },
       {
         "src": "f1202_beta_router",
@@ -23790,6 +24037,161 @@
         "src": "r1800",
         "dst": "r1801",
         "label": "no improvement"
+      },
+      {
+        "src": "r1801",
+        "dst": "r1802",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1802",
+        "dst": "r1803",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1803",
+        "dst": "r1804",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1804",
+        "dst": "r1805",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1805",
+        "dst": "r1806",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1806",
+        "dst": "r1807",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1807",
+        "dst": "r1808",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1808",
+        "dst": "r1809",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1809",
+        "dst": "r1810",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1810",
+        "dst": "r1811",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1811",
+        "dst": "r1812",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1812",
+        "dst": "r1813",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1813",
+        "dst": "r1814",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1814",
+        "dst": "r1815",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1815",
+        "dst": "r1816",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1816",
+        "dst": "r1817",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1817",
+        "dst": "r1818",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1818",
+        "dst": "r1819",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1819",
+        "dst": "r1820",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1820",
+        "dst": "r1821",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1821",
+        "dst": "r1822",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1822",
+        "dst": "r1823",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1823",
+        "dst": "r1824",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1824",
+        "dst": "r1825",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1825",
+        "dst": "r1826",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1826",
+        "dst": "r1827",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1827",
+        "dst": "r1828",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1828",
+        "dst": "r1829",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1829",
+        "dst": "r1830",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1830",
+        "dst": "r1831",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1831",
+        "dst": "r1832",
+        "label": "no improvement"
       }
     ],
     "running": [],
@@ -24072,21 +24474,21 @@
   "top_insights": [
     {
       "title": "Meta-labeling crosses Calmar>3",
-      "body": "A secondary 'is-the-primary-right' decision model (Wang's first-public technique) lifts EEM 2.43->4.03 — the first edge from a new method, trials-significant, clearing Wang's flagship Calmar>3 bar."
+      "body": "A secondary 'is-the-primary-right' decision model (Wang's first-public technique) lifts EEM 2.43->4.03 \u2014 the first edge from a new method, trials-significant, clearing Wang's flagship Calmar>3 bar."
     },
     {
       "title": "Causal mean-reversion features unlock mean-reverting ETFs",
-      "detail": "Adding causal RSI + Bollinger-%b oscillators (③) took TLT from 0.31 → 1.52 Calmar. Control (same axis/labeler, no features) stays at −0.14, so the lift is the features, not leakage.",
-      "ev": "TLT ③"
+      "detail": "Adding causal RSI + Bollinger-%b oscillators (\u2462) took TLT from 0.31 \u2192 1.52 Calmar. Control (same axis/labeler, no features) stays at \u22120.14, so the lift is the features, not leakage.",
+      "ev": "TLT \u2462"
     },
     {
       "title": "Ensembling two comparable labelers lifts; one dominant signal dilutes",
-      "detail": "Averaging calibrated triple_barrier + BGM predictions lifted IWM 0.93 → 1.14, but dilutes TLT (one signal already dominates). Ensemble only when two legs are individually strong.",
+      "detail": "Averaging calibrated triple_barrier + BGM predictions lifted IWM 0.93 \u2192 1.14, but dilutes TLT (one signal already dominates). Ensemble only when two legs are individually strong.",
       "ev": "IWM R59"
     },
     {
       "title": "No-lookahead invariant: never filter trading bars by a future label",
-      "detail": "Two enforced rules: (1) test/val predictions cover EVERY causal bar — a future label may filter only the FIT set, never which OOS bars trade; (2) bar thresholds fit on TRAIN minutes, not the full series (a magnitude-axis full-series threshold leaked OOS into bar placement — found + fixed).",
+      "detail": "Two enforced rules: (1) test/val predictions cover EVERY causal bar \u2014 a future label may filter only the FIT set, never which OOS bars trade; (2) bar thresholds fit on TRAIN minutes, not the full series (a magnitude-axis full-series threshold leaked OOS into bar placement \u2014 found + fixed).",
       "ev": "G3 audits"
     },
     {
@@ -24095,8 +24497,8 @@
       "ev": "IWM R59"
     },
     {
-      "title": "triple_barrier + ③-features recipe ports across mean-reverting ETFs",
-      "detail": "The same labeler+features stack that unlocked TLT also lifted IWM — a transferable recipe, not a per-ETF fluke. Try it first on any mean-reverter.",
+      "title": "triple_barrier + \u2462-features recipe ports across mean-reverting ETFs",
+      "detail": "The same labeler+features stack that unlocked TLT also lifted IWM \u2014 a transferable recipe, not a per-ETF fluke. Try it first on any mean-reverter.",
       "ev": "TLT,IWM"
     }
   ],
@@ -24120,7 +24522,7 @@
       "win_pct": 70,
       "n": 7,
       "ndays": 710,
-      "scheme": "capital ∝ Calmar",
+      "scheme": "capital \u221d Calmar",
       "STALE_PRE_LEAK_FIX": true,
       "stale_note": "computed on LEAKY logdollar champions (GLD 4.71/SOXX 3.02); superseded by the 2026-06-03 leak fix -> re-derive leak-free before trusting"
     },
@@ -24185,12 +24587,12 @@
       "da": 2.6904,
       "n": 8,
       "members": "7 + DBC (commodities)",
-      "note": "NEW deployable champion — DBC (weak 0.86) HELPS via decorrelation (MaxDD 3.2->2.74%, Calmar 3.60->4.22 daily) where EFA (1.26) hurt. Decorrelation > standalone strength.",
+      "note": "NEW deployable champion \u2014 DBC (weak 0.86) HELPS via decorrelation (MaxDD 3.2->2.74%, Calmar 3.60->4.22 daily) where EFA (1.26) hurt. Decorrelation > standalone strength.",
       "calmar": 4.2166,
       "mdd_pct": 2.74,
       "car_pct": 11.56,
       "win_pct": 70,
-      "scheme": "conviction-weighted (∝Calmar), 8 ETFs incl DBC commodities",
+      "scheme": "conviction-weighted (\u221dCalmar), 8 ETFs incl DBC commodities",
       "metric": "daily-equity (QC dict flaky)"
     },
     "with_UUP_9": {
@@ -24198,21 +24600,21 @@
       "cagr": 11.27,
       "mdd": 2.67,
       "sharpe": 2.552,
-      "note": "UUP neutral — genuine hedge (MaxDD 2.74->2.67%, Sharpe up) but flat Calmar (return drag offsets at conviction weight). Excluded from book."
+      "note": "UUP neutral \u2014 genuine hedge (MaxDD 2.74->2.67%, Sharpe up) but flat Calmar (return drag offsets at conviction weight). Excluded from book."
     },
     "weight_exponent": {
       "0.5": 3.5884,
       "1.0": 4.2166,
       "2.0": 3.8033,
       "optimal": 1.0,
-      "note": "∝Calmar^1 is the Calmar optimum (unimodal); ^0.5 over-diversifies (3.59), ^2 over-concentrates EEM->lower CAGR (3.80, though Sharpe 2.75). Objective-dependent: ^2 wins on Sharpe."
+      "note": "\u221dCalmar^1 is the Calmar optimum (unimodal); ^0.5 over-diversifies (3.59), ^2 over-concentrates EEM->lower CAGR (3.80, though Sharpe 2.75). Objective-dependent: ^2 wins on Sharpe."
     },
     "book_objective_note": "DEPLOYABLE BOOK uses always_long GLD (book Calmar 4.22), NOT the trend_scan standalone champion (book 2.91). Book objective = return+decorrelation, not standalone Calmar; diversification handles member drawdown, so timing a drifter (cutting its return) hurts the book.",
     "with_TIP": {
       "calmar": 4.197,
       "cagr": 10.86,
       "mdd": 2.59,
-      "note": "TIP neutral (decorrelated, MaxDD 2.74->2.59% but CAGR drag) — Calmar-flat; excluded. Decorrelated-member lever exhausted: DBC won, EFA hurt, UUP/TIP neutral."
+      "note": "TIP neutral (decorrelated, MaxDD 2.74->2.59% but CAGR drag) \u2014 Calmar-flat; excluded. Decorrelated-member lever exhausted: DBC won, EFA hurt, UUP/TIP neutral."
     },
     "honest_2026_06_02": {
       "calmar": 1.7791,
@@ -24222,7 +24624,7 @@
       "da": 6.1482,
       "n": 10,
       "ndays": 710,
-      "scheme": "conviction ∝ honest re-validated Calmar, gross≤1, no leverage",
+      "scheme": "conviction \u221d honest re-validated Calmar, gross\u22641, no leverage",
       "members": [
         [
           "GLD",
@@ -24271,7 +24673,7 @@
         "2025": "+13.0% (mdd 6.6%)",
         "2026": "+10.8% (mdd 2.9%)"
       },
-      "vs_passive_buyhold": "1.78 vs 1.61 — still beats passive via diversification + drawdown reduction",
+      "vs_passive_buyhold": "1.78 vs 1.61 \u2014 still beats passive via diversification + drawdown reduction",
       "note": "Stale '4.22/3.36' book was inflated by EEM's stale 4.03 timing cell (now buy-hold 1.29). TLT dropped (no positive edge). Genuine durable ML alpha is narrow: GLD trend_scan + UUP imbalance_bgm; rest is diversified buy-hold.",
       "car_pct": 11.7
     },
@@ -24282,7 +24684,7 @@
       "mdd_pct": 2.13,
       "sharpe": 1.962,
       "n": 5,
-      "scheme": "DECORRELATED CORE — GLD/UUP/TIP/DBC/HYG (gold/dollar/TIPS/commodities/credit), conviction ∝ Calmar, gross≤1",
+      "scheme": "DECORRELATED CORE \u2014 GLD/UUP/TIP/DBC/HYG (gold/dollar/TIPS/commodities/credit), conviction \u221d Calmar, gross\u22641",
       "members": [
         [
           "GLD",
@@ -24321,7 +24723,7 @@
       "mdd_pct": 2.11,
       "sharpe": 2.062,
       "n": 5,
-      "scheme": "DECORRELATED CORE (GLD/UUP/TIP/DBC/HYG), weight ∝ Calmar² (tilt to risk-adjusted quality), gross≤1",
+      "scheme": "DECORRELATED CORE (GLD/UUP/TIP/DBC/HYG), weight \u221d Calmar\u00b2 (tilt to risk-adjusted quality), gross\u22641",
       "weights_pct": {
         "GLD": 41,
         "HYG": 30,
@@ -24336,7 +24738,7 @@
         "2026": "+6.2% (mdd 2.0%)"
       },
       "positive_every_year": true,
-      "note": "Allocation-only improvement over conviction∝Calmar (3.32->3.53, Sharpe 1.96->2.06). Weight sweep on decorr-core: inv_calmar 1.97 < equal 2.55 < sqrt 3.01 < calmar 3.32 < calmar^2 3.53; stopped at ^2 (^3+ = curve-fitting weights to the window). No new edge — pure allocation.",
+      "note": "Allocation-only improvement over conviction\u221dCalmar (3.32->3.53, Sharpe 1.96->2.06). Weight sweep on decorr-core: inv_calmar 1.97 < equal 2.55 < sqrt 3.01 < calmar 3.32 < calmar^2 3.53; stopped at ^2 (^3+ = curve-fitting weights to the window). No new edge \u2014 pure allocation.",
       "STALE_PRE_LEAK_FIX": true,
       "stale_note": "computed on LEAKY logdollar champions (GLD 4.71/SOXX 3.02); superseded by the 2026-06-03 leak fix -> re-derive leak-free before trusting"
     },
@@ -24528,7 +24930,7 @@
           "gld_w": 0.75
         }
       },
-      "finding": "Calmar^2 (deployed) is Calmar-OPTIMAL (peak 5.16) — not over-concentrated for return. But book is FLAT across exp 1.5-2 (5.14-5.16, sample noise), and exp=1.5 gives same Calmar/Sharpe with GLD weight 45% vs 57% = free ROBUSTNESS gain (21% less single-edge fragility). Given decay-audit (single edges CAN decay to 0), exp=1.5 is the decay-resilient pick. Book is robust to the weighting (no knife-edge).",
+      "finding": "Calmar^2 (deployed) is Calmar-OPTIMAL (peak 5.16) \u2014 not over-concentrated for return. But book is FLAT across exp 1.5-2 (5.14-5.16, sample noise), and exp=1.5 gives same Calmar/Sharpe with GLD weight 45% vs 57% = free ROBUSTNESS gain (21% less single-edge fragility). Given decay-audit (single edges CAN decay to 0), exp=1.5 is the decay-resilient pick. Book is robust to the weighting (no knife-edge).",
       "recommendation": "keep Calmar^2 for max Calmar, OR shift to Calmar^1.5 for decay-resilience at ~0 cost (judgment call, Calmar identical within noise)"
     },
     "leave_one_out_audit_2026_06_06": {
@@ -24543,8 +24945,8 @@
         "DBC": 0.036
       },
       "drop_TIP+DBC_calmar": 5.286,
-      "finding": "GLD dominant edge (-2.32 if dropped); HYG now strong contributor (-0.61, credit rallied to 2.05); USO -0.54 (crown value); UUP small +; IWM neutral. TIP+DBC marginal DRAG (+0.09/+0.04) -> dropping both lifts Calmar 5.16->5.29 (+2.4%). BUT TIP/DBC are INFLATION-regime insurance; OOS 2023-26 was disinflationary so they dragged. The +2.4% is the insurance PREMIUM, not free alpha — dropping them overfits the recent regime + strips the inflation hedge. KEEP for robustness (regimes shift, per decay-audit).",
-      "decision": "book composition unchanged — TIP/DBC retained as cheap inflation insurance; drag quantified at +2.4% Calmar premium"
+      "finding": "GLD dominant edge (-2.32 if dropped); HYG now strong contributor (-0.61, credit rallied to 2.05); USO -0.54 (crown value); UUP small +; IWM neutral. TIP+DBC marginal DRAG (+0.09/+0.04) -> dropping both lifts Calmar 5.16->5.29 (+2.4%). BUT TIP/DBC are INFLATION-regime insurance; OOS 2023-26 was disinflationary so they dragged. The +2.4% is the insurance PREMIUM, not free alpha \u2014 dropping them overfits the recent regime + strips the inflation hedge. KEEP for robustness (regimes shift, per decay-audit).",
+      "decision": "book composition unchanged \u2014 TIP/DBC retained as cheap inflation insurance; drag quantified at +2.4% Calmar premium"
     },
     "temporal_robustness_2026_06_06": {
       "full": {
@@ -24579,7 +24981,7 @@
         "UUP-USO": 0.023
       },
       "worst_day_driver": "GLD+USO co-fall (both commodities, 57%+ weight); UUP POSITIVE on every worst day (dollar rises when commodities sell off)",
-      "finding": "Diversification REAL (ML edges low/neg correlated). But worst-day tail is COMMODITY-tilted (GLD gold + USO oil co-fall). KEY: UUP's tiny leave-one-out Calmar (-0.07) UNDERSTATES its value — UUP is the TAIL HEDGE (up exactly when GLD+USO down), which is WHY MaxDD stays 2.82% despite commodity-concentrated edges. UUP earns its place via tail-diversification not standalone return. Book's low DD is EARNED by the dollar hedge. Structural commodity-tilt is inherent to the available edges (2 of 3 are commodities); UUP mitigates; no non-commodity edge exists to add (exhausted)."
+      "finding": "Diversification REAL (ML edges low/neg correlated). But worst-day tail is COMMODITY-tilted (GLD gold + USO oil co-fall). KEY: UUP's tiny leave-one-out Calmar (-0.07) UNDERSTATES its value \u2014 UUP is the TAIL HEDGE (up exactly when GLD+USO down), which is WHY MaxDD stays 2.82% despite commodity-concentrated edges. UUP earns its place via tail-diversification not standalone return. Book's low DD is EARNED by the dollar hedge. Structural commodity-tilt is inherent to the available edges (2 of 3 are commodities); UUP mitigates; no non-commodity edge exists to add (exhausted)."
     }
   }
 }
