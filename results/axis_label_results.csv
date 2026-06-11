@@ -1,3 +1,0 @@
-ticker,axis,label,real_calmar,real_da,trades,synth_cal,train_auc,val_auc,status
-TLT,vol,carry,-0.2783333333333334,63.3821,680,-0.7514,0.8581,0.8487,completed
-TLT,vol,always_long,-0.2783333333333334,63.3821,680,-0.7514,0.8581,0.8487,completed

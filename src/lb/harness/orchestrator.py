@@ -22,7 +22,6 @@ def _minify(src):
 from .constants import (CORE_7_ETFS, TEMPLATES_DIR, MODULES_DIR, QC_SCRIPTS_DIR, TARGET_BARS,
                         RESULTS_TSV, KNOWLEDGE_JSON, TECHNIQUES_JSON)
 from .qc_client import submit_and_wait
-from .evaluator import evaluate
 from .psuf import cell_suffix
 from lb.paths import ROOT as PROJECT_ROOT
 
