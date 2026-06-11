@@ -17,7 +17,6 @@ The repo uses an editable install (`pip install -e .` via `pyproject.toml`): all
 | `src/lb/harness/` | **LOCKED scorer** — `qc_client.py`, `orchestrator.py`, `psuf.py` (cell-key helpers), `constants.py`. |
 | `src/lb/templates/` | `header/footer/infer` `*.py.tmpl` rendered into the QC `main.py` (footer downstream + infer sizing are editable). |
 | `src/lb/modules/` | **Editable pipeline** — `bar_builder.py` + `bar_ext.py` ① axis, `labeler.py` ② labels, `features.py` + `ml_ext.py` ③, `trainer.py` + `sizing_ext.py` ④–⑧. |
-| `src/lb/console/` | Flask report server (entry point `lb-report`; restart after any `console/` change). |
 | `src/lb/cli.py` · `src/lb/describe.py` | Entry-point shims (`lb-round` tournament driver; describe utilities). |
 | `reports/` | **Per-round tech reports as HTML** (`round_N.html`, MathJax math) + `index.html` + `TEMPLATE.html`. |
 | `knowledge.json` · `techniques.json` | Shared memory (`per_etf_best`, findings, dead-ends, idea queue). |
