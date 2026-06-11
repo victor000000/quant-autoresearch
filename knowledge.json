@@ -1040,10 +1040,10 @@
       "n_trials": 48,
       "psr": 0.8978,
       "ceilinged": true,
-      "dsr": 0.6494,
-      "dsr_n_trials": 27,
+      "dsr": 0.6517,
+      "dsr_n_trials": 28,
       "dsr_survives_holm": false,
-      "minbtl_years": 4.978,
+      "minbtl_years": 5.052,
       "minbtl_sufficient": false
     },
     "EEM": {
@@ -1112,10 +1112,10 @@
       "revalidated_trades": 566,
       "val_auc_reval": "0.4662",
       "deflated_calmar_benchmark": 1.3611,
-      "deflation_margin": -0.5023,
-      "survives_deflation": false,
-      "deflation_metric": "Calmar",
-      "deflated_benchmark": 1.3611,
+      "deflation_margin": 0.3986,
+      "survives_deflation": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.7,
       "n_days": 710,
       "real_skew": -0.2919,
       "real_kurt": 5.6787,
@@ -1195,10 +1195,10 @@
       "status": "NO-EDGE. trend_scan/ker/bgm/sharpe_scan x logdollar/zcusum, long/short, ALL negative (best -0.039). New vol-normalized label sharpe_scan ran clean (-0.13/-0.15) but no timing edge exists.",
       "deployable": false,
       "deflated_calmar_benchmark": 0.9279,
-      "deflation_margin": -0.9666,
-      "survives_deflation": false,
-      "deflation_metric": "Calmar",
-      "deflated_benchmark": 0.9279,
+      "deflation_margin": 0.051,
+      "survives_deflation": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.8982,
       "sharpe": -0.0374,
       "n_days": 710,
       "real_skew": 0.3961,
@@ -1236,11 +1236,15 @@
         "rebal_band": 0.03,
         "reduce": "infogain"
       },
-      "dsr": 0.75,
-      "dsr_n_trials": 133,
+      "dsr": 0.7666,
+      "dsr_n_trials": 141,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.47,
-      "minbtl_sufficient": true
+      "minbtl_years": 1.492,
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.8841,
+      "deflation_margin": 0.957,
+      "survives_deflation": true
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -1346,17 +1350,21 @@
       },
       "status": "REAL EDGE 1.30 (imbalance bgm+ker). meta-labeling tested: triple_barrier_meta -0.26 / tight_meta +0.19, both non-deployable (gate over-filters to 62-71 trades). ker/accel/meta all tried -> 1.30 optimal.",
       "ceilinged": true,
-      "dsr": 0.0506,
-      "dsr_n_trials": 68,
+      "dsr": 0.0524,
+      "dsr_n_trials": 70,
       "dsr_survives_holm": false,
       "evalue_oos": 1.31,
       "evalue_verdict": "weak (e>=1)",
       "evalue_leak_free": true,
-      "minbtl_years": 94.686,
+      "minbtl_years": 95.532,
       "minbtl_sufficient": false,
       "stale_calmar_was": 1.2958,
       "sizing_revalidated": "dd_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.3137,
+      "deflation_margin": 0.3115,
+      "survives_deflation": true
     },
     "TIP": {
       "cell": "TIP_logdollar_always_long_cdf_overlay_t0.45",
@@ -1412,7 +1420,11 @@
       "dsr_n_trials": 19,
       "dsr_survives_holm": false,
       "minbtl_years": 1.557,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.8676,
+      "deflation_margin": 0.6376,
+      "survives_deflation": true
     },
     "SOXX": {
       "cell": "SOXX_logdollar_ker+trend_scan+bgm_cdf_overlay_t0.50",
@@ -1453,7 +1465,11 @@
       "minbtl_sufficient": false,
       "stale_calmar_was": 0.8074,
       "sizing_revalidated": "dd_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.1565,
+      "deflation_margin": 0.5423,
+      "survives_deflation": true
     },
     "IAU": {
       "cell": "IAU_logdollar_sliced_wasserstein_cdf_overlay_t0.45",
@@ -1487,7 +1503,11 @@
       "dsr_n_trials": 59,
       "dsr_survives_holm": false,
       "minbtl_years": 1.505,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.5768,
+      "deflation_margin": 0.5191,
+      "survives_deflation": true
     },
     "BIL": {
       "cell": "BIL_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
@@ -1524,7 +1544,11 @@
       "minbtl_sufficient": true,
       "stale_calmar_was": 30.43,
       "sizing_revalidated": "dd_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 12.9109,
+      "deflation_margin": 2.6359,
+      "survives_deflation": true
     },
     "XOP": {
       "cell": "XOP_imbalance_bgm+ker_cdf_overlay_t0.50",
@@ -1561,7 +1585,11 @@
       "minbtl_sufficient": false,
       "stale_calmar_was": 1.6256,
       "sizing_revalidated": "cdf_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.8764,
+      "deflation_margin": 0.5052,
+      "survives_deflation": true
     },
     "QLD": {
       "cell": "QLD_logdollar_sliced_wasserstein_cdf_overlay_t0.45",
@@ -1598,7 +1626,11 @@
       "minbtl_sufficient": true,
       "stale_calmar_was": 4.0561,
       "sizing_revalidated": "dd_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.3695,
+      "deflation_margin": 0.3463,
+      "survives_deflation": true
     },
     "SSO": {
       "cell": "SSO_imbalance_bgm+ker_cdf_overlay_t0.50",
@@ -1635,7 +1667,11 @@
       "minbtl_sufficient": false,
       "stale_calmar_was": 2.5108,
       "sizing_revalidated": "dd_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.431,
+      "deflation_margin": 0.478,
+      "survives_deflation": true
     },
     "AGQ": {
       "cell": "AGQ_logdollar_changepoint_cdf_overlay_t0.50",
@@ -1672,7 +1708,11 @@
       "minbtl_sufficient": false,
       "stale_calmar_was": 2.4888,
       "sizing_revalidated": "cdf_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.5527,
+      "deflation_margin": 0.0786,
+      "survives_deflation": true
     },
     "UGL": {
       "cell": "UGL_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
@@ -1706,7 +1746,11 @@
       "dsr_n_trials": 57,
       "dsr_survives_holm": false,
       "minbtl_years": 2.836,
-      "minbtl_sufficient": false
+      "minbtl_sufficient": false,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.1824,
+      "deflation_margin": 0.4333,
+      "survives_deflation": true
     },
     "VT": {
       "cell": "VT_logdollar_ker_dd_overlay_t0.45",
@@ -1740,7 +1784,11 @@
       "dsr_n_trials": 12,
       "dsr_survives_holm": false,
       "minbtl_years": 1.082,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.1373,
+      "deflation_margin": 0.5066,
+      "survives_deflation": true
     },
     "EWY": {
       "cell": "EWY_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
@@ -1774,7 +1822,11 @@
       "dsr_n_trials": 14,
       "dsr_survives_holm": false,
       "minbtl_years": 1.362,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.6903,
+      "deflation_margin": 0.9085,
+      "survives_deflation": true
     },
     "SPXL": {
       "cell": "SPXL_logdollar_trend_leg_cdf_overlay_t0.45",
@@ -1811,7 +1863,11 @@
       "minbtl_sufficient": false,
       "stale_calmar_was": 2.8197,
       "sizing_revalidated": "cdf_plain",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.3042,
+      "deflation_margin": 0.7537,
+      "survives_deflation": true
     },
     "XME": {
       "cell": "XME_vol_trend_leg_dd_overlay_t0.45",
@@ -1848,7 +1904,11 @@
       "minbtl_sufficient": true,
       "stale_calmar_was": 2.3699,
       "sizing_revalidated": "dd_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.2533,
+      "deflation_margin": 0.631,
+      "survives_deflation": true
     },
     "EWZ": {
       "cell": "EWZ_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
@@ -1882,7 +1942,11 @@
       "dsr_n_trials": 12,
       "dsr_survives_holm": false,
       "minbtl_years": 1.987,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.971,
+      "deflation_margin": 0.3015,
+      "survives_deflation": true
     },
     "ACWX": {
       "cell": "ACWX_logdollar_ker_dd_overlay_t0.45",
@@ -1919,7 +1983,11 @@
       "minbtl_sufficient": false,
       "stale_calmar_was": 2.41,
       "sizing_revalidated": "dd_overlay",
-      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run"
+      "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.9239,
+      "deflation_margin": 0.4782,
+      "survives_deflation": true
     },
     "USO": {
       "cell": "USO_logdollar_revert_cdf_plain_t0.45",
@@ -1949,11 +2017,15 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.8421,
-      "dsr_n_trials": 71,
+      "dsr": 0.825,
+      "dsr_n_trials": 74,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.402,
-      "minbtl_sufficient": true
+      "minbtl_years": 1.42,
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.8016,
+      "deflation_margin": 0.3369,
+      "survives_deflation": true
     },
     "EWT": {
       "cell": "EWT_logdollar_ker_dd_overlay_t0.45",
@@ -1988,7 +2060,11 @@
       "dsr_survives_holm": false,
       "minbtl_years": 0.592,
       "minbtl_sufficient": true,
-      "phase_cert": "FAIL 2026-06-10: 5 pre-registered bar-phase offsets -> 5.133/2.890/2.690/3.208/1.561 (min 1.56 < BH 1.87, spread 3.57). The 5.13 crown is the extreme of its own phase family (cf. historical prints 5.133/3.728/0.586). ADOPTION RETRACTED \u2014 phase-median ~2.9 is the honest ceiling; do not book-seat without re-certification."
+      "phase_cert": "FAIL 2026-06-10: 5 pre-registered bar-phase offsets -> 5.133/2.890/2.690/3.208/1.561 (min 1.56 < BH 1.87, spread 3.57). The 5.13 crown is the extreme of its own phase family (cf. historical prints 5.133/3.728/0.586). ADOPTION RETRACTED \u2014 phase-median ~2.9 is the honest ceiling; do not book-seat without re-certification.",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.5216,
+      "deflation_margin": 0.939,
+      "survives_deflation": true
     },
     "IDV": {
       "cell": "IDV_logdollar_ker_cdf_overlay_t0.45",
@@ -2018,11 +2094,15 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.934,
-      "dsr_n_trials": 13,
+      "dsr": 0.8745,
+      "dsr_n_trials": 17,
       "dsr_survives_holm": false,
-      "minbtl_years": 0.8,
-      "minbtl_sufficient": true
+      "minbtl_years": 0.922,
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.2514,
+      "deflation_margin": 0.6525,
+      "survives_deflation": true
     },
     "ILF": {
       "cell": "ILF_logdollar_trend_leg_dd_overlay_t0.45",
@@ -2056,7 +2136,11 @@
       "dsr_n_trials": 13,
       "dsr_survives_holm": false,
       "minbtl_years": 1.698,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.972,
+      "deflation_margin": 0.4707,
+      "survives_deflation": true
     },
     "IXG": {
       "cell": "IXG_logdollar_trend_leg_dd_overlay_t0.45",
@@ -2090,7 +2174,11 @@
       "dsr_n_trials": 12,
       "dsr_survives_holm": false,
       "minbtl_years": 1.318,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.7422,
+      "deflation_margin": 0.7678,
+      "survives_deflation": true
     },
     "EPI": {
       "cell": "EPI_logdollar_trend_leg_dd_overlay_t0.45",
@@ -2124,7 +2212,11 @@
       "dsr_n_trials": 11,
       "dsr_survives_holm": false,
       "minbtl_years": 1.379,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.1997,
+      "deflation_margin": 0.1816,
+      "survives_deflation": true
     },
     "EWG": {
       "cell": "EWG_logdollar_trend_leg_cdf_overlay_t0.45",
@@ -2158,7 +2250,11 @@
       "dsr_n_trials": 15,
       "dsr_survives_holm": false,
       "minbtl_years": 1.694,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.5383,
+      "deflation_margin": -0.178,
+      "survives_deflation": false
     },
     "DXJ": {
       "cell": "DXJ_logdollar_ker_cdf_overlay_t0.45",
@@ -2188,11 +2284,15 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.8222,
-      "dsr_n_trials": 12,
+      "dsr": 0.7697,
+      "dsr_n_trials": 14,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.35,
-      "minbtl_sufficient": true
+      "minbtl_years": 1.472,
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.0349,
+      "deflation_margin": 0.6195,
+      "survives_deflation": true
     },
     "AAXJ": {
       "cell": "AAXJ_logdollar_sadf_explosive_dd_overlay_t0.50",
@@ -2222,12 +2322,16 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.8982,
-      "dsr_n_trials": 12,
+      "dsr": 0.8494,
+      "dsr_n_trials": 13,
       "dsr_survives_holm": false,
-      "minbtl_years": 0.843,
+      "minbtl_years": 0.883,
       "minbtl_sufficient": true,
-      "permute_confirmed": "PASS 2026-06-10: replication 2.4406 bit-exact; genuine 257-trade shuffled-label control -0.1725 (edge over BH +1.04 -> -1.57, total collapse). Weak-real (DSR 0.898) \u2014 permute-confirmed, not crown-grade."
+      "permute_confirmed": "PASS 2026-06-10: replication 2.4406 bit-exact; genuine 257-trade shuffled-label control -0.1725 (edge over BH +1.04 -> -1.57, total collapse). Weak-real (DSR 0.898) \u2014 permute-confirmed, not crown-grade.",
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.2789,
+      "deflation_margin": 0.6108,
+      "survives_deflation": true
     },
     "EPP": {
       "cell": "EPP_logdollar_ker_cdf_overlay_t0.45",
@@ -2261,7 +2365,11 @@
       "dsr_n_trials": 12,
       "dsr_survives_holm": false,
       "minbtl_years": 1.155,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 1.1013,
+      "deflation_margin": 0.4477,
+      "survives_deflation": true
     },
     "EWL": {
       "cell": "EWL_logdollar_ker_dd_overlay_t0.45",
@@ -2295,7 +2403,11 @@
       "dsr_n_trials": 12,
       "dsr_survives_holm": false,
       "minbtl_years": 1.941,
-      "minbtl_sufficient": true
+      "minbtl_sufficient": true,
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.9927,
+      "deflation_margin": 0.2474,
+      "survives_deflation": true
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
@@ -14050,6 +14162,198 @@
         "type": "round",
         "phase": "IWM",
         "label": "R1832 IWM DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.4481 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1833",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1833 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +2.3952 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1834",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1834 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.6901 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1835",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1835 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +2.3952 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1836",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1836 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +2.3952 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1837",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1837 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.8430 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1838",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1838 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.8430 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1839",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1839 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.8430 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1840",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1840 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.8430 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1841",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1841 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +2.7517 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1842",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1842 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.7150 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1843",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1843 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.6579 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1844",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1844 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.7150 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1845",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1845 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.8430 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1846",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R1846 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.8430 (prev best +4.0218). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1847",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R1847 QQQ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size drawdown-scaled sizing, entry 0.40. -> Calmar +1.0552 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1848",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R1848 QQQ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, entry 0.40. -> Calmar +1.0193 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1849",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1849 SPY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size binary long/flat, entry 0.40. -> Calmar +0.9763 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1850",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R1850 IWM DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, entry 0.40. -> Calmar +0.5548 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1851",
+        "type": "round",
+        "phase": "XME",
+        "label": "R1851 XME DISCARD: Sample on volatility bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +1.0610 (prev best +1.1374). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1852",
+        "type": "round",
+        "phase": "IAU",
+        "label": "R1852 IAU DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +3.3509). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1853",
+        "type": "round",
+        "phase": "IAU",
+        "label": "R1853 IAU DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, entry 0.40. -> Calmar +2.1775 (prev best +3.3509). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1854",
+        "type": "round",
+        "phase": "USO",
+        "label": "R1854 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.7150 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1855",
+        "type": "round",
+        "phase": "UCO",
+        "label": "R1855 UCO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +1.4762 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1856",
+        "type": "round",
+        "phase": "VIXY",
+        "label": "R1856 VIXY DISCARD: Sample on log-dollar bars; forward-tertile labels; size long/short (continuous), entry 0.45. -> Calmar -0.1147 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1857",
+        "type": "round",
+        "phase": "VIXY",
+        "label": "R1857 VIXY DISCARD: Sample on log-dollar bars; forward-tertile labels; size short_carry, entry 0.45. -> Calmar -0.0879 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1858",
+        "type": "round",
+        "phase": "GDX",
+        "label": "R1858 GDX DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, entry 0.40. -> Calmar +0.3365 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1859",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1859 SPY DISCARD: Sample on jump; crash_ahead; size crashveto, entry 0.30. -> Calmar +0.9493 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1860",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R1860 QQQ DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, entry 0.40. -> Calmar +1.0004 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1861",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R1861 IWM DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, entry 0.40. -> Calmar +0.4621 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1862",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R1862 QQQ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2465 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1863",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R1863 IWM DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +0.4957 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1864",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1864 SPY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2893 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -24191,6 +24495,166 @@
       {
         "src": "r1831",
         "dst": "r1832",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1832",
+        "dst": "r1833",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1833",
+        "dst": "r1834",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1834",
+        "dst": "r1835",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1835",
+        "dst": "r1836",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1836",
+        "dst": "r1837",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1837",
+        "dst": "r1838",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1838",
+        "dst": "r1839",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1839",
+        "dst": "r1840",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1840",
+        "dst": "r1841",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1841",
+        "dst": "r1842",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1842",
+        "dst": "r1843",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1843",
+        "dst": "r1844",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1844",
+        "dst": "r1845",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1845",
+        "dst": "r1846",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1846",
+        "dst": "r1847",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1847",
+        "dst": "r1848",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1848",
+        "dst": "r1849",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1849",
+        "dst": "r1850",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1850",
+        "dst": "r1851",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1851",
+        "dst": "r1852",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1852",
+        "dst": "r1853",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1853",
+        "dst": "r1854",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1854",
+        "dst": "r1855",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1855",
+        "dst": "r1856",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1856",
+        "dst": "r1857",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1857",
+        "dst": "r1858",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1858",
+        "dst": "r1859",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1859",
+        "dst": "r1860",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1860",
+        "dst": "r1861",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1861",
+        "dst": "r1862",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1862",
+        "dst": "r1863",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1863",
+        "dst": "r1864",
         "label": "no improvement"
       }
     ],
