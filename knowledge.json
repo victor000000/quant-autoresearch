@@ -14887,6 +14887,36 @@
         "type": "round",
         "phase": "XLP",
         "label": "R1948 XLP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8930 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1949",
+        "type": "round",
+        "phase": "XLP",
+        "label": "R1949 XLP DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1906 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1950",
+        "type": "round",
+        "phase": "XLP",
+        "label": "R1950 XLP DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8595 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1951",
+        "type": "round",
+        "phase": "SPHQ",
+        "label": "R1951 SPHQ DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.4391 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1952",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1952 SPY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2893 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1953",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1953 SPY DISCARD: Sample on log-dollar bars; forward-tertile labels; size binary long/flat, entry 0.30. -> Calmar +0.8179 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25608,6 +25638,31 @@
       {
         "src": "r1947",
         "dst": "r1948",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1948",
+        "dst": "r1949",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1949",
+        "dst": "r1950",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1950",
+        "dst": "r1951",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1951",
+        "dst": "r1952",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1952",
+        "dst": "r1953",
         "label": "no improvement"
       }
     ],
