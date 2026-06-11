@@ -179,6 +179,36 @@ def reduce_ml(method, X_train, X_val, X_test, n_components, y_train=None):
         def _pr(X):
             return ((np.asarray(X, dtype=np.float64) - mean) @ comp.T).astype(np.float32)
         return (_pr(X_train), _pr(X_val), _pr(X_test), K, f"minorpca{K}", list(range(K)))
+    if method == "pls":
+        # Backlog #1: SUPERVISED twin of the winning pca mechanism — project onto
+        # max label-COVARIANCE directions (NIPALS via sklearn). TRAIN-fit on (X, y),
+        # frozen loadings applied to val/test. Same leak contract as pca.
+        from sklearn.cross_decomposition import PLSRegression
+        if y_train is None:
+            raise ValueError("pls reduce requires y_train")
+        yc = np.asarray(y_train, dtype=np.float64) - float(np.mean(y_train))
+        p = PLSRegression(n_components=K, scale=False)
+        p.fit(np.asarray(X_train, dtype=np.float64), yc)
+        return (p.transform(X_train).astype(np.float32), p.transform(X_val).astype(np.float32),
+                p.transform(X_test).astype(np.float32), K, f"pls{K}", list(range(K)))
+    if method == "spca":
+        # Backlog #2 (Bair supervised PCA): SCREEN features by TRAIN |corr with y|,
+        # keep the top 2K, THEN project with PCA(K) — selection-then-projection, the
+        # literal bridge of the mechanism-paired insight. TRAIN-only screen + fit.
+        from sklearn.decomposition import PCA
+        if y_train is None:
+            raise ValueError("spca reduce requires y_train")
+        Xt64 = np.asarray(X_train, dtype=np.float64)
+        yc = np.asarray(y_train, dtype=np.float64) - float(np.mean(y_train))
+        sd = Xt64.std(axis=0)
+        sd[sd < 1e-12] = 1e-12
+        cors = np.abs((Xt64 - Xt64.mean(axis=0)).T @ yc) / (sd * (np.std(yc) + 1e-12) * len(yc))
+        keep = np.argsort(cors)[::-1][:max(2 * K, 10)]
+        p = PCA(n_components=K, random_state=42)
+        p.fit(Xt64[:, keep])
+        def _sp(X):
+            return p.transform(np.asarray(X, dtype=np.float64)[:, keep]).astype(np.float32)
+        return (_sp(X_train), _sp(X_val), _sp(X_test), K, f"spca{K}", list(range(K)))
     if method == "whiten":
         # PCA-WHITEN: top-K directions but each rescaled to UNIT variance — removes the
         # variance-weighting so low-variance (reversion) directions stand on equal footing with

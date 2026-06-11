@@ -16419,6 +16419,12 @@
         "type": "round",
         "phase": "IAU",
         "label": "R2191 IAU DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, entry 0.40. -> Calmar +1.7235 (prev best +3.3509). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2192",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R2192 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +3.2612 (prev best +4.3570). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28355,6 +28361,11 @@
       {
         "src": "r2190",
         "dst": "r2191",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2191",
+        "dst": "r2192",
         "label": "no improvement"
       }
     ],

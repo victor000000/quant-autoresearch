@@ -167,7 +167,7 @@ def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20, y
     selection is computed on TRAIN only and the kept_idx is frozen + applied to val/test
     (same leak-safe contract as the correlation path)."""
     F = X_train.shape[1]; variances = np.var(X_train, axis=0)
-    if method in ("pca", "ae_np", "minor_pca", "whiten", "vae", "vae_rl"):
+    if method in ("pca", "ae_np", "minor_pca", "whiten", "vae", "vae_rl", "pls", "spca"):
         # ml_ext extension reduces (2026-06-10 Wang frontier #5): TRAIN-fit PCA control +
         # numpy nonlinear AE. Guarded: failure degrades to the correlation path below.
         try:
