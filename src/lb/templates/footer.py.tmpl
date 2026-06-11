@@ -438,12 +438,10 @@ class AutoresearchPipeline(QCAlgorithm):
                            "scaler_mean": [float(x) for x in sc.mean_],
                            "scaler_scale": [float(x) for x in sc.scale_],
                            "kept_idx": [int(i) for i in kept_idx],
-                           # lgbm has no get_booster; Lean can't even CATCH that AttributeError
-                           # (uncatchable-in-try, crashed run d61ec92), so branch via hasattr.
-                           # family!=xgb bundles are A/B-only: infer.py replay works, live xgb-only.
-                           "booster": (m.get_booster().save_raw("json").decode("utf-8")
-                                       if hasattr(m, "get_booster") else m.booster_.model_to_string()),
-                           "family": ("xgb" if hasattr(m, "get_booster") else "lgbm"),
+                           # family-safe serialization lives in ml_ext (Lean can't catch
+                           # cross-API AttributeErrors in try/except — run d61ec92).
+                           "booster": _mx.serialize_model(m)[1],
+                           "family": _mx.serialize_model(m)[0],
                            "best_iter": int(getattr(m, "best_iteration", 0) or 0),
                            "n_features": int(len(sc.mean_)),
                            "cal_x": (_cx.tolist() if _cx is not None else []),

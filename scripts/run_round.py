@@ -457,8 +457,8 @@ def _validate_cfg(cfg):
         raise ValueError(f"ticker {cfg['ticker']!r} not in CORE_7 nor the {len(CONFIRMED_ETFS)} QC-confirmed ETFs")
     if cfg["axis"] not in VALID_AXES:
         raise ValueError(f"axis {cfg['axis']!r} not in {VALID_AXES}")
-    if cfg.get("model", "xgb") not in ("xgb", "lgbm"):
-        raise ValueError(f"model {cfg.get('model')!r} must be xgb|lgbm")
+    if cfg.get("model", "xgb") not in ("xgb", "lgbm", "catboost"):
+        raise ValueError(f"model {cfg.get('model')!r} must be xgb|lgbm|catboost")
     # labeler may be a single name OR a "+"-joined ENSEMBLE (⑦), e.g. "triple_barrier+bgm".
     for _lp in str(cfg["labeler"]).split("+"):
         if _lp not in VALID_LABELERS:

@@ -117,6 +117,18 @@ def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
         except Exception as e:
             errs.append(type(e).__name__ + ":" + str(e)[:70])
             m.fit(Xt, yt.astype(int))
+    elif model == "catboost":
+        from catboost import CatBoostClassifier as _Cat
+        m = _Cat(iterations=200, depth=md, learning_rate=0.03,
+                 l2_leaf_reg=2.0, rsm=0.85, bootstrap_type="Bernoulli", subsample=0.85,
+                 scale_pos_weight=scale_w, loss_function="Logloss", eval_metric="AUC",
+                 random_seed=42, thread_count=1, verbose=False, allow_writing_files=False)
+        try:
+            m.fit(Xt, yt.astype(int), eval_set=(Xv, yv.astype(int)),
+                  early_stopping_rounds=30, verbose=False)
+        except Exception as e:
+            errs.append(type(e).__name__ + ":" + str(e)[:70])
+            m.fit(Xt, yt.astype(int), verbose=False)
     else:
         import xgboost as _xgb
         m = _xgb.XGBClassifier(
@@ -127,6 +139,18 @@ def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
             early_stopping_rounds=30, base_score=0.5)
         m.fit(Xt, yt, eval_set=[(Xv, yv)], verbose=False)
     return m, errs
+
+
+def serialize_model(m):
+    """(family, payload) for the hot bundle. hasattr-guarded, NEVER raises across
+    model APIs — Lean cannot catch cross-API AttributeErrors inside try/except
+    (run d61ec92). Only family='xgb' payloads are live-deployable (infer_online/
+    live_trade reconstruct xgb-JSON); others are A/B-replay-grade."""
+    if hasattr(m, "get_booster"):
+        return "xgb", m.get_booster().save_raw("json").decode("utf-8")
+    if hasattr(m, "booster_"):
+        return "lgbm", m.booster_.model_to_string()
+    return type(m).__name__, ""
 
 
 def reduce_ml(method, X_train, X_val, X_test, n_components, y_train=None):
