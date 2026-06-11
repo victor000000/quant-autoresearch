@@ -48,8 +48,9 @@ def _adam_step(p, g, m, v, t, lr=1e-3, b1=0.9, b2=0.999, eps=1e-8):
 
 
 def vix_feats(vix, lr, N=None):
-    """VIX (implied-vol index) exogenous features — the equity-index reopening channel.
-    vix = 1-day-lagged VIX level co-indexed with bars (carrier from the footer); lr = the
+    """VXX (VIX short-term futures ETN) exogenous features — the equity-index reopening
+    channel (user: use the tradeable ETN, not the CBOE index). vix = log(VXX close)
+    co-indexed with bars (causal market data, carrier from the footer); lr = the
     asset's own bar log-returns. All causal trailing windows; NaN until warm.
     8 features: level z (60/252), change (1/5/20 bars), 252-bar percentile rank,
     variance-risk-premium proxy (VIX/100/sqrt(252) vs trailing realized bar vol), VRP z."""
@@ -76,8 +77,9 @@ def vix_feats(vix, lr, N=None):
     rv = _np.full(n, _np.nan)
     for i in range(20, n):
         rv[i] = float(_np.nanstd(rl[i - 20:i + 1]))
-    iv_bar = v / 100.0 / _np.sqrt(252.0)        # implied per-day vol approx on bar grid
-    vrp = iv_bar - rv                            # variance-risk-premium proxy
+    # VRP proxy on the VXX carrier (log-level, not VIX points): z-difference between the
+    # implied-vol carrier and the asset's realized vol — scale-free, split/decay-robust.
+    vrp = _z(v, 60) - _z(rv, 60)
     out.append(vrp)
     out.append(_z(_np.where(_np.isfinite(vrp), vrp, _np.nan), 60))
     return _np.column_stack(out).astype(_np.float32)

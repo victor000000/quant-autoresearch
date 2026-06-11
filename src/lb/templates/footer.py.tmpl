@@ -98,10 +98,10 @@ class AutoresearchPipeline(QCAlgorithm):
                 self._oilbasis = False
         if self._vix:
             try:
-                # CBOE VIX (implied vol INDEX, not an ETF price): the closure's stated
-                # reopening condition for equity-index timing ("reopen only with options
-                # IV"). ry carrier = VIX level, 1-day-lag promoted (publication-causal).
-                self.ry_sym = self.add_data(CBOE, "VIX").symbol
+                # VXX (VIX short-term futures ETN — user 2026-06-11: use the tradeable
+                # ETN, NOT the CBOE index dataset). Plain equity OHLCV; market price is
+                # causal in-slice (no publication lag needed). ry carrier = log(close).
+                self.ry_sym = self.add_equity("VXX", Resolution.MINUTE).symbol
             except Exception:
                 self._vix = False
 
@@ -136,10 +136,10 @@ class AutoresearchPipeline(QCAlgorithm):
                 pass
         if self._vix:
             try:
-                if slice.contains_key(self.ry_sym):
-                    _v = slice[self.ry_sym]
-                    if _v is not None and _v.value is not None and float(_v.value) > 0:
-                        self._ry_pend = float(_v.value)
+                if self.ry_sym in slice.bars:
+                    _vb = slice.bars[self.ry_sym]
+                    if _vb is not None and float(_vb.close) > 0:
+                        self._ry_act = math.log(float(_vb.close))
             except Exception:
                 pass
         if self.sym not in slice.bars:
@@ -161,7 +161,7 @@ class AutoresearchPipeline(QCAlgorithm):
                 pass
             self.ry_cll.append(self._ry_act if self._ry_act is not None else float("nan"))
             self.sl_cll.append(float("nan"))
-        if self._realyield or self._vix:
+        if self._realyield:
             # Promote pends only on calendar-day advance => >=1-day lag on top of QC's t+1
             # emission (publication-causal). Appends OUTSIDE try: co-indexed with cll.
             try:
@@ -176,6 +176,10 @@ class AutoresearchPipeline(QCAlgorithm):
                 pass
             self.ry_cll.append(self._ry_act if self._ry_act is not None else float("nan"))
             self.sl_cll.append(self._sl_act if self._sl_act is not None else float("nan"))
+        if self._vix:
+            # log(VXX) at/before this primary bar — causal market data, co-indexed.
+            self.ry_cll.append(self._ry_act if self._ry_act is not None else float("nan"))
+            self.sl_cll.append(float("nan"))
 
     # --------------------------------------------------------------------- #
     # FIXED downstream pipeline for one (axis, labeler) cell.               #

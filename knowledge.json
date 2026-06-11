@@ -15025,6 +15025,30 @@
         "type": "round",
         "phase": "XLG",
         "label": "R1971 XLG DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.6635 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1972",
+        "type": "round",
+        "phase": "VDE",
+        "label": "R1972 VDE DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6857 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1973",
+        "type": "round",
+        "phase": "VDE",
+        "label": "R1973 VDE DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.7129 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1974",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R1974 IWM DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +0.4957 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1975",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R1975 SPY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2893 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25861,6 +25885,26 @@
       {
         "src": "r1970",
         "dst": "r1971",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1971",
+        "dst": "r1972",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1972",
+        "dst": "r1973",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1973",
+        "dst": "r1974",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1974",
+        "dst": "r1975",
         "label": "no improvement"
       }
     ],

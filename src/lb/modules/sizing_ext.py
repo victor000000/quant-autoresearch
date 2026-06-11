@@ -37,6 +37,13 @@ def _size(p, thresh, sizing, rbuf):
         if p <= lo:                    # Smooth ramp -> partial rebalances (trades>80 reachable) and no
             return 1.0                 # single-threshold cliff (the lead's 2.53-vs-0.84 fragility).
         return float(max(0.0, (thresh - p) / (thresh - lo)))
+    if sizing == "tilt_up":            # LEVER-UP tilt (equity-index structural-barrier mirror, 2026-06-11):
+        if p <= thresh:                # NEVER below 1.0x (keep ALL drift — the de-lever bracket proved
+            return 1.0                 # any drift forfeit loses); lean UP to 1.5x only when the signal
+        pp = min(max(p, 1e-6), 1.0 - 1e-6)   # is favorable. w = 1 + 0.5*cdf_bet(p,thresh).
+        zu = (pp - thresh) / math.sqrt(pp * (1.0 - pp))
+        bu = 2.0 * 0.5 * (1.0 + math.erf(zu / math.sqrt(2.0))) - 1.0
+        return float(1.0 + 0.5 * min(1.0, max(0.0, bu)))
     if sizing == "tilt":               # LONG-ANCHORED drift tilt (equity-index reversion monetization,
         return float(max(0.5, min(1.0, 0.5 + p)))   # 2026-06-11): full long at p>=0.5, lean down to a 0.5 FLOOR as the
                                        # model predicts a down-wiggle. Keeps the drift (the only money on
