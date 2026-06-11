@@ -4173,3 +4173,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T23:01:30,VAW,0.0,,B,VAW,logdollar,changepoint,0.5,cdf_overlay,0.0864,4.7298,229,True,True,-0.2563,0.7089,0.5226,0.183,2.0925,90.0468,717,False,False,completed,completed
 2026-06-11T23:03:44,VAW,0.0,,A,VAW,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.7464,0.9172,0.6972,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-11T23:03:44,VAW,0.0,,B,VAW,logdollar,always_long,0.5,cdf_overlay,0.352,32.5758,447,True,True,-0.0721,0.5,0.5,0.5701,0.1521,8.5659,717,True,False,completed,completed
+2026-06-11T23:05:56,SLYV,0.0,,A,SLYV,logdollar,ker,0.45,dd_overlay,-0.0857,3.7284,514,True,True,-0.0951,0.843,0.5476,-0.1847,0.7675,15.6623,717,False,False,completed,completed
+2026-06-11T23:05:56,SLYV,0.0,,B,SLYV,logdollar,changepoint,0.5,cdf_overlay,0.1472,4.0632,644,True,True,-0.1003,0.7017,0.53,0.2632,0.9581,9.1271,717,True,False,completed,completed
+2026-06-11T23:08:20,SLYV,0.0,,A,SLYV,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8799,0.3027,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T23:08:20,SLYV,0.0,,B,SLYV,logdollar,always_long,0.5,cdf_overlay,0.2713,48.1835,1455,True,True,-0.0587,0.5,0.5,0.476,0.4963,8.5014,717,True,False,completed,completed
+2026-06-11T23:10:34,SLYG,0.0,,A,SLYG,logdollar,ker,0.45,dd_overlay,0.4093,2.9505,767,True,True,-0.0553,0.7574,0.5981,0.4647,1.7669,26.3419,717,True,False,completed,completed
+2026-06-11T23:10:34,SLYG,0.0,,B,SLYG,logdollar,changepoint,0.5,cdf_overlay,-0.0929,21.1907,537,True,True,-0.255,0.6757,0.5636,-0.1979,2.0637,47.0991,717,False,False,completed,completed
+2026-06-11T23:12:49,SLYG,0.0,,A,SLYG,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.913,0.5,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T23:12:49,SLYG,0.0,,B,SLYG,logdollar,always_long,0.5,cdf_overlay,0.229,47.0337,1336,True,True,-0.1093,0.5,0.5,0.4302,0.4308,8.7295,717,True,False,completed,completed
