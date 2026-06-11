@@ -15271,6 +15271,36 @@
         "type": "round",
         "phase": "IJS",
         "label": "R2012 IJS DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4414 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2013",
+        "type": "round",
+        "phase": "XLB",
+        "label": "R2013 XLB DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.1627 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2014",
+        "type": "round",
+        "phase": "XLB",
+        "label": "R2014 XLB DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6840 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2015",
+        "type": "round",
+        "phase": "FDL",
+        "label": "R2015 FDL DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +1.0100 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2016",
+        "type": "round",
+        "phase": "FDL",
+        "label": "R2016 FDL DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.2235 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2017",
+        "type": "round",
+        "phase": "IJT",
+        "label": "R2017 IJT DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3871 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -26312,6 +26342,31 @@
       {
         "src": "r2011",
         "dst": "r2012",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2012",
+        "dst": "r2013",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2013",
+        "dst": "r2014",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2014",
+        "dst": "r2015",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2015",
+        "dst": "r2016",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2016",
+        "dst": "r2017",
         "label": "no improvement"
       }
     ],
