@@ -4277,3 +4277,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T01:00:32,RPV,0.0,,B,RPV,logdollar,changepoint,0.5,cdf_overlay,0.7662,1.6479,467,True,True,0.0633,0.6878,0.4793,0.8705,0.2591,15.955,717,True,False,completed,completed
 2026-06-12T01:02:39,RPV,0.0,,A,RPV,logdollar,sadf_explosive,0.5,cdf_overlay,0.6816,4.0245,552,True,True,0.0441,0.8111,0.6047,0.624,2.9851,88.3199,717,False,False,completed,completed
 2026-06-12T01:02:39,RPV,0.0,,B,RPV,logdollar,always_long,0.5,cdf_overlay,0.8999,20.9059,822,True,True,0.0045,0.5,0.5,1.0129,0.423,11.3824,717,True,False,completed,completed
+2026-06-12T01:05:08,AOM,0.0,,A,AOM,logdollar,ker,0.45,dd_overlay,-0.2318,3.1307,350,True,True,-0.0823,0.7375,0.529,-0.3863,0.5464,24.6468,717,True,False,completed,completed
+2026-06-12T01:05:08,AOM,0.0,,B,AOM,logdollar,changepoint,0.5,cdf_overlay,-0.3296,5.9738,133,True,True,-0.2167,0.6544,0.5052,-1.0236,-4.7191,55.6061,717,False,False,completed,completed
+2026-06-12T01:07:00,AOM,0.0,,A,AOM,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8859,0.4312,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T01:07:00,AOM,0.0,,B,AOM,logdollar,always_long,0.5,cdf_overlay,1.1559,9.2224,894,True,True,-0.152,0.5,0.5,1.0919,0.1787,5.3008,717,True,False,completed,completed
+2026-06-12T01:09:28,QQEW,0.0,,A,QQEW,logdollar,ker,0.45,dd_overlay,-0.0306,11.3691,948,True,True,0.1554,0.7699,0.5816,-0.0279,0.0209,8.0721,717,False,False,completed,completed
+2026-06-12T01:09:28,QQEW,0.0,,B,QQEW,logdollar,changepoint,0.5,cdf_overlay,0.0795,4.3509,793,True,True,-0.0011,0.7708,0.5202,0.1593,2.9628,52.338,717,True,False,completed,completed
+2026-06-12T01:11:55,QQEW,0.0,,A,QQEW,logdollar,sadf_explosive,0.5,cdf_overlay,-0.2721,39.8617,641,True,True,0.2393,0.8909,0.5887,-0.6678,-0.7567,10.0228,717,False,False,completed,completed
+2026-06-12T01:11:55,QQEW,0.0,,B,QQEW,logdollar,always_long,0.5,cdf_overlay,0.4881,24.6165,1638,True,True,-0.0216,0.5,0.5,0.634,0.7552,13.109,717,True,False,completed,completed

@@ -15720,6 +15720,30 @@
         "type": "round",
         "phase": "RPV",
         "label": "R2082 RPV DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8999 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2083",
+        "type": "round",
+        "phase": "AOM",
+        "label": "R2083 AOM DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar -0.2318 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2084",
+        "type": "round",
+        "phase": "AOM",
+        "label": "R2084 AOM DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.1559 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2085",
+        "type": "round",
+        "phase": "QQEW",
+        "label": "R2085 QQEW DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0795 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2086",
+        "type": "round",
+        "phase": "QQEW",
+        "label": "R2086 QQEW DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4881 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27111,6 +27135,26 @@
       {
         "src": "r2081",
         "dst": "r2082",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2082",
+        "dst": "r2083",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2083",
+        "dst": "r2084",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2084",
+        "dst": "r2085",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2085",
+        "dst": "r2086",
         "label": "no improvement"
       }
     ],
