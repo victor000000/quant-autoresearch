@@ -14581,6 +14581,18 @@
         "type": "round",
         "phase": "VBK",
         "label": "R1897 VBK DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.5685 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1898",
+        "type": "round",
+        "phase": "VOE",
+        "label": "R1898 VOE DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1899",
+        "type": "round",
+        "phase": "VOE",
+        "label": "R1899 VOE DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.6742 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25047,6 +25059,16 @@
       {
         "src": "r1896",
         "dst": "r1897",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1897",
+        "dst": "r1898",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1898",
+        "dst": "r1899",
         "label": "no improvement"
       }
     ],
