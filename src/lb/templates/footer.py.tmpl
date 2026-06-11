@@ -651,6 +651,8 @@ class AutoresearchPipeline(QCAlgorithm):
                 continue
             except TypeError:
                 feats = build_feats(lc, lr, rich=_rich)
+            if CONFIG.get("features") == "calendar":
+                feats = np.hstack([feats, _mx.cal_feats(bar_ts_np)])
             fv = ~np.isnan(feats).any(axis=1)
             _hz = CONFIG.get("horizons")     # intraday-holding override (in BARS); None => labeler defaults
             if _hz:

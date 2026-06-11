@@ -16455,6 +16455,18 @@
         "type": "round",
         "phase": "IWM",
         "label": "R2197 IWM DISCARD: Sample on log-dollar bars; dd_excursion; size tilt_up, entry 0.35. -> Calmar +0.5143 (prev best +0.5496). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2198",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R2198 SPY DISCARD: Sample on log-dollar bars; forward-tertile labels; size tilt_up, entry 0.40. -> Calmar +0.9425 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2199",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R2199 IWM DISCARD: Sample on log-dollar bars; forward-tertile labels; size tilt_up, entry 0.40. -> Calmar +0.4861 (prev best +0.5496). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28421,6 +28433,16 @@
       {
         "src": "r2196",
         "dst": "r2197",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2197",
+        "dst": "r2198",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2198",
+        "dst": "r2199",
         "label": "no improvement"
       }
     ],

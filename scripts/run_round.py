@@ -490,7 +490,7 @@ def _validate_cfg(cfg):
     if not (0.0 <= cfg["rebal_band"] <= 0.20):
         raise ValueError(f"rebal_band {cfg['rebal_band']} must be in [0.0,0.20]")
     cfg["features"] = str(cfg.get("features", "base"))               # feature-set lever (base|rich|termstruct|evt|disp|sig|realyield)
-    if cfg["features"] not in ("base", "rich", "termstruct", "evt", "disp", "sig", "realyield", "wangrich", "oilbasis", "regime", "vix"):
+    if cfg["features"] not in ("base", "rich", "termstruct", "evt", "disp", "sig", "realyield", "wangrich", "oilbasis", "regime", "vix", "calendar"):
         raise ValueError(f"features {cfg['features']!r} must be base|rich|termstruct|evt|disp|sig|realyield|wangrich|oilbasis")
     return cfg
 

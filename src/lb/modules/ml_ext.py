@@ -85,6 +85,28 @@ def vix_feats(vix, lr, N=None):
     return _np.column_stack(out).astype(_np.float32)
 
 
+def cal_feats(ts_np):
+    """Calendar/seasonality block (backlog #8): 8 causal columns from bar timestamps
+    ONLY — zero price content (immune to panel dilution). sin/cos day-of-week,
+    sin/cos month-phase, turn-of-month flag (last 2 + first 3 trading-ish days),
+    days-to-month-end (scaled), sin/cos month-of-year. Row-wise in own timestamp =>
+    append-invariant by construction."""
+    days = ts_np.astype("datetime64[D]")
+    d = days.astype("int64")
+    dow = (d + 3) % 7                                    # 0 = Monday
+    M = days.astype("datetime64[M]")
+    dom = (days - M.astype("datetime64[D]")).astype("int64")          # 0-based
+    eom = ((M + 1).astype("datetime64[D]") - days).astype("int64")    # days to next month
+    tom = ((dom < 3) | (eom <= 2)).astype(np.float32)
+    moy = M.astype("int64") % 12
+    tp = 2.0 * math.pi
+    cols = [np.sin(tp * dow / 7.0), np.cos(tp * dow / 7.0),
+            np.sin(tp * dom / 31.0), np.cos(tp * dom / 31.0),
+            tom, (eom / 31.0).astype(np.float32),
+            np.sin(tp * moy / 12.0), np.cos(tp * moy / 12.0)]
+    return np.column_stack(cols).astype(np.float32)
+
+
 def xgb_plain(scale_w, md=3):
     """The footer's fixed depth-3 xgb spec WITHOUT early stopping (purged-CV folds +
     meta secondary use it). Centralized here for the 64k budget."""
