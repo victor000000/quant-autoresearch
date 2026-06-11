@@ -4321,3 +4321,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T01:50:02,KBE,0.0,,B,KBE,logdollar,changepoint,0.5,cdf_overlay,-0.0006,11.8882,504,True,True,-0.1486,0.7387,0.479,0.0126,-1.159,20.4599,717,False,False,completed,completed
 2026-06-12T01:52:35,KBE,0.0,,A,KBE,logdollar,sadf_explosive,0.5,cdf_overlay,0.6028,35.4991,433,True,True,0.0902,0.9891,0.7397,0.7295,0.659,9.252,717,False,False,completed,completed
 2026-06-12T01:52:35,KBE,0.0,,B,KBE,logdollar,always_long,0.5,cdf_overlay,0.9159,39.285,674,True,True,-0.2124,0.5,0.5,0.9723,0.7233,8.2876,717,True,False,completed,completed
+2026-06-12T01:54:42,IYK,0.0,,A,IYK,logdollar,ker,0.45,dd_overlay,-0.128,2.8257,388,True,True,0.0284,0.6419,0.5518,-0.1494,-3.0828,52.1654,717,True,False,completed,completed
+2026-06-12T01:54:42,IYK,0.0,,B,IYK,logdollar,changepoint,0.5,cdf_overlay,-0.1389,4.2983,859,True,True,0.2184,0.7775,0.5728,-0.2017,0.4225,13.773,717,False,False,completed,completed
+2026-06-12T01:57:09,IYK,0.0,,A,IYK,logdollar,sadf_explosive,0.5,cdf_overlay,0.0633,0.7373,49,False,False,0.6474,0.803,0.583,0.1254,-4.3171,75.5457,717,False,False,completed,completed
+2026-06-12T01:57:09,IYK,0.0,,B,IYK,logdollar,always_long,0.5,cdf_overlay,0.3491,28.58,1887,True,True,0.2004,0.5,0.5,0.357,-0.7222,10.3676,717,True,False,completed,completed
+2026-06-12T01:59:22,PSI,0.0,,A,PSI,logdollar,ker,0.45,dd_overlay,0.209,10.0191,751,True,True,0.0306,0.7887,0.5463,0.3999,-1.4265,18.1082,717,False,False,completed,completed
+2026-06-12T01:59:22,PSI,0.0,,B,PSI,logdollar,changepoint,0.5,cdf_overlay,0.5551,7.4964,377,True,True,0.4854,0.6797,0.5246,0.861,0.3735,13.9103,717,True,False,completed,completed
+2026-06-12T02:02:07,PSI,0.0,,A,PSI,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8713,0.2713,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T02:02:07,PSI,0.0,,B,PSI,logdollar,always_long,0.5,cdf_overlay,0.8616,70.5615,1466,True,True,-0.4467,0.5,0.5,1.0662,-0.2013,5.362,717,True,False,completed,completed
