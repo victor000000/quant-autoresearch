@@ -75,7 +75,7 @@ this table is the reconciled truth (closure evidence in parentheses):
 | Probability output | **BUILT** |
 | Calibration (isotonic/Venn-Abers), permute control, DSR/PBO/SPA/MinBTL/LOND/N_eff, leak teeth | **EXCEEDS — Wang specifies nothing comparable; every agent converged on this** |
 | Sticky Gaussian-HMM forward-filter labeler (K=3, obs=[r,|r|], sticky .95, τ=.5) | **CLOSED-BY-EXPERIMENT** (built incl. sticky floor; GLD 0.40 @ val_auc 0.88 — predictable-not-profitable; HMM family closed) |
-| VAE / autoencoder reduce (incl. 512-dim rich panel) | **CLOSED-BY-EXPERIMENT** (ae_np 2.97 < 4.02; AE 2.44→1.11; wangrich panels dilute under EVERY reducer; QC blocks torch) |
+| VAE / autoencoder reduce (incl. 512-dim rich panel) | **CLOSED-BY-EXPERIMENT** (ae_np 2.97 < 4.02; AE 2.44→1.11; wangrich panels dilute under EVERY reducer; QC-blocks-torch claim FALSIFIED 2026-06-11: torch 2.8 available; torch VAE then RACED: **3.954 > pca 3.843 on GLD, permute-confirmed — Wang's nonlinear-reduce doctrine VALIDATED**, closure reversed) |
 | Fracdiff features (d sweep) | **CLOSED-leaning** (crowd-out under correlation; wangrich×pca 2.60 < 3.84; panel-dilution generalizes — only a small TRUE-FFD-under-infogain probe remains, flagged low-EV) |
 | Trend-degree ladder SOFT ensemble | **CLOSED-BY-EXPERIMENT** (tleg fast+mid+slow 3.66 < 4.02); unanimity hard-AND variant unraced (backlog, medium) |
 | Multi-axis same-ticker combination | **CLOSED conditionally** (netting 3.57 < 4.02; reopen iff a 2nd same-ticker leg reaches ≥2.5 — peer-strength requirement, Wang's own implicit assumption) |
