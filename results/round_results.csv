@@ -4181,3 +4181,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T23:10:34,SLYG,0.0,,B,SLYG,logdollar,changepoint,0.5,cdf_overlay,-0.0929,21.1907,537,True,True,-0.255,0.6757,0.5636,-0.1979,2.0637,47.0991,717,False,False,completed,completed
 2026-06-11T23:12:49,SLYG,0.0,,A,SLYG,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.913,0.5,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-11T23:12:49,SLYG,0.0,,B,SLYG,logdollar,always_long,0.5,cdf_overlay,0.229,47.0337,1336,True,True,-0.1093,0.5,0.5,0.4302,0.4308,8.7295,717,True,False,completed,completed
+2026-06-11T23:14:56,DON,0.0,,A,DON,logdollar,ker,0.45,dd_overlay,0.2095,4.534,791,True,True,0.0509,0.6427,0.5474,0.2655,0.4623,8.53,717,True,False,completed,completed
+2026-06-11T23:14:56,DON,0.0,,B,DON,logdollar,changepoint,0.5,cdf_overlay,-0.1493,5.661,437,True,True,0.2301,0.7338,0.5093,-0.3817,-2.8349,28.7995,717,False,False,completed,completed
+2026-06-11T23:17:31,DON,0.0,,A,DON,logdollar,sadf_explosive,0.5,cdf_overlay,-0.1765,7.9632,98,True,True,-0.3798,0.9123,0.3586,-0.259,1.1841,45.4194,717,False,False,completed,completed
+2026-06-11T23:17:31,DON,0.0,,B,DON,logdollar,always_long,0.5,cdf_overlay,0.4662,30.7004,780,True,True,0.0365,0.5,0.5,0.6984,0.1663,6.9502,717,True,False,completed,completed
+2026-06-11T23:19:32,IYF,0.0,,A,IYF,logdollar,ker,0.45,dd_overlay,0.3067,1.2222,29,False,False,0.3305,0.733,0.6096,0.6307,-3.4093,104.6185,717,False,False,completed,completed
+2026-06-11T23:19:32,IYF,0.0,,B,IYF,logdollar,changepoint,0.5,cdf_overlay,0.9154,3.4814,238,True,True,-0.118,0.6807,0.5295,0.9405,0.2544,11.8279,717,True,False,completed,completed
+2026-06-11T23:23:44,IYF,0.0,,A,IYF,logdollar,sadf_explosive,0.5,cdf_overlay,1.37,0.4729,119,True,True,-0.2494,0.8933,0.7079,1.3652,1.4453,20.2659,717,True,False,completed,completed
+2026-06-11T23:23:44,IYF,0.0,,B,IYF,logdollar,always_long,0.5,cdf_overlay,1.3413,19.8838,448,True,True,-0.1046,0.5,0.5,1.1798,0.4359,8.5337,717,False,False,completed,completed
