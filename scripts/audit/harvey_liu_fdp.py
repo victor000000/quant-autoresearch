@@ -20,8 +20,9 @@ import csv
 import math
 import os
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CSV = os.path.join(ROOT, "results", "round_results.csv")
+from lb.paths import ROUND_RESULTS_CSV as _RR_CSV
+
+CSV = str(_RR_CSV)
 CASH = {"BIL", "SHV", "GSY", "SHM", "BIV", "SHY", "ICSH", "NEAR", "MINT", "JPST",
         "FLOT", "BSV", "VGSH", "SGOV"}
 

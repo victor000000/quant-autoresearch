@@ -21,8 +21,7 @@ R = _ilu.module_from_spec(_spec)
 _spec.loader.exec_module(R)  # driver-internal helpers (run_pool, _f, _cagr_from_stats, ...)
 from stats_rigor import pbo_cscv, _sharpe
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
+OUT = str(_ROOT / "docs" / "analysis" / "HONEST_AUDIT.md")
 
 BASE = dict(ticker="GLD", axis="logdollar", thresh=0.40, sizing="dd_overlay", n_components=15)
 LABELERS = ["ker+regime_gmm", "ker+trend_scan", "ker", "trend_scan", "regime_gmm",

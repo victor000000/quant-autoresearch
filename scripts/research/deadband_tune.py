@@ -8,6 +8,7 @@ changes — no leak. Injects into a rendered infer COPY; production template unt
 import sys, os
 from lb.harness.orchestrator import render_infer_cell
 from lb.harness.qc_client import submit_and_wait
+from lb.paths import ROOT as _LBROOT
 
 _DEFAULTS = {"GLD": "logdollar_ker_x_regime_gmm_dd_overlay_t40_n15",
              "SOXX": "logdollar_ker_x_trend_scan_x_bgm_cdf_overlay_t50",
@@ -48,7 +49,7 @@ def main():
         print(f"  band {band}: net Calmar {c:.3f}, orders {orders}, CAGR {cagr:.2f}%", flush=True)
 
     best = max((r for r in rows if r[1] is not None), key=lambda r: r[1], default=None)
-    OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "analysis", "HONEST_AUDIT.md")
+    OUT = str(_LBROOT / "docs" / "analysis" / "HONEST_AUDIT.md")
     lines = ["", f"## {TK} rebalance dead-band tuning (net-of-5bp-cost objective)", "",
              "Wider band → fewer trades → less cost drag. Net Calmar @ 5bp slippage (current band = 0.01):", "", "```",
              f"{'band':>6s} {'netCalmar':>10s} {'orders':>7s} {'CAGR%':>6s}"]

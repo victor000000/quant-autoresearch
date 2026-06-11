@@ -14,11 +14,11 @@ haircut_t = Phinv(1 - p_adj);  haircut_SR = SR_ann * max(0, haircut_t)/t.
 """
 import csv, math, os, sys, statistics as st
 from stats_rigor import Phi, Phinv
+from lb.paths import ROOT as _LBROOT
 
 PPY = 252.0
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CSV = os.path.join(HERE, "results", "round_results.csv")
-OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
+CSV = str(_LBROOT / "results" / "round_results.csv")
+OUT = str(_LBROOT / "docs" / "analysis" / "HONEST_AUDIT.md")
 
 
 def fnum(x):

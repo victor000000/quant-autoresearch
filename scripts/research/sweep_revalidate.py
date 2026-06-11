@@ -13,7 +13,7 @@ import csv
 import os
 import sys
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from lb.paths import ROOT as _LBROOT
 DATE = sys.argv[1] if len(sys.argv) > 1 else "2026-06-09"
 
 
@@ -25,9 +25,9 @@ def f(x):
 
 
 def main():
-    k = json.load(open(os.path.join(HERE, "knowledge.json")))
+    k = json.load(open(str(_LBROOT / "knowledge.json")))
     pe = k.get("per_etf_best", {})
-    rows = list(csv.DictReader(open(os.path.join(HERE, "results", "round_results.csv"))))
+    rows = list(csv.DictReader(open(str(_LBROOT / "results" / "round_results.csv"))))
     print(f"Module-sweep re-validation (fresh runs on/after {DATE})\n")
     print(f"{'ETF':6s} {'stored':>7s} {'fresh':>7s} {'tr':>4s}  {'best_sizer':>10s}/{'reduce':<6s}  verdict")
     stale, repro = [], []

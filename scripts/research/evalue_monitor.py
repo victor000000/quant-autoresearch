@@ -18,10 +18,10 @@ anti-conservative clipping) so that with LAM_MAX=5, 1+lambda*r >= 0.1 > 0 always
 (aGRAPA-style GROW bet).
 """
 import json, os, math
+from lb.paths import ROOT as _LBROOT
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE = os.path.join(HERE, "results", "series_cache.json")
-OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
+CACHE = str(_LBROOT / "results" / "series_cache.json")
+OUT = str(_LBROOT / "docs" / "analysis" / "HONEST_AUDIT.md")
 LAM_MAX = 5.0          # bet cap; with return-floor -0.18 => 1+lambda*r >= 1+5*(-0.18)=0.1 > 0
 RET_FLOOR = -0.18      # true lower bound on in-period weekly ETF returns (no -18% weeks) => no anti-conservative clipping; keeps 1+lambda*r>0
 

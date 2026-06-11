@@ -10,8 +10,9 @@ then src/lb/console/render_causal_graph.py regenerates the visual. Node types:
 Optional node flag running:true -> dashed (in-flight).
 """
 import json, os
+from lb.paths import KNOWLEDGE_JSON as _KJ_PATH
 
-KJ = os.path.join(os.path.dirname(__file__), "..", "knowledge.json")
+KJ = str(_KJ_PATH)
 
 # (id, type, phase, label)
 NODES = [

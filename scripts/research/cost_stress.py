@@ -11,6 +11,7 @@ rendered copy only.
 import sys, os
 from lb.harness.orchestrator import render_infer_cell
 from lb.harness.qc_client import submit_and_wait
+from lb.paths import ROOT as _LBROOT
 
 ANCHOR = 'self.sym = self.add_equity(TICKER, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol'  # updated 2026-06-08 for the RAW-normalization leak-audit change
 INJECT = ANCHOR + '\n        self.securities[self.sym].set_slippage_model(ConstantSlippageModel(%s))'
@@ -54,7 +55,7 @@ def main():
             print(f"[{tk}] {slip*1e4:.0f}bp -> Calmar {c:.3f} (CAGR {cagr:.2f}%, MDD {mdd:.2f}%, {orders} orders)", flush=True)
         rows.append(res)
 
-    OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "analysis", "HONEST_AUDIT.md")
+    OUT = str(_LBROOT / "docs" / "analysis" / "HONEST_AUDIT.md")
     lines = ["", "## Transaction-cost stress (explicit slippage; pipeline default = none)", "",
              "Calmar after re-running each crown's infer (same decisions) with explicit per-fill slippage:", "", "```",
              f"{'crown':5s} {'default':>8s} {'5bp':>8s} {'10bp':>8s}   erosion@10bp"]

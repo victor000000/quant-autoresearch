@@ -12,7 +12,7 @@ import json
 import csv
 import os
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from lb.paths import ROOT as _LBROOT
 STALE = ["BIL", "QLD", "SPXL", "SSO", "AGQ", "ACWX", "XME", "XOP", "UUP", "SOXX"]
 DATE = "2026-06-09"
 
@@ -25,10 +25,10 @@ def f(x):
 
 
 def main():
-    kpath = os.path.join(HERE, "knowledge.json")
+    kpath = str(_LBROOT / "knowledge.json")
     k = json.load(open(kpath))
     pe = k.get("per_etf_best", {})
-    rows = list(csv.DictReader(open(os.path.join(HERE, "results", "round_results.csv"))))
+    rows = list(csv.DictReader(open(str(_LBROOT / "results" / "round_results.csv"))))
     changed = []
     for tk in STALE:
         if tk not in pe:

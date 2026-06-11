@@ -5,10 +5,10 @@ fragility signal the early/late 2-bucket decay split is too coarse to see). A ro
 most years with no single year carrying it; a fragile one has one dominant year and weak/negative others.
 """
 import json, os, math, datetime, statistics as st
+from lb.paths import ROOT as _LBROOT
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE = os.path.join(HERE, "results", "series_cache.json")
-OUT = os.path.join(HERE, "docs", "analysis", "HONEST_AUDIT.md")
+CACHE = str(_LBROOT / "results" / "series_cache.json")
+OUT = str(_LBROOT / "docs" / "analysis" / "HONEST_AUDIT.md")
 NAMES = ["GLD", "SOXX", "UUP", "TIP", "DBC", "HYG"]
 
 

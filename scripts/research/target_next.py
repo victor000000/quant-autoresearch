@@ -10,8 +10,9 @@ Usage:  python3 scripts/target_next.py            # weakest ETF
         python3 scripts/target_next.py TLT         # a specific ETF
 """
 import json, os, sys
+from lb.paths import KNOWLEDGE_JSON as _KJ_PATH
 
-KJ = os.path.join(os.path.dirname(__file__), "..", "knowledge.json")
+KJ = str(_KJ_PATH)
 d = json.load(open(KJ))
 pe = d.get("per_etf_best", {})
 ranked = sorted(pe.items(), key=lambda kv: kv[1].get("real_calmar", 0))

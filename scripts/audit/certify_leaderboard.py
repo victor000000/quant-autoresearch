@@ -14,11 +14,11 @@ import sys
 
 import numpy as np
 from stats_rigor import hansen_spa
+from lb.paths import ROOT as _LBROOT
 
 
 def main():
-    HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    cache = json.load(open(os.path.join(HERE, "results", "series_cache.json")))
+    cache = json.load(open(str(_LBROOT / "results" / "series_cache.json")))
     members = [m for m, s in cache.items() if isinstance(s, dict) and len(s) >= 100]
     tssets = [set(cache[m].keys()) for m in members]
     common = sorted(set.intersection(*tssets), key=lambda x: int(x))

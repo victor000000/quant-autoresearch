@@ -25,6 +25,7 @@ Run `python3 scripts/online_fdr.py --replay`   -> replay over round_results.csv 
 """
 import os, sys, csv, math, argparse, collections
 from statistics import NormalDist
+from lb.paths import ROOT as _LBROOT
 
 try:
     import stats_rigor as SR
@@ -35,9 +36,8 @@ except Exception:                                    # keep replay usable even i
 _ND = NormalDist()
 Phi = _ND.cdf
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROUND_CSV = os.path.join(HERE, "..", "results", "round_results.csv")
-SCREEN_LOG = os.path.join(HERE, "..", "results", "etf_screen_progress.log")
+ROUND_CSV = str(_LBROOT / "results" / "round_results.csv")
+SCREEN_LOG = str(_LBROOT / "results" / "etf_screen_progress.log")
 
 # The 8 STRONG deep-sweep fits + the two leak-free champions — the names a correct ledger must keep.
 KNOWN_FITS = {"SSO", "IAU", "USO", "AGQ", "GDX", "DJP", "GSG", "UCO", "GLD", "UUP"}

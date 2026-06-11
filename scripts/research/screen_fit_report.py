@@ -9,9 +9,9 @@ matching buy-hold is NO-FIT). Pure CSV analysis (no QC), so it never competes wi
 """
 import csv
 import os
+from lb.paths import ROUND_RESULTS_CSV as _RR_CSV
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CSV = os.path.join(HERE, "results", "round_results.csv")
+CSV = str(_RR_CSV)
 # fixed-12 + current book are not screen targets (their edges are separately tracked)
 EXCLUDE = set("DBC EEM EFA FXY GLD HYG ITB IWM KRE QQQ SLV SMH SOXX SPY TIP TLT UUP VIXY XBI XLE "
               "XME USO".split())

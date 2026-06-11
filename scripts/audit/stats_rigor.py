@@ -349,9 +349,9 @@ def config_affinity_corr(configs, weights=(("axis", 0.5), ("labeler", 0.3), ("si
 # --------------------------------------------------------------------------- #
 import json as _json
 import os as _os
+from lb.paths import ROOT as _LBROOT
 
-_DEFAULT_TRIAL_LEDGER = _os.path.join(
-    _os.path.dirname(_os.path.abspath(__file__)), "..", "results", "global_trials.json")
+_DEFAULT_TRIAL_LEDGER = str(_LBROOT / "results" / "global_trials.json")
 
 
 def read_global_trials(path=None):

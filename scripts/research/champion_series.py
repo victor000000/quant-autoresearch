@@ -13,9 +13,9 @@ from lb.harness.orchestrator import render_train_config, render_infer_cell
 from lb.harness.qc_client import submit_and_wait, _qc_post
 from lb.harness.constants import QC_PROJECT_ID
 from decay_monitor import flag_decay, page_hinkley, cusum_meanshift
+from lb.paths import ROOT as _LBROOT
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(HERE, "docs", "analysis", "CHAMPION_DECAY.md")
+OUT = str(_LBROOT / "docs" / "analysis" / "CHAMPION_DECAY.md")
 
 # (cfg for train-render, ObjectStore cell key for infer-render)
 CHAMPS = [   # the 2026-06 leak-free, this-session edges (updated 2026-06-04) — decay/consistency check

@@ -14,8 +14,9 @@ Diagnostic only; no model/leak/deploy surface. Informs the human/Opus aggressive
 import csv
 import os
 import statistics as st
+from lb.paths import ROUND_RESULTS_CSV as _RR_CSV
 
-LEDGER = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results", "round_results.csv")
+LEDGER = str(_RR_CSV)
 AXES = {"logdollar", "imbalance"}
 SIZERS = {"cdf_overlay", "dd_overlay", "cdf_plain"}
 # (ticker, the crown's deployed Calmar for reference)

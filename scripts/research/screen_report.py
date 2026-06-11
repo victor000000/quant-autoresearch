@@ -3,12 +3,12 @@
 Writes results/etf_screen.csv (the persistent FIT map) and prints a tally. FIT = methodology BEATS
 buy-hold AND val_auc>0.55 AND deployable; STRONG = also Calmar>1.0 and edge>0.3."""
 import csv, os
+from lb.paths import ROOT as _LBROOT
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROG = os.path.join(HERE, "results", "etf_screen_progress.log")
-RR = os.path.join(HERE, "results", "round_results.csv")
-UNI = os.path.join(HERE, "results", "etf_qc_confirmed_pre2009.csv")
-OUT = os.path.join(HERE, "results", "etf_screen.csv")
+PROG = str(_LBROOT / "results" / "etf_screen_progress.log")
+RR = str(_LBROOT / "results" / "round_results.csv")
+UNI = str(_LBROOT / "results" / "etf_qc_confirmed_pre2009.csv")
+OUT = str(_LBROOT / "results" / "etf_screen.csv")
 
 done = set()
 if os.path.exists(PROG):

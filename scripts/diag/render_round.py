@@ -13,9 +13,10 @@ interactive causal graph. Writes autoresearch/reports/round_{N}.html.
 import json, os, sys, re
 
 from lb.describe import describe                       # config -> plain-English hypothesis
+from lb.paths import REPORTS_DIR as _REPORTS_DIR
 
 R = json.loads(sys.argv[1])
-OUT = os.path.join(os.path.dirname(__file__), "..", "reports", f"round_{R['round']}.html")
+OUT = str(_REPORTS_DIR / f"round_{R['round']}.html")
 keep = str(R.get("verdict", "")).upper().startswith("KEEP")
 vcls = "keep" if keep else "discard"
 # Clean one-word verdict keyword for the <title>/tab (the ledger parser matches
