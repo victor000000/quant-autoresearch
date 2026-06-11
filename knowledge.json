@@ -15666,6 +15666,54 @@
         "type": "round",
         "phase": "FIW",
         "label": "R2073 FIW DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar -0.0657 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2074",
+        "type": "round",
+        "phase": "FIW",
+        "label": "R2074 FIW DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.2037 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2075",
+        "type": "round",
+        "phase": "IYG",
+        "label": "R2075 IYG DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +1.0507 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2076",
+        "type": "round",
+        "phase": "IYG",
+        "label": "R2076 IYG DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.1430 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2077",
+        "type": "round",
+        "phase": "XHB",
+        "label": "R2077 XHB DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.3841 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2078",
+        "type": "round",
+        "phase": "XHB",
+        "label": "R2078 XHB DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.1618 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2079",
+        "type": "round",
+        "phase": "IEV",
+        "label": "R2079 IEV DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.4304 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2080",
+        "type": "round",
+        "phase": "IEV",
+        "label": "R2080 IEV DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.0242 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2081",
+        "type": "round",
+        "phase": "RPV",
+        "label": "R2081 RPV DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.7662 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27012,6 +27060,46 @@
       {
         "src": "r2072",
         "dst": "r2073",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2073",
+        "dst": "r2074",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2074",
+        "dst": "r2075",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2075",
+        "dst": "r2076",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2076",
+        "dst": "r2077",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2077",
+        "dst": "r2078",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2078",
+        "dst": "r2079",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2079",
+        "dst": "r2080",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2080",
+        "dst": "r2081",
         "label": "no improvement"
       }
     ],
