@@ -15481,6 +15481,36 @@
         "type": "round",
         "phase": "AOA",
         "label": "R2047 AOA DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.8442 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2048",
+        "type": "round",
+        "phase": "AOA",
+        "label": "R2048 AOA DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.0262 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2049",
+        "type": "round",
+        "phase": "RYT",
+        "label": "R2049 RYT DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2050",
+        "type": "round",
+        "phase": "RYT",
+        "label": "R2050 RYT DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2051",
+        "type": "round",
+        "phase": "QTEC",
+        "label": "R2051 QTEC DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.2382 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2052",
+        "type": "round",
+        "phase": "QTEC",
+        "label": "R2052 QTEC DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8034 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -26697,6 +26727,31 @@
       {
         "src": "r2046",
         "dst": "r2047",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2047",
+        "dst": "r2048",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2048",
+        "dst": "r2049",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2049",
+        "dst": "r2050",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2050",
+        "dst": "r2051",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2051",
+        "dst": "r2052",
         "label": "no improvement"
       }
     ],
