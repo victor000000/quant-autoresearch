@@ -198,10 +198,13 @@ def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20, y
             method = "correlation"                   # degrade gracefully to the linear path
     kept = np.ones(F, dtype=bool)
     if method == "variance": kept &= variances > 0.01
-    elif method in ("correlation", "infogain", "mrmr"):
+    elif method in ("correlation", "infogain", "mrmr", "spearman"):
         kept &= variances > 1e-6; kept_idx = np.where(kept)[0]
         if len(kept_idx) > 1:
-            corr = np.abs(np.corrcoef(X_train[:, kept_idx].T))
+            Xk = X_train[:, kept_idx]
+            if method == "spearman":   # Wang: "Pearson assumes normality; use rank-based." Spearman =
+                Xk = np.argsort(np.argsort(Xk, axis=0), axis=0).astype(np.float64)   # Pearson on TRAIN column-ranks (leak-safe; kept_idx frozen for val/test)
+            corr = np.abs(np.corrcoef(Xk.T))
             upper = np.triu(np.ones_like(corr, dtype=bool), k=1)
             to_remove = set()
             for i, j in zip(*np.where(upper & (corr > 0.90))):
