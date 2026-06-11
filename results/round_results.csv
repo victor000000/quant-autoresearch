@@ -4241,3 +4241,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T00:21:30,FBT,0.0,,B,FBT,logdollar,changepoint,0.5,cdf_overlay,-0.0121,12.061,187,True,True,-0.4925,0.6417,0.5463,-0.0027,-0.1542,7.9617,717,True,False,completed,completed
 2026-06-12T00:23:21,FBT,0.0,,A,FBT,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-12T00:23:21,FBT,0.0,,B,FBT,logdollar,always_long,0.5,cdf_overlay,0.5704,39.3379,309,True,True,-0.2719,0.5,0.5,0.6605,-0.1949,5.226,717,True,False,completed,completed
+2026-06-12T00:25:14,PHO,0.0,,A,PHO,logdollar,ker,0.45,dd_overlay,-0.1607,7.4255,972,True,True,-0.0274,0.7214,0.4943,-0.239,0.3078,6.9234,717,True,False,completed,completed
+2026-06-12T00:25:14,PHO,0.0,,B,PHO,logdollar,changepoint,0.5,cdf_overlay,-0.1858,7.3955,527,True,True,-0.1238,0.6613,0.5105,-0.2845,0.4469,6.9008,717,False,False,completed,completed
+2026-06-12T00:27:12,PHO,0.0,,A,PHO,logdollar,sadf_explosive,0.5,cdf_overlay,-0.146,13.1568,701,True,True,0.4144,0.9117,0.6137,-0.2899,1.9458,28.0387,717,False,False,completed,completed
+2026-06-12T00:27:12,PHO,0.0,,B,PHO,logdollar,always_long,0.5,cdf_overlay,0.1232,35.0432,1324,True,True,-0.0218,0.5,0.5,0.2852,0.4724,6.6901,717,True,False,completed,completed
+2026-06-12T00:29:54,ICLN,0.0,,A,ICLN,logdollar,ker,0.45,dd_overlay,-0.0523,8.501,311,True,True,-0.0674,0.6646,0.492,-0.1001,0.1695,5.4943,717,True,False,completed,completed
+2026-06-12T00:29:54,ICLN,0.0,,B,ICLN,logdollar,changepoint,0.5,cdf_overlay,-0.2287,20.2506,341,True,True,-0.0737,0.6858,0.5373,-0.7618,-0.9516,19.3269,717,False,False,completed,completed
+2026-06-12T00:32:33,ICLN,0.0,,A,ICLN,logdollar,sadf_explosive,0.5,cdf_overlay,-0.13,2.2824,188,True,True,-0.037,0.7647,0.5117,-0.2125,-1.0383,30.9367,717,False,False,completed,completed
+2026-06-12T00:32:33,ICLN,0.0,,B,ICLN,logdollar,always_long,0.5,cdf_overlay,-0.0487,182.5587,2050,True,True,-0.0865,0.5,0.5,0.0637,0.0373,4.4788,717,True,False,completed,completed
