@@ -15349,6 +15349,36 @@
         "type": "round",
         "phase": "FEZ",
         "label": "R2025 FEZ DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.7670 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2026",
+        "type": "round",
+        "phase": "FEZ",
+        "label": "R2026 FEZ DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.3421 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2027",
+        "type": "round",
+        "phase": "DSI",
+        "label": "R2027 DSI DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1295 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2028",
+        "type": "round",
+        "phase": "DSI",
+        "label": "R2028 DSI DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8100 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2029",
+        "type": "round",
+        "phase": "VAW",
+        "label": "R2029 VAW DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3403 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2030",
+        "type": "round",
+        "phase": "VAW",
+        "label": "R2030 VAW DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.3520 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -26455,6 +26485,31 @@
       {
         "src": "r2024",
         "dst": "r2025",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2025",
+        "dst": "r2026",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2026",
+        "dst": "r2027",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2027",
+        "dst": "r2028",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2028",
+        "dst": "r2029",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2029",
+        "dst": "r2030",
         "label": "no improvement"
       }
     ],

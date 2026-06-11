@@ -4163,3 +4163,13 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T22:49:47,FDN,0.0,,B,FDN,logdollar,always_long,0.5,cdf_overlay,0.6295,35.9821,912,True,True,-0.2262,0.5,0.5,0.776,0.3231,6.5642,717,True,False,completed,completed
 2026-06-11T22:52:06,FEZ,0.0,,A,FEZ,logdollar,ker,0.45,dd_overlay,0.767,4.1376,571,True,True,1.0281,0.7976,0.6204,0.8412,1.02,20.4875,717,True,False,completed,completed
 2026-06-11T22:52:06,FEZ,0.0,,B,FEZ,logdollar,changepoint,0.5,cdf_overlay,0.5212,0.7298,246,True,True,-0.2698,0.6287,0.5551,0.5614,-0.1388,29.354,717,False,False,completed,completed
+2026-06-11T22:54:14,FEZ,0.0,,A,FEZ,logdollar,sadf_explosive,0.5,cdf_overlay,1.3421,10.6616,412,True,True,0.7158,0.9568,0.6858,1.2297,1.1059,16.4776,717,True,False,completed,completed
+2026-06-11T22:54:14,FEZ,0.0,,B,FEZ,logdollar,always_long,0.5,cdf_overlay,0.9593,23.1738,798,True,True,-0.0249,0.5,0.5,0.8863,0.0722,5.9621,717,False,False,completed,completed
+2026-06-11T22:56:43,DSI,0.0,,A,DSI,logdollar,ker,0.45,dd_overlay,0.1295,4.5826,473,True,True,0.0509,0.6991,0.5024,0.2256,-0.9086,11.3464,717,True,False,completed,completed
+2026-06-11T22:56:43,DSI,0.0,,B,DSI,logdollar,changepoint,0.5,cdf_overlay,0.0043,3.7819,642,True,True,-0.121,0.6092,0.5327,0.01,-4.4594,66.6099,717,False,False,completed,completed
+2026-06-11T22:59:21,DSI,0.0,,A,DSI,logdollar,sadf_explosive,0.5,cdf_overlay,0.81,7.3988,769,True,True,-0.0897,0.9012,0.5464,0.8987,5.2239,64.119,717,True,False,completed,completed
+2026-06-11T22:59:21,DSI,0.0,,B,DSI,logdollar,always_long,0.5,cdf_overlay,0.7269,19.8951,1398,True,True,-0.031,0.5,0.5,0.9943,0.2104,9.5579,717,False,False,completed,completed
+2026-06-11T23:01:30,VAW,0.0,,A,VAW,logdollar,ker,0.45,dd_overlay,0.3403,5.5295,247,True,True,2.9005,0.8025,0.5925,0.4255,1.1876,26.447,717,True,False,completed,completed
+2026-06-11T23:01:30,VAW,0.0,,B,VAW,logdollar,changepoint,0.5,cdf_overlay,0.0864,4.7298,229,True,True,-0.2563,0.7089,0.5226,0.183,2.0925,90.0468,717,False,False,completed,completed
+2026-06-11T23:03:44,VAW,0.0,,A,VAW,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.7464,0.9172,0.6972,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T23:03:44,VAW,0.0,,B,VAW,logdollar,always_long,0.5,cdf_overlay,0.352,32.5758,447,True,True,-0.0721,0.5,0.5,0.5701,0.1521,8.5659,717,True,False,completed,completed
