@@ -151,7 +151,7 @@ VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry di
                   "regime_gmm", "cusum_regime", "jump_model", "dc_trend", "dc_reversal", "crash_ahead",
                   "trend_scan", "ker", "trend_leg", "accel", "sharpe_scan", "ofsc", "bde_cusum", "changepoint",
                   "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow",
-                  "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment",
+                  "calmar_scan", "dd_excursion", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment",
                   # 2026-06-06 new-methods-backlog labelers (mirror labeler.LABELERS):
                   "kllt", "diurnal_anomaly", "rskew", "icss_var", "bocpd_label", "setar", "tlb_reversal", "moe_law",
                   "dp_oracle",   # new-methods 2026-06-09 L1: cost-aware perfect-foresight oracle labeler

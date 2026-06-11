@@ -2364,6 +2364,76 @@ def generate_labels_calmar_scan(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
     return best, best_cfg, best_h
 
 
+def generate_labels_dd_excursion(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
+                                 horizons=[40, 80]):
+    """Forward DRAWDOWN-SHAPE label (innovation backlog 2026-06-11 #3) — UNSUPERVISED, non-HMM.
+    y=1 iff the forward path FIRST-PASSAGE reaches +k*sigma_t*sqrt(H) (trailing-vol-scaled
+    target, triple-barrier-style) while staying LOW-ULCER (RMS of the forward drawdown
+    series below a TRAIN quantile). Predicts *tradeable smoothness*, not endpoint sign:
+    differs from calmar_scan (endpoint net / MAX single excursion ratio) in BOTH terms —
+    first-passage reach (a path can reach the target then fade; calmar_scan's endpoint
+    misses it) and Ulcer (sustained shallow bleed scores bad even when max-DD is small).
+    Directly optimizes the deployed Calmar/Martin objective. Forward info defines only
+    the TARGET (G3-ok); the barrier scale sigma_t is TRAILING (causal). Returns
+    (labels, cfg, horizon)."""
+    N = len(lc)
+    best, best_cfg, best_score, best_h = None, "", -1.0, None
+    for H in horizons:
+        if N <= 2 * H:
+            continue
+        # trailing (causal) per-bar vol for the target scale
+        sig = np.full(N, np.nan)
+        for t in range(H, N):
+            w = lr[t - H:t]
+            w = w[np.isfinite(w)]
+            if len(w) >= 10:
+                sig[t] = float(np.std(w))
+        reach = np.zeros(N, dtype=bool)
+        ulcer = np.full(N, np.nan)
+        valid = np.zeros(N, dtype=bool)
+        for k in (0.5, 1.0):
+            for t in range(H, N - H):
+                if not np.isfinite(sig[t]) or sig[t] <= 0:
+                    continue
+                target = lc[t] + k * sig[t] * np.sqrt(H)
+                peak = lc[t]
+                ssq = 0.0
+                hit = False
+                for j in range(t + 1, t + H + 1):
+                    p = lc[j]
+                    if p > peak:
+                        peak = p
+                    d = peak - p
+                    ssq += d * d
+                    if not hit and p >= target:
+                        hit = True
+                reach[t] = hit
+                ulcer[t] = np.sqrt(ssq / H)
+                valid[t] = True
+            trsel = tr_m & fv & valid & reach
+            if int(trsel.sum()) < 60:
+                continue
+            for q in (0.5, 0.7):
+                cut = float(np.quantile(ulcer[trsel], q))
+                y = np.full(N, -1, dtype=int)
+                ok = fv & valid
+                y[ok] = 0
+                y[ok & reach & (ulcer <= cut)] = 1
+                tx = fv & (y >= 0) & tr_m
+                vx = fv & (y >= 0) & va_m
+                if tx.sum() < 100 or vx.sum() < 20:
+                    continue
+                bal = float(y[tx].mean())
+                if 0.2 < bal < 0.8:
+                    score = min(bal, 1 - bal)
+                    if score > best_score:
+                        best_score, best, best_h = score, y.copy(), H
+                        best_cfg = f"dd_excursion_H{H}_k{k}_q{q}_cut{round(cut, 4)}"
+    if best is None:
+        return None, "dd_excursion_no_balanced", None
+    return best, best_cfg, best_h
+
+
 def _adf_tstat(y):
     """ADF t-stat for the explosiveness regression dy = a + beta*y_lag (p=0, no lagged diffs for speed).
     Large POSITIVE t = explosive / super-martingale (bubble/crash); ~0 = random walk; negative = mean-revert."""
@@ -3612,6 +3682,7 @@ LABELERS = {
     "ker_mid": generate_labels_ker_mid,               # Wang trend-strength ladder: ker @ H=60
     "ker_slow": generate_labels_ker_slow,             # Wang trend-strength ladder: ker @ H=150
     "calmar_scan": generate_labels_calmar_scan,       # drawdown-adjusted forward-trend (new, non-HMM; targets Calmar/downside)
+    "dd_excursion": generate_labels_dd_excursion,     # first-passage reach + low-ULCER forward path (backlog #3; tradeable-smoothness mechanism)
     "sadf_explosive": generate_labels_sadf_explosive, # Supremum-ADF EXPLOSIVE/bubble regime (new, non-HMM; novel signal)
     "hurst_persist": generate_labels_hurst_persist,   # DFA forward fractal-PERSISTENCE (new, non-HMM; multi-scale)
     "sliced_wasserstein": generate_labels_sliced_wasserstein,  # tail-aware OPTIMAL-TRANSPORT regime (W1 k-medians on sorted forward windows; new, non-HMM)

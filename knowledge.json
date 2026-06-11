@@ -16431,6 +16431,12 @@
         "type": "round",
         "phase": "USO",
         "label": "R2193 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.6152 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2194",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R2194 GLD DISCARD: Sample on log-dollar bars; dd_excursion; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.9404 (prev best +4.3570). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28377,6 +28383,11 @@
       {
         "src": "r2192",
         "dst": "r2193",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2193",
+        "dst": "r2194",
         "label": "no improvement"
       }
     ],
