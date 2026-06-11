@@ -437,7 +437,7 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, terms
             try:
                 import ml_ext as _mlx              # QC cloud: flat project files
             except ImportError:
-                from modules import ml_ext as _mlx  # local repo / tests
+                from lb.modules import ml_ext as _mlx  # local repo / tests
             X = np.hstack([X, _mlx.rich_block(lc, lr)]).astype(np.float32)
         except Exception:
             pass

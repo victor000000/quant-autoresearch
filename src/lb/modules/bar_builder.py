@@ -1353,7 +1353,7 @@ try:
     import bar_ext as _bx_mod              # QC cloud: flat project files
 except ImportError:
     try:
-        from modules import bar_ext as _bx_mod   # local repo / tests
+        from lb.modules import bar_ext as _bx_mod   # local repo / tests
     except ImportError:
         _bx_mod = None
 if _bx_mod is not None:

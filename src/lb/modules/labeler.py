@@ -3537,7 +3537,7 @@ def generate_labels_moe_law(lc, lr, tr_m, va_m, te_m, fv, fwd_ret, fwd_vol,
         import ml_ext as _mlx
     except ImportError:
         try:
-            from modules import ml_ext as _mlx
+            from lb.modules import ml_ext as _mlx
         except ImportError:
             return None, "moe_law_no_ml_ext", None
     N = len(lc)

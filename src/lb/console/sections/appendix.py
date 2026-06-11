@@ -16,14 +16,8 @@ Opening a drawer reveals the full instrument; the main page stays calm.
 Pure ctx -> HTML. Each nested render is wrapped defensively so one bad builder
 degrades to a small note instead of blanking the appendix.
 """
-import os
-import sys
-
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402
-from console.sections import (  # noqa: E402
+from lb.console import primitives as P
+from lb.console.sections import (
     leaderboard, screen, book_lab, graph, rounds, read, arc,
 )
 
@@ -80,7 +74,7 @@ def render(ctx):
 
 
 if __name__ == "__main__":
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     out = render(build_ctx())
     print(f"appendix section: {len(out)} bytes")
     for needle in ('id="appendix"', 'class="appx"', 'id="leaderboard"', 'id="screen"',

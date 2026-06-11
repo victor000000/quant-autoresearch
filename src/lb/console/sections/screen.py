@@ -28,14 +28,9 @@ legacy screen classes are routed through primitives, so an undefined-class bug i
 structurally impossible). Progress bars use inline styles over existing :root
 design tokens only.
 """
-import os
-import sys
 from collections import Counter
 
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:                       # console.data also self-inserts scripts/
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402  (scripts/ on path above)
+from lb.console import primitives as P
 
 
 # ---------------------------------------------------------------------------
@@ -315,7 +310,7 @@ if __name__ == "__main__":
     import ast
     with open(__file__) as _f:
         ast.parse(_f.read())
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     out = render(build_ctx())
     print(f"screen section: {len(out)} bytes")
     for needle in ('id="screen"', 'id="scrlb"', "Universe screen", "VALIDATED",

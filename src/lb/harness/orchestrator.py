@@ -19,15 +19,11 @@ def _minify(src):
     compile(out, "<minified>", "exec")
     return out
 
-from .constants import (CORE_7_ETFS, TEMPLATES_DIR, MODULES_DIR, QC_SCRIPTS_DIR, TARGET_BARS)
+from .constants import (CORE_7_ETFS, TEMPLATES_DIR, MODULES_DIR, QC_SCRIPTS_DIR, TARGET_BARS,
+                        RESULTS_TSV, KNOWLEDGE_JSON, TECHNIQUES_JSON)
 from .qc_client import submit_and_wait
 from .evaluator import evaluate
-
-PROJECT_ROOT = "/home/ubuntu/lb"
-AUTORESEARCH_DIR = os.path.join(PROJECT_ROOT)
-RESULTS_TSV = os.path.join(AUTORESEARCH_DIR, "results.tsv")
-KNOWLEDGE_JSON = os.path.join(AUTORESEARCH_DIR, "knowledge.json")
-TECHNIQUES_JSON = os.path.join(AUTORESEARCH_DIR, "techniques.json")
+from lb.paths import ROOT as PROJECT_ROOT
 
 
 def read_module(name):
@@ -322,7 +318,7 @@ def run_experiment(ticker_a, ticker_b, description):
 
 
 def _get_commit_hash():
-    result = subprocess.run(["git", "-C", PROJECT_ROOT, "rev-parse", "--short", "HEAD"],
+    result = subprocess.run(["git", "-C", str(PROJECT_ROOT), "rev-parse", "--short", "HEAD"],
                            capture_output=True, text=True)
     return result.stdout.strip()
 
@@ -331,7 +327,7 @@ def git_keep(): pass
 
 
 def git_discard():
-    subprocess.run(["git", "-C", PROJECT_ROOT, "reset", "--hard", "HEAD~1"],
+    subprocess.run(["git", "-C", str(PROJECT_ROOT), "reset", "--hard", "HEAD~1"],
                    capture_output=True, text=True)
 
 

@@ -9,13 +9,9 @@ and the cross-asset feature path. Pure numpy/pandas — runs on the host, no QC.
 
     python3 tests/test_realyield_feats.py
 """
-import os
-import sys
-
 import numpy as np
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "modules"))
-from features import realyield_feats  # noqa: E402
+from lb.modules.features import realyield_feats
 
 
 def _ry(n, seed=0):

@@ -1,5 +1,11 @@
 from datetime import datetime
 
+from lb.paths import (
+    TEMPLATES_DIR, MODULES_DIR, QC_SCRIPTS_DIR, QC_CREDS_PATH,
+    KNOWLEDGE_JSON, TECHNIQUES_JSON, HYPOTHESES_JSON, RESULTS_TSV,
+    RESULTS_DIR, ROUND_RESULTS_CSV, STATUS_JSON,
+)
+
 # === ETF Universe ===
 CORE_7_ETFS = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD"]
 
@@ -10,7 +16,6 @@ TEST_END = datetime(2026, 6, 11)   # advanced 2026-06-11 (was 06-01; ~8 trading 
 
 # === QC Cloud ===
 QC_PROJECT_ID = 31338454
-QC_CREDS_PATH = "/home/ubuntu/lb/qc/.creds.json"
 QC_POLL_INTERVAL = 30  # seconds between status checks
 TIME_BUDGET = 300       # 5 minutes max per backtest
 
@@ -20,10 +25,9 @@ GATE_TRADES_MIN = 80        # OOS trade count must exceed this
 GATE_AUC_DIVERGENCE_MAX = 0.05  # |train_AUC - val_AUC| must be below this
 
 # === Rendering ===
-TEMPLATES_DIR = "/home/ubuntu/lb/templates"
-MODULES_DIR = "/home/ubuntu/lb/modules"
+# TEMPLATES_DIR / MODULES_DIR / QC_SCRIPTS_DIR / QC_CREDS_PATH now come from
+# lb.paths (single source of truth); imported above as pathlib.Path objects.
 # lean_workspace is archived on this machine; use the standalone scripts dir instead.
-QC_SCRIPTS_DIR = "/home/ubuntu/lb/_autoresearch_scripts"
 
 # === Asset Fingerprinting (for ETF selection) ===
 ASSET_AFFINITY = {

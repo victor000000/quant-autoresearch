@@ -26,10 +26,7 @@ console.primitives helpers that OWN their classes, plus the pre-existing
 import os
 import sys
 
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:                       # console.data also self-inserts scripts/
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402  (scripts/ on path above)
+from lb.console import primitives as P  # noqa: E402  (scripts/ on path above)
 
 
 # ---- the ONE canonical glossary -------------------------------------------
@@ -140,7 +137,7 @@ if __name__ == "__main__":
     import ast
     with open(os.path.abspath(__file__)) as _f:
         ast.parse(_f.read())                       # self-syntax-check
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     out = render(build_ctx())
     print(f"read section: {len(out)} bytes")
     for needle in ('id="read"', "How to read the numbers", 'class="glossary"',

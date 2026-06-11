@@ -15,9 +15,10 @@ Run: python3 tests/test_bar_threshold_leak.py   (exit 0 = pass, 1 = fail)
 """
 import ast, os, sys, re
 
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BB = os.path.join(_ROOT, "modules", "bar_builder.py")
-FOOTER = os.path.join(_ROOT, "templates", "footer.py.tmpl")
+from lb.paths import MODULES_DIR, TEMPLATES_DIR
+
+BB = str(MODULES_DIR / "bar_builder.py")
+FOOTER = str(TEMPLATES_DIR / "footer.py.tmpl")
 
 # Names that are TRAIN-masked / OOS-invariant and therefore SAFE to feed a threshold.
 SAFE_TOKENS = ("keep", "tr", "_trc", "trsel", "trr", "trm", "sdt", "svt", "r[")  # train-masked subsets / counts
@@ -58,7 +59,7 @@ def _runtime_teeth():
     probs = []
     try:
         import numpy as np
-        sys.path.insert(0, os.path.join(_ROOT, "modules"))
+        sys.path.insert(0, str(MODULES_DIR))
         import bar_builder as bb
         import labeler as lab
     except Exception as e:                      # numpy/pandas/module import unavailable -> AST-only
@@ -247,7 +248,7 @@ def main():
     #    its declared horizon. A near-boundary VAL bar's label could then encode a reversal INSIDE the
     #    test segment, bleeding into cal.fit/eval_set (the fixed embargo is blind to it). The labeler's
     #    reach MUST be bounded (<= the 200 embargo floor) and DECLARED (3rd return, not None).
-    LABELER = os.path.join(_ROOT, "modules", "labeler.py")
+    LABELER = str(MODULES_DIR / "labeler.py")
     if os.path.exists(LABELER):
         lsrc = open(LABELER).read()
         m = re.search(r"def generate_labels_dc_reversal\(.*?\n(?=\ndef )", lsrc, re.S)

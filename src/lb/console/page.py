@@ -21,16 +21,8 @@ INVARIANTS this module enforces structurally:
   * The client JS + vis-network init are EXTERNAL (reports/console.js), off the HTML
     payload and cacheable; this file only emits a <script src> reference.
 """
-import os
-import sys
-
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_SCRIPTS = os.path.dirname(_HERE)
-if _SCRIPTS not in sys.path:
-    sys.path.insert(0, _SCRIPTS)
-
-from console.data import build_ctx, build_data as _build_data  # noqa: E402
-from console.sections import (  # noqa: E402
+from lb.console.data import build_ctx, build_data as _build_data
+from lb.console.sections import (
     book, mechanisms, honesty, arc, appendix,
 )
 

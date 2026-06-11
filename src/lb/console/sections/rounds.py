@@ -25,13 +25,7 @@ OWNS its CSS); the surviving ledger containers (.rounds/.ritem/.rmain/.rsum/.hyp
 .hchip/.rcal/.filters/.fchip/.showall) are all defined in reports/style.css, so no
 undefined-class is emitted.
 """
-import os
-import sys
-
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:                       # console.data also self-inserts scripts/
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402  (scripts/ on path above)
+from lb.console import primitives as P
 
 # How many rounds to render server-side. The rest are lazy-fetched from /rounds.json.
 SHOWN = 25
@@ -142,7 +136,7 @@ def render(ctx):
 
 
 if __name__ == "__main__":
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     out = render(build_ctx())
     print(f"rounds section: {len(out)} bytes")
     n_li = out.count('<li class="ritem')

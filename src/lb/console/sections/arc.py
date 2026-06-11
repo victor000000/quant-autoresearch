@@ -23,13 +23,7 @@ ctx["K"] (next_idea + top_insights, which have no resolver — pure narrative). 
 no CSS: every class is emitted through a console.primitives helper that OWNS it, so an
 undefined-class bug is structurally impossible.
 """
-import os
-import sys
-
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:                       # console.data also self-inserts scripts/
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402  (scripts/ on path above)
+from lb.console import primitives as P
 
 
 # ---- the 6-act timeline ----------------------------------------------------
@@ -151,7 +145,7 @@ def render(ctx):
 
 
 if __name__ == "__main__":
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     ctx = build_ctx()
     out = render(ctx)
     acts = render_acts(ctx)

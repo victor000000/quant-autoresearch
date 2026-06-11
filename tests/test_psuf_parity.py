@@ -13,15 +13,12 @@ Calmar 0.0 silently.
 _cell_key is extracted and exec'd in isolation (no network calls; the function
 depends only on its 'cfg' argument and stdlib built-ins).
 """
-import os, sys, textwrap
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
-for p in (ROOT, os.path.join(ROOT, "scripts")):
-    if p not in sys.path:
-        sys.path.insert(0, p)
+import textwrap
 
-HEADER = os.path.join(ROOT, "templates", "header.py.tmpl")
-DRIVER = os.path.join(ROOT, "scripts", "run_autoresearch_round.py")
+from lb.paths import ROOT, TEMPLATES_DIR
+
+HEADER = str(TEMPLATES_DIR / "header.py.tmpl")
+DRIVER = str(ROOT / "scripts" / "run_autoresearch_round.py")
 
 # ---------------------------------------------------------------------------
 # Extract _cell_key from the driver in isolation (safe; no network calls).

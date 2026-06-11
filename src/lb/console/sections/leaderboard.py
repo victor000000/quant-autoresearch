@@ -21,13 +21,7 @@ and a sort hint, pointing at the colophon for the full glossary.
 Pure ctx -> HTML. Reads ONLY ctx["rows"] (derive) + ctx["scoreboard"] — no file-I/O —
 and emits no class a primitive (or style.css) does not already own.
 """
-import os
-import sys
-
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:                       # console.data also self-inserts scripts/
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402  (scripts/ on path above)
+from lb.console import primitives as P
 
 EDGE_FLOOR = 0.05   # split: a "real edge" beats buy-and-hold by > 0.05 Calmar
 
@@ -195,7 +189,7 @@ def render(ctx):
 
 
 if __name__ == "__main__":
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     out = render(build_ctx())
     print(f"leaderboard section: {len(out)} bytes")
     for needle in ('id="leaderboard"', 'id="lb"', 'id="lbbh"', "bhfold",

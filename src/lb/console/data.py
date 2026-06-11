@@ -24,16 +24,20 @@ import glob
 import json
 import sys
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_SCRIPTS = os.path.dirname(_HERE)
-if _SCRIPTS not in sys.path:
-    sys.path.insert(0, _SCRIPTS)
-from describe import describe_cfg, describe  # noqa: E402  (scripts/ on path above)
+from lb.paths import ROOT as _ROOT, KNOWLEDGE_JSON as _KJ
+
+# describe.py still lives in scripts/ (it moves into the package in a later task);
+# load it by file path so this module needs no sys.path manipulation.
+import importlib.util as _ilu  # noqa: E402
+_dspec = _ilu.spec_from_file_location("describe", str(_ROOT / "scripts" / "describe.py"))
+_dmod = _ilu.module_from_spec(_dspec)
+_dspec.loader.exec_module(_dmod)
+describe_cfg, describe = _dmod.describe_cfg, _dmod.describe
 
 # ---- paths -----------------------------------------------------------------
-ROOT = os.path.dirname(_SCRIPTS)
+ROOT = str(_ROOT)
 R = os.path.join(ROOT, "reports")
-KJ = os.path.join(ROOT, "knowledge.json")
+KJ = str(_KJ)
 PROG = os.path.join(ROOT, "program.md")
 STATUS = os.path.join(R, "status.json")
 ROUND_CSV = os.path.join(ROOT, "results", "round_results.csv")

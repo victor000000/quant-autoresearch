@@ -65,21 +65,18 @@ import json
 import time
 from datetime import datetime
 
-PROJECT_ROOT = "/home/ubuntu/lb"
-AR = os.path.join(PROJECT_ROOT)
-if AR not in sys.path:
-    sys.path.insert(0, AR)
-
 # (1) qc_client lifecycle + orchestrator render functions (render a SINGLE-config
-# train script given a CONFIG, plus render infer with the cell key).
-from harness.qc_client import (submit_backtest, read_backtest_status, read_backtest,  # noqa: E402
-                               delete_backtest, is_done)
-from harness.orchestrator import render_train_config, render_infer_cell  # noqa: E402
+# train script given a CONFIG, plus render infer with the cell key). The package
+# is installed (pip install -e .), so no sys.path manipulation is needed.
+from lb.harness.qc_client import (submit_backtest, read_backtest_status, read_backtest,
+                                  delete_backtest, is_done)
+from lb.harness.orchestrator import render_train_config, render_infer_cell
+from lb.paths import (ROOT as PROJECT_ROOT, KNOWLEDGE_JSON, HYPOTHESES_JSON,
+                      RESULTS_DIR, ROUND_RESULTS_CSV, STATUS_JSON)
 
-SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
-if SCRIPTS_DIR not in sys.path:
-    sys.path.insert(0, SCRIPTS_DIR)
-from describe import describe_cfg  # noqa: E402  config -> plain-English hypothesis
+# describe.py lives alongside this driver in scripts/; the script's own directory
+# is on sys.path when run directly, so the bare import resolves without a hack.
+from describe import describe_cfg  # config -> plain-English hypothesis
 
 CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "VIXY",  # NEW MECHANISM-CLASS (2026-06-04): VIX short-term futures ETF — structural variance-risk-premium CARRY (roll decay), a STRUCTURALLY DIFFERENT edge than trend/regime drift (FRONTIER re-opener). Short-capable (ls_overlay); permute control distinguishes carry-BETA from timing-ALPHA.
@@ -97,11 +94,8 @@ CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "XME",   # metals & miners — cyclical commodity producers; DIFFERENT sector test of the SOXX trend-predictable-drawdown mechanism (not a semis sibling)
           "FXY"]   # Japanese yen — NEW MECHANISM CLASS (FX policy-driven regime; Aug-2024 carry unwind): does UUP dollar-regime edge generalize to a distinct currency?
 
-KNOWLEDGE_JSON = os.path.join(AR, "knowledge.json")
-HYPOTHESES_JSON = os.path.join(AR, "hypotheses.json")
-RESULTS_DIR = os.path.join(AR, "results")
-ROUND_RESULTS_CSV = os.path.join(RESULTS_DIR, "round_results.csv")
-STATUS_JSON = os.path.join(AR, "reports", "status.json")
+# KNOWLEDGE_JSON / HYPOTHESES_JSON / RESULTS_DIR / ROUND_RESULTS_CSV / STATUS_JSON
+# are imported from lb.paths above (single source of truth, pathlib.Path objects).
 
 # Universe-screening (2026-06-04, user "explore the 311 ETFs, find which fit"): allow any
 # QC-CONFIRMED ETF (results/etf_qc_confirmed_pre2009.csv), not just CORE_7. Still a whitelist
@@ -396,11 +390,9 @@ def _refresh_report():
     live per-request, but this keeps the on-disk file fresh for static hosting).
     Fully guarded — a render failure must NEVER fail a round."""
     try:
-        if SCRIPTS_DIR not in sys.path:
-            sys.path.insert(0, SCRIPTS_DIR)
-        import render_index
+        import render_index  # scripts/ is on sys.path when the driver runs directly
         html = render_index.build_html()
-        out = os.path.join(AR, "reports", "index.html")
+        out = os.path.join(PROJECT_ROOT, "reports", "index.html")
         with open(out, "w") as f:
             f.write(html)
         print(f"[{_now()}] report refreshed -> {out} ({len(html)} bytes)")

@@ -174,7 +174,7 @@ def reduce_dims(X_train, X_val, X_test, method="correlation", n_components=20, y
             try:
                 import ml_ext as _mlx
             except ImportError:
-                from modules import ml_ext as _mlx
+                from lb.modules import ml_ext as _mlx
             return _mlx.reduce_ml(method, X_train, X_val, X_test, n_components)
         except Exception:
             method = "correlation"

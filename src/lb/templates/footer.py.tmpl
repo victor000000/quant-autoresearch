@@ -46,7 +46,7 @@ def _cell_threshold(ticker):
 try:
     import sizing_ext as _sx
 except ImportError:
-    from modules import sizing_ext as _sx
+    from lb.modules import sizing_ext as _sx
 _sx.CONFIG = CONFIG
 _size = _sx._size
 _cstats_sized = _sx._cstats_sized

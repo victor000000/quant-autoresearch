@@ -12,14 +12,9 @@ Layout (two-column desktop / stacked mobile via the existing .statushero grid):
   RIGHT — live status block (#nowrunning) · "what backs it" stat tower
   below — one freshness/provenance stamp
 """
-import os
-import sys
 import html as _html
 
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:                       # console.data also self-inserts scripts/
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402
+from lb.console import primitives as P
 
 
 def _esc(s):

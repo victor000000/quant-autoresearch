@@ -17,14 +17,9 @@ ctx -> HTML: reads ONLY ctx["K"]["causal_graph"] counts + ctx["book"]["freshness
 (no file-I/O), and invents no CSS — every class is emitted through a
 console.primitives helper that OWNS it.
 """
-import os
-import sys
 from collections import Counter
 
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402  (scripts/ on path above)
+from lb.console import primitives as P
 
 
 # Full-page standalone graph + the lazy JSON endpoint console.js fetches.
@@ -120,7 +115,7 @@ def render(ctx):
 
 
 if __name__ == "__main__":
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     out = render(build_ctx())
     print(f"graph section: {len(out)} bytes")
     # preview-only contract: counts + legends + mount + full-page link, NO vis dataset.

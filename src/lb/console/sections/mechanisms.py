@@ -16,13 +16,7 @@ Pure ctx -> HTML. Reads ONLY ctx["edges"] (edges_resolver) + ctx["book"]["upgrad
 (book_resolver) — no file-I/O — and invents no CSS: every class is emitted through a
 console.primitives helper that OWNS it, so an undefined-class bug is impossible.
 """
-import os
-import sys
-
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402  (scripts/ on path above)
+from lb.console import primitives as P
 
 
 # ---- tiny formatters -------------------------------------------------------
@@ -120,7 +114,7 @@ def render(ctx):
 
 
 if __name__ == "__main__":
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     out = render(build_ctx())
     print(f"mechanisms section: {len(out)} bytes")
     for needle in ("TREND-MOMENTUM", "MACRO-REGIME", "OIL MEAN-REVERSION",

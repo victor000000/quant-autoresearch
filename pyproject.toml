@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lb"
+version = "0.1.0"
+description = "Autoresearch quant pipeline"
+requires-python = ">=3.10"
+dependencies = ["numpy", "xgboost", "scikit-learn", "scipy", "flask", "requests"]
+
+[project.scripts]
+lb-round = "lb.cli:round_main"
+lb-report = "lb.console.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"lb" = ["templates/*.tmpl"]

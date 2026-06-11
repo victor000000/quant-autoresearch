@@ -17,13 +17,7 @@ Pure ctx -> HTML. Reads ONLY ctx["honesty"] (honesty_resolver) â€” no file-I/O â
 invents no CSS: every class is emitted through a console.primitives helper that OWNS
 it, so an undefined-class bug is impossible.
 """
-import os
-import sys
-
-_SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _SCRIPTS not in sys.path:                       # console.data also self-inserts scripts/
-    sys.path.insert(0, _SCRIPTS)
-from console import primitives as P  # noqa: E402  (scripts/ on path above)
+from lb.console import primitives as P
 
 # The doc the leak-assurance row links to (relative to the served site root).
 _AUDIT_DOC = "autoresearch/BACKTEST_AUDIT.md"
@@ -69,7 +63,7 @@ def render(ctx):
 
 
 if __name__ == "__main__":
-    from console.data import build_ctx
+    from lb.console.data import build_ctx
     out = render(build_ctx())
     print(f"honesty section: {len(out)} bytes")
     for needle in ('id="honesty"', "class=\"matrix\"", "mcell--na", "mcell--pos",

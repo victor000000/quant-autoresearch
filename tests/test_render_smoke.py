@@ -1,12 +1,7 @@
 """I3/I4 guard: render_train_config must produce compilable QC files under 64k."""
-import os, sys, ast
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
-for p in (ROOT, os.path.join(ROOT, "scripts")):
-    if p not in sys.path:
-        sys.path.insert(0, p)
+import ast
 
-from harness import orchestrator  # NOTE: becomes `from lb.harness import orchestrator` in a later task
+from lb.harness import orchestrator
 
 SAMPLE_CFG = {
     "ticker": "GLD", "axis": "vol", "labeler": "tertile", "sizing": "binary",
