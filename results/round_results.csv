@@ -4045,3 +4045,13 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T20:20:31,IWN,0.0,,B,IWN,logdollar,always_long,0.5,cdf_overlay,0.5779,37.0449,602,True,True,-0.1799,0.5,0.5,0.8052,0.3995,7.0148,717,True,False,completed,completed
 2026-06-11T20:22:37,SPTM,0.0,,A,SPTM,logdollar,ker,0.45,dd_overlay,0.3456,3.2894,763,True,True,0.2972,0.6682,0.5316,0.7334,0.1272,13.2829,717,False,False,completed,completed
 2026-06-11T20:22:37,SPTM,0.0,,B,SPTM,logdollar,changepoint,0.5,cdf_overlay,0.3717,2.1585,569,True,True,0.1303,0.6145,0.5164,0.6291,-1.0956,16.3658,717,True,False,completed,completed
+2026-06-11T20:24:48,SPTM,0.0,,A,SPTM,logdollar,sadf_explosive,0.5,cdf_overlay,-0.1082,10.2645,1145,True,True,-0.086,0.8385,0.6028,-0.2755,-3.5336,39.1535,717,False,False,completed,completed
+2026-06-11T20:24:48,SPTM,0.0,,B,SPTM,logdollar,always_long,0.5,cdf_overlay,0.8189,15.7519,1968,True,True,-0.0101,0.5,0.5,1.0981,0.3845,17.6911,717,True,False,completed,completed
+2026-06-11T20:26:40,MGV,0.0,,A,MGV,logdollar,ker,0.45,dd_overlay,1.4654,5.7008,1383,True,True,0.0219,0.7213,0.518,1.1565,-0.0059,9.4878,717,True,False,completed,completed
+2026-06-11T20:26:40,MGV,0.0,,B,MGV,logdollar,changepoint,0.5,cdf_overlay,0.732,0.9816,681,True,True,0.0359,0.8051,0.457,0.9415,-0.8825,20.1245,717,False,False,completed,completed
+2026-06-11T20:28:47,MGV,0.0,,A,MGV,logdollar,sadf_explosive,0.5,cdf_overlay,0.0615,8.9923,560,True,True,0.5526,0.7991,0.6628,0.1435,-0.7029,61.4558,717,False,False,completed,completed
+2026-06-11T20:28:47,MGV,0.0,,B,MGV,logdollar,always_long,0.5,cdf_overlay,1.1926,12.5585,1198,True,True,0.0584,0.5,0.5,1.3005,-0.2024,19.3591,717,True,False,completed,completed
+2026-06-11T20:30:55,XLG,0.0,,A,XLG,logdollar,ker,0.45,dd_overlay,0.6167,2.5424,1618,True,True,-0.3263,0.7229,0.5026,0.8358,1.3017,18.6484,717,True,False,completed,completed
+2026-06-11T20:30:55,XLG,0.0,,B,XLG,logdollar,changepoint,0.5,cdf_overlay,0.019,6.9885,1373,True,True,-0.346,0.7185,0.5333,0.0843,-0.1938,6.0893,717,False,False,completed,completed
+2026-06-11T20:33:03,XLG,0.0,,A,XLG,logdollar,sadf_explosive,0.5,cdf_overlay,0.0796,4.9973,819,True,True,0.0125,0.888,0.6181,0.1401,-1.0436,40.0068,717,False,False,completed,completed
+2026-06-11T20:33:03,XLG,0.0,,B,XLG,logdollar,always_long,0.5,cdf_overlay,0.6635,22.8067,3909,True,True,-0.5806,0.5,0.5,0.9672,-0.1138,12.5717,717,True,False,completed,completed
