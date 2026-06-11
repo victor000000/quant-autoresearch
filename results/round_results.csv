@@ -4415,3 +4415,13 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T03:39:25,PNQI,1.1108,PNQI_logdollar_changepoint_cdf_overlay_t0.50,B,PNQI,logdollar,always_long,0.5,cdf_overlay,0.4021,37.1747,1678,True,True,-0.415,0.5,0.5,0.5757,0.1793,8.1189,717,True,False,completed,completed
 2026-06-12T03:42:21,QCLN,0.0,,A,QCLN,logdollar,ker,0.45,dd_overlay,-0.2739,22.4826,1211,True,True,-0.005,0.8541,0.4908,-0.8389,-4.1164,41.5754,717,True,False,completed,completed
 2026-06-12T03:42:21,QCLN,0.0,,B,QCLN,logdollar,changepoint,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.6955,0.4647,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T03:45:10,QCLN,0.0,,A,QCLN,logdollar,sadf_explosive,0.5,cdf_overlay,0.1164,7.0981,139,True,True,-0.0335,0.8953,0.4595,0.1958,-2.2061,47.6943,717,True,False,completed,completed
+2026-06-12T03:45:10,QCLN,0.0,,B,QCLN,logdollar,always_long,0.5,cdf_overlay,-0.0816,248.8895,2196,True,True,-0.0458,0.5,0.5,0.0627,-0.0039,4.3811,717,False,False,completed,completed
+2026-06-12T03:47:21,PBW,0.0,,A,PBW,logdollar,ker,0.45,dd_overlay,0.0,0.0,0,False,False,0.0,0.8138,0.4584,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T03:47:21,PBW,0.0,,B,PBW,logdollar,changepoint,0.5,cdf_overlay,-0.1285,38.046,815,True,True,-0.1814,0.7007,0.531,-0.3133,-0.3043,6.8187,717,True,False,completed,completed
+2026-06-12T03:49:54,PBW,0.0,,A,PBW,logdollar,sadf_explosive,0.5,cdf_overlay,0.2641,6.1496,146,True,True,-0.0435,0.7393,0.5473,0.3801,-0.1549,8.525,717,True,False,completed,completed
+2026-06-12T03:49:54,PBW,0.0,,B,PBW,logdollar,always_long,0.5,cdf_overlay,-0.1275,297.8474,1338,True,True,-0.2203,0.5,0.5,-0.0059,0.1182,4.0685,717,False,False,completed,completed
+2026-06-12T03:51:34,RYE,0.0,,A,RYE,logdollar,ker,0.45,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
+2026-06-12T03:51:34,RYE,0.0,,B,RYE,logdollar,changepoint,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T03:53:07,RYE,0.0,,A,RYE,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
+2026-06-12T03:53:07,RYE,0.0,,B,RYE,logdollar,always_long,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
