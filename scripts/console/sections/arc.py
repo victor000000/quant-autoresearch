@@ -89,71 +89,79 @@ def _act_card(title, body, delta, tone, delta_title, href=None):
 
 # ---- the live recommendation -----------------------------------------------
 def _recommendation():
-    """The two decision-relevant 'what's next' threads, distilled from knowledge.json
-    next_idea (2026-06-09 real-yield direction). (1) The decision-ready book upgrade
-    (+USO, numbers in the book hero). (2) The next research experiment — the only credible
-    untested feature channel left: the real interest rate on GLD. Honest about the prior."""
+    """The decision-relevant 'what's next', updated 2026-06-10 after the re-validation
+    sweep + the real-yield races. (1) The +USO crown, now with fresh evidence. (2) The
+    real-yield channel: RACED AND CLOSED (R1860/1861). (3) What the loop does next."""
     book_link = ('<a href="#book">'
                  + P.chip("+USO → the book", "oil",
-                          "the proposed +USO numbers live in the deployable-book hero")
+                          "USO re-validated bit-exact 3.85 · +2.93 over buy-hold · "
+                          "decay strengthening · book 4.65 → 5.03 at its natural weight")
                  + "</a>")
-    doc_link = ('<a href="docs/research/DIRECTION_REALYIELD_GLD_2026-06-09.md">'
-                + P.chip("the direction report →", "muted",
-                         "the full local + internet + adversarial analysis")
-                + "</a>")
     body = (
-        P.eyebrow("WHAT'S NEXT · one decision, one experiment", "amber")
-        + "<div>" + book_link + " " + doc_link + "</div>"
-        + "<p><b>The frontier is mapped.</b> On minute price + volume alone, every axis, "
-          "labeler, feature and sizing lever is exhausted, and the outside literature agrees "
-          "(single-asset timing edges mostly vanish out-of-sample after a multiple-testing "
-          "haircut). Three asset-intrinsic mechanisms survive — that is the honest ceiling for "
-          "this data.</p>"
-        + "<p><b>Decision ready:</b> fold the proposed USO oil edge into the book "
-          "(+12% Calmar → 5.16) — awaiting a human / Opus crown.</p>"
-        + "<p><b>Next experiment:</b> the one credible untested channel is an exogenous "
-          "<i>fundamental-macro</i> feature on the strongest edge — add the <b>10-year TIPS "
-          "real yield</b> (FRED DFII10) and the 2s10s curve slope to the GLD trend model and "
-          "race it against the champion (Calmar 4.02). Gold is a real-rate duration asset, so "
-          "this is its cleanest upstream driver; it is free, QC-native, leak-clean at a 1-day "
-          "lag, and distinct from the dollar-ETF price proxy already closed (R1242).</p>"
-        + '<div class="small">Honest prior ~1-in-4 it lifts GLD; otherwise it formally closes '
-          'the last feature channel on the best name. A genuinely new mechanism needs a new '
-          'authorized input (options IV, positioning) — a human decision, not one the loop can '
-          'mine from current data.</div>'
+        P.eyebrow("WHAT'S NEXT · one decision, frontier closed honestly", "amber")
+        + "<div>" + book_link + "</div>"
+        + "<p><b>Decision ready:</b> fold the USO oil edge into the book — re-validated "
+          "today (2026-06-10) bit-exact at 3.85, +2.93 over buy-hold, decay-strengthening; "
+          "at its natural Calmar² weight the book goes 4.65 → <b>5.03</b> (Sharpe 2.74, "
+          "MaxDD −2.7%). Awaiting a human / Opus crown.</p>"
+        + "<p><b>The whole loop-runnable frontier closed by experiment (2026-06-10):</b> "
+          "the real-yield channel lost with full live data (nominal 3.38, true DFII10 3.12 "
+          "vs 4.02 — the old \u201cno data\u201d wall was a harness bug, fixed); Wang\u2019s "
+          "remaining levers all raced — de-scaled axis rejected, multi-axis netting rejected, "
+          "rich-panel\u00d7compressor rejected (nonlinearity adds nothing), SPY session momentum "
+          "learnable (val_auc 0.556) but unprofitable (0.51 &lt; BH 1.04). The phase-invariance "
+          "certificate PASSED: the GLD edge holds at all 5 bar-clock alignments (honest "
+          "phase-median \u22483.2).</p>"
+        + "<p><b>Book honesty (full re-validation sweep):</b> GLD and USO hold bit-exact and are "
+          "strengthening (e-values 4.95 / 5.23 accumulating); GLD\u2019s permute control re-ran "
+          "genuinely after the gate fix — 96% collapse, the edge is real label signal. UUP\u2019s "
+          "timing alpha decayed (1.85 \u2192 0.60, decorrelation seat); IWM\u2019s timing retired "
+          "below buy-hold.</p>"
+        + '<div class="small">A genuinely new edge now needs a new authorized input '
+          '(options IV, positioning, flows) — a human decision, not one the loop can '
+          'mine from current data. Until then the loop runs monitors only.</div>'
     )
     return P.card(body, kind="upgrade")
 
 
 # ---- the section -----------------------------------------------------------
+def render_acts(ctx):
+    """The 6-act 'how we got here' strip — rendered inside the appendix history
+    drawer (moved off the main page in the 2026-06-10 simplification)."""
+    book = ctx.get("book") or {}
+    acts = "".join(_act_card(*item) for item in _acts(ctx))
+    return ('<div class="acts">' + acts + "</div>"
+            + P.provenance(
+                "From the founding null to the third mechanism — the spine of the program. "
+                + (book.get("freshness") or "")))
+
+
 def render(ctx):
     """ctx -> the complete <section id="arc"> HTML fragment.
 
-    Decision-first: the 'what's next' recommendation leads, then the 6-act timeline
-    ('how we got here') as a compact strip. The old methodology-lessons grid is dropped
-    to keep the section simple — the lessons live in program.md."""
-    book = ctx.get("book") or {}
-    acts = "".join(_act_card(*item) for item in _acts(ctx))
+    Decision-first and ONLY the decision: the 'what's next' recommendation card.
+    The 6-act history strip lives in the appendix history drawer (render_acts);
+    the methodology lessons live in program.md."""
     body = (
         P.eyebrow("WHAT'S NEXT · THE RESEARCH FRONTIER")
         + "<h2>What's next</h2>"
         + _recommendation()
-        + P.eyebrow("HOW WE GOT HERE · SIX ACTS", "muted")
-        + '<div class="acts">' + acts + "</div>"
-        + P.provenance(
-            "From the founding null to the third mechanism — the spine of the program. "
-            + (book.get("freshness") or ""))
     )
     return '<section class="block" id="arc">' + body + "</section>"
 
 
 if __name__ == "__main__":
     from console.data import build_ctx
-    out = render(build_ctx())
-    print(f"arc section: {len(out)} bytes")
-    for needle in ('id="arc"', "What's next", "I · The null", "VI · The third mechanism",
-                   "TLT 0.31 → 1.52", "XLE 2.26 → 0.64", "book +USO",
-                   "one decision, one experiment", "real yield", "DIRECTION_REALYIELD"):
+    ctx = build_ctx()
+    out = render(ctx)
+    acts = render_acts(ctx)
+    print(f"arc section: {len(out)} bytes · acts strip: {len(acts)} bytes")
+    for needle in ('id="arc"', "What's next", "one decision, frontier closed honestly",
+                   "real-yield", "frontier closed by experiment", "5.03"):
         assert needle in out, f"missing: {needle}"
+    for needle in ("I · The null", "VI · The third mechanism",
+                   "TLT 0.31 → 1.52", "XLE 2.26 → 0.64", "book +USO"):
+        assert needle in acts, f"missing from acts strip: {needle}"
+    assert "I · The null" not in out, "acts strip must live in the appendix, not #arc"
     assert "pending" not in out.lower(), "arc leaked a 'pending' value"
-    print("ok — recommendation (real-yield direction) + 6-act timeline present")
+    print("ok — lean recommendation section + appendix-ready acts strip")

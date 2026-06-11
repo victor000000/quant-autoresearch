@@ -39,7 +39,6 @@ def _fmt(v, suf="", dash="—"):
 def render(ctx):
     """ctx -> the complete <section class="hero" id="book"> band (string)."""
     b = ctx["book"]
-    up = b.get("upgrade", {}) or {}
 
     # ---- LEFT: the headline ------------------------------------------------
     eyebrow = P.eyebrow("DEPLOYABLE BOOK · leak-free · re-derived 2026-06-06", "pos")
@@ -72,18 +71,8 @@ def render(ctx):
 
     verdict = f'<p class="tldr">{_esc(b.get("verdict"))}</p>'
 
-    # +USO upgrade pill (amber .card--upgrade) — numbers via book_resolver.upgrade.
-    up_body = (
-        P.chip("PROPOSED", "amber") + " "
-        + P.chip("+" + str(up.get("add_member", "USO")), "new") + " "
-        + _esc(str(up.get("text", "")).replace("->", "→"))
-        + f'<div class="small">{_esc(up.get("vehicle_note", ""))}</div>')
-    upgrade = (f'<div style="margin-top:1.1rem">'
-               + P.card(up_body, kind="upgrade",
-                        eyebrow_text="PROPOSED UPGRADE · awaiting human/Opus crown")
-               + "</div>")
-
-    left = f"<div>{eyebrow}{title}{lede}{kpirow}{members}{verdict}{upgrade}</div>"
+    # The +USO upgrade story lives ONCE — in the What's-next decision card (#arc).
+    left = f"<div>{eyebrow}{title}{lede}{kpirow}{members}{verdict}</div>"
 
     # ---- RIGHT: live poller + "what backs it" stat tower -------------------
     # #nowrunning is the live target the existing 8s /data.json poll overwrites;

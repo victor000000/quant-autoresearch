@@ -11,21 +11,31 @@ def _get_creds():
 
 def _qc_post(path, body=None, max_time=120):
     """POST to QC API v2. Returns parsed JSON or {} on failure.
+    FORM-ENCODED (2026-06-10): the API stopped parsing JSON bodies mid-session —
+    every endpoint returned "Required parameter X is missing" for valid JSON, while
+    the identical call form-encoded succeeded. Lists use the key[]= convention.
     Tries Python requests first, falls back to curl."""
     c = _get_creds()
     ts = str(int(time.time()))
     digest = hashlib.sha256(f"{c['token']}:{ts}".encode()).hexdigest()
     auth = base64.b64encode(f"{c['user_id']}:{digest}".encode()).decode()
     url = f"https://www.quantconnect.com/api/v2{path}"
-    data_str = json.dumps(body or {})
+    form = []
+    for k, v in (body or {}).items():
+        if isinstance(v, (list, tuple)):
+            for item in v:
+                form.append((f"{k}[]", str(item)))
+        elif isinstance(v, bool):
+            form.append((k, "true" if v else "false"))
+        else:
+            form.append((k, str(v)))
 
     # Try Python requests first, fall back to curl on ANY error (SSL, network, etc.)
     try:
         import requests
         r = requests.post(url,
-            headers={"Authorization": f"Basic {auth}", "Timestamp": ts,
-                     "Content-Type": "application/json"},
-            data=data_str, timeout=max_time)
+            headers={"Authorization": f"Basic {auth}", "Timestamp": ts},
+            data=form, timeout=max_time)
         if r.status_code == 200:
             return r.json()
     except Exception:
@@ -36,11 +46,11 @@ def _qc_post(path, body=None, max_time=120):
     cmd = ["curl", "-s", "-w", "%{http_code}",
            "-X", "POST", url,
            "-H", f"Authorization: Basic {auth}",
-           "-H", f"Timestamp: {ts}",
-           "-H", "Content-Type: application/json",
-           "-d", data_str,
-           "--connect-timeout", "30", "--max-time", str(max_time),
-           "-o", tmp]
+           "-H", f"Timestamp: {ts}"]
+    for k, v in form:
+        cmd += ["--data-urlencode", f"{k}={v}"]
+    cmd += ["--connect-timeout", "30", "--max-time", str(max_time),
+            "-o", tmp]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=max_time + 10)
         try:
@@ -65,9 +75,17 @@ def submit_backtest(code, name, extra_files=None):
     pid = QC_PROJECT_ID
 
     # 0. Upload any extra module files first (create-then-update = exists-safe).
+    # RETRY x3 (2026-06-10): the QC files API intermittently rejects valid payloads
+    # with "Required parameter name is missing" — a transient flake that killed two
+    # rounds (IDV 22:19, EZU 22:59); a single retry has always cleared it.
     for fname, fcontent in (extra_files or {}).items():
-        _qc_post("/files/create", {"projectId": pid, "name": fname, "content": fcontent})
-        ru = _qc_post("/files/update", {"projectId": pid, "name": fname, "content": fcontent})
+        ru = {}
+        for _attempt in range(3):
+            _qc_post("/files/create", {"projectId": pid, "name": fname, "content": fcontent})
+            ru = _qc_post("/files/update", {"projectId": pid, "name": fname, "content": fcontent})
+            if ru.get("success"):
+                break
+            time.sleep(5 * (_attempt + 1))
         if not ru.get("success"):
             raise RuntimeError(f"Extra-file upload failed for {fname}: {ru}")
 

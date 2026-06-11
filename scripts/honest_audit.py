@@ -50,14 +50,65 @@ def main():
             "sr": sr, "cal": fnum(r.get("real_calmar")), "skew": fnum(r.get("real_skew")) or 0.0,
             "kurt": fnum(r.get("real_kurt")) or 3.0, "n": int(fnum(r.get("n_days")) or 0),
             "lab": lab, "trades": fnum(r.get("trades")) or 0,
+            "axis": (r.get("axis") or ""), "thresh": fnum(r.get("thresh")),
+            "sizing": (r.get("sizing") or ""),
         })
+
+    # DEPLOYED-CONFIG certification (2026-06-10 leak-review MEDIUM fix): the audited
+    # row must be the trial that MATCHES per_etf_best.config — the per-ticker
+    # max-Calmar row can be a RETRACTED pre-leak-fix trial, and stamping its DSR
+    # onto the deployed config certified the wrong strategy. N stays ALL trials
+    # (the true search burden). Falls back to max-Calmar ONLY with a loud proxy flag.
+    try:
+        _pe_cfg = {tk: (v.get("config") or {}) for tk, v in
+                   json.load(open(KNOW)).get("per_etf_best", {}).items()}
+    except Exception:
+        _pe_cfg = {}
 
     audited = []
     for tk, trials in by.items():
+        # REPLICATIONS ARE NOT SEARCHES (2026-06-10): re-validations / phase-cert /
+        # permute-gate re-runs of the same config produce near-identical rows; counting
+        # them as independent trials inflates N and trial variance, overstating E[max].
+        # Dedupe on (axis, labeler, thresh, sizing, Calmar@3dp) — distinct strategies
+        # keep distinct rows, bit-exact replications collapse to one.
+        seen = set()
+        dedup = []
+        for t in trials:
+            k = (t["axis"], t["lab"], t["thresh"], t["sizing"],
+                 None if t["cal"] is None else round(t["cal"], 3))
+            if k in seen:
+                continue
+            seen.add(k)
+            dedup.append(t)
+        trials = dedup
         cals = [t for t in trials if t["cal"] is not None]
         if len(trials) < 5 or not cals:
             continue
-        champ = max(cals, key=lambda t: t["cal"])
+        cfg = _pe_cfg.get(tk) or {}
+        match = [t for t in cals
+                 if cfg and t["axis"] == cfg.get("axis", "") and t["lab"] == cfg.get("labeler", "")
+                 and t["sizing"] == cfg.get("sizing", "")
+                 and t["thresh"] is not None and abs(t["thresh"] - float(cfg.get("thresh", -1))) < 1e-9]
+        # The CSV does not record features/reduce, so the quadruple alone can hit a
+        # DIFFERENT strategy sharing it (e.g. GLD wangrich rows). Within the quadruple,
+        # prefer rows whose Calmar equals the stored deployed number — that pins the
+        # deployed strategy's row (the number is already fixed by deployment, this is
+        # row identification, not selection). Fall back to latest-quadruple (stored
+        # number stale, e.g. post-decay UUP), then loudly to max-Calmar.
+        _pe_cal = None
+        try:
+            _pe_cal = float(json.load(open(KNOW)).get("per_etf_best", {}).get(tk, {}).get("real_calmar"))
+        except Exception:
+            pass
+        exact = [t for t in match if _pe_cal is not None and t["cal"] is not None
+                 and abs(t["cal"] - _pe_cal) < 1e-3]
+        if exact:
+            champ = dict(exact[-1], proxy=False)
+        elif match:
+            champ = dict(match[-1], proxy=False)   # latest config row (stored number stale)
+        else:
+            champ = dict(max(cals, key=lambda t: t["cal"]), proxy=True)   # loud fallback
         if champ["cal"] <= 0 or champ["n"] <= 1:
             continue
         N = len(trials)                                   # TRUE session-wide trial count
@@ -72,7 +123,8 @@ def main():
         audited.append({"tk": tk, "N": N, "cal": champ["cal"], "sr_ann": champ["sr"],
                         "emax_ann": emax * math.sqrt(PPY), "psr0": psr0, "dsr": dsr,
                         "minbtl": minbtl, "oos_years": oos_years, "suff": minbtl <= oos_years,
-                        "p": max(0.0, 1.0 - dsr), "lab": champ["lab"]})
+                        "p": max(0.0, 1.0 - dsr), "lab": champ["lab"],
+                        "proxy": champ.get("proxy", False)})
 
     audited.sort(key=lambda a: -a["cal"])
     pvals = [a["p"] for a in audited]
@@ -91,6 +143,8 @@ def main():
     for a, hj, bj in zip(audited, holm, bh):
         verdict = "REAL (survives best-of-N)" if a["dsr"] >= 0.95 else (
             "marginal" if a["dsr"] >= 0.90 else "FAILS deflation")
+        if a.get("proxy"):
+            verdict += " [MAX-CAL PROXY — no CSV row matches deployed config]"
         flag = ("Holm+BH" if hj else ("BH-only" if bj else "neither"))
         _mb = f"{a['minbtl']:.2f}y" if a['minbtl'] != float('inf') else "inf"
         row = (f"{a['tk']:5s} {a['N']:4d} {a['cal']:7.3f} {a['sr_ann']:7.3f} {a['emax_ann']:9.3f} "

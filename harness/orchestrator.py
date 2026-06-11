@@ -162,7 +162,13 @@ def render_train_config(config):
               .replace("__CALIB__", str(config.get("calibration", "isotonic"))))   # calibration: isotonic | venn_abers (deep-v2 B4)
     # Separate bar_builder.py file: standalone (TRAIN_END default None -> injected by main).
     bb = "TRAIN_END = None\n" + read_module("bar_builder.py")
-    return _minify(script), {"bar_builder.py": _minify(bb)}
+    # bar_ext.py / ml_ext.py / sizing_ext.py: EXTENSION modules (2026-06-10) — each its
+    # own 64k budget. sizing_ext is REQUIRED (footer imports it at exec time).
+    bx = read_module("bar_ext.py")
+    mx = read_module("ml_ext.py")
+    sx = read_module("sizing_ext.py")
+    return _minify(script), {"bar_builder.py": _minify(bb), "bar_ext.py": _minify(bx),
+                             "ml_ext.py": _minify(mx), "sizing_ext.py": _minify(sx)}
 
 
 def render_verify(ticker, axis):

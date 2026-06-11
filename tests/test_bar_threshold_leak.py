@@ -37,7 +37,8 @@ def fail(msgs):
 
 
 # New axis names that must be EMPIRICALLY append-OOS-invariant (2026-06-06 new-methods backlog).
-NEW_AXES = ["semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar"]
+NEW_AXES = ["semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar",
+            "logdollar_rc", "sess2", "gapflow"]  # 2026-06-10 bar_ext axes
 
 
 def _runtime_teeth():

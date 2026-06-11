@@ -6,7 +6,7 @@ CORE_7_ETFS = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD"]
 # === Time Splits ===
 TRAIN_END = datetime(2021, 8, 1)
 VAL_END = datetime(2023, 8, 1)
-TEST_END = datetime(2026, 6, 1)
+TEST_END = datetime(2026, 6, 11)   # advanced 2026-06-11 (was 06-01; ~8 trading days of new OOS)
 
 # === QC Cloud ===
 QC_PROJECT_ID = 31338454

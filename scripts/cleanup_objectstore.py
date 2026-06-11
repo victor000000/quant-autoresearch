@@ -16,24 +16,59 @@ K = json.load(open(R.KNOWLEDGE_JSON))
 pe = K.get("per_etf_best", {})
 
 # Champion cell keys to KEEP (reconstructed from per_etf_best.config, matching the
-# footer's save key: cell_{axis}_{labeler '+'->'_x_'}_{sizing}_t{int(thresh*100)}.json)
+# footer's FULL save key incl. _PSUF: cell_{axis}_{labeler '+'->'_x_'}_{sizing}_
+# t{int(thresh*100)}{_PSUF}.json — the _PSUF mirror is REQUIRED (2026-06-10 fix:
+# without it GLD `_n15_b3_ig` / IWM `_ig` champions reconstruct to nonexistent
+# base keys and the real champion blobs would be DELETED as stale).
+def _psuf(c):
+    """Mirror templates/header.py.tmpl _PSUF exactly."""
+    s = ""
+    if c.get("permute_labels"):
+        s += "_perm"
+    if int(c.get("n_components", 20)) != 20:
+        s += "_n" + str(int(c["n_components"]))
+    if float(c.get("rebal_band", 0.01)) != 0.01:
+        s += "_b" + str(int(round(float(c["rebal_band"]) * 100)))
+    if c.get("horizons"):
+        s += "_hz" + "x".join(str(int(h)) for h in c["horizons"])
+    r = c.get("reduce", "correlation")
+    if r != "correlation":
+        s += "_ig" if r == "infogain" else "_rd" + str(r)
+    f = c.get("features", "base")
+    if f != "base":
+        s += {"rich": "_fr", "termstruct": "_ts", "realyield": "_ry"}.get(f, "_fx")
+    if c.get("calibration", "isotonic") != "isotonic":
+        s += "_va"
+    if c.get("train_purge"):
+        s += "_tp"
+    return s
+
 keep = set()
 for tk, v in pe.items():
     c = v.get("config", {})
     if not c:
         continue
     lab = str(c["labeler"]).replace("+", "_x_")
-    keep.add(f"autoresearch/{tk}/cell_{c['axis']}_{lab}_{c['sizing']}_t{int(round(float(c['thresh'])*100))}.json")
+    keep.add(f"autoresearch/{tk}/cell_{c['axis']}_{lab}_{c['sizing']}_"
+             f"t{int(round(float(c['thresh'])*100))}{_psuf(c)}.json")
 print(f"[cleanup] champions to KEEP ({len(keep)}):")
 for k in sorted(keep):
     print("   ", k)
 
+# DEPLOYED-BOOK tickers: keep EVERY cell (belt-and-suspenders — per_etf_best can lag
+# the deployed config, e.g. UUP's book cell is bgm+sadf_explosive+ker 1.85 while
+# per_etf_best stores the stale bgm+ker 0.45; an exact-match-only keep would delete
+# the deployed member's blob). Cruft lives overwhelmingly in the ~300 screen tickers.
+BOOK_TICKERS = ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO"]
+
 KEEP_JSON = json.dumps(sorted(keep))
+BOOK_JSON = json.dumps(BOOK_TICKERS)
 DRY = "False" if DELETE else "True"
 
 CODE = '''from AlgorithmImports import *
 import json
 KEEP = set(json.loads({keep!r}))
+BOOK = set(json.loads({book!r}))
 DRYRUN = {dry}
 class StoreCleanup(QCAlgorithm):
     def initialize(self):
@@ -56,7 +91,8 @@ class StoreCleanup(QCAlgorithm):
             if not is_cell:
                 noncell_kept += 1; continue
             total_cells += 1
-            if ks in KEEP:
+            parts = ks.split("/")
+            if ks in KEEP or (len(parts) > 1 and parts[1] in BOOK):
                 champ_kept += 1; continue
             would_del += 1
             if not DRYRUN:
@@ -72,7 +108,7 @@ class StoreCleanup(QCAlgorithm):
         self.set_runtime_statistic("deleted", str(deleted))
         self.set_runtime_statistic("dryrun", str(DRYRUN))
         self.quit("objectstore cleanup done")
-'''.format(keep=KEEP_JSON, dry=DRY)
+'''.format(keep=KEEP_JSON, book=BOOK_JSON, dry=DRY)
 
 name = "objectstore_cleanup_" + ("delete" if DELETE else "dryrun")
 print(f"\n[cleanup] {'DELETING' if DELETE else 'DRY-RUN'} — submitting {name} ...")

@@ -66,63 +66,37 @@ def _kpis(e):
     return '<div class="stats">' + cal + dsr + '</div>'
 
 
-def _meta_chips(e):
-    """Supporting evidence pills: trade count + the per-mechanism honesty framing."""
-    out = [P.chip(_trades(e.get("trades")) + " trades", "muted",
-                  "out-of-sample trades (gate G2 > 80)")]
+def _role_chip(e):
+    """ONE honesty-framing pill per mechanism (detail lives in the hover title +
+    the honesty matrix + the leaderboard drawer)."""
     eid = e.get("id")
     if eid == "oil":
-        edge, va = e.get("edge"), e.get("val_auc")
-        if edge is not None:
-            out.append(P.chip("vs buy-hold +" + _fmt(edge), "pos",
-                              f"USO method Calmar {_fmt(e.get('calmar'))} vs buy-hold "
-                              f"{_fmt(e.get('buyhold'))}"))
-        if va is not None:
-            out.append(P.chip("val_auc " + _fmt(va), "muted",
-                              "high AUC = reversion-label structure, gate-confirmed (not overfit)"))
-        out.append(P.chip("gate-confirmed real", "pos",
-                          "permute collapses to ~-0.09 · decay + cost survive · DSR-positive"))
-    elif eid == "regime":
-        out.append(P.chip("regime decorrelator", "decorr",
-                          "significant=False — its job is decorrelation, not standalone Calmar"))
-        out.append(P.chip("not standalone", "amber",
-                          "thin standalone Calmar; kept in the book for macro decorrelation"))
-    elif e.get("significant") is True:
+        return P.chip("gate-confirmed real", "pos",
+                      "permute collapses to ~-0.09 · decay + cost survive · DSR-positive · "
+                      f"{_trades(e.get('trades'))} trades · val_auc {_fmt(e.get('val_auc'))}")
+    if eid == "regime":
+        return P.chip("regime decorrelator", "decorr",
+                      "significant=False — its job is decorrelation, not standalone Calmar; "
+                      f"{_trades(e.get('trades'))} trades")
+    if e.get("significant") is True:
         ti = "survives the multiple-testing correction"
         if e.get("psr") is not None:
             ti += " · PSR " + _fmt(e.get("psr"))
         if e.get("n_trials") is not None:
             ti += f" · n_trials {e.get('n_trials')}"
-        out.append(P.chip("survives Bonferroni", "pos", ti))
-    return " ".join(out)
-
-
-def _upgrade_callout():
-    """The +USO upgrade — deduped to a single cross-reference into the canonical book
-    hero (the ONE place the +USO numbers live), so the page tells the upgrade story once."""
-    link = ('<a href="#book">'
-            + P.chip("+USO → folded into the book", "oil",
-                     "the +USO upgrade and its Calmar lift live in the deployable-book hero")
-            + "</a>")
-    return (P.eyebrow("PROPOSED UPGRADE · +USO", "amber")
-            + "<div>" + link + "</div>"
-            + '<div class="small">USO(1x) not UCO(2x) — awaiting human/Opus crown; '
-              'the numbers are in the book hero above.</div>')
+        return P.chip("survives Bonferroni", "pos", ti + f" · {_trades(e.get('trades'))} trades")
+    return ""
 
 
 def _edge_card(e):
-    """One .card--edge per mechanism (teal stripe; primary band)."""
+    """One .card--edge per mechanism: chips · two numbers · one sentence. Recipes,
+    trade counts and the +USO upgrade story live in the leaderboard drawer / #arc."""
     body = (
         "<div>" + _asset_chips(e) + "</div>"
         + _kpis(e)
-        + "<div>" + _meta_chips(e) + "</div>"
+        + "<div>" + _role_chip(e) + "</div>"
         + "<p>" + P._esc(e.get("why", "")) + "</p>"
-        + '<div class="small">recipe · ' + P._esc(e.get("recipe", "")) + "</div>"
     )
-    if e.get("id") == "oil":
-        if e.get("arc"):
-            body += P.provenance("arc · " + e["arc"])
-        body += _upgrade_callout()
     return P.card(body, kind="edge", eyebrow_text=e.get("mechanism", ""),
                   id="mech-" + str(e.get("id", "")), title=e.get("character", ""))
 
@@ -136,15 +110,11 @@ def render(ctx):
     body = (
         P.eyebrow("THE TAXONOMY · WHAT ACTUALLY WORKS")
         + "<h2>Three confirmed edge mechanisms</h2>"
-        + P.provenance(
-            "GLD trend-momentum · UUP macro-regime (decorrelator) · "
-            "USO / UCO / XOP oil reversion (NEW 3rd) · " + (book.get("freshness") or ""))
         + '<div class="stats">' + cards + "</div>"
         + P.provenance(
-            "REJECTED — leveraged-equity reversion (vol artifact, not a real edge) · "
-            "sliced_wasserstein high-Calmars (NO-BASELINE, unverifiable) · "
-            "sticky-HMM (predictable but not profitable) · "
-            "β200 = a buy-hold pre-filter (no timing edge)")
+            "Which mechanism wins is a property of the asset, not a choice — "
+            "each labeler fails on the other mechanisms' assets. "
+            + (book.get("freshness") or ""))
     )
     return '<section class="block" id="mechanisms">' + body + "</section>"
 
@@ -154,6 +124,7 @@ if __name__ == "__main__":
     out = render(build_ctx())
     print(f"mechanisms section: {len(out)} bytes")
     for needle in ("TREND-MOMENTUM", "MACRO-REGIME", "OIL MEAN-REVERSION",
-                   "NEW · 3rd mechanism", "PROPOSED UPGRADE", "REJECTED"):
+                   "NEW · 3rd mechanism"):
         assert needle in out, f"missing: {needle}"
-    print("ok — all mechanism cards + upgrade pill + rejected footnote present")
+    assert "recipe ·" not in out, "recipes belong in the leaderboard drawer now"
+    print("ok — three tight mechanism cards, no recipe small-print")

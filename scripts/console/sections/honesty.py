@@ -9,10 +9,9 @@ real money" claim, today only scattered per-row chips. Renders ONE canonical hom
     permuted-label, decay monitor, e-value, PBO, cost stress) as pos/amber/neg/na
     status cells with the value on hover. e-value/PBO are genuinely uncomputed for
     most edges -> honest NA chips (no green-washing); UUP reads as a decorrelator.
-  * a status legend so the colour code is self-describing.
-  * the HARD-GATE FLOOR string (G1 Calmar>3 / G2 trades>80 / G3 no-lookahead /
-    G4 |train-val auc|<0.05) — the bar every book member cleared.
-  * the leak-free + fully-online assurance row, linking BACKTEST_AUDIT.md.
+  * ONE compact bar+audit card: the HARD-GATE FLOOR chips (G1..G4) + the leak-free
+    fully-online assurance with the BACKTEST_AUDIT.md link. (The colour legend was
+    dropped in the simplification — hover titles carry value + meaning.)
 
 Pure ctx -> HTML. Reads ONLY ctx["honesty"] (honesty_resolver) — no file-I/O — and
 invents no CSS: every class is emitted through a console.primitives helper that OWNS
@@ -30,49 +29,22 @@ from console import primitives as P  # noqa: E402  (scripts/ on path above)
 _AUDIT_DOC = "autoresearch/BACKTEST_AUDIT.md"
 
 
-def _legend():
-    """A self-describing colour key for the matrix status cells."""
-    chips = " ".join([
-        P.chip("pass", "pos", "clears the lens"),
-        P.chip("partial / weak", "amber", "positive but below the strict bar"),
-        P.chip("below strict bar", "neg", "fails the stricter family-wise correction"),
-        P.chip("uncomputed", "na", "lens not yet run for this edge — honest NA, not a pass"),
-    ])
-    return (P.eyebrow("STATUS KEY · VALUE ON HOVER", "muted")
-            + f'<div class="small">{chips}</div>')
-
-
-def _gate_floor(gates):
-    """The hard-gate floor string -> one muted chip per gate clause."""
+def _bar_and_audit(gates):
+    """ONE compact card: the hard-gate floor chips + the leak-free audit link.
+    (Colour key dropped — the matrix cells carry their value + meaning on hover.)"""
     parts = [g.strip() for g in (gates or "").split("·") if g.strip()]
     chips = " ".join(
         P.chip(g, "edge", "the floor every deployed book member cleared") for g in parts)
-    body = (f'<div>{chips}</div>'
-            + '<div class="small">Every book member cleared all four before it could be '
-              'crowned; the matrix above is the evidence each one held up.</div>')
-    return P.card(body, kind="muted",
-                  eyebrow_text="HARD-GATE FLOOR · the bar every member cleared")
-
-
-def _leak_assurance(text):
-    """The leak-free + fully-online assurance row, with a link to the audit doc."""
-    # The resolver string ends with "(autoresearch/BACKTEST_AUDIT.md)"; strip the
-    # parenthetical and re-attach it as a real link rather than escaped prose.
-    prose = text or ""
-    cut = prose.find(" (autoresearch")
-    if cut != -1:
-        prose = prose[:cut]
-    link = f'<a href="{P._esc(_AUDIT_DOC)}">{P._esc(_AUDIT_DOC)} →</a>'
-    # The credential headline beside the matrix: the TRAIN-only bar-threshold leak fix
-    # is the correction that re-validated the entire board.
     cred = P.chip("train-only bar-threshold leak fix", "pos",
                   "magnitude thresholds are re-fit on TRAIN-only stats (previously full-series "
                   "incl. OOS) — the 2026-06-03 correction that re-validated the whole board")
-    body = (f'<div>{cred}</div>'
-            + f'<p>{P._esc(prose)}</p>'
-            + f'<div class="small">audit · {link}</div>')
-    return P.card(body, kind="metric",
-                  eyebrow_text="LEAK-FREE + FULLY ONLINE", id="leak-assurance")
+    link = f'<a href="{P._esc(_AUDIT_DOC)}">{P._esc(_AUDIT_DOC)} →</a>'
+    body = (f'<div>{chips}</div>'
+            + f'<div style="margin-top:.55rem">{cred} '
+            + f'<span class="small">backtest is leak-free + fully online — ObjectStore-'
+              f'replay-only, online==saved, embargo-bounded · audit · {link}</span></div>')
+    return P.card(body, kind="muted", id="leak-assurance",
+                  eyebrow_text="THE BAR EVERY MEMBER CLEARED · LEAK-FREE + FULLY ONLINE")
 
 
 def render(ctx):
@@ -86,24 +58,13 @@ def render(ctx):
         P.eyebrow("WHY THESE ARE REAL · THE 7-LENS GAUNTLET")
         + "<h2>Why these edges are real</h2>"
         + P.provenance(
-            "3 confirmed edges (GLD · UUP · USO oil) × 7 lenses · "
-            "DSR / PSR data-backed from per_etf_best · permute / decay / cost qualitative · "
-            "e-value + PBO uncomputed → genuine NA · "
-            "oil DSR shown via the XOP oil-cluster cross-check (USO's leak-fixed crown "
-            "sits in per_etf_best; UCO absent)")
+            "3 confirmed edges × 7 honesty lenses — hover any cell for the value; "
+            "uncomputed lenses show an honest NA, not a pass")
     )
 
     table = P.matrix(lenses, rows, col_titles=lens_titles)
 
-    body = (
-        head
-        + table
-        + _legend()
-        + '<div class="stats">'
-        + _gate_floor(h.get("gates"))
-        + _leak_assurance(h.get("leak_assurance"))
-        + "</div>"
-    )
+    body = head + table + _bar_and_audit(h.get("gates"))
     return '<section class="block" id="honesty">' + body + "</section>"
 
 
@@ -112,7 +73,7 @@ if __name__ == "__main__":
     out = render(build_ctx())
     print(f"honesty section: {len(out)} bytes")
     for needle in ('id="honesty"', "class=\"matrix\"", "mcell--na", "mcell--pos",
-                   "HARD-GATE FLOOR", "G1 Calmar&gt;3", "LEAK-FREE + FULLY ONLINE",
-                   "BACKTEST_AUDIT.md", "STATUS KEY"):
+                   "G1 Calmar&gt;3", "LEAK-FREE + FULLY ONLINE", "BACKTEST_AUDIT.md"):
         assert needle in out, f"missing: {needle}"
-    print("ok — matrix + legend + gate floor + leak assurance all present")
+    assert "STATUS KEY" not in out, "legend dropped — hover titles carry the meaning"
+    print("ok — matrix + single bar/audit card present, legend gone")

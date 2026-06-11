@@ -24,7 +24,7 @@ if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
 from console import primitives as P  # noqa: E402
 from console.sections import (  # noqa: E402
-    leaderboard, screen, book_lab, graph, rounds, read,
+    leaderboard, screen, book_lab, graph, rounds, read, arc,
 )
 
 # (drawer id, summary title, render_fn, one-line hint) — in evidence order.
@@ -39,9 +39,18 @@ _DRAWERS = [
      "the experiment lineage as an interactive graph"),
     ("rounds", "Rounds ledger", rounds.render,
      "every A/B round, newest first"),
+    ("acts", "History — six acts", arc.render_acts,
+     "from the founding null to the third mechanism"),
     ("read", "Glossary & colophon", read.render,
      "how to read the numbers + data sources"),
 ]
+
+# Honest record of what was tried and REJECTED at the mechanism level (moved off
+# the main page in the 2026-06-10 simplification; detail in the rounds ledger).
+_REJECTED = ("Rejected mechanisms — leveraged-equity reversion (vol artifact) · "
+             "sliced_wasserstein high-Calmars (no-baseline, unverifiable) · "
+             "sticky-HMM (predictable but not profitable) · "
+             "β200 (a buy-hold pre-filter, no timing edge)")
 
 
 def _drawer(ctx, sid, title, fn, hint):
@@ -62,9 +71,10 @@ def render(ctx):
         + "<h2>Appendix — evidence &amp; ledger</h2>"
         + P.provenance(
             "The full leaderboard, universe screen, composition lab, causal graph, "
-            "rounds ledger and glossary — collapsed. Open any drawer for the detail "
-            "behind the headline.")
+            "rounds ledger, history and glossary — collapsed. Open any drawer for "
+            "the detail behind the headline.")
         + drawers
+        + P.provenance(_REJECTED)
     )
     return '<section class="block" id="appendix">' + body + "</section>"
 

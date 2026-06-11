@@ -148,7 +148,10 @@ def _round_count():
 VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalance", "tickimb", "volumeimb", "fracdiff", "dc", "zcusum", "kyle", "run", "spectral", "vpin", "jump", "volofvol", "wavelet", "amihud", "ddonset",
               # 2026-06-06 new-methods-backlog axes (mirror bar_builder._AXES_ORDER tail):
               "semivar", "chl", "diurnal", "kalman", "newma", "signedjumpvar",
-              "vratio"]   # new-methods 2026-06-09 A3: variance-ratio / price-efficiency clock
+              "vratio",   # new-methods 2026-06-09 A3: variance-ratio / price-efficiency clock
+              "logdollar_rc",  # 2026-06-10 Wang de-scaled rolling-causal threshold (bar_ext.py)
+              "sess2",  # 2026-06-10 session-anchored 2-bars/day clock (bar_ext.py, Wang frontier #4)
+              "gapflow"]  # 2026-06-10 overnight-gap-weighted variance clock (bar_ext.py, invention round)
 VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
                   "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon",
@@ -157,14 +160,18 @@ VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry di
                   "tleg_fast", "tleg_mid", "tleg_slow", "ker_fast", "ker_mid", "ker_slow",
                   "calmar_scan", "sadf_explosive", "hurst_persist", "sliced_wasserstein", "sortino_scan", "transfer_entropy_dir", "visgraph", "mfe_mae", "revert", "turn_scan", "perment",
                   # 2026-06-06 new-methods-backlog labelers (mirror labeler.LABELERS):
-                  "kllt", "diurnal_anomaly", "rskew", "icss_var", "bocpd_label", "setar", "tlb_reversal",
+                  "kllt", "diurnal_anomaly", "rskew", "icss_var", "bocpd_label", "setar", "tlb_reversal", "moe_law",
                   "dp_oracle",   # new-methods 2026-06-09 L1: cost-aware perfect-foresight oracle labeler
                   # "survival_aft" — deep-v2 B1 (built: labeler + footer survival:aft branch) but DISABLED:
                   # xgb.train(objective='survival:aft') C-CRASHES QC's XGBoost runtime (uncatchable "Runtime
                   # Error", empty logs), like the platform-blocked extratrees branch. Native model-objective
                   # innovations are QC-blocked; the code is kept (documented) but removed here to prevent crash-racing.
                   "hmm", "sticky_hmm", "always_long"]
-VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto", "ddbreaker", "aim", "aim_dd", "aim_cdf"]
+VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto", "ddbreaker"]
+# aim/aim_dd/aim_cdf REMOVED from the raceable set (2026-06-10 leak-review LOW): the footer
+# can SCORE them on VAL but infer.py has no aim branch -> a winner would be unreplayable
+# (silent VAL/OOS rule mismatch). Zero trials ever raced them. Re-add only WITH the infer
+# branch + aim_a persisted in the cell payload.
 
 # 2-node pool params (reused from run_axis_label_parallel.py).
 TIMEOUT = 300          # hard 5-min cap per backtest
@@ -476,8 +483,12 @@ def _validate_cfg(cfg):
         raise ValueError(f"sizing {cfg['sizing']!r} not in {VALID_SIZING}")
     if cfg.get("horizons") is not None:   # optional INTRADAY-holding override (forward-label bars)
         hz = cfg["horizons"]
-        if not (isinstance(hz, list) and 1 <= len(hz) <= 4 and all(isinstance(h, int) and 1 < h <= 400 for h in hz)):
-            raise ValueError(f"horizons {hz!r} must be a list of 1-4 ints in (1,400] (forward-label bars)")
+        # h=1 is the naive next-bar label Wang warns against on NOISE clocks — but on the
+        # session-anchored sess2 clock (2 bars/day) 1 bar = a 30-min structural segment
+        # (the last-half-hour session-momentum target), so allow it there only.
+        _hmin = 1 if cfg.get("axis") == "sess2" else 2
+        if not (isinstance(hz, list) and 1 <= len(hz) <= 4 and all(isinstance(h, int) and _hmin <= h <= 400 for h in hz)):
+            raise ValueError(f"horizons {hz!r} must be a list of 1-4 ints in [{_hmin},400] (forward-label bars)")
     cfg["thresh"] = float(cfg["thresh"])
     if not (0.0 < cfg["thresh"] < 1.0):
         raise ValueError(f"thresh {cfg['thresh']} must be in (0,1)")
@@ -489,14 +500,14 @@ def _validate_cfg(cfg):
     if not (5 <= cfg["n_components"] <= 60):
         raise ValueError(f"n_components {cfg['n_components']} must be in [5,60]")
     cfg["reduce"] = str(cfg.get("reduce", "correlation"))            # Wang ④ dim-reduce lever (default correlation)
-    if cfg["reduce"] not in ("correlation", "infogain", "variance", "autoencoder", "mrmr"):
+    if cfg["reduce"] not in ("correlation", "infogain", "variance", "autoencoder", "mrmr", "pca", "ae_np"):
         raise ValueError(f"reduce {cfg['reduce']!r} must be correlation|infogain|variance|autoencoder|mrmr")
     cfg["rebal_band"] = float(cfg.get("rebal_band", 0.01))           # optional net-of-cost dead-band lever (default 0.01)
     if not (0.0 <= cfg["rebal_band"] <= 0.20):
         raise ValueError(f"rebal_band {cfg['rebal_band']} must be in [0.0,0.20]")
     cfg["features"] = str(cfg.get("features", "base"))               # feature-set lever (base|rich|termstruct|evt|disp|sig|realyield)
-    if cfg["features"] not in ("base", "rich", "termstruct", "evt", "disp", "sig", "realyield"):
-        raise ValueError(f"features {cfg['features']!r} must be base|rich|termstruct|evt|disp|sig|realyield")
+    if cfg["features"] not in ("base", "rich", "termstruct", "evt", "disp", "sig", "realyield", "wangrich", "oilbasis"):
+        raise ValueError(f"features {cfg['features']!r} must be base|rich|termstruct|evt|disp|sig|realyield|wangrich|oilbasis")
     return cfg
 
 
@@ -623,6 +634,37 @@ def _append_round_results(rows, weakest, prev_best, winner, kept):
             })
 
 
+def _cell_key(cfg):
+    """The footer's ObjectStore cell suffix — MUST mirror templates/header.py.tmpl _PSUF
+    EXACTLY (order: _perm, _n, _b, _hz, reduce, features, calib, _tp). A mismatch makes
+    infer read a NONEXISTENT cell -> 0 trades -> Calmar 0.0. In the permute gate that
+    read as a vacuous "perfect collapse" AUTO-PASS for every suffix-keyed config
+    (2026-06-10 leak-review HIGH finding: GLD's _n15_b3_ig control was a no-op).
+    ONE shared builder so the two call sites can never diverge again (the same bug
+    class also hit 2026-06-08 via an _fx{set} variant)."""
+    s = (f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}"
+         f"_t{int(round(float(cfg['thresh'])*100))}")
+    if cfg.get("permute_labels"):
+        s += "_perm"
+    if int(cfg.get("n_components", 20)) != 20:
+        s += f"_n{int(cfg.get('n_components', 20))}"
+    if float(cfg.get("rebal_band", 0.01)) != 0.01:
+        s += f"_b{int(round(float(cfg.get('rebal_band', 0.01)) * 100))}"
+    if cfg.get("horizons"):
+        s += "_hz" + "x".join(str(int(h)) for h in cfg["horizons"])
+    _r = cfg.get("reduce", "correlation")
+    if _r != "correlation":
+        s += "_ig" if _r == "infogain" else "_rd" + str(_r)
+    _f_ = cfg.get("features", "base")
+    if _f_ != "base":
+        s += {"rich": "_fr", "termstruct": "_ts", "realyield": "_ry"}.get(_f_, "_fx")
+    if cfg.get("calibration", "isotonic") != "isotonic":
+        s += "_va"
+    if cfg.get("train_purge"):
+        s += "_tp"
+    return s
+
+
 def _run_one_config(target, cfg, tag="permval"):
     """Train+infer ONE config end-to-end (reusing the round's QC machinery) and return its
     result row. Used by the standing permuted-label GATE to validate a KEEP. Returns None
@@ -632,8 +674,7 @@ def _run_one_config(target, cfg, tag="permval"):
     tr = run_pool([(tlabel, code, extra)]).get(tlabel, {})
     if not str(tr.get("status", "")).startswith("Completed"):
         return None
-    cell = (f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}"
-            f"_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}"))
+    cell = _cell_key(cfg)
     ilabel = f"{tag}_{target}_infer"
     ir = run_pool([(ilabel, render_infer_cell(cfg["ticker"], cell))]).get(ilabel, {})
     return _extract_result(tag.upper(), tr, ir, cfg)
@@ -692,7 +733,7 @@ def run_round(argv):
         bt = train_res.get(tjob, {})
         train_by_name[nm] = bt
         if str(bt.get("status", "")).startswith("Completed"):
-            cell = f"{cfg['axis']}_{cfg['labeler'].replace('+','_x_')}_{cfg['sizing']}_t{int(round(float(cfg['thresh'])*100))}" + ("_perm" if cfg.get("permute_labels") else "") + ("" if int(cfg.get("n_components",20))==20 else f"_n{int(cfg.get('n_components',20))}") + ("" if float(cfg.get("rebal_band",0.01))==0.01 else f"_b{int(round(float(cfg.get('rebal_band',0.01))*100))}") + ("" if not cfg.get("horizons") else "_hz" + "x".join(str(int(h)) for h in cfg["horizons"])) + ("" if cfg.get("reduce","correlation")=="correlation" else "_ig" if cfg.get("reduce")=="infogain" else "_rd"+str(cfg.get("reduce"))) + ("" if cfg.get("features","base")=="base" else "_fr" if cfg.get("features")=="rich" else "_ts" if cfg.get("features")=="termstruct" else "_ry" if cfg.get("features")=="realyield" else "_fx") + ("" if cfg.get("calibration","isotonic")=="isotonic" else "_va")   # MUST mirror header.py.tmpl _PSUF EXACTLY (the footer save-key): base="" / rich=_fr / termstruct=_ts / realyield=_ry / evt|disp|sig=_fx; _va = Venn-Abers calibration. (2026-06-08: a prior "_fx{set}" variant here MISMATCHED _PSUF -> infer read a nonexistent cell -> 0 trades.)
+            cell = _cell_key(cfg)   # ONE shared _PSUF mirror (2026-06-10: inline copies diverged twice — see _cell_key docstring)
             infer_jobs.append((f"infer_{target}_{nm}", render_infer_cell(cfg["ticker"], cell)))
         else:
             print(f"[{_now()}]   hypothesis {nm} train not completed ({bt.get('status','?')}) — skip infer")
@@ -747,8 +788,17 @@ def run_round(argv):
         _wcfg = dict(cfg_by_name[winner["name"]]); _wcfg["permute_labels"] = True
         print(f"\n[{_now()}] PERMUTE-GATE: re-running {target} winner with SHUFFLED train labels (must collapse)...")
         _pv = _run_one_config(target, _wcfg)
-        if _pv is None:
-            _perm_note = " · permute-gate: control run did not complete (KEEP held — validate manually)"
+        # FAIL-LOUD (2026-06-10 leak-review): an empty/failed control is INDISTINGUISHABLE
+        # from a vacuous nonexistent-cell read (Calmar 0.0 = fake "perfect collapse").
+        # A KEEP requires a DEMONSTRATED collapse — no valid control, no crown.
+        _pv_valid = (_pv is not None
+                     and str(_pv.get("infer_status", "")).startswith("completed")
+                     and int(_f(_pv.get("trades", 0))) >= 3)
+        if not _pv_valid:
+            kept = False
+            _perm_note = (" · PERMUTE-GATE INVALID: control leg empty or failed "
+                          f"(trades={None if _pv is None else _pv.get('trades')}) — "
+                          "cannot demonstrate label-shuffle collapse, KEEP refused")
         else:
             _pc = _f(_pv.get("real_calmar", 0.0)); _rc = _f(winner.get("real_calmar", 0.0))
             # buy-hold baseline: knowledge['buyhold'], else an always_long arm in THIS round.
