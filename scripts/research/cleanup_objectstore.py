@@ -4,8 +4,8 @@
 non-cell keys (latest_key pointers, oosbars, metadata), and anything outside our
 prefix. Runs as a tiny QC backtest (the QC-native way to manage the store).
 
-  python3 scripts/cleanup_objectstore.py            # DRY-RUN (counts only, no delete)
-  python3 scripts/cleanup_objectstore.py --delete    # actually delete the stale cells
+  python3 scripts/research/cleanup_objectstore.py            # DRY-RUN (counts only, no delete)
+  python3 scripts/research/cleanup_objectstore.py --delete    # actually delete the stale cells
 """
 import os, sys, json
 import importlib.util as _ilu

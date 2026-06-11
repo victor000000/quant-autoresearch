@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """render_index — the autoresearch "Research Console" entrypoint (thin shim).
 
-The former 1041-line monolith was decomposed (STEP 1-5) into the scripts/console/
+The former 1041-line monolith was decomposed (STEP 1-5) into the src/lb/console/
 package: console.data (file-I/O + derive + the three RESOLVERS), console.primitives
 (class-owning HTML helpers), console.sections.* (one pure ctx->HTML builder per
 section), and console.page (the data-driven SECTIONS registry + assembler).
@@ -9,10 +9,10 @@ section), and console.page (the data-driven SECTIONS registry + assembler).
 This module now only RE-EXPORTS the two public entrypoints the rest of the repo
 already imports, so nothing downstream changes:
 
-    from render_index import build_html      # app.py, run_round.py
-    from render_index import build_data       # app.py /data.json
+    from lb.console.render_index import build_html      # app.py, run_round.py
+    from lb.console.render_index import build_data       # app.py /data.json
 
-  python3 scripts/render_index.py            # write reports/index.html (asserts <200KB)
+  python3 -m lb.console.render_index            # write reports/index.html (asserts <200KB)
 
 Every headline number flows through a resolver in console.data, so the page can
 never again show 'pending' or contradict knowledge.json.

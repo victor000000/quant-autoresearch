@@ -10,7 +10,7 @@ session). Two cheap reads:
     (when the persisted autoresearch/<ticker>/returns_<cell>.json is available).
 Imports: medicine/biostat transfer — Page (1954) CUSUM, Page-Hinkley, Kaplan-Meier (1958) survival.
 
-Run `python3 scripts/decay_monitor.py` for the self-test.
+Run `python3 scripts/research/decay_monitor.py` for the self-test.
 """
 import math
 

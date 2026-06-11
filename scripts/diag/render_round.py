@@ -7,7 +7,7 @@
      "why":"<p>…</p>","reasoning":"…","next":"…"}'
 
 Hero header + stat cards (from the winning row) + results table + why/reasoning/next,
-on the shared style.css. Then run scripts/render_causal_graph.py --inject to embed the
+on the shared style.css. Then run src/lb/console/render_causal_graph.py --inject to embed the
 interactive causal graph. Writes autoresearch/reports/round_{N}.html.
 """
 import json, os, sys, re

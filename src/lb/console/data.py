@@ -585,7 +585,7 @@ def honesty_resolver(K):
                 "cost": cell("amber", "net 1.0", "net Calmar @5bp = 1.0 (gross 1.30); thin standalone, kept for decorrelation")},
         "XOP": {"permute": cell("pos", "~-0.09", "oil-reversion permuted control collapses to ~-0.09 (R1196-1206)"),
                 "decay": cell("pos", "checked", "decay-monitored across the oil arc R1196-1206"),
-                "cost": cell("pos", "survives", "cost-stress @5bp + dead-bands survives (scripts/cost_oil.py)")},
+                "cost": cell("pos", "survives", "cost-stress @5bp + dead-bands survives (scripts/research/cost_oil.py)")},
     }
 
     def row(etf, label, sub):

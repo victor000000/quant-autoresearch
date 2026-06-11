@@ -9,7 +9,7 @@ DSR OVER-DEFLATION FIX (311-plan step 3, quick-win): the threshold is NO LONGER
 1 - 0.05/n_trials. Raw n_trials treats a correlated 21x27 sweep as n_trials INDEPENDENT
 bets and over-penalises — it can kill real borderline fits. Instead we deflate by
 N_eff = eigenvalue PARTICIPATION RATIO (Σλ)^2/Σλ^2 of the per-ETF TRIAL correlation
-matrix (scripts/stats_rigor.effective_n_trials), so highly-redundant configs count once.
+matrix (scripts/audit/stats_rigor.py::effective_n_trials), so highly-redundant configs count once.
 Per-trial OOS daily PnL is not on disk for the deleted cells, so the correlation matrix
 is the documented CONFIG-AFFINITY proxy (shared axis/labeler/sizing => correlated PnL);
 when real per-trial PnL is captured, feed stats_rigor.corr_from_returns instead — the

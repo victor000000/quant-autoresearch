@@ -4,7 +4,7 @@ champion_series.py. Reuses the audited train->infer->read-equity path; passes CE
 so infer resolves the cell via latest_key.json (the cell the train job just saved) — no cell-key
 guesswork. Reports early/late half-window Sharpe + Page-Hinkley + CUSUM on the REAL OOS equity
 curve. Question: is the oil-reversion edge front-loaded (fragile, like UUP decayed 2.67->0.74) or
-persistent (like GLD)?  Run: python3 scripts/decay_oil.py
+persistent (like GLD)?  Run: python3 scripts/research/decay_oil.py
 """
 import sys, os, math
 from lb.harness.orchestrator import render_train_config, render_infer_cell

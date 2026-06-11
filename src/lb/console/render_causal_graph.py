@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Render knowledge.json['causal_graph'] -> an INTERACTIVE causal DAG (vis-network).
 
-  python3 scripts/render_causal_graph.py                                 # regen reports/causal_graph.html
-  python3 scripts/render_causal_graph.py --inject FILE [--label L]        # embed graph into a round report
+  python3 src/lb/console/render_causal_graph.py                                 # regen reports/causal_graph.html
+  python3 src/lb/console/render_causal_graph.py --inject FILE [--label L]        # embed graph into a round report
         [--highlight id1,id2] [--note "reasoning path"]
 
 Interactivity (vis-network, CDN):

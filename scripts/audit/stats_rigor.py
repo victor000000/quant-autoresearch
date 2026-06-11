@@ -6,7 +6,7 @@ gap (RESEARCH_REVIEW_v2 Tier-1): Probabilistic & Deflated Sharpe (Bailey & Lopez
 Probability of Backtest Overfitting via CSCV (Bailey-Borwein-LdP-Zhu 2014), Holm step-down (1979),
 Benjamini-Hochberg FDR (1995). Pure stdlib so it runs anywhere; no mlfinlab/scipy/pandas.
 
-Run `python3 scripts/stats_rigor.py` for the self-test.
+Run `python3 scripts/audit/stats_rigor.py` for the self-test.
 """
 import math, itertools
 import numpy as np   # used by stationary_bootstrap / hansen_spa (deep-v3 T4/T1)

@@ -2,7 +2,7 @@
 """Seed knowledge.json['causal_graph'] with the full experiment causal DAG (rounds 1-22).
 
 Single source of truth. Each round APPENDS nodes/edges here (see add_round helper),
-then scripts/render_causal_graph.py regenerates the visual. Node types:
+then src/lb/console/render_causal_graph.py regenerates the visual. Node types:
   finding   = a mechanism/learning HUB (causes downstream design choices)  [yellow]
   round     = an experiment                                                [grey]
   milestone = a KEEP / new per-ETF best                                    [green]
