@@ -2437,10 +2437,39 @@
         "permute_labels": false,
         "features": "base"
       }
+    },
+    "PRFZ": {
+      "cell": "PRFZ_logdollar_sadf_explosive_cdf_overlay_t0.50",
+      "real_calmar": 2.216,
+      "real_cagr": 12.853,
+      "real_mdd": 5.8,
+      "real_da": 5.5437,
+      "real_sharpe": 1.27,
+      "trades": 139,
+      "g2_pass": true,
+      "round": 2110,
+      "source": "tournament",
+      "psr": 0.9923,
+      "n_trials": 4,
+      "significant": true,
+      "leak_fixed": true,
+      "config": {
+        "ticker": "PRFZ",
+        "axis": "logdollar",
+        "labeler": "sadf_explosive",
+        "thresh": 0.5,
+        "sizing": "cdf_overlay",
+        "max_depth": 3,
+        "n_components": 20,
+        "rebal_band": 0.01,
+        "reduce": "correlation",
+        "permute_labels": false,
+        "features": "base"
+      }
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 1940,
+  "last_round": 2110,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -15511,6 +15540,24 @@
         "type": "round",
         "phase": "QTEC",
         "label": "R2052 QTEC DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8034 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2053",
+        "type": "round",
+        "phase": "PRFZ",
+        "label": "R2053 PRFZ DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.4141 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2054",
+        "type": "milestone",
+        "phase": "PRFZ",
+        "label": "R2054 PRFZ KEEP: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +2.2160 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2055",
+        "type": "round",
+        "phase": "MDYG",
+        "label": "R2055 MDYG DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3925 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -26752,6 +26799,21 @@
       {
         "src": "r2051",
         "dst": "r2052",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2052",
+        "dst": "r2053",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2053",
+        "dst": "r2054",
+        "label": "new best"
+      },
+      {
+        "src": "r2054",
+        "dst": "r2055",
         "label": "no improvement"
       }
     ],

@@ -4217,3 +4217,9 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T23:50:57,QTEC,0.0,,B,QTEC,logdollar,changepoint,0.5,cdf_overlay,0.1227,3.5824,370,True,True,-0.1858,0.7035,0.5117,0.2059,0.0613,13.5841,717,False,False,completed,completed
 2026-06-11T23:53:35,QTEC,0.0,,A,QTEC,logdollar,sadf_explosive,0.5,cdf_overlay,0.5021,2.4342,284,True,True,-0.0392,0.8378,0.4983,0.7208,0.3787,9.9332,717,False,False,completed,completed
 2026-06-11T23:53:35,QTEC,0.0,,B,QTEC,logdollar,always_long,0.5,cdf_overlay,0.8034,35.203,1285,True,True,-0.0658,0.5,0.5,0.9641,0.1853,7.7451,717,True,False,completed,completed
+2026-06-11T23:55:48,PRFZ,0.0,,A,PRFZ,logdollar,ker,0.45,dd_overlay,0.4141,4.3333,576,True,True,0.4498,0.6754,0.6048,0.5413,0.4638,10.2972,717,True,False,completed,completed
+2026-06-11T23:55:48,PRFZ,0.0,,B,PRFZ,logdollar,changepoint,0.5,cdf_overlay,0.0641,7.1309,688,True,True,-0.4137,0.7182,0.5306,0.0941,-2.8646,53.4949,717,False,False,completed,completed
+2026-06-12T00:00:07,PRFZ,0.0,,A,PRFZ,logdollar,sadf_explosive,0.5,cdf_overlay,2.216,5.5437,139,True,True,-0.301,0.9649,0.6719,1.2695,3.9578,61.8587,717,True,True,completed,completed
+2026-06-12T00:00:07,PRFZ,0.0,,B,PRFZ,logdollar,always_long,0.5,cdf_overlay,0.5148,34.7926,1113,True,True,-0.6197,0.5,0.5,0.7182,0.4782,7.2283,717,False,False,completed,completed
+2026-06-12T00:02:17,MDYG,0.0,,A,MDYG,logdollar,ker,0.45,dd_overlay,0.3925,2.5983,407,True,True,-0.0338,0.6069,0.5,0.5961,0.2736,5.7687,717,True,False,completed,completed
+2026-06-12T00:02:17,MDYG,0.0,,B,MDYG,logdollar,changepoint,0.5,cdf_overlay,0.0278,5.788,216,True,True,-0.136,0.6597,0.4425,0.0758,-1.1025,30.7643,717,False,False,completed,completed
