@@ -1010,11 +1010,11 @@
       "real_kurt": 5.4363,
       "ceilinged": true,
       "status": "CEILINGED \u2014 trend_scan 1.02 / KER 0.89 < buy-hold 1.24; tech up-trender, timing trims upside. Buy-hold 1.24 deployable champion.",
-      "dsr": 0.6766,
-      "dsr_n_trials": 22,
+      "dsr": 0.6314,
+      "dsr_n_trials": 28,
       "dsr_survives_holm": false,
-      "minbtl_years": 2.59,
-      "minbtl_sufficient": true
+      "minbtl_years": 2.871,
+      "minbtl_sufficient": false
     },
     "IWM": {
       "config": {
@@ -1040,10 +1040,10 @@
       "n_trials": 48,
       "psr": 0.8978,
       "ceilinged": true,
-      "dsr": 0.6517,
-      "dsr_n_trials": 28,
+      "dsr": 0.6561,
+      "dsr_n_trials": 35,
       "dsr_survives_holm": false,
-      "minbtl_years": 5.052,
+      "minbtl_years": 5.514,
       "minbtl_sufficient": false
     },
     "EEM": {
@@ -1236,14 +1236,14 @@
         "rebal_band": 0.03,
         "reduce": "infogain"
       },
-      "dsr": 0.7666,
-      "dsr_n_trials": 141,
+      "dsr": 0.7753,
+      "dsr_n_trials": 148,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.492,
+      "minbtl_years": 1.511,
       "minbtl_sufficient": true,
       "deflation_metric": "Sharpe",
-      "deflated_benchmark": 1.8841,
-      "deflation_margin": 0.957,
+      "deflated_benchmark": 1.9033,
+      "deflation_margin": 0.9378,
       "survives_deflation": true
     },
     "EFA": {
@@ -1499,14 +1499,14 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.752,
-      "dsr_n_trials": 59,
+      "dsr": 0.7418,
+      "dsr_n_trials": 62,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.505,
+      "minbtl_years": 1.529,
       "minbtl_sufficient": true,
       "deflation_metric": "Sharpe",
-      "deflated_benchmark": 1.5768,
-      "deflation_margin": 0.5191,
+      "deflated_benchmark": 1.6225,
+      "deflation_margin": 0.4734,
       "survives_deflation": true
     },
     "BIL": {
@@ -1898,16 +1898,16 @@
         "features": "base"
       },
       "dsr": 0.6578,
-      "dsr_n_trials": 58,
+      "dsr_n_trials": 60,
       "dsr_survives_holm": false,
-      "minbtl_years": 2.444,
+      "minbtl_years": 2.471,
       "minbtl_sufficient": true,
       "stale_calmar_was": 2.3699,
       "sizing_revalidated": "dd_overlay",
       "revalidated_2026_06_09": "STALE-cleaned: stored was inflated/artifact; this is the honest re-run",
       "deflation_metric": "Sharpe",
-      "deflated_benchmark": 1.2533,
-      "deflation_margin": 0.631,
+      "deflated_benchmark": 1.2513,
+      "deflation_margin": 0.633,
       "survives_deflation": true
     },
     "EWZ": {
@@ -2017,14 +2017,14 @@
         "permute_labels": false,
         "features": "base"
       },
-      "dsr": 0.825,
-      "dsr_n_trials": 74,
+      "dsr": 0.8199,
+      "dsr_n_trials": 78,
       "dsr_survives_holm": false,
-      "minbtl_years": 1.42,
+      "minbtl_years": 1.442,
       "minbtl_sufficient": true,
       "deflation_metric": "Sharpe",
-      "deflated_benchmark": 1.8016,
-      "deflation_margin": 0.3369,
+      "deflated_benchmark": 1.8023,
+      "deflation_margin": 0.3362,
       "survives_deflation": true
     },
     "EWT": {
@@ -2436,7 +2436,16 @@
         "reduce": "correlation",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.9943,
+      "deflation_margin": 0.3385,
+      "survives_deflation": true,
+      "dsr": 0.6994,
+      "dsr_n_trials": 6,
+      "dsr_survives_holm": false,
+      "minbtl_years": 1.125,
+      "minbtl_sufficient": true
     },
     "PRFZ": {
       "cell": "PRFZ_logdollar_sadf_explosive_cdf_overlay_t0.50",
@@ -2465,7 +2474,11 @@
         "reduce": "correlation",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.778,
+      "deflation_margin": 0.4915,
+      "survives_deflation": true
     },
     "PNQI": {
       "cell": "PNQI_logdollar_changepoint_cdf_overlay_t0.50",
@@ -2494,7 +2507,11 @@
         "reduce": "correlation",
         "permute_labels": false,
         "features": "base"
-      }
+      },
+      "deflation_metric": "Sharpe",
+      "deflated_benchmark": 0.7042,
+      "deflation_margin": 0.6252,
+      "survives_deflation": true
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
