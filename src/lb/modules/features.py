@@ -211,7 +211,7 @@ def oilbasis_feats(lc, lr, ob):
     return np.column_stack(cols).astype(np.float32)
 
 
-def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False, ry=None, sl=None, realyield=False, wangrich=False, oilbasis=False, regime=False):
+def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, termstruct=False, evt=False, disp=False, sig=False, ry=None, sl=None, realyield=False, wangrich=False, oilbasis=False, regime=False, vix=False):
     """Build feature matrix from log-close and log-return arrays.
 
     Args:
@@ -346,6 +346,20 @@ def build_feats(lc, lr, spy_lc=None, spy_lr=None, abs_start=0, rich=False, terms
                 _cq[_i] = np.float32(np.sum(_br < _lr[_i]) / _br.size - 0.5)   # cond. CDF position, centered
         feats.append(_vhigh)
         feats.append(_cq)
+
+    # VIX exogenous features (opt-in features="vix"; equity-index reopening channel —
+    # the ry carrier holds the 1-day-lagged VIX level). Math lives in ml_ext (64k budget).
+    if vix and ry is not None:
+        try:
+            try:
+                import ml_ext as _mlx_v
+            except ImportError:
+                from lb.modules import ml_ext as _mlx_v
+            _vf = _mlx_v.vix_feats(ry, lr, N=N)
+            for _ci in range(_vf.shape[1]):
+                feats.append(_vf[:, _ci])
+        except Exception:
+            pass
 
     # RICH feature set (opt-in, reduce=infogain only): variance-ratio trend-persistence (Lo-MacKinlay
     # 1988). VR(k) = Var(k-bar logret)/(k*Var(1-bar logret)); VR>1 = persistent/trending, VR<1 =

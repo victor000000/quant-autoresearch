@@ -72,6 +72,7 @@ class AutoresearchPipeline(QCAlgorithm):
         # slope, from the QC-native US Treasury Yield Curve (USTYCR), the add_data wrapped in
         # try/except so an unsubscribed/absent dataset degrades to off instead of breaking the run.
         self._realyield = (CONFIG.get("features") == "realyield")
+        self._vix = (CONFIG.get("features") == "vix")
         self._oilbasis = (CONFIG.get("features") == "oilbasis")
         self._ob_fifo = []   # (date, log spot) pends; promoted at >=7 calendar days (pub-lag safe)
         self.ry_cll = []   # 1-day-lagged REAL 10y yield level, co-indexed with primary bars
@@ -95,6 +96,14 @@ class AutoresearchPipeline(QCAlgorithm):
                 self.ry_sym = self.add_data(Fred, "DCOILWTICO").symbol
             except Exception:
                 self._oilbasis = False
+        if self._vix:
+            try:
+                # CBOE VIX (implied vol INDEX, not an ETF price): the closure's stated
+                # reopening condition for equity-index timing ("reopen only with options
+                # IV"). ry carrier = VIX level, 1-day-lag promoted (publication-causal).
+                self.ry_sym = self.add_data(CBOE, "VIX").symbol
+            except Exception:
+                self._vix = False
 
     def on_data(self, slice):
         # Daily FRED points emit in their OWN slice (no primary bar) -> MUST read BEFORE
@@ -125,6 +134,14 @@ class AutoresearchPipeline(QCAlgorithm):
                         self._ob_fifo.append((self.time.date(), math.log(float(_v.value))))
             except Exception:
                 pass
+        if self._vix:
+            try:
+                if slice.contains_key(self.ry_sym):
+                    _v = slice[self.ry_sym]
+                    if _v is not None and _v.value is not None and float(_v.value) > 0:
+                        self._ry_pend = float(_v.value)
+            except Exception:
+                pass
         if self.sym not in slice.bars:
             return
         b = slice.bars[self.sym]
@@ -144,7 +161,7 @@ class AutoresearchPipeline(QCAlgorithm):
                 pass
             self.ry_cll.append(self._ry_act if self._ry_act is not None else float("nan"))
             self.sl_cll.append(float("nan"))
-        if self._realyield:
+        if self._realyield or self._vix:
             # Promote pends only on calendar-day advance => >=1-day lag on top of QC's t+1
             # emission (publication-causal). Appends OUTSIDE try: co-indexed with cll.
             try:
@@ -573,7 +590,7 @@ class AutoresearchPipeline(QCAlgorithm):
             # already applied at accumulation time. ry = DFII10 level, sl = DGS10-DGS2 slope.
             ry = None
             sl = None
-            if self._realyield or self._oilbasis:
+            if self._realyield or self._oilbasis or self._vix:
                 try:
                     ry_min = np.array(self.ry_cll, dtype=float)
                     sl_min = np.array(self.sl_cll, dtype=float)
@@ -642,7 +659,7 @@ class AutoresearchPipeline(QCAlgorithm):
             _ob = self._oilbasis
             _regime = (CONFIG.get("features") == "regime")
             try:
-                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts, evt=_evt, disp=_disp, sig=_sig, ry=ry, sl=sl, realyield=_realyield, wangrich=_wr, oilbasis=_ob, regime=_regime)
+                feats = build_feats(lc, lr, spy_lc, spy_lr, rich=_rich, termstruct=_ts, evt=_evt, disp=_disp, sig=_sig, ry=ry, sl=sl, realyield=_realyield, wangrich=_wr, oilbasis=_ob, regime=_regime, vix=self._vix)
             except NameError:
                 continue
             except TypeError:

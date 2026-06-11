@@ -47,6 +47,42 @@ def _adam_step(p, g, m, v, t, lr=1e-3, b1=0.9, b2=0.999, eps=1e-8):
     p -= lr * mh / (np.sqrt(vh) + eps)
 
 
+def vix_feats(vix, lr, N=None):
+    """VIX (implied-vol index) exogenous features — the equity-index reopening channel.
+    vix = 1-day-lagged VIX level co-indexed with bars (carrier from the footer); lr = the
+    asset's own bar log-returns. All causal trailing windows; NaN until warm.
+    8 features: level z (60/252), change (1/5/20 bars), 252-bar percentile rank,
+    variance-risk-premium proxy (VIX/100/sqrt(252) vs trailing realized bar vol), VRP z."""
+    import numpy as _np
+    v = _np.asarray(vix, dtype=float)
+    n = len(v) if N is None else N
+    out = []
+    def _z(x, w):
+        r = _np.full(n, _np.nan)
+        for i in range(w, n):
+            seg = x[i - w:i + 1]
+            m = _np.nanmean(seg); sd = _np.nanstd(seg)
+            r[i] = (x[i] - m) / (sd + 1e-9)
+        return r
+    out.append(_z(v, 60)); out.append(_z(v, 252))
+    for k in (1, 5, 20):
+        d = _np.full(n, _np.nan); d[k:] = v[k:] - v[:-k]; out.append(d)
+    pr = _np.full(n, _np.nan)
+    for i in range(252, n):
+        seg = v[i - 252:i + 1]
+        pr[i] = float(_np.nanmean(seg <= v[i]))
+    out.append(pr - 0.5)
+    rl = _np.asarray(lr, dtype=float)
+    rv = _np.full(n, _np.nan)
+    for i in range(20, n):
+        rv[i] = float(_np.nanstd(rl[i - 20:i + 1]))
+    iv_bar = v / 100.0 / _np.sqrt(252.0)        # implied per-day vol approx on bar grid
+    vrp = iv_bar - rv                            # variance-risk-premium proxy
+    out.append(vrp)
+    out.append(_z(_np.where(_np.isfinite(vrp), vrp, _np.nan), 60))
+    return _np.column_stack(out).astype(_np.float32)
+
+
 def reduce_ml(method, X_train, X_val, X_test, n_components, y_train=None):
     """'pca' (sklearn, TRAIN-fit linear control) or 'ae_np' (numpy nonlinear AE,
     manual Adam backprop, TRAIN-fit). Returns the reduce_dims contract tuple:

@@ -14881,6 +14881,12 @@
         "type": "round",
         "phase": "XLP",
         "label": "R1947 XLP DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1906 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1948",
+        "type": "round",
+        "phase": "XLP",
+        "label": "R1948 XLP DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8930 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25597,6 +25603,11 @@
       {
         "src": "r1946",
         "dst": "r1947",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1947",
+        "dst": "r1948",
         "label": "no improvement"
       }
     ],
