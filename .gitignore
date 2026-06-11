@@ -127,3 +127,9 @@ docs/analysis/WANG_INVESTIGATION.md
 scratch/
 qc/
 *.aux
+
+# derived/transient result artifacts (regenerable from round_results.csv + knowledge.json)
+reports/index.html
+reports/status.json
+results/etf_screen.csv
+results/*progress.log
