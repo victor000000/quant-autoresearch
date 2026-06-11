@@ -16378,6 +16378,18 @@
         "type": "round",
         "phase": "DBC",
         "label": "R2183 DBC DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +0.6866 (prev best +0.9119). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2184",
+        "type": "round",
+        "phase": "HYG",
+        "label": "R2184 HYG DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.9668 (prev best +1.8276). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2185",
+        "type": "round",
+        "phase": "UUP",
+        "label": "R2185 UUP DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +0.3687 (prev best +0.4469). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28274,6 +28286,16 @@
       {
         "src": "r2182",
         "dst": "r2183",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2183",
+        "dst": "r2184",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2184",
+        "dst": "r2185",
         "label": "no improvement"
       }
     ],
