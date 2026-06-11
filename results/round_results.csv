@@ -4035,3 +4035,13 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T20:10:21,VFH,0.0,,B,VFH,logdollar,changepoint,0.5,cdf_overlay,0.4562,2.9805,204,True,True,-0.1761,0.6259,0.5469,0.563,2.1161,27.7291,717,False,False,completed,completed
 2026-06-11T20:12:12,VFH,0.0,,A,VFH,logdollar,sadf_explosive,0.5,cdf_overlay,0.4395,3.6442,71,False,False,-0.2067,0.9702,0.6648,0.5488,16.5939,400.5445,717,False,False,completed,completed
 2026-06-11T20:12:12,VFH,0.0,,B,VFH,logdollar,always_long,0.5,cdf_overlay,1.159,21.3385,711,True,True,-0.1239,0.5,0.5,1.1338,0.5503,9.1986,717,True,False,completed,completed
+2026-06-11T20:14:03,IWO,0.0,,A,IWO,logdollar,ker,0.45,dd_overlay,0.6931,4.8816,168,True,True,0.8505,0.7114,0.5696,0.7693,1.5032,64.868,717,True,False,completed,completed
+2026-06-11T20:14:03,IWO,0.0,,B,IWO,logdollar,changepoint,0.5,cdf_overlay,0.54,4.8217,244,True,True,-0.4483,0.6866,0.5385,0.5919,0.1554,13.1024,717,False,False,completed,completed
+2026-06-11T20:16:46,IWO,0.0,,A,IWO,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.7612,0.5,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T20:16:46,IWO,0.0,,B,IWO,logdollar,always_long,0.5,cdf_overlay,0.4893,41.0123,588,True,True,-0.3032,0.5,0.5,0.6915,0.1254,5.8206,717,True,False,completed,completed
+2026-06-11T20:18:41,IWN,0.0,,A,IWN,logdollar,ker,0.45,dd_overlay,0.1457,6.3661,525,True,True,0.4306,0.7595,0.5921,0.2562,1.1099,20.955,717,True,False,completed,completed
+2026-06-11T20:18:41,IWN,0.0,,B,IWN,logdollar,changepoint,0.5,cdf_overlay,-0.0176,24.4283,386,True,True,-0.2151,0.7963,0.5329,-0.0168,3.014,52.4068,717,False,False,completed,completed
+2026-06-11T20:20:31,IWN,0.0,,A,IWN,logdollar,sadf_explosive,0.5,cdf_overlay,0.3976,2.803,135,True,True,0.4949,0.9545,0.5799,0.4366,1.28,22.3098,717,False,False,completed,completed
+2026-06-11T20:20:31,IWN,0.0,,B,IWN,logdollar,always_long,0.5,cdf_overlay,0.5779,37.0449,602,True,True,-0.1799,0.5,0.5,0.8052,0.3995,7.0148,717,True,False,completed,completed
+2026-06-11T20:22:37,SPTM,0.0,,A,SPTM,logdollar,ker,0.45,dd_overlay,0.3456,3.2894,763,True,True,0.2972,0.6682,0.5316,0.7334,0.1272,13.2829,717,False,False,completed,completed
+2026-06-11T20:22:37,SPTM,0.0,,B,SPTM,logdollar,changepoint,0.5,cdf_overlay,0.3717,2.1585,569,True,True,0.1303,0.6145,0.5164,0.6291,-1.0956,16.3658,717,True,False,completed,completed
