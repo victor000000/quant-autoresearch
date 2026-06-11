@@ -3825,3 +3825,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T14:15:08,VIXY,0.0,,B,VIXY,logdollar,bgm,0.45,ls_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-11T14:25:31,VIXY,0.0,,A,VIXY,logdollar,tertile,0.45,short_carry,-0.0879,139.0656,101,True,True,0.8212,0.8806,0.5701,0.1844,0.3683,53.2746,717,True,False,completed,completed
 2026-06-11T14:25:31,VIXY,0.0,,B,VIXY,logdollar,tertile,0.45,ls_cdf,-0.1147,178.2764,478,True,True,0.8164,0.8806,0.5701,0.1426,0.391,56.2379,717,False,False,completed,completed
+2026-06-11T14:29:09,GDX,0.0,,A,GDX,logdollar,tertile,0.4,cdf_plain,0.3365,12.2982,840,True,True,-0.0003,0.7088,0.5814,0.4983,-0.2388,9.4056,717,True,False,completed,completed
+2026-06-11T14:29:09,GDX,0.0,,B,GDX,logdollar,tertile,0.4,cdf_plain,0.5602,28.6903,32,False,False,-0.0667,0.7527,0.6266,0.5551,-0.2548,11.037,717,False,False,completed,completed
