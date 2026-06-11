@@ -16407,6 +16407,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R2189 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.3570 (prev best +4.3570). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2190",
+        "type": "round",
+        "phase": "USO",
+        "label": "R2190 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.8226 (prev best +3.8498). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28333,6 +28339,11 @@
       {
         "src": "r2188",
         "dst": "r2189",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2189",
+        "dst": "r2190",
         "label": "no improvement"
       }
     ],
