@@ -4155,3 +4155,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T22:40:46,VCR,0.0,,B,VCR,logdollar,always_long,0.5,cdf_overlay,0.4239,33.9527,497,True,True,-0.157,0.5,0.5,0.5962,0.1334,5.4854,717,True,False,completed,completed
 2026-06-11T22:42:55,DLN,0.0,,A,DLN,logdollar,ker,0.45,dd_overlay,0.7318,2.0391,571,True,True,-0.1759,0.8319,0.5376,1.2631,-2.6479,39.4589,717,True,False,completed,completed
 2026-06-11T22:42:55,DLN,0.0,,B,DLN,logdollar,changepoint,0.5,cdf_overlay,0.1122,6.0282,244,True,True,-0.1235,0.649,0.5931,0.2535,-1.7469,26.1528,717,False,False,completed,completed
+2026-06-11T22:45:25,DLN,0.0,,A,DLN,logdollar,sadf_explosive,0.5,cdf_overlay,0.922,0.0577,23,False,False,0.0317,0.8756,0.6758,1.0942,13.2482,217.542,717,False,False,completed,completed
+2026-06-11T22:45:25,DLN,0.0,,B,DLN,logdollar,always_long,0.5,cdf_overlay,1.1582,12.5552,1041,True,True,-0.285,0.5,0.5,1.3308,0.418,17.0063,717,True,False,completed,completed
+2026-06-11T22:47:33,FDN,0.0,,A,FDN,logdollar,ker,0.45,dd_overlay,0.399,1.4582,88,True,True,-0.2595,0.823,0.5616,0.7056,3.1904,47.1862,717,True,False,completed,completed
+2026-06-11T22:47:33,FDN,0.0,,B,FDN,logdollar,changepoint,0.5,cdf_overlay,0.0059,9.595,354,True,True,-0.2261,0.7746,0.5027,0.0247,1.6005,32.8171,717,False,False,completed,completed
+2026-06-11T22:49:47,FDN,0.0,,A,FDN,logdollar,sadf_explosive,0.5,cdf_overlay,-0.032,11.5071,49,False,False,-0.0213,0.9823,0.6733,-0.0355,-1.7447,88.7779,717,False,False,completed,completed
+2026-06-11T22:49:47,FDN,0.0,,B,FDN,logdollar,always_long,0.5,cdf_overlay,0.6295,35.9821,912,True,True,-0.2262,0.5,0.5,0.776,0.3231,6.5642,717,True,False,completed,completed
+2026-06-11T22:52:06,FEZ,0.0,,A,FEZ,logdollar,ker,0.45,dd_overlay,0.767,4.1376,571,True,True,1.0281,0.7976,0.6204,0.8412,1.02,20.4875,717,True,False,completed,completed
+2026-06-11T22:52:06,FEZ,0.0,,B,FEZ,logdollar,changepoint,0.5,cdf_overlay,0.5212,0.7298,246,True,True,-0.2698,0.6287,0.5551,0.5614,-0.1388,29.354,717,False,False,completed,completed
