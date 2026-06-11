@@ -3891,3 +3891,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T17:28:04,DIA,1.6555,DIA_imbalance_bgm+ker_cdf_overlay_t0.50,B,DIA,imbalance,bgm+ker,0.5,cdf_overlay,-0.1588,8.3019,1158,True,True,0.0,0.5186,0.6054,-0.3325,-5.436,118.3639,717,False,False,completed,completed
 2026-06-11T17:31:05,SPYG,0.0,,A,SPYG,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
 2026-06-11T17:31:05,SPYG,0.0,,B,SPYG,imbalance,bgm+ker,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T17:33:29,SPYG,0.0,,A,SPYG,logdollar,ker,0.45,dd_overlay,0.71,2.3641,801,True,True,-0.0233,0.5963,0.4946,0.984,0.1958,8.0384,717,True,False,completed,completed
+2026-06-11T17:33:29,SPYG,0.0,,B,SPYG,logdollar,changepoint,0.5,cdf_overlay,-0.236,5.6826,1083,True,True,-0.0155,0.6614,0.5198,-0.5502,-5.0287,82.9892,717,False,False,completed,completed
