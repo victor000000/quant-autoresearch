@@ -3933,3 +3933,13 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T17:52:38,MGK,0.0,,B,MGK,imbalance,bgm+ker,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,crash,?
 2026-06-11T18:03:48,OEF,0.0,,A,OEF,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
 2026-06-11T18:03:48,OEF,0.0,,B,OEF,imbalance,bgm+ker,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T18:05:42,OEF,0.0,,A,OEF,logdollar,ker,0.45,dd_overlay,0.9935,3.8267,231,True,True,1.9176,0.8147,0.7005,0.8191,0.4271,16.9617,717,True,False,completed,completed
+2026-06-11T18:05:42,OEF,0.0,,B,OEF,logdollar,changepoint,0.5,cdf_overlay,0.8095,2.0607,180,True,True,-0.0007,0.5834,0.5063,1.1823,-0.1648,7.0401,717,False,False,completed,completed
+2026-06-11T18:07:35,OEF,0.0,,A,OEF,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.797,0.5,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T18:07:35,OEF,0.0,,B,OEF,logdollar,always_long,0.5,cdf_overlay,0.9764,18.1039,591,True,True,0.13,0.5,0.5,1.2625,-0.1089,7.1275,717,True,False,completed,completed
+2026-06-11T18:09:47,MDY,0.0,,A,MDY,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
+2026-06-11T18:09:47,MDY,0.0,,B,MDY,imbalance,bgm+ker,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.7282,0.542,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T18:11:42,MDY,0.0,,A,MDY,logdollar,ker,0.45,dd_overlay,0.0077,6.7951,421,True,True,0.1417,0.7716,0.5975,0.0435,1.8763,39.6727,717,False,False,completed,completed
+2026-06-11T18:11:42,MDY,0.0,,B,MDY,logdollar,changepoint,0.5,cdf_overlay,0.3572,2.8503,196,True,True,-0.1236,0.605,0.5157,0.5462,0.4895,8.486,717,True,False,completed,completed
+2026-06-11T18:13:32,MDY,0.0,,A,MDY,logdollar,sadf_explosive,0.5,cdf_overlay,0.6253,7.7236,129,True,True,0.6072,0.8378,0.6237,0.6098,0.0387,19.1912,717,True,False,completed,completed
+2026-06-11T18:13:32,MDY,0.0,,B,MDY,logdollar,always_long,0.5,cdf_overlay,0.5389,28.2676,549,True,True,-0.0038,0.5,0.5,0.7698,0.3924,7.2642,717,False,False,completed,completed
