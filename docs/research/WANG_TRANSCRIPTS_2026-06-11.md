@@ -139,9 +139,17 @@ slow-bleed names (DBC, IWM, decayed-UUP) that a single-trough Calmar flatters.
 
 ## 4. Next race-ready levers (for the loop, in EV order)
 
-1. **Conditional-ES regime sizer** — A/B vs the current vol-overlay sizer on GLD/USO:
-   bucket bars by TRAIN-fit vol regime, size so per-regime ES is constant. Past-only,
-   leak-safe. Most novel single-ticker idea from the joint-dist talk.
+1. ~~**Conditional-ES regime sizer** (`cond_es`)~~ — **BUILT + RACED 2026-06-11, REJECTED.**
+   Tail analog of `cdf_overlay`: throttle the cdf bet when recent left-tail loss (fast
+   ES, worst-20%) spikes above baseline (slow ES), floor 0.4; causal/leak-safe; added
+   identically to `sizing_ext._size` and `infer.py.tmpl._size`. Results: **GLD** cond_es
+   2.37 ≈ champion dd_overlay 2.40 (redundant — dd_overlay already protects downside,
+   cond_es just cuts trades 1157→852); **USO** cond_es 2.46 **< cdf_plain 2.69** —
+   tail-throttling *fights* mean-reversion (it cuts the bet into the oversold dips
+   `revert` harvests). **Mechanism:** ES-throttling is redundant on trend+dd_overlay and
+   anti-synergistic with reversion — a sizer reshapes risk but doesn't add signal. Kept
+   in `sizing_ext.py` for any future tail-sensitive momentum name. (Note: this was also
+   the first live backtest through the restructured `src/lb` pipeline — end-to-end OK.)
 2. **Joint-KDE quadrant cell as a categorical feature** — TRAIN-fit KDE on (return,
    vol), emit the discretised cell id (+ conditional quantile of return given the vol
    bucket) as past-only features; race under `reduce=infogain` on GLD. Distinct from
