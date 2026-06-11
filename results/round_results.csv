@@ -4223,3 +4223,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T00:00:07,PRFZ,0.0,,B,PRFZ,logdollar,always_long,0.5,cdf_overlay,0.5148,34.7926,1113,True,True,-0.6197,0.5,0.5,0.7182,0.4782,7.2283,717,False,False,completed,completed
 2026-06-12T00:02:17,MDYG,0.0,,A,MDYG,logdollar,ker,0.45,dd_overlay,0.3925,2.5983,407,True,True,-0.0338,0.6069,0.5,0.5961,0.2736,5.7687,717,True,False,completed,completed
 2026-06-12T00:02:17,MDYG,0.0,,B,MDYG,logdollar,changepoint,0.5,cdf_overlay,0.0278,5.788,216,True,True,-0.136,0.6597,0.4425,0.0758,-1.1025,30.7643,717,False,False,completed,completed
+2026-06-12T00:05:13,MDYG,0.0,,A,MDYG,logdollar,sadf_explosive,0.5,cdf_overlay,0.0723,13.908,220,True,True,0.1045,0.9564,0.5677,0.1209,7.234,176.7923,717,False,False,completed,completed
+2026-06-12T00:05:13,MDYG,0.0,,B,MDYG,logdollar,always_long,0.5,cdf_overlay,0.3581,34.8138,1454,True,True,-0.067,0.5,0.5,0.5887,0.4461,9.2481,717,True,False,completed,completed
+2026-06-12T00:07:38,WTV,0.0,,A,WTV,logdollar,ker,0.45,dd_overlay,-0.3527,30.638,4111,True,True,0.131,0.7095,0.5289,-2.3662,-0.9691,17.5366,717,False,False,completed,completed
+2026-06-12T00:07:38,WTV,0.0,,B,WTV,logdollar,changepoint,0.5,cdf_overlay,-0.3169,18.3457,2841,True,True,-0.1078,0.7452,0.5302,-1.0711,-3.6177,56.553,717,True,False,completed,completed
+2026-06-12T00:09:51,WTV,0.0,,A,WTV,logdollar,sadf_explosive,0.5,cdf_overlay,0.2518,3.0872,1288,True,True,0.4453,0.9502,0.8153,0.3231,0.2572,14.2235,717,False,False,completed,completed
+2026-06-12T00:09:51,WTV,0.0,,B,WTV,logdollar,always_long,0.5,cdf_overlay,0.3167,40.7208,4210,True,True,0.073,0.5,0.5,0.5787,-0.3168,11.7128,717,True,False,completed,completed
+2026-06-12T00:12:41,MDYV,0.0,,A,MDYV,logdollar,ker,0.45,dd_overlay,-0.2344,9.0904,1287,True,True,0.1312,0.7732,0.5405,-0.4754,-1.3705,24.3276,717,False,False,completed,completed
+2026-06-12T00:12:41,MDYV,0.0,,B,MDYV,logdollar,changepoint,0.5,cdf_overlay,0.0826,5.6176,985,True,True,-0.1004,0.7049,0.4911,0.1603,0.2069,11.3364,717,True,False,completed,completed

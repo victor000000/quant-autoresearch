@@ -15558,6 +15558,30 @@
         "type": "round",
         "phase": "MDYG",
         "label": "R2055 MDYG DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3925 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2056",
+        "type": "round",
+        "phase": "MDYG",
+        "label": "R2056 MDYG DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.3581 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2057",
+        "type": "round",
+        "phase": "WTV",
+        "label": "R2057 WTV DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar -0.3169 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2058",
+        "type": "round",
+        "phase": "WTV",
+        "label": "R2058 WTV DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.3167 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2059",
+        "type": "round",
+        "phase": "MDYV",
+        "label": "R2059 MDYV DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0826 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -26814,6 +26838,26 @@
       {
         "src": "r2054",
         "dst": "r2055",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2055",
+        "dst": "r2056",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2056",
+        "dst": "r2057",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2057",
+        "dst": "r2058",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2058",
+        "dst": "r2059",
         "label": "no improvement"
       }
     ],
