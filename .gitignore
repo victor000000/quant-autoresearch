@@ -110,7 +110,6 @@ _archive/
 # reorg 2026-06-04 — gitignored content relocated
 scratch/
 refs/pdfs/
-results/etf_qc_confirmed_pre2009.csv
 
 # Third-party copyrighted course material — excluded from the public repo
 # (Whisper transcripts of uni 量化日记 bilibili/YouTube videos + course Q&A).
