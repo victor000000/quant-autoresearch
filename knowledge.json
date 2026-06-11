@@ -15049,6 +15049,12 @@
         "type": "round",
         "phase": "SPY",
         "label": "R1975 SPY DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.2893 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1976",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R1976 IWM DISCARD: Sample on log-dollar bars; forward-tertile labels; size long-only, entry 0.35. -> Calmar +0.4702 (prev best +0.5496). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25905,6 +25911,11 @@
       {
         "src": "r1974",
         "dst": "r1975",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1975",
+        "dst": "r1976",
         "label": "no improvement"
       }
     ],
