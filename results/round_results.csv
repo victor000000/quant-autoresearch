@@ -4313,3 +4313,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T01:41:21,IYE,0.0,,B,IYE,logdollar,changepoint,0.5,cdf_overlay,0.1367,16.4952,514,True,True,-0.1987,0.7553,0.5286,0.2506,7.0558,213.969,717,True,False,completed,completed
 2026-06-12T01:43:53,IYE,0.0,,A,IYE,logdollar,sadf_explosive,0.5,cdf_overlay,0.814,9.8002,397,True,True,0.8149,0.618,0.4847,0.8018,-0.1768,7.2219,717,True,False,completed,completed
 2026-06-12T01:43:53,IYE,0.0,,B,IYE,logdollar,always_long,0.5,cdf_overlay,0.6688,41.122,766,True,True,0.6907,0.5,0.5,0.7109,-0.3702,7.1042,717,False,False,completed,completed
+2026-06-12T01:45:44,PWV,0.0,,A,PWV,logdollar,ker,0.45,dd_overlay,0.7447,4.6769,447,True,True,0.2626,0.616,0.6489,1.0259,-0.4402,14.8944,717,False,False,completed,completed
+2026-06-12T01:45:44,PWV,0.0,,B,PWV,logdollar,changepoint,0.5,cdf_overlay,0.8215,3.6941,290,True,True,-0.3395,0.6482,0.5928,0.8818,0.5288,17.1029,717,True,False,completed,completed
+2026-06-12T01:47:50,PWV,0.0,,A,PWV,logdollar,sadf_explosive,0.5,cdf_overlay,-0.3433,2.9598,30,False,False,1.1914,0.9271,0.7776,-0.9245,-3.5597,77.328,717,False,False,completed,completed
+2026-06-12T01:47:50,PWV,0.0,,B,PWV,logdollar,always_long,0.5,cdf_overlay,1.5048,12.613,361,True,True,0.5824,0.5,0.5,1.5225,0.1293,9.8373,717,True,False,completed,completed
+2026-06-12T01:50:02,KBE,0.0,,A,KBE,logdollar,ker,0.45,dd_overlay,0.6139,3.0357,142,True,True,-0.1108,0.6504,0.4316,0.7077,0.6951,9.1806,717,True,False,completed,completed
+2026-06-12T01:50:02,KBE,0.0,,B,KBE,logdollar,changepoint,0.5,cdf_overlay,-0.0006,11.8882,504,True,True,-0.1486,0.7387,0.479,0.0126,-1.159,20.4599,717,False,False,completed,completed
+2026-06-12T01:52:35,KBE,0.0,,A,KBE,logdollar,sadf_explosive,0.5,cdf_overlay,0.6028,35.4991,433,True,True,0.0902,0.9891,0.7397,0.7295,0.659,9.252,717,False,False,completed,completed
+2026-06-12T01:52:35,KBE,0.0,,B,KBE,logdollar,always_long,0.5,cdf_overlay,0.9159,39.285,674,True,True,-0.2124,0.5,0.5,0.9723,0.7233,8.2876,717,True,False,completed,completed
