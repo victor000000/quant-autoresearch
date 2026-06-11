@@ -4,8 +4,11 @@ the driver capturing them (IWM, TLT, QQQ). Re-runs each best config (train+infer
 reads QC's 'Compounding Annual Return' + 'Drawdown'. Creates NO new rounds. Then
 regenerates the dashboard so the leaderboard's CAGR/MDD columns are fully populated."""
 import os, sys, json, subprocess
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import run_autoresearch_round as R
+import importlib.util as _ilu
+from lb.paths import ROOT as _ROOT
+_spec = _ilu.spec_from_file_location("run_round", str(_ROOT / "scripts" / "run_round.py"))
+R = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(R)  # driver-internal helpers (run_pool, _f, _cagr_from_stats, ...)
 
 CONFIGS = {
     "IWM": {"ticker": "IWM", "axis": "imbalance", "labeler": "triple_barrier+bgm", "thresh": 0.45, "sizing": "cdf_overlay"},

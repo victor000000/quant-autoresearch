@@ -298,10 +298,8 @@ def _build_inject():
 
 def run_probe(tickers):
     """Inject the signature emission into the footer, run one TRAIN job per ticker, read+route."""
-    sys.path.insert(0, ".")
-    sys.path.insert(0, "harness")
-    from harness.orchestrator import render_train_config
-    from harness.qc_client import submit_and_wait
+    from lb.harness.orchestrator import render_train_config
+    from lb.harness.qc_client import submit_and_wait
 
     inject = _build_inject()
     orig = open(FOOTER).read()

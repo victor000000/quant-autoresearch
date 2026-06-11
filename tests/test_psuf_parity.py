@@ -27,7 +27,7 @@ from lb.harness import orchestrator
 from lb.harness.psuf import cell_suffix
 from lb.paths import ROOT
 
-DRIVER = str(ROOT / "scripts" / "run_autoresearch_round.py")
+DRIVER = str(ROOT / "scripts" / "run_round.py")
 
 
 # ---------------------------------------------------------------------------
@@ -37,7 +37,7 @@ DRIVER = str(ROOT / "scripts" / "run_autoresearch_round.py")
 # ---------------------------------------------------------------------------
 
 def _load_cell_key():
-    """Parse and exec ONLY the _cell_key function from run_autoresearch_round.py."""
+    """Parse and exec ONLY the _cell_key function from run_round.py."""
     src = open(DRIVER, encoding="utf-8").read()
     lines = src.splitlines()
     start = next(i for i, l in enumerate(lines) if l.startswith("def _cell_key("))

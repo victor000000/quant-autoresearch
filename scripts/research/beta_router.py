@@ -11,10 +11,8 @@ Validates the lens on OUR data. Injection is computed on tr_m & fv only (TRAIN, 
 wrapped in try/except so it can never break a train.  Run: python3 scripts/beta_router.py
 """
 import sys, os
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-from harness.orchestrator import render_train_config
-from harness.qc_client import submit_and_wait
+from lb.harness.orchestrator import render_train_config
+from lb.harness.qc_client import submit_and_wait
 
 FOOTER = "templates/footer.py.tmpl"
 TARGET = "fwd_ret, fwd_vol = compute_forward_metrics(lc, lr)\n"

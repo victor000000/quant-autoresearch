@@ -9,7 +9,7 @@ section), and console.page (the data-driven SECTIONS registry + assembler).
 This module now only RE-EXPORTS the two public entrypoints the rest of the repo
 already imports, so nothing downstream changes:
 
-    from render_index import build_html      # app.py, run_autoresearch_round.py
+    from render_index import build_html      # app.py, run_round.py
     from render_index import build_data       # app.py /data.json
 
   python3 scripts/render_index.py            # write reports/index.html (asserts <200KB)

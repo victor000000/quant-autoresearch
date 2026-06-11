@@ -21,8 +21,11 @@ Writes sharpe/psr/n_trials/n_eff/significant into per_etf_best and prints the ve
 PSR + N_eff-adjusted threshold is the rigorous control available from the data we have.)"""
 import os, sys, json, csv, collections
 from math import erf, sqrt
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import run_autoresearch_round as R
+import importlib.util as _ilu
+from lb.paths import ROOT as _ROOT
+_spec = _ilu.spec_from_file_location("run_round", str(_ROOT / "scripts" / "run_round.py"))
+R = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(R)  # driver-internal helpers (run_pool, _f, _cagr_from_stats, ...)
 import stats_rigor as SR
 
 

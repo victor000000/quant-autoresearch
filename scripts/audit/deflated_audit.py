@@ -20,8 +20,11 @@ so it carries no selection bias and is reported as N/A. (3) True per-trial-Sharp
 PBO/CSCV need per-trial OOS return series (logged going forward).
 """
 import os, sys, json, csv, collections, math
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import run_autoresearch_round as R
+import importlib.util as _ilu
+from lb.paths import ROOT as _ROOT
+_spec = _ilu.spec_from_file_location("run_round", str(_ROOT / "scripts" / "run_round.py"))
+R = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(R)  # driver-internal helpers (run_pool, _f, _cagr_from_stats, ...)
 from stats_rigor import expected_max_sharpe as expected_max_of_N  # shared rigor lib (Bailey-LdP)
 
 

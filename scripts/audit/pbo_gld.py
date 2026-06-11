@@ -11,14 +11,14 @@ fixed at champion), train+infer each (parallel via run_pool), extract each OOS e
 align on common timestamps -> T x N returns matrix -> pbo_cscv (CSCV over 16 time-blocks).
 """
 import sys, os, math
-sys.path.insert(0, ".")
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-sys.path.insert(0, "scripts")
-from harness.orchestrator import render_train_config, render_infer_cell
-from harness.qc_client import _qc_post
-from harness.constants import QC_PROJECT_ID
-import run_autoresearch_round as R
+from lb.harness.orchestrator import render_train_config, render_infer_cell
+from lb.harness.qc_client import _qc_post
+from lb.harness.constants import QC_PROJECT_ID
+import importlib.util as _ilu
+from lb.paths import ROOT as _ROOT
+_spec = _ilu.spec_from_file_location("run_round", str(_ROOT / "scripts" / "run_round.py"))
+R = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(R)  # driver-internal helpers (run_pool, _f, _cagr_from_stats, ...)
 from stats_rigor import pbo_cscv, _sharpe
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

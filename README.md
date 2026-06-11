@@ -36,11 +36,11 @@ The repo **root IS the project** (flattened 2026-06-04 — `autoresearch/` promo
 cd /home/ubuntu/lb
 # v2 tournament round: pick the weakest ETF, race two hypotheses on the 2 QC nodes, keep the winner.
 # explicit (two CONFIG JSONs, both targeting the same ETF):
-python3 scripts/run_autoresearch_round.py \
+python3 scripts/run_round.py \
   '{"ticker":"TLT","axis":"vol","labeler":"carry","thresh":0.55,"sizing":"binary"}' \
   '{"ticker":"TLT","axis":"dollar","labeler":"kmeans2stage","thresh":0.45,"sizing":"binary"}'
 # auto (pick weakest ETF from knowledge.json, read its two configs from hypotheses.json):
-python3 scripts/run_autoresearch_round.py
+python3 scripts/run_round.py
 ```
 
 A CONFIG is `{ticker, axis, labeler, thresh, sizing}` (`sizing ∈ ramp|binary|cdf_plain|cdf_overlay`); the driver

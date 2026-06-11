@@ -9,13 +9,9 @@ predictions) -> render_infer_cell -> submit (pure replay) -> /backtests/chart/re
 so the series is the real OOS equity curve.
 """
 import sys, os, json, math
-sys.path.insert(0, ".")
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-sys.path.insert(0, "scripts")
-from harness.orchestrator import render_train_config, render_infer_cell
-from harness.qc_client import submit_and_wait, _qc_post
-from harness.constants import QC_PROJECT_ID
+from lb.harness.orchestrator import render_train_config, render_infer_cell
+from lb.harness.qc_client import submit_and_wait, _qc_post
+from lb.harness.constants import QC_PROJECT_ID
 from decay_monitor import flag_decay, page_hinkley, cusum_meanshift
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

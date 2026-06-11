@@ -19,7 +19,6 @@ the verdict is robust to the excess/non-excess kurtosis convention.
 """
 import csv, math, json, os, statistics as st
 import sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from stats_rigor import (probabilistic_sharpe_ratio, expected_max_sharpe,
                          deflated_sharpe_ratio, holm_bonferroni, benjamini_hochberg,
                          min_backtest_length)

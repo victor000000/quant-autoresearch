@@ -9,11 +9,8 @@ Does NOT modify the production infer template (audited-clean) — inserts the sl
 rendered copy only.
 """
 import sys, os
-sys.path.insert(0, ".")
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-from harness.orchestrator import render_infer_cell
-from harness.qc_client import submit_and_wait
+from lb.harness.orchestrator import render_infer_cell
+from lb.harness.qc_client import submit_and_wait
 
 ANCHOR = 'self.sym = self.add_equity(TICKER, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol'  # updated 2026-06-08 for the RAW-normalization leak-audit change
 INJECT = ANCHOR + '\n        self.securities[self.sym].set_slippage_model(ConstantSlippageModel(%s))'

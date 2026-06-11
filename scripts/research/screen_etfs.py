@@ -18,9 +18,10 @@ Run:  nohup python3 scripts/screen_etfs.py > /tmp/arlogs/screen.log 2>&1 &
 """
 import sys, os, csv, json, subprocess
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from lb.paths import ROOT as _LBROOT
+HERE = str(_LBROOT)
 CSV = os.path.join(HERE, "results", "etf_qc_confirmed_pre2009.csv")
-DRIVER = os.path.join(HERE, "scripts", "run_autoresearch_round.py")
+DRIVER = os.path.join(HERE, "scripts", "run_round.py")
 PROG = os.path.join(HERE, "results", "etf_screen_progress.log")
 
 TESTED = set("DBC EEM EFA FXY GLD HYG ITB IWM KRE QQQ SLV SMH SOXX SPY TIP TLT UUP VIXY XBI XLE XME".split())

@@ -15,11 +15,10 @@ import os
 import sys
 from collections import Counter
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
 from stats_rigor import online_fdr_lond, probabilistic_sharpe_ratio  # noqa: E402
+from lb.paths import ROUND_RESULTS_CSV
 
-CSV = os.path.join(HERE, "..", "results", "round_results.csv")
+CSV = str(ROUND_RESULTS_CSV)
 PPY = 252.0
 
 

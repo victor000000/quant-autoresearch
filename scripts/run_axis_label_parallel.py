@@ -18,14 +18,12 @@ USAGE:
 import os, sys, csv, time
 from datetime import datetime
 
-PROJECT_ROOT = "/home/ubuntu/lb"
-AR = os.path.join(PROJECT_ROOT)
-if AR not in sys.path:
-    sys.path.insert(0, AR)
+from lb.paths import ROOT as PROJECT_ROOT
+AR = str(PROJECT_ROOT)
 
-from harness.qc_client import (submit_backtest, read_backtest, read_backtest_status,  # noqa: E402
+from lb.harness.qc_client import (submit_backtest, read_backtest, read_backtest_status,  # noqa: E402
                                delete_backtest, is_done)
-from harness.orchestrator import render_script  # noqa: E402
+from lb.harness.orchestrator import render_script  # noqa: E402
 
 INFER_TMPL = os.path.join(AR, "templates", "infer.py.tmpl")
 RESULTS_DIR = os.path.join(AR, "results")

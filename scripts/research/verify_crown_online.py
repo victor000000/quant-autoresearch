@@ -12,9 +12,8 @@ Run: python3 scripts/verify_crown_online.py
 """
 import sys, os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from harness.orchestrator import render_train_config, render_infer_online
-from harness.qc_client import submit_and_wait
+from lb.harness.orchestrator import render_train_config, render_infer_online
+from lb.harness.qc_client import submit_and_wait
 
 # (cfg for train-render, ObjectStore cell key for the online infer)
 TARGET_CFG = dict(ticker="USO", axis="logdollar", labeler="revert", thresh=0.45,

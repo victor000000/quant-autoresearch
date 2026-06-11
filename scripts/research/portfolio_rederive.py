@@ -7,13 +7,9 @@ several compositions/weights to answer: should SOXX be IN, and should UUP stay?
 Series cached to autoresearch/results/series_cache.json (ts->equity) so re-runs are cheap.
 """
 import sys, os, json, math
-sys.path.insert(0, ".")
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-sys.path.insert(0, "scripts")
-from harness.orchestrator import render_train_config, render_infer_cell
-from harness.qc_client import submit_and_wait, _qc_post
-from harness.constants import QC_PROJECT_ID
+from lb.harness.orchestrator import render_train_config, render_infer_cell
+from lb.harness.qc_client import submit_and_wait, _qc_post
+from lb.harness.constants import QC_PROJECT_ID
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(HERE, "results", "series_cache.json")

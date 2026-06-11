@@ -7,10 +7,8 @@ rho > REVERSION (USO/UCO). All stats on tr_m only (TRAIN, leak-safe), try/except
 never break a train.  Run: python3 scripts/mechanism_router.py
 """
 import sys, os
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-from harness.orchestrator import render_train_config
-from harness.qc_client import submit_and_wait
+from lb.harness.orchestrator import render_train_config
+from lb.harness.qc_client import submit_and_wait
 
 FOOTER = "templates/footer.py.tmpl"
 TARGET = "fwd_ret, fwd_vol = compute_forward_metrics(lc, lr)\n"

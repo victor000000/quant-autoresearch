@@ -44,12 +44,12 @@ labels may use the future; features may not.
 
 USAGE:
     # explicit (two JSON configs on argv):
-    python3 scripts/run_autoresearch_round.py \
+    python3 scripts/run_round.py \
         '{"ticker":"TLT","axis":"vol","labeler":"tertile","thresh":0.45,"sizing":"binary"}' \
         '{"ticker":"TLT","axis":"range","labeler":"hmm","thresh":0.50,"sizing":"cdf_plain"}'
 
     # auto (pick weakest ETF, read its two hypotheses from the queue file):
-    python3 scripts/run_autoresearch_round.py
+    python3 scripts/run_round.py
       -> reads autoresearch/hypotheses.json = {"<TICKER>": [cfgA, cfgB], ...}
 
 This driver does NOT write the HTML report and does NOT git-commit (the human/

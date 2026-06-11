@@ -6,11 +6,8 @@ band that maximizes net-of-5bp-cost Calmar. Pure replay (same saved predictions)
 changes — no leak. Injects into a rendered infer COPY; production template untouched.
 """
 import sys, os
-sys.path.insert(0, ".")
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-from harness.orchestrator import render_infer_cell
-from harness.qc_client import submit_and_wait
+from lb.harness.orchestrator import render_infer_cell
+from lb.harness.qc_client import submit_and_wait
 
 _DEFAULTS = {"GLD": "logdollar_ker_x_regime_gmm_dd_overlay_t40_n15",
              "SOXX": "logdollar_ker_x_trend_scan_x_bgm_cdf_overlay_t50",

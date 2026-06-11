@@ -4,7 +4,7 @@ The ObjectStore cell key has a suffix that is computed in TWO places that MUST b
 byte-identical, or inference reads a non-existent cell -> 0 trades -> Calmar 0.0:
 
   - QC side: templates/header.py.tmpl `_PSUF` (executed on QuantConnect).
-  - Local side: scripts/run_autoresearch_round.py `_cell_key` (the local mirror).
+  - Local side: scripts/run_round.py `_cell_key` (the local mirror).
 
 Historically these inline copies DIVERGED twice (2026-06-08 `_fx{set}`, 2026-06-10
 the `_n15_b3_ig` permute-control no-op). This module is now the SINGLE definition:

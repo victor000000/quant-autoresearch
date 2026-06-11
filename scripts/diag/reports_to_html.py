@@ -11,7 +11,8 @@ Output: autoresearch/reports/html/<name>.html  +  index.html
 """
 import os, re, html, glob
 
-REPORTS = "/home/ubuntu/lb/reports"
+from lb.paths import REPORTS_DIR
+REPORTS = str(REPORTS_DIR)
 OUT = os.path.join(REPORTS, "html")
 
 HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8">

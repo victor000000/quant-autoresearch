@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Self-healing watchdog for the deep-sweep loop.
 
-The per-round driver (run_autoresearch_round.py) intermittently HANGS after its QC
+The per-round driver (run_round.py) intermittently HANGS after its QC
 backtests complete — a QC API call that never returns, so the round never records and the
 coordinator (deep_sweep_etfs.py) blocks on the subprocess. Observed 2026-06-05/06 on QID
 (~13 min), SPXS, QLD (~10 min). This watchdog watches results/round_results.csv: if the
@@ -10,13 +10,14 @@ hung driver; the coordinator then respawns the next round.
 
 STALL_S=420 (7 min) is above the max legit round (2 backtests x 300s timeout + overhead),
 so it won't kill a merely-slow round. Logs EVERY check so its behavior is observable.
-Kills ONLY run_autoresearch_round.py (never the coordinator). Safe to restart.
+Kills ONLY run_round.py (never the coordinator). Safe to restart.
 
 Run:  nohup python3 scripts/sweep_watchdog.py > /tmp/arlogs/watchdog.log 2>&1 &
 """
 import time, os, csv, subprocess
 
-ROUND_CSV = "/home/ubuntu/lb/results/round_results.csv"
+from lb.paths import ROUND_RESULTS_CSV
+ROUND_CSV = str(ROUND_RESULTS_CSV)
 STALL_S = 420
 CHECK_S = 60
 
@@ -31,7 +32,7 @@ def last_ts():
 
 def driver_pids():
     # split the literal so the watchdog's own cmdline can't self-match the pgrep pattern
-    pat = "run_autoresearch" + "_round.py"
+    pat = "run_round" + ".py"
     out = subprocess.run(["pgrep", "-f", pat], capture_output=True, text=True).stdout
     return [p for p in out.split() if p.strip().isdigit()]
 

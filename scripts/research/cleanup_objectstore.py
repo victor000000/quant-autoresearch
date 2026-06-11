@@ -8,8 +8,11 @@ prefix. Runs as a tiny QC backtest (the QC-native way to manage the store).
   python3 scripts/cleanup_objectstore.py --delete    # actually delete the stale cells
 """
 import os, sys, json
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import run_autoresearch_round as R
+import importlib.util as _ilu
+from lb.paths import ROOT as _ROOT
+_spec = _ilu.spec_from_file_location("run_round", str(_ROOT / "scripts" / "run_round.py"))
+R = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(R)  # driver-internal helpers (run_pool, _f, _cagr_from_stats, ...)
 
 DELETE = "--delete" in sys.argv
 K = json.load(open(R.KNOWLEDGE_JSON))

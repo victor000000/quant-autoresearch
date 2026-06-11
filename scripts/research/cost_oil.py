@@ -7,10 +7,8 @@ Uses CELL='__CELL__' -> latest_key.json = the revert cell trained in the R1199 d
 order count (~552 UCO / ~601 USO) confirms the right cell is being replayed.
 """
 import sys, os
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-from harness.orchestrator import render_infer_cell
-from harness.qc_client import submit_and_wait
+from lb.harness.orchestrator import render_infer_cell
+from lb.harness.qc_client import submit_and_wait
 
 ANCHOR = 'self.sym = self.add_equity(TICKER, Resolution.MINUTE).symbol'
 INJECT = ANCHOR + '\n        self.securities[self.sym].set_slippage_model(ConstantSlippageModel(%s))'

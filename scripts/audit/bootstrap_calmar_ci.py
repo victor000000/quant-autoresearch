@@ -20,11 +20,10 @@ import sys
 
 import numpy as np
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, _HERE)
 from stats_rigor import stationary_bootstrap  # noqa: E402
+from lb.paths import ROOT as _LBROOT
 
-ROOT = os.path.dirname(_HERE)
+ROOT = str(_LBROOT)
 SERIES = os.path.join(ROOT, "results", "series_cache.json")
 KJ = os.path.join(ROOT, "knowledge.json")
 SECS_YR = 365.25 * 86400.0

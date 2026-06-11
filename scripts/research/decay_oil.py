@@ -7,12 +7,9 @@ curve. Question: is the oil-reversion edge front-loaded (fragile, like UUP decay
 persistent (like GLD)?  Run: python3 scripts/decay_oil.py
 """
 import sys, os, math
-sys.path.insert(0, ".")
-sys.path.insert(0, "harness")
-sys.path.insert(0, "scripts")
-from harness.orchestrator import render_train_config, render_infer_cell
-from harness.qc_client import submit_and_wait, _qc_post
-from harness.constants import QC_PROJECT_ID
+from lb.harness.orchestrator import render_train_config, render_infer_cell
+from lb.harness.qc_client import submit_and_wait, _qc_post
+from lb.harness.constants import QC_PROJECT_ID
 from decay_monitor import flag_decay, page_hinkley, cusum_meanshift
 
 

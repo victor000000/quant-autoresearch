@@ -26,7 +26,6 @@ Run `python3 scripts/online_fdr.py --replay`   -> replay over round_results.csv 
 import os, sys, csv, math, argparse, collections
 from statistics import NormalDist
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     import stats_rigor as SR
     _PSR = SR.probabilistic_sharpe_ratio

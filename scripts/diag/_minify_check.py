@@ -2,8 +2,7 @@
 """Check whether stripping comments+docstrings gets the rendered QC script under
 QC's 64,000-char main.py limit. Stdlib only (no numpy needed)."""
 import sys, ast
-sys.path.insert(0, "/home/ubuntu/lb")
-from harness.orchestrator import render_script
+from lb.harness.orchestrator import render_script
 
 def strip(src):
     tree = ast.parse(src)

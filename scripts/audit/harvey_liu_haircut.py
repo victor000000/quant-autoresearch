@@ -13,7 +13,6 @@ p (one-sided) = 1 - Phi(t).  Bonferroni: p*M.  BH: q-value across the asset's M 
 haircut_t = Phinv(1 - p_adj);  haircut_SR = SR_ann * max(0, haircut_t)/t.
 """
 import csv, math, os, sys, statistics as st
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from stats_rigor import Phi, Phinv
 
 PPY = 252.0

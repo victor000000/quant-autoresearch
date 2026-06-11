@@ -16,8 +16,9 @@ import os
 import json
 import subprocess
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DRIVER = os.path.join(HERE, "scripts", "run_autoresearch_round.py")
+from lb.paths import ROOT as _LBROOT
+HERE = str(_LBROOT)
+DRIVER = os.path.join(HERE, "scripts", "run_round.py")
 KNOW = os.path.join(HERE, "knowledge.json")
 PROG = os.path.join(HERE, "results", "etf_modulesweep_progress.log")
 
