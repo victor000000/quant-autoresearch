@@ -4451,3 +4451,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T04:20:49,RGI,0.0,,B,RGI,logdollar,always_long,0.5,cdf_overlay,0.3778,31.2862,1857,True,True,-0.5375,0.5,0.5,0.6439,0.2957,12.4107,717,True,False,completed,completed
 2026-06-12T04:22:44,FXZ,0.0,,A,FXZ,logdollar,ker,0.45,dd_overlay,0.2735,14.0903,280,True,True,0.808,0.6818,0.5057,0.4826,-0.3916,6.6139,717,False,False,completed,completed
 2026-06-12T04:22:44,FXZ,0.0,,B,FXZ,logdollar,changepoint,0.5,cdf_overlay,0.5627,6.1845,172,True,True,-0.1519,0.7241,0.5314,0.8795,0.2101,6.892,717,True,False,completed,completed
+2026-06-12T04:24:48,FXZ,0.0,,A,FXZ,logdollar,sadf_explosive,0.5,cdf_overlay,-0.0482,7.341,78,False,False,0.2401,0.8692,0.5502,-0.0537,-3.0629,120.7522,717,False,False,completed,completed
+2026-06-12T04:24:48,FXZ,0.0,,B,FXZ,logdollar,always_long,0.5,cdf_overlay,0.2333,64.6082,415,True,True,0.1719,0.5,0.5,0.4839,-0.0369,4.8756,717,True,False,completed,completed
+2026-06-12T04:27:19,FXN,0.0,,A,FXN,logdollar,ker,0.45,dd_overlay,0.7062,9.2374,1323,True,True,0.7099,0.846,0.556,0.7518,2.795,32.6968,717,True,False,completed,completed
+2026-06-12T04:27:19,FXN,0.0,,B,FXN,logdollar,changepoint,0.5,cdf_overlay,0.1148,15.6762,1164,True,True,0.1945,0.6102,0.5235,0.172,-0.4632,5.7849,717,False,False,completed,completed
+2026-06-12T04:30:08,FXN,0.0,,A,FXN,logdollar,sadf_explosive,0.5,cdf_overlay,0.111,16.0907,588,True,True,0.2052,0.8068,0.5685,0.1504,0.1101,12.9585,717,False,False,completed,completed
+2026-06-12T04:30:08,FXN,0.0,,B,FXN,logdollar,always_long,0.5,cdf_overlay,0.4193,56.8737,1449,True,True,0.3858,0.5,0.5,0.5584,-0.2014,7.5321,717,True,False,completed,completed
+2026-06-12T04:32:00,XPH,0.0,,A,XPH,logdollar,ker,0.45,dd_overlay,-0.3396,34.2408,80,False,False,0.5539,0.5788,0.5525,-0.949,-0.8617,38.4811,717,False,False,completed,completed
+2026-06-12T04:32:00,XPH,0.0,,B,XPH,logdollar,changepoint,0.5,cdf_overlay,0.584,6.3495,150,True,True,-0.5039,0.6082,0.4878,0.6343,0.0154,3.9334,717,True,False,completed,completed

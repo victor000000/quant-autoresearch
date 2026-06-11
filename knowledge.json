@@ -16271,6 +16271,30 @@
         "type": "round",
         "phase": "FXZ",
         "label": "R2169 FXZ DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5627 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2170",
+        "type": "round",
+        "phase": "FXZ",
+        "label": "R2170 FXZ DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.2333 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2171",
+        "type": "round",
+        "phase": "FXN",
+        "label": "R2171 FXN DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.7062 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2172",
+        "type": "round",
+        "phase": "FXN",
+        "label": "R2172 FXN DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4193 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2173",
+        "type": "round",
+        "phase": "XPH",
+        "label": "R2173 XPH DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5840 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28097,6 +28121,26 @@
       {
         "src": "r2168",
         "dst": "r2169",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2169",
+        "dst": "r2170",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2170",
+        "dst": "r2171",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2171",
+        "dst": "r2172",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2172",
+        "dst": "r2173",
         "label": "no improvement"
       }
     ],
