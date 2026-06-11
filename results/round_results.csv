@@ -4355,3 +4355,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T02:30:26,FXO,0.0,,B,FXO,logdollar,always_long,0.5,cdf_overlay,1.0223,24.3866,445,True,True,-0.0825,0.5,0.5,1.068,0.5663,8.898,717,True,False,completed,completed
 2026-06-12T02:32:49,IYT,0.0,,A,IYT,logdollar,ker,0.45,dd_overlay,0.2232,4.3022,360,True,True,0.1497,0.7052,0.5286,0.2768,-0.0277,9.4891,717,True,False,completed,completed
 2026-06-12T02:32:49,IYT,0.0,,B,IYT,logdollar,changepoint,0.5,cdf_overlay,0.34,1.6337,19,False,False,-0.2963,0.7452,0.4157,0.4871,-0.457,77.7411,717,False,False,completed,completed
+2026-06-12T02:35:23,IYT,0.0,,A,IYT,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.7624,0.4872,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T02:35:23,IYT,0.0,,B,IYT,logdollar,always_long,0.5,cdf_overlay,0.3555,39.5727,741,True,True,0.0195,0.5,0.5,0.5114,0.2828,6.2602,717,True,False,completed,completed
+2026-06-12T02:37:34,IHE,0.0,,A,IHE,logdollar,ker,0.45,dd_overlay,0.49,0.6712,62,False,False,-0.556,0.6929,0.5347,0.6768,1.1161,15.2077,717,False,False,completed,completed
+2026-06-12T02:37:34,IHE,0.0,,B,IHE,logdollar,changepoint,0.5,cdf_overlay,0.7931,2.731,166,True,True,-0.6576,0.7237,0.6029,0.6605,11.996,209.0464,717,True,False,completed,completed
+2026-06-12T02:40:07,IHE,0.0,,A,IHE,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8943,0.8194,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T02:40:07,IHE,0.0,,B,IHE,logdollar,always_long,0.5,cdf_overlay,0.8613,28.827,815,True,True,-0.8841,0.5,0.5,0.9836,-0.5703,8.2614,717,True,False,completed,completed
+2026-06-12T02:42:01,KXI,0.0,,A,KXI,logdollar,ker,0.45,dd_overlay,-0.2825,15.2939,847,True,True,-0.1433,0.7316,0.493,-0.7499,-6.366,110.6171,717,True,False,completed,completed
+2026-06-12T02:42:01,KXI,0.0,,B,KXI,logdollar,changepoint,0.5,cdf_overlay,-0.3129,21.8426,542,True,True,-0.2091,0.7028,0.6085,-0.7574,-20.4121,488.8681,717,False,False,completed,completed
