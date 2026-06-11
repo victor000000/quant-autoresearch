@@ -22,17 +22,9 @@ import re
 import csv
 import glob
 import json
-import sys
 
 from lb.paths import ROOT as _ROOT, KNOWLEDGE_JSON as _KJ
-
-# describe.py still lives in scripts/ (it moves into the package in a later task);
-# load it by file path so this module needs no sys.path manipulation.
-import importlib.util as _ilu  # noqa: E402
-_dspec = _ilu.spec_from_file_location("describe", str(_ROOT / "scripts" / "describe.py"))
-_dmod = _ilu.module_from_spec(_dspec)
-_dspec.loader.exec_module(_dmod)
-describe_cfg, describe = _dmod.describe_cfg, _dmod.describe
+from lb.describe import describe_cfg, describe
 
 # ---- paths -----------------------------------------------------------------
 ROOT = str(_ROOT)

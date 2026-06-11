@@ -12,8 +12,7 @@ interactive causal graph. Writes autoresearch/reports/round_{N}.html.
 """
 import json, os, sys, re
 
-sys.path.insert(0, os.path.dirname(__file__))
-from describe import describe                          # config -> plain-English hypothesis
+from lb.describe import describe                       # config -> plain-English hypothesis
 
 R = json.loads(sys.argv[1])
 OUT = os.path.join(os.path.dirname(__file__), "..", "reports", f"round_{R['round']}.html")

@@ -17,28 +17,22 @@ already imports, so nothing downstream changes:
 Every headline number flows through a resolver in console.data, so the page can
 never again show 'pending' or contradict knowledge.json.
 """
-import os
-import sys
-
-_HERE = os.path.dirname(os.path.abspath(__file__))
-if _HERE not in sys.path:
-    sys.path.insert(0, _HERE)
+from lb.paths import REPORTS_DIR
 
 # Public entrypoints (the SAME names app.py + the driver import) ---------------
-from console.page import build_html, build_data, build_page  # noqa: E402,F401
+from lb.console.page import build_html, build_data, build_page  # noqa: F401
 # Re-export the most-used data helpers so any legacy `render_index.X` keeps working.
-from console.data import (  # noqa: E402,F401
+from lb.console.data import (  # noqa: F401
     build_ctx, derive, scoreboard, load_screen, screen_summary,
     book_resolver, edges_resolver, honesty_resolver, _scan_rounds_csv,
 )
 
-R = os.path.join(_HERE, "..", "reports")
 MAX_BYTES = 200_000  # perf-regression guard: a future inline blob must not silently return
 
 
 def main():
     html = build_html()
-    out = os.path.join(R, "index.html")
+    out = str(REPORTS_DIR / "index.html")
     with open(out, "w") as f:
         f.write(html)
     n = len(html.encode("utf-8"))

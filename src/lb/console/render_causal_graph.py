@@ -15,11 +15,12 @@ Interactivity (vis-network, CDN):
 The graph is the SINGLE SOURCE OF TRUTH in knowledge.json. Each round: append
 nodes/edges, then run this (with --inject) to regenerate + embed the up-to-date graph.
 """
-import json, os, re, sys
+import json, re, sys
 
-ROOT = os.path.join(os.path.dirname(__file__), "..")
-KJ = os.path.join(ROOT, "knowledge.json")
-OUT = os.path.join(ROOT, "reports", "causal_graph.html")
+from lb.paths import KNOWLEDGE_JSON, REPORTS_DIR
+
+KJ = str(KNOWLEDGE_JSON)
+OUT = str(REPORTS_DIR / "causal_graph.html")
 
 PHASE_TITLE = {"Landscape": "A · Landscape / the 6-round null",
                "TLT": "B · TLT (declining / two-sided)",

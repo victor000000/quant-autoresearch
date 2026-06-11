@@ -75,9 +75,7 @@ from lb.harness.psuf import cell_suffix  # ONE canonical cell-key suffix (also i
 from lb.paths import (ROOT as PROJECT_ROOT, KNOWLEDGE_JSON, HYPOTHESES_JSON,
                       RESULTS_DIR, ROUND_RESULTS_CSV, STATUS_JSON)
 
-# describe.py lives alongside this driver in scripts/; the script's own directory
-# is on sys.path when run directly, so the bare import resolves without a hack.
-from describe import describe_cfg  # config -> plain-English hypothesis
+from lb.describe import describe_cfg  # config -> plain-English hypothesis
 
 CORE_7 = ["QQQ", "IWM", "EEM", "XLE", "HYG", "TLT", "GLD",
           "VIXY",  # NEW MECHANISM-CLASS (2026-06-04): VIX short-term futures ETF — structural variance-risk-premium CARRY (roll decay), a STRUCTURALLY DIFFERENT edge than trend/regime drift (FRONTIER re-opener). Short-capable (ls_overlay); permute control distinguishes carry-BETA from timing-ALPHA.
@@ -391,7 +389,7 @@ def _refresh_report():
     live per-request, but this keeps the on-disk file fresh for static hosting).
     Fully guarded — a render failure must NEVER fail a round."""
     try:
-        import render_index  # scripts/ is on sys.path when the driver runs directly
+        from lb.console import render_index
         html = render_index.build_html()
         out = os.path.join(PROJECT_ROOT, "reports", "index.html")
         with open(out, "w") as f:
