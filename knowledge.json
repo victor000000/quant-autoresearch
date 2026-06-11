@@ -14935,6 +14935,36 @@
         "type": "round",
         "phase": "ITA",
         "label": "R1956 ITA DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +1.1600 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1957",
+        "type": "round",
+        "phase": "ITA",
+        "label": "R1957 ITA DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.4761 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1958",
+        "type": "round",
+        "phase": "IWS",
+        "label": "R1958 IWS DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3719 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1959",
+        "type": "round",
+        "phase": "IWS",
+        "label": "R1959 IWS DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.7050 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1960",
+        "type": "round",
+        "phase": "VFH",
+        "label": "R1960 VFH DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.5673 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1961",
+        "type": "round",
+        "phase": "VFH",
+        "label": "R1961 VFH DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +1.1590 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25696,6 +25726,31 @@
       {
         "src": "r1955",
         "dst": "r1956",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1956",
+        "dst": "r1957",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1957",
+        "dst": "r1958",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1958",
+        "dst": "r1959",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1959",
+        "dst": "r1960",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1960",
+        "dst": "r1961",
         "label": "no improvement"
       }
     ],
