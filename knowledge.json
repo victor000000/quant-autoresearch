@@ -16295,6 +16295,12 @@
         "type": "round",
         "phase": "XPH",
         "label": "R2173 XPH DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.5840 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2174",
+        "type": "round",
+        "phase": "XPH",
+        "label": "R2174 XPH DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.5898 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28141,6 +28147,11 @@
       {
         "src": "r2172",
         "dst": "r2173",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2173",
+        "dst": "r2174",
         "label": "no improvement"
       }
     ],
