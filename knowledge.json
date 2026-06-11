@@ -16437,6 +16437,24 @@
         "type": "round",
         "phase": "GLD",
         "label": "R2194 GLD DISCARD: Sample on log-dollar bars; dd_excursion; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.9404 (prev best +4.3570). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2195",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R2195 SPY DISCARD: Sample on log-dollar bars; dd_excursion; size tilt_up, entry 0.40. -> Calmar +0.9438 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2196",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2196 QQQ DISCARD: Sample on log-dollar bars; dd_excursion; size binary long/flat, entry 0.30. -> Calmar +0.4581 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2197",
+        "type": "round",
+        "phase": "IWM",
+        "label": "R2197 IWM DISCARD: Sample on log-dollar bars; dd_excursion; size tilt_up, entry 0.35. -> Calmar +0.5143 (prev best +0.5496). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28388,6 +28406,21 @@
       {
         "src": "r2193",
         "dst": "r2194",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2194",
+        "dst": "r2195",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2195",
+        "dst": "r2196",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2196",
+        "dst": "r2197",
         "label": "no improvement"
       }
     ],
