@@ -1212,8 +1212,8 @@
       "minbtl_sufficient": false
     },
     "GLD": {
-      "cell": "GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 4.0218,
+      "cell": "GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40_n16_rdvae",
+      "real_calmar": 3.9537,
       "real_cagr": 13.674,
       "real_mdd": 3.4,
       "real_da": 8.0552,
@@ -1244,7 +1244,8 @@
       "deflation_metric": "Sharpe",
       "deflated_benchmark": 1.9033,
       "deflation_margin": 0.9378,
-      "survives_deflation": true
+      "survives_deflation": true,
+      "note": "RE-VALIDATION CROWN 2026-06-12: reduce=vae (torch K=16) \u2014 current-window honest. Same window: vae 3.9537 > pca 3.8430 > infogain 2.7517 (re-validated champion). Permute-confirmed (3.95->0.98), bit-exact x3, leak-clean, decay-strengthening lineage. Prior stored 4.0218 (logdollar/infogain) was STALE-WINDOW (leaderboard-goes-stale rule); archived: prev_cell=GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40 prev_calmar=4.0218"
     },
     "EFA": {
       "cell": "EFA_logdollar_always_long_cdf_overlay_t0.45",
@@ -2512,6 +2513,11 @@
       "deflated_benchmark": 0.7042,
       "deflation_margin": 0.6252,
       "survives_deflation": true
+    },
+    "FEZ": {
+      "cell": "FEZ_logdollar_sadf_explosive_cdf_overlay_t0.50",
+      "real_calmar": 1.3421,
+      "note": "311-screen candidate 2026-06-12: permute-pass (0.20), bit-exact, strict-DSR 0.93 (cohort-best), decay STRENGTHENING (1.84->2.81), Martin 23.9. Driver gate refusal was Bonferroni-at-screen-burden only. Book seat = human decision (EU decorrelation)."
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
