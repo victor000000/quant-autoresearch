@@ -4375,3 +4375,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T02:51:07,RYH,0.0,,B,RYH,logdollar,always_long,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-12T02:53:49,FDD,0.0,,A,FDD,logdollar,ker,0.45,dd_overlay,0.636,2.8606,419,True,True,-0.1056,0.7238,0.4968,0.6393,0.7899,17.6055,717,True,False,completed,completed
 2026-06-12T02:53:49,FDD,0.0,,B,FDD,logdollar,changepoint,0.5,cdf_overlay,0.3457,2.6318,383,True,True,-0.1959,0.6539,0.5176,0.4378,-0.5143,6.8024,717,False,False,completed,completed
+2026-06-12T02:55:46,FDD,0.0,,A,FDD,logdollar,sadf_explosive,0.5,cdf_overlay,-0.311,5.7272,45,False,False,0.3957,0.9634,0.5053,-1.1503,-14.7751,261.714,717,False,False,completed,completed
+2026-06-12T02:55:46,FDD,0.0,,B,FDD,logdollar,always_long,0.5,cdf_overlay,1.8215,18.5913,1038,True,True,-0.2319,0.5,0.5,1.3955,-0.2735,5.556,717,True,False,completed,completed
+2026-06-12T02:58:01,JKK,0.0,,A,JKK,logdollar,ker,0.45,dd_overlay,-0.3536,33.6704,1179,True,True,0.3347,0.7721,0.5595,-1.9293,-12.9961,256.3519,717,False,False,completed,completed
+2026-06-12T02:58:01,JKK,0.0,,B,JKK,logdollar,changepoint,0.5,cdf_overlay,0.1907,3.4203,326,True,True,-0.1087,0.6662,0.4994,0.3313,-0.4765,13.5418,717,True,False,completed,completed
+2026-06-12T03:00:06,JKK,0.0,,A,JKK,logdollar,sadf_explosive,0.5,cdf_overlay,-0.3548,36.7514,776,True,True,-0.1338,0.9074,0.5842,-1.3697,-0.3143,10.0163,717,False,False,completed,completed
+2026-06-12T03:00:06,JKK,0.0,,B,JKK,logdollar,always_long,0.5,cdf_overlay,0.0511,50.8867,2097,True,True,-0.084,0.5,0.5,0.1904,-0.1189,6.7755,717,True,False,completed,completed
+2026-06-12T03:02:19,FXU,0.0,,A,FXU,logdollar,ker,0.45,dd_overlay,0.7606,3.3857,759,True,True,0.9635,0.7274,0.6543,0.9416,-1.1557,25.1852,717,True,False,completed,completed
+2026-06-12T03:02:19,FXU,0.0,,B,FXU,logdollar,changepoint,0.5,cdf_overlay,0.0378,8.1164,379,True,True,-0.3202,0.6622,0.5335,0.0591,1.076,133.8202,717,False,False,completed,completed
