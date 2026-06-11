@@ -15876,6 +15876,30 @@
         "type": "round",
         "phase": "PSI",
         "label": "R2108 PSI DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8616 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2109",
+        "type": "round",
+        "phase": "IYC",
+        "label": "R2109 IYC DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1686 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2110",
+        "type": "round",
+        "phase": "IYC",
+        "label": "R2110 IYC DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4651 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2111",
+        "type": "round",
+        "phase": "FTA",
+        "label": "R2111 FTA DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.8936 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2112",
+        "type": "round",
+        "phase": "FTA",
+        "label": "R2112 FTA DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8663 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27397,6 +27421,26 @@
       {
         "src": "r2107",
         "dst": "r2108",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2108",
+        "dst": "r2109",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2109",
+        "dst": "r2110",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2110",
+        "dst": "r2111",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2111",
+        "dst": "r2112",
         "label": "no improvement"
       }
     ],
