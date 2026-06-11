@@ -4461,3 +4461,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T04:32:00,XPH,0.0,,B,XPH,logdollar,changepoint,0.5,cdf_overlay,0.584,6.3495,150,True,True,-0.5039,0.6082,0.4878,0.6343,0.0154,3.9334,717,True,False,completed,completed
 2026-06-12T04:34:00,XPH,0.0,,A,XPH,logdollar,sadf_explosive,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.8638,0.2745,0.0,0.0,0.0,0,False,False,completed,completed
 2026-06-12T04:34:00,XPH,0.0,,B,XPH,logdollar,always_long,0.5,cdf_overlay,0.5898,43.9767,407,True,True,-0.5475,0.5,0.5,0.6475,0.0406,3.8877,717,True,False,completed,completed
+2026-06-12T04:48:03,PRFZ,2.216,PRFZ_logdollar_sadf_explosive_cdf_overlay_t0.50,A,PRFZ,logdollar,sadf_explosive,0.5,cdf_overlay,2.216,5.5437,139,True,True,-0.301,0.9649,0.6719,1.2695,3.9578,61.8587,717,True,False,completed,completed
+2026-06-12T04:48:03,PRFZ,2.216,PRFZ_logdollar_sadf_explosive_cdf_overlay_t0.50,B,PRFZ,logdollar,sadf_explosive,0.5,cdf_overlay,-0.1599,25.5472,605,True,True,-0.437,0.5041,0.6105,-0.1889,0.6121,9.0105,717,False,False,completed,completed
+2026-06-12T04:50:58,FEZ,0.0,,A,FEZ,logdollar,sadf_explosive,0.5,cdf_overlay,1.3421,10.6616,412,True,True,0.7158,0.9568,0.6858,1.2297,1.1059,16.4776,717,True,False,completed,completed
+2026-06-12T04:50:58,FEZ,0.0,,B,FEZ,logdollar,sadf_explosive,0.5,cdf_overlay,0.2028,15.2911,385,True,True,0.3826,0.5712,0.5509,0.3968,-0.1547,9.6331,717,False,False,completed,completed
+2026-06-12T04:53:07,IAT,0.0,,A,IAT,logdollar,sadf_explosive,0.5,cdf_overlay,1.0979,5.5826,241,True,True,0.7629,0.9307,0.6067,0.9899,1.8589,25.8913,717,True,False,completed,completed
+2026-06-12T04:53:07,IAT,0.0,,B,IAT,logdollar,sadf_explosive,0.5,cdf_overlay,-0.2533,48.3454,796,True,True,-0.3404,0.5386,0.5769,-0.7173,-3.3023,86.2752,717,False,False,completed,completed
+2026-06-12T04:56:00,IAI,0.0,,A,IAI,logdollar,changepoint,0.5,cdf_overlay,1.3282,4.2629,974,True,True,-0.1927,0.7487,0.5581,1.0978,4.6384,84.338,717,True,False,completed,completed
+2026-06-12T04:56:00,IAI,0.0,,B,IAI,logdollar,changepoint,0.5,cdf_overlay,0.5852,5.7942,1216,True,True,-0.1955,0.4975,0.5331,0.7987,1.1255,16.0014,717,False,False,completed,completed

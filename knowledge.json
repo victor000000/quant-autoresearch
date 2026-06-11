@@ -16301,6 +16301,30 @@
         "type": "round",
         "phase": "XPH",
         "label": "R2174 XPH DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.5898 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2175",
+        "type": "round",
+        "phase": "PRFZ",
+        "label": "R2175 PRFZ DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +2.2160 (prev best +2.2160). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2176",
+        "type": "round",
+        "phase": "FEZ",
+        "label": "R2176 FEZ DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.3421 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2177",
+        "type": "round",
+        "phase": "IAT",
+        "label": "R2177 IAT DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.0979 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2178",
+        "type": "round",
+        "phase": "IAI",
+        "label": "R2178 IAI DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +1.3282 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28152,6 +28176,26 @@
       {
         "src": "r2173",
         "dst": "r2174",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2174",
+        "dst": "r2175",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2175",
+        "dst": "r2176",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2176",
+        "dst": "r2177",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2177",
+        "dst": "r2178",
         "label": "no improvement"
       }
     ],
