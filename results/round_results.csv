@@ -4147,3 +4147,11 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T22:31:13,FDL,0.0,,B,FDL,logdollar,always_long,0.5,cdf_overlay,1.2235,16.1766,1517,True,True,0.1463,0.5,0.5,1.2024,-0.4298,12.9293,717,True,False,completed,completed
 2026-06-11T22:33:52,IJT,0.0,,A,IJT,logdollar,ker,0.45,dd_overlay,0.3871,0.6579,113,True,True,-0.0505,0.6696,0.5549,0.6647,0.6204,31.5989,717,True,False,completed,completed
 2026-06-11T22:33:52,IJT,0.0,,B,IJT,logdollar,changepoint,0.5,cdf_overlay,0.291,4.0618,331,True,True,0.4296,0.6296,0.5278,0.478,0.1335,20.77,717,False,False,completed,completed
+2026-06-11T22:35:59,IJT,0.0,,A,IJT,logdollar,sadf_explosive,0.5,cdf_overlay,0.4486,10.0382,330,True,True,0.1649,0.8732,0.8682,0.6493,3.6495,67.1779,717,True,False,completed,completed
+2026-06-11T22:35:59,IJT,0.0,,B,IJT,logdollar,always_long,0.5,cdf_overlay,0.4129,34.5785,879,True,True,-0.1871,0.5,0.5,0.6381,0.6042,8.8604,717,False,False,completed,completed
+2026-06-11T22:38:12,VCR,0.0,,A,VCR,logdollar,ker,0.45,dd_overlay,0.3868,4.8146,214,True,True,-0.1806,0.686,0.567,0.4674,0.1068,8.1419,717,True,False,completed,completed
+2026-06-11T22:38:12,VCR,0.0,,B,VCR,logdollar,changepoint,0.5,cdf_overlay,0.0787,7.421,335,True,True,0.0758,0.8525,0.5193,0.1844,0.0298,9.8232,717,False,False,completed,completed
+2026-06-11T22:40:46,VCR,0.0,,A,VCR,logdollar,sadf_explosive,0.5,cdf_overlay,0.3915,14.9037,327,True,True,-0.0591,0.9166,0.7684,0.477,0.7688,16.1094,717,False,False,completed,completed
+2026-06-11T22:40:46,VCR,0.0,,B,VCR,logdollar,always_long,0.5,cdf_overlay,0.4239,33.9527,497,True,True,-0.157,0.5,0.5,0.5962,0.1334,5.4854,717,True,False,completed,completed
+2026-06-11T22:42:55,DLN,0.0,,A,DLN,logdollar,ker,0.45,dd_overlay,0.7318,2.0391,571,True,True,-0.1759,0.8319,0.5376,1.2631,-2.6479,39.4589,717,True,False,completed,completed
+2026-06-11T22:42:55,DLN,0.0,,B,DLN,logdollar,changepoint,0.5,cdf_overlay,0.1122,6.0282,244,True,True,-0.1235,0.649,0.5931,0.2535,-1.7469,26.1528,717,False,False,completed,completed

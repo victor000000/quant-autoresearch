@@ -15301,6 +15301,30 @@
         "type": "round",
         "phase": "IJT",
         "label": "R2017 IJT DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3871 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2018",
+        "type": "round",
+        "phase": "IJT",
+        "label": "R2018 IJT DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.4486 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2019",
+        "type": "round",
+        "phase": "VCR",
+        "label": "R2019 VCR DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3868 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2020",
+        "type": "round",
+        "phase": "VCR",
+        "label": "R2020 VCR DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4239 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2021",
+        "type": "round",
+        "phase": "DLN",
+        "label": "R2021 DLN DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.7318 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -26367,6 +26391,26 @@
       {
         "src": "r2016",
         "dst": "r2017",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2017",
+        "dst": "r2018",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2018",
+        "dst": "r2019",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2019",
+        "dst": "r2020",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2020",
+        "dst": "r2021",
         "label": "no improvement"
       }
     ],
