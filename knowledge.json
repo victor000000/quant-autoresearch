@@ -14917,6 +14917,24 @@
         "type": "round",
         "phase": "SPY",
         "label": "R1953 SPY DISCARD: Sample on log-dollar bars; forward-tertile labels; size binary long/flat, entry 0.30. -> Calmar +0.8179 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1954",
+        "type": "round",
+        "phase": "SPHQ",
+        "label": "R1954 SPHQ DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.4391 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1955",
+        "type": "round",
+        "phase": "SPHQ",
+        "label": "R1955 SPHQ DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +1.0328 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1956",
+        "type": "round",
+        "phase": "ITA",
+        "label": "R1956 ITA DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +1.1600 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25663,6 +25681,21 @@
       {
         "src": "r1952",
         "dst": "r1953",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1953",
+        "dst": "r1954",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1954",
+        "dst": "r1955",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1955",
+        "dst": "r1956",
         "label": "no improvement"
       }
     ],

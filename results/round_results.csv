@@ -4019,3 +4019,9 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T19:52:35,SPY,0.0,,B,SPY,logdollar,always_long,0.15,cdf_overlay,1.2893,12.9427,671,True,True,0.0025,0.5,0.5,1.4019,0.0717,7.4205,717,True,False,completed,completed
 2026-06-11T19:55:17,SPY,0.0,,A,SPY,logdollar,tertile,0.35,cdf_plain,0.8083,0.6797,80,False,False,0.1687,0.8198,0.6029,1.0272,0.8478,37.3668,717,False,False,completed,completed
 2026-06-11T19:55:17,SPY,0.0,,B,SPY,logdollar,tertile,0.3,binary,0.8179,8.2692,76,False,False,0.0074,0.8198,0.6029,0.9796,1.2278,44.3729,717,True,False,completed,completed
+2026-06-11T19:58:07,SPHQ,0.0,,A,SPHQ,logdollar,ker,0.45,dd_overlay,0.3245,8.1802,1533,True,True,0.459,0.7523,0.6105,0.4834,1.9396,37.4357,717,False,False,completed,completed
+2026-06-11T19:58:07,SPHQ,0.0,,B,SPHQ,logdollar,changepoint,0.5,cdf_overlay,0.4391,1.4739,1589,True,True,-0.1515,0.6401,0.5301,0.493,1.2501,33.0655,717,True,False,completed,completed
+2026-06-11T20:00:19,SPHQ,0.0,,A,SPHQ,logdollar,sadf_explosive,0.5,cdf_overlay,1.0328,8.505,1930,True,True,0.3901,0.9,0.6525,1.1387,-0.0438,10.9402,717,True,False,completed,completed
+2026-06-11T20:00:19,SPHQ,0.0,,B,SPHQ,logdollar,always_long,0.5,cdf_overlay,0.9236,12.9643,2241,True,True,-0.0316,0.5,0.5,1.1996,0.3198,16.6526,717,False,False,completed,completed
+2026-06-11T20:02:14,ITA,0.0,,A,ITA,logdollar,ker,0.45,dd_overlay,1.16,3.2135,876,True,True,0.0112,0.692,0.5087,1.0124,0.1224,5.5986,717,True,False,completed,completed
+2026-06-11T20:02:14,ITA,0.0,,B,ITA,logdollar,changepoint,0.5,cdf_overlay,0.8037,3.0974,559,True,True,0.0081,0.6614,0.4936,0.8641,-1.1742,17.821,717,False,False,completed,completed
