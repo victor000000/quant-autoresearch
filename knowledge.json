@@ -14773,6 +14773,18 @@
         "type": "round",
         "phase": "VHT",
         "label": "R1929 VHT DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1703 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1930",
+        "type": "round",
+        "phase": "VHT",
+        "label": "R1930 VHT DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.4379 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1931",
+        "type": "round",
+        "phase": "IWP",
+        "label": "R1931 IWP DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25399,6 +25411,16 @@
       {
         "src": "r1928",
         "dst": "r1929",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1929",
+        "dst": "r1930",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1930",
+        "dst": "r1931",
         "label": "no improvement"
       }
     ],
