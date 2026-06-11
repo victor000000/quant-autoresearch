@@ -16366,6 +16366,18 @@
         "type": "round",
         "phase": "OEF",
         "label": "R2181 OEF DISCARD: Sample on signed-dollar imbalance (directional) bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +1.0343 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2182",
+        "type": "round",
+        "phase": "TIP",
+        "label": "R2182 TIP DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +0.8979 (prev best +1.1463). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2183",
+        "type": "round",
+        "phase": "DBC",
+        "label": "R2183 DBC DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.15. -> Calmar +0.6866 (prev best +0.9119). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28252,6 +28264,16 @@
       {
         "src": "r2180",
         "dst": "r2181",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2181",
+        "dst": "r2182",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2182",
+        "dst": "r2183",
         "label": "no improvement"
       }
     ],
