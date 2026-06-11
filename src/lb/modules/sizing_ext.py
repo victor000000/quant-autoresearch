@@ -32,6 +32,11 @@ def _size(p, thresh, sizing, rbuf):
         return 0.0 if p > thresh else 1.0
     if sizing == "short_carry":        # variance-risk-premium CARRY harvest (VIXY/VXX): full SHORT to earn the
         return 0.0 if p > thresh else -1.0   # VIX-future roll decay, FLAT when an up-spike is predicted (p>thresh). Inverse of crashveto.
+    if sizing == "crashsoft":          # SOFT crash-sizer (the crashveto cliff fix, SPY lead R876): full long
+        lo = 0.5 * thresh              # while p_crash <= lo, linear de-lever lo->thresh, flat at p >= thresh.
+        if p <= lo:                    # Smooth ramp -> partial rebalances (trades>80 reachable) and no
+            return 1.0                 # single-threshold cliff (the lead's 2.53-vs-0.84 fragility).
+        return float(max(0.0, (thresh - p) / (thresh - lo)))
     if sizing == "longshort":
         return 1.0 if p > thresh else (-1.0 if p < 1.0 - thresh else 0.0)
     if sizing in ("ls_cdf", "ls_overlay"):

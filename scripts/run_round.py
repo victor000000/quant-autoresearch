@@ -160,7 +160,7 @@ VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry di
                   # Error", empty logs), like the platform-blocked extratrees branch. Native model-objective
                   # innovations are QC-blocked; the code is kept (documented) but removed here to prevent crash-racing.
                   "hmm", "sticky_hmm", "always_long"]
-VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto", "ddbreaker", "cond_es", "short_carry"]
+VALID_SIZING = ["ramp", "binary", "cdf_plain", "cdf_overlay", "dd_overlay", "longshort", "ls_cdf", "ls_overlay", "crashveto", "ddbreaker", "cond_es", "short_carry", "crashsoft"]
 # aim/aim_dd/aim_cdf REMOVED from the raceable set (2026-06-10 leak-review LOW): the footer
 # can SCORE them on VAL but infer.py has no aim branch -> a winner would be unreplayable
 # (silent VAL/OOS rule mismatch). Zero trials ever raced them. Re-add only WITH the infer
