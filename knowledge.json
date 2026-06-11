@@ -15714,6 +15714,12 @@
         "type": "round",
         "phase": "RPV",
         "label": "R2081 RPV DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.7662 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2082",
+        "type": "round",
+        "phase": "RPV",
+        "label": "R2082 RPV DISCARD: Sample on log-dollar bars; always-long (buy & hold); size long-only, vol-targeted, entry 0.50. -> Calmar +0.8999 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -27100,6 +27106,11 @@
       {
         "src": "r2080",
         "dst": "r2081",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2081",
+        "dst": "r2082",
         "label": "no improvement"
       }
     ],
