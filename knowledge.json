@@ -14749,6 +14749,12 @@
         "type": "round",
         "phase": "SDY",
         "label": "R1925 SDY DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.0000 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r1926",
+        "type": "round",
+        "phase": "SDY",
+        "label": "R1926 SDY DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1446 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -25355,6 +25361,11 @@
       {
         "src": "r1924",
         "dst": "r1925",
+        "label": "no improvement"
+      },
+      {
+        "src": "r1925",
+        "dst": "r1926",
         "label": "no improvement"
       }
     ],

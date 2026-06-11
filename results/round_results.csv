@@ -3963,3 +3963,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-11T18:32:18,XLY,0.0,,B,XLY,logdollar,always_long,0.5,cdf_overlay,0.414,34.5961,783,True,True,-0.1296,0.5,0.5,0.5768,0.1098,4.9898,717,True,False,completed,completed
 2026-06-11T18:34:11,SDY,0.0,,A,SDY,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,True,False,completed,completed
 2026-06-11T18:34:11,SDY,0.0,,B,SDY,imbalance,bgm+ker,0.5,cdf_overlay,0.0,0.0,0,False,False,0.0,0.0,0.0,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-11T18:36:02,SDY,0.0,,A,SDY,logdollar,ker,0.45,dd_overlay,0.1446,7.1917,333,True,True,0.681,0.8115,0.6162,0.2614,-0.578,24.7938,717,True,False,completed,completed
+2026-06-11T18:36:02,SDY,0.0,,B,SDY,logdollar,changepoint,0.5,cdf_overlay,0.18,0.4041,79,False,False,-0.2519,0.7558,0.433,0.319,-0.4657,12.099,717,False,False,completed,completed
