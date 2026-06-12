@@ -648,6 +648,7 @@ class AutoresearchPipeline(QCAlgorithm):
             except TypeError:
                 feats = build_feats(lc, lr, rich=_rich)
             feats = _mx.extra_feats(CONFIG.get("features"), feats, lc, lr, bar_ts_np, self.object_store)
+            _mx.dbg_dump(self, feats, bar_ts_np)   # TEMP permclock-parity debug (remove)
             fv = ~np.isnan(feats).any(axis=1)
             _hz = CONFIG.get("horizons")     # intraday-holding override (in BARS); None => labeler defaults
             if _hz:

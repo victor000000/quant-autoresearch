@@ -85,6 +85,25 @@ def vix_feats(vix, lr, N=None):
     return _np.column_stack(out).astype(_np.float32)
 
 
+DBG_TS = "2023-08-02T12:46:00"          # TEMPORARY permclock-parity debug target (QQQ)
+DBG_COLS = (2, 4, 40, 54, 26, 5)
+
+
+def dbg_dump(algo, feats, ts_np):
+    """TEMPORARY paired-dump instrument (2026-06-12 permclock online-parity debug):
+    emit raw feature values at DBG_COLS for the bar at DBG_TS. Batch side of the
+    pair; the online side lives in infer_online's mismatch forensics. Remove after
+    the parity bug is closed."""
+    ix = np.where(ts_np == np.datetime64(DBG_TS))[0]
+    if len(ix) == 0:
+        return
+    i = int(ix[0])
+    if i >= len(feats):
+        return
+    vals = ",".join("f" + str(j) + "=" + str(round(float(feats[i, j]), 6)) for j in DBG_COLS)
+    algo.set_runtime_statistic("fd_batch", vals)
+
+
 def extra_feats(kind, feats, lc, lr, ts_np, store):
     """ONE footer entry point for the opt-in appended feature blocks (64k budget:
     the footer pays a single line; dispatch lives here). Unknown/None kind or a
