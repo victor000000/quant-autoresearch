@@ -4577,3 +4577,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T14:25:04,DJP,0.0,,B,DJP,logdollar,ker,0.45,cdf_overlay,0.7525,14.0023,148,True,True,1.2806,0.7891,0.6052,0.7136,-0.8009,10.356,718,False,False,completed,completed
 2026-06-12T14:35:22,GSG,0.0,,A,GSG,logdollar,sadf_explosive,0.5,cdf_overlay,-0.0721,37.9281,1224,True,True,-0.1637,0.5577,0.5876,-0.1071,-1.1725,50.6331,718,False,False,completed,completed
 2026-06-12T14:35:22,GSG,0.0,,B,GSG,logdollar,sadf_explosive,0.5,cdf_overlay,-0.0122,12.0797,589,True,True,0.1846,0.619,0.5944,0.0054,-0.9068,30.2401,718,True,False,completed,completed
+2026-06-12T14:44:47,FXZ,0.0,,A,FXZ,logdollar,trend_leg,0.45,dd_overlay,0.1623,13.5254,301,True,True,0.1017,0.4038,0.4931,0.3185,-0.1786,4.7415,718,True,False,completed,completed
+2026-06-12T14:44:47,FXZ,0.0,,B,FXZ,logdollar,trend_leg,0.45,dd_overlay,0.1487,21.8059,406,True,True,0.4794,0.8521,0.4838,0.2623,-0.0611,11.9788,718,False,False,completed,completed
