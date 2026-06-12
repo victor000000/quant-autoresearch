@@ -4599,3 +4599,9 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T16:27:23,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.5061,6.7635,566,True,True,0.0,0.717,0.6708,1.4693,0.5585,10.5122,718,True,False,completed,completed
 2026-06-12T16:30:11,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,permclock,bgm+ker,0.45,cdf_overlay,0.8705,8.3964,1111,True,True,0.0,0.5068,0.5415,0.985,-0.195,6.1523,718,False,False,completed,completed
 2026-06-12T16:30:11,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.5061,6.7635,566,True,True,0.0,0.717,0.6708,1.4693,0.5585,10.5122,718,True,False,completed,completed
+2026-06-12T16:34:41,ONEQ,0.0,,A,ONEQ,permclock,bgm+ker,0.45,cdf_overlay,-0.0602,10.9249,1658,True,True,0.0,0.4996,0.5246,-0.12,-0.5191,7.4232,718,False,False,completed,completed
+2026-06-12T16:34:41,ONEQ,0.0,,B,ONEQ,permclock,bgm+ker,0.45,cdf_overlay,1.0283,2.7086,402,True,True,0.0,0.7531,0.5315,0.9194,-0.1096,22.0718,718,True,False,completed,completed
+2026-06-12T16:38:25,QQEW,0.0,,A,QQEW,permclock,bgm+ker,0.45,cdf_overlay,0.2233,0.2259,37,False,False,0.0,0.4881,0.5208,0.2768,0.9808,97.289,718,False,False,completed,completed
+2026-06-12T16:38:25,QQEW,0.0,,B,QQEW,permclock,bgm+ker,0.45,cdf_overlay,0.522,0.0399,33,False,False,0.0,0.7619,0.5962,0.6301,10.2334,193.0748,718,True,False,completed,completed
+2026-06-12T16:41:43,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,permclock,bgm+ker,0.4,cdf_overlay,1.4479,8.0375,611,True,True,0.0,0.717,0.6708,1.4229,0.4458,9.7644,718,True,False,completed,completed
+2026-06-12T16:41:43,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.5,dd_overlay,1.2738,5.5426,771,True,True,0.0,0.717,0.6708,1.4036,0.5088,9.9319,718,False,False,completed,completed

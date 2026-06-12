@@ -90,7 +90,7 @@ def main():
     cache = json.load(open(CACHE))
     # Verified set 2026-06-12: the four gated edges + always_long seats.
     champs = [("GLD", "crown lgbm_bag+vae"), ("USO", "oil-reversion core"),
-              ("DIA", "candidate seat (bgm+ker)"), ("DXJ", "candidate seat (Japan ker)"),
+              ("DIA", "candidate seat (bgm+ker)"), ("DXJ", "candidate seat (Japan ker)"), ("QQQ", "permclock first-edge (watchlist)"),
               ("EPI", "satellite: India trend"),
               ("UUP", "legacy"), ("TIP", "legacy"), ("DBC", "legacy"), ("HYG", "legacy")]
     lines = ["", "## Anytime-valid e-value monitor (peeking-robust; supersedes p-value/DSR re-checks)",
