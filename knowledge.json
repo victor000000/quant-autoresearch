@@ -16618,6 +16618,12 @@
         "type": "round",
         "phase": "ILF",
         "label": "R2224 ILF DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.2090 (prev best +1.4545). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2225",
+        "type": "round",
+        "phase": "EWZ",
+        "label": "R2225 EWZ DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +0.4755 (prev best +1.4256). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28719,6 +28725,11 @@
       {
         "src": "r2223",
         "dst": "r2224",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2224",
+        "dst": "r2225",
         "label": "no improvement"
       }
     ],
