@@ -174,7 +174,8 @@ class OnlineInferXCheck(QCAlgorithm):
             self.featlen_bad = True                 # FATAL (was non-fatal): feature-vector length drift
             self.set_runtime_statistic("featlen_mismatch", str(len(row)) + "vs" + str(self.nfeat))
         # AVERAGE the members' calibrated+gated probs (single-labeler => 1 member; mirrors footer ensemble + live).
-        plive = float(np.mean([self._predict_member(m, row) for m in self.members]))
+        pmem = [self._predict_member(m, row) for m in self.members]
+        plive = float(np.mean(pmem))
         psaved = self.saved.get(norm)
         if psaved is not None:
             d = abs(plive - psaved)
@@ -183,6 +184,13 @@ class OnlineInferXCheck(QCAlgorithm):
             if len(self.diffs) <= 1:                 # sample the first matched pair
                 self.set_runtime_statistic("sample_live", str(round(plive, 5)))
                 self.set_runtime_statistic("sample_saved", str(round(psaved, 5)))
+            if d > 0.01:                             # mismatch forensics: first 3 diverging bars
+                self._nmm = getattr(self, "_nmm", 0) + 1
+                if self._nmm <= 3:
+                    self.set_runtime_statistic(
+                        "mm" + str(self._nmm),
+                        norm + " saved=" + str(round(psaved, 4)) + " live=" + str(round(plive, 4))
+                        + " mem=" + ",".join(str(round(p, 4)) for p in pmem))
         else:
             self.n_unmatched += 1                    # sampled online OOS bar with NO saved pred -> bar-set divergence
 
