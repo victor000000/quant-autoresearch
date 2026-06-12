@@ -108,6 +108,17 @@ def dbg_dump(algo, feats, ts_np):
     algo.set_runtime_statistic("fd_batch2", sums)
 
 
+def dbg_raw(algo, bar_ts, te_m, pe_raw, tag):
+    """TEMPORARY (permclock parity): emit the leg's RAW model score at DBG_TS.
+    pe_raw is indexed over TEST bars (te_m); map DBG_TS into that index space."""
+    ts = np.array([np.datetime64(str(t)[:19].replace(" ", "T")) for t in bar_ts])
+    te_idx = np.where(np.asarray(te_m))[0]
+    hit = np.where(ts[te_idx] == np.datetime64(DBG_TS))[0]
+    if len(hit) and int(hit[0]) < len(pe_raw):
+        algo.set_runtime_statistic("rawdbg_" + str(tag)[:20],
+                                   str(round(float(pe_raw[int(hit[0])]), 6)))
+
+
 def extra_feats(kind, feats, lc, lr, ts_np, store):
     """ONE footer entry point for the opt-in appended feature blocks (64k budget:
     the footer pays a single line; dispatch lives here). Unknown/None kind or a
