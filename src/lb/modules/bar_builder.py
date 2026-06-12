@@ -2576,6 +2576,16 @@ BUILDER_CLASSES = {
     "chl": CHLSpreadBarBuilder,
 }
 
+# Single-scalar EXT clocks ARE online-reconstructable (frozen .thresh; state rebuilds
+# from origin) — registered so ext-axis cells save hot bundles (2026-06-12: the QQQ
+# permclock candidate was silently un-deployable without this). Adaptive/multi-param
+# ext builders (logdollar_rc, gapflow, sess2) stay excluded. live_trade caveat:
+# mpnov's collision hash warms from ~220d of history, not origin — full-fidelity for
+# permclock (its ring spans 60 min), approximate for mpnov (no mpnov candidates exist).
+if _bx_mod is not None:
+    BUILDER_CLASSES["permclock"] = _bx_mod.PermClockBarBuilder
+    BUILDER_CLASSES["mpnov"] = _bx_mod.NoveltyClockBarBuilder
+
 
 def builder_threshold(b):
     """The frozen scalar threshold of a built builder (uniform across classes).
