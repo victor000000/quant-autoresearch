@@ -4569,3 +4569,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T13:44:54,QLD,0.2187,QLD_logdollar_sliced_wasserstein_cdf_overlay_t0.45,B,QLD,logdollar,trend_leg,0.45,dd_overlay,-0.0478,6.4939,59,False,False,-0.1684,0.6859,0.5245,-0.0913,0.9066,20.7487,718,False,False,completed,completed
 2026-06-12T13:55:27,GDX,0.0,,A,GDX,logdollar,trend_leg,0.45,dd_overlay,0.2903,9.823,831,True,True,-0.2404,0.4666,0.5182,0.3015,-0.9199,12.0719,718,True,False,completed,completed
 2026-06-12T13:55:27,GDX,0.0,,B,GDX,logdollar,trend_leg,0.45,dd_overlay,-0.0801,9.6899,379,True,True,1.8157,0.805,0.5957,-0.1438,2.0888,48.5128,718,False,False,completed,completed
+2026-06-12T14:05:11,AGQ,0.1907,AGQ_logdollar_changepoint_cdf_overlay_t0.50,A,AGQ,logdollar,changepoint,0.5,cdf_overlay,-0.2625,6.5239,404,True,True,-0.3853,0.4935,0.5202,-0.5361,1.3761,26.4973,718,False,False,completed,completed
+2026-06-12T14:05:11,AGQ,0.1907,AGQ_logdollar_changepoint_cdf_overlay_t0.50,B,AGQ,logdollar,changepoint,0.5,cdf_overlay,0.0656,29.6242,322,True,True,-0.2807,0.6775,0.6311,0.195,-7.7089,160.3481,718,True,False,completed,completed
