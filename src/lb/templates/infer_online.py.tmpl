@@ -207,6 +207,9 @@ class OnlineInferXCheck(QCAlgorithm):
                             + "=" + str(round(float(xk[int(j)]), 2)) for j in order)
                         praw_dbg = self._raw_predict(m, np.asarray(
                             xk if m.get("reduce_tf") is None else xz, dtype=float).reshape(1, -1))
+                        if self._nmm == 1:
+                            self.set_runtime_statistic("xe_live_m" + str(mi),
+                                ";".join(str(round(float(v), 9)) for v in xk))
                         nr_dbg = m["booster"].num_boosted_rounds() if m["family"] == "xgb" else -1
                         self.set_runtime_statistic(
                             "mm" + str(self._nmm) + "_m" + str(mi),

@@ -143,6 +143,8 @@ def dbg_selftest(algo, bundle, Xe, bar_ts, te_m, tag):
     dm = _xgb.DMatrix(x2d)
     p = float(bb.predict(dm, iteration_range=(0, bi + 1))[0]) if bi > 0 else float(bb.predict(dm)[0])
     algo.set_runtime_statistic("st_" + str(tag)[:20], str(round(p, 6)))
+    algo.set_runtime_statistic("xe_" + str(tag)[:16],
+                               ";".join(str(round(float(v), 9)) for v in Xe[int(hit[0])]))
 
 
 def extra_feats(kind, feats, lc, lr, ts_np, store):
