@@ -28,6 +28,7 @@ ADJUDICATED = {
     "GLD": "VERIFIED (crown 4.70)", "USO": "VERIFIED (2.82)",
     "DIA": "VERIFIED (1.66)", "DXJ": "VERIFIED (1.85)",
     "IAU": "VERIFIED-family (gold-trend replication)",
+    "IJR": "AUDITS-PASS, ONLINE-FAIL (2.51 vs BH 0.43, +2.09 edge, permute/regime/deflated all PASS; preds_match=0 diff 0.136 — NOT deployable until online divergence root-caused; DIA same recipe passes 8e-09)",
     "EWZ": "FRAGILE (permute-pass, one-regime)", "UGL": "FRAGILE (permute-pass, one-regime)",
     "FEZ": "FRAGILE (one-regime + deflated-fail)", "IAT": "FRAGILE (watchlist)",
     "PRFZ": "FRAGILE (replication-failed)",
