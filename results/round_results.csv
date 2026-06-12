@@ -4587,3 +4587,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T15:16:45,EWW,0.0,,B,EWW,logdollar,sadf_explosive,0.5,cdf_overlay,0.0182,52.0622,513,True,True,0.3685,0.7976,0.5165,0.0999,-0.0772,9.4318,718,True,False,completed,completed
 2026-06-12T15:26:29,FCG,0.0,,A,FCG,logdollar,trend_leg,0.45,dd_overlay,0.0799,24.7382,702,True,True,0.3018,0.4855,0.4579,0.157,-1.6373,15.8082,718,False,False,completed,completed
 2026-06-12T15:26:29,FCG,0.0,,B,FCG,logdollar,trend_leg,0.45,dd_overlay,0.3723,14.678,783,True,True,0.2656,0.7778,0.4686,0.4193,-0.5131,5.824,718,True,False,completed,completed
+2026-06-12T15:36:23,IAI,0.0,,A,IAI,logdollar,changepoint,0.5,cdf_overlay,0.4256,5.1568,1240,True,True,-0.051,0.5132,0.4919,0.5129,0.5153,9.2171,718,True,False,completed,completed
+2026-06-12T15:36:23,IAI,0.0,,B,IAI,logdollar,changepoint,0.5,cdf_overlay,0.319,4.5535,409,True,True,-0.0466,0.6776,0.553,0.472,0.2453,10.1035,718,False,False,completed,completed

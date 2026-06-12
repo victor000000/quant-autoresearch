@@ -30,7 +30,7 @@ ADJUDICATED = {
     "IAU": "VERIFIED-family (gold-trend replication)",
     "IJR": "AUDITS-PASS, ONLINE-FAIL (2.51 vs BH 0.43, +2.09 edge, permute/regime/deflated all PASS; preds_match=0 diff 0.136 — NOT deployable until online divergence root-caused; DIA same recipe passes 8e-09)",
     "EWZ": "FRAGILE (permute-pass, one-regime)", "UGL": "FRAGILE (permute-pass, one-regime)",
-    "FEZ": "FRAGILE (one-regime + deflated-fail)", "IAT": "FRAGILE (watchlist)",
+    "FEZ": "FRAGILE (one-regime + deflated-fail)", "IAT": "FRAGILE (watchlist)",  # IAI changept recipe separately refuted 2026-06-12
     "PRFZ": "FRAGILE (replication-failed)",
     "EWT": "REFUTED (stale 5.13->0.04)", "EWL": "REFUTED (stale)", "IDV": "REFUTED (stale)",
     "AAXJ": "REFUTED (stale)", "VT": "REFUTED (stale)", "EWG": "REFUTED (no label signal)",
@@ -46,6 +46,7 @@ ADJUDICATED = {
     "VDE": "REFUTED (stale 1.47->0.24, permute 0.36 > real; auc 0.93->0.51)",
     "EWW": "REFUTED (stale 1.01->0.02)",
     "FCG": "REFUTED (stale 1.06->0.37 < BH; auc 0.47)",
+    "IAI": "REFUTED (changept 0.32 < permute 0.43)",
 }
 
 
