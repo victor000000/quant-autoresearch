@@ -30,7 +30,7 @@ ADJUDICATED = {
     "IAU": "VERIFIED-family (gold-trend replication)",
     "IJR": "FRAGILE-DEMOTED (beta-cal re-cut collapses 2.51->0.58 ~ BH+0.15: the edge is inseparable from the isotonic plateau knife-edge; replay-real, not robustly harvestable; weakens the DIA cross-fund replication claim)",
     "EWZ": "FRAGILE (permute-pass, one-regime)", "UGL": "FRAGILE (permute-pass, one-regime)",
-    "FEZ": "REFUTED-BY-WINDOW (re-race 0.25 vs stored 1.34; beta leg degenerate)", "IAT": "FRAGILE (watchlist)",  # IAI changept recipe separately refuted 2026-06-12
+    "FEZ": "REFUTED-BY-WINDOW (re-race 0.25 vs stored 1.34; beta leg degenerate)", "IAT": "REFUTED-BY-WINDOW (isotonic re-race degenerate 0 trades; beta auc 0.30 anti-predictive)",
     "PRFZ": "REFUTED-BY-WINDOW (re-race 0.46 vs stored 2.22; beta 0.24; replication had already failed)",
     "EWT": "REFUTED (stale 5.13->0.04)", "EWL": "REFUTED (stale)", "IDV": "REFUTED (stale)",
     "AAXJ": "REFUTED (stale)", "VT": "REFUTED (stale)", "EWG": "REFUTED (no label signal)",
