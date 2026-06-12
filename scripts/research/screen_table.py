@@ -36,6 +36,7 @@ ADJUDICATED = {
     "IXG": "REFUTED (stale)", "EWY": "REFUTED (stale)", "ILF": "REFUTED (stale)",
     "EPP": "REFUTED (overlay artifact, permute 57%)",
     "QLD": "REFUTED (stale 4.06->-0.05, permute>real)",
+    "GDX": "REFUTED (stale 2.48->-0.08, permute>real; gold-trend does NOT extend to miners)",
 }
 
 
