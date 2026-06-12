@@ -1213,17 +1213,17 @@
     },
     "GLD": {
       "cell": "GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40",
-      "real_calmar": 4.357,
-      "real_cagr": 11.764,
-      "real_mdd": 2.7,
-      "real_da": 5.005,
-      "real_sharpe": 2.349,
-      "trades": 1200,
+      "real_calmar": 4.7038,
+      "real_cagr": 12.23,
+      "real_mdd": 2.6,
+      "real_da": 4.5449,
+      "real_sharpe": 2.499,
+      "trades": 1292,
       "g2_pass": true,
-      "round": 2243,
+      "round": 2263,
       "source": "tournament",
       "psr": 1.0,
-      "n_trials": 264,
+      "n_trials": 282,
       "significant": true,
       "leak_fixed": true,
       "config": {
@@ -2514,7 +2514,7 @@
     }
   },
   "policy": "PERSIST on the weakest ETF until its REAL OOS Calmar exceeds the 2nd-weakest, THEN move on. Do NOT skip/mark-exhausted. TLT is weakest (-0.1543) -> keep attacking TLT until it beats IWM (0.65).",
-  "last_round": 2243,
+  "last_round": 2263,
   "causal_graph": {
     "phases": [
       "Landscape",
@@ -16509,6 +16509,18 @@
         "type": "round",
         "phase": "GLD",
         "label": "R2206 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.3570 (prev best +4.3570). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2207",
+        "type": "milestone",
+        "phase": "GLD",
+        "label": "R2207 GLD KEEP: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.7038 (prev best +4.3570). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2208",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R2208 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.7038 (prev best +4.7038). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28520,6 +28532,16 @@
       {
         "src": "r2205",
         "dst": "r2206",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2206",
+        "dst": "r2207",
+        "label": "new best"
+      },
+      {
+        "src": "r2207",
+        "dst": "r2208",
         "label": "no improvement"
       }
     ],

@@ -45,14 +45,14 @@ Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`
 
 | Ticker | Config | Calmar | Status |
 |---|---|---:|---|
-| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t.40 / n16 **vae lgbm** | **4.36** | Crown 2026-06-12: lgbm 4.357 > xgb-vae 3.954 > pca 3.843; permute 4.36→0.76; bit-exact ×3; Bonferroni PASS N=264. lgbm is **GLD-specific** (loses on USO/IAU; catboost loses on GLD). Live deploy still needs xgb-JSON → xgb-vae 3.954 is the live-ready fallback until lgbm deserialization is wired. |
+| **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t.40 / n16 **vae lgbm_bag** | **4.70** | Crown 2026-06-12: 5-seed-bagged lgbm 4.704 > lgbm 4.357 > xgb-vae 3.954 > pca 3.843 (backlog #11 — variance hardening at fixed capacity, sequential seeds, no shopping); permute 4.70→0.76 (84% collapse); bit-exact. lgbm family is **GLD-specific** (loses on USO/IAU; catboost loses on GLD). Live deploy still needs xgb-JSON → xgb-vae 3.954 is the live-ready fallback until lgbm deserialization is wired. |
 | **USO** | logdollar / `revert` / cdf_plain / t.45 / correlation | **2.82** | Oil mean-reversion engine. Permute-confirmed, decay-strengthening, regime-split PASS. |
 | DIA | imbalance / `bgm+ker` / cdf_overlay / t.50 | 1.66 | Screen find, fully gated (permute, deflation +0.34, decay strengthening). Strongest candidate seat. |
 | FEZ | logdollar / `sadf_explosive` / cdf_overlay / t.50 | 1.34 | Cohort-best strict-DSR 0.93, EU decorrelation. Candidate seat. |
 | HYG/TIP/DBC/IWM/UUP | `always_long` (×cdf) | 1.97/0.90/0.69/0.50/0.37 | Decorrelation seats; timing retired on all. |
 | PRFZ | sadf_explosive | 2.22 | ⚠️ RISKY — sibling replication FAILED (PRF/IJR); probation only. |
 
-**Proposal A (Calmar² weights, awaiting human decision):** GLD 52.1 / USO 20.2 / HYG 10.6 / DIA 7.5 / FEZ 4.9 / TIP 2.2 / DBC 1.3 / IWM 0.7 / UUP 0.4. Proposal B adds PRFZ (~11%) — not recommended. Overlap-checked: sadf trio + DIA trade at independent times (corr 0.05–0.32) — the decorrelation is genuine. Weights always from **common-grid** numbers, gross ≤ 1; dropping weak names lowers book Calmar.
+**Proposal A (Calmar² weights, awaiting human decision):** GLD 55.1 / USO 19.8 / HYG 9.6 / DIA 6.8 / FEZ 4.5 / TIP 2.0 / DBC 1.2 / IWM 0.6 / UUP 0.3. Proposal B adds PRFZ (~11%) — not recommended. Overlap-checked: sadf trio + DIA trade at independent times (corr 0.05–0.32) — the decorrelation is genuine. Weights always from **common-grid** numbers, gross ≤ 1; dropping weak names lowers book Calmar.
 
 **Two replication-confirmed engines, asset-intrinsic:** gold-trend (GLD→IAU) and oil-reversion (USO→UCO, val_auc 0.97). The `sadf_explosive` regime family is alive on 3 independent funds (PRFZ/FEZ/IAT). Wang's β200 lens routes assets (≈0.5→trend, ≫0.5→buy-hold, <0.45→reversion) but is clock-dependent and admission-only.
 
@@ -67,7 +67,7 @@ Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`
 
 ## Closed — don't re-grind
 
-Depth-3 capacity (one model-family win exists: lgbm, GLD-only) · meta-labeling · uniqueness weights · sticky-HMM · cross-asset price features · exogenous GLD features in every form (proxies/yields: auc up, Calmar down = the overfit signature) · VIXY carry even with purpose-built `short_carry` · universe siblings (SLV≠GLD, GDX/XME projection-fragile) · oil-reversion beyond oil · innovation backlog #1 pls, #2 spca, #3 dd_excursion, #7 beta-cal, #8 calendar, #9 ddstate (all raced 2026-06-12, all lost to the crowns) · Wang-transcript levers (cond_es, regime-KDE feature, spearman — corroboration, not extension) · 311 screen COMPLETE (5 permute-confirmed candidates above; full table `docs/research/ETF_SCREEN_TABLE.md`).
+Depth-3 capacity (one model-family win exists: lgbm, GLD-only) · meta-labeling · uniqueness weights · sticky-HMM · cross-asset price features · exogenous GLD features in every form (proxies/yields: auc up, Calmar down = the overfit signature) · VIXY carry even with purpose-built `short_carry` · universe siblings (SLV≠GLD, GDX/XME projection-fragile) · oil-reversion beyond oil · innovation backlog #1 pls, #2 spca, #3 dd_excursion, #7 beta-cal, #8 calendar, #9 ddstate, #10 permclock axis, #13 kelly_dd (all raced 2026-06-12, all lost; #11 seed-bagging WON — the GLD crown) · Wang-transcript levers (cond_es, regime-KDE feature, spearman — corroboration, not extension) · 311 screen COMPLETE (5 permute-confirmed candidates above; full table `docs/research/ETF_SCREEN_TABLE.md`).
 
 Retained-but-idle primitives live where they belong: sizers in `sizing_ext` (tilt, tilt_up, crashsoft, short_carry, cond_es), reduces in `ml_ext` (minor_pca, whiten, vae_rl, pls, spca), features in `build_feats`/`ml_ext` (regime, vix, calendar, ddstate).
 
