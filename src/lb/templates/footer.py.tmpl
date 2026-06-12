@@ -651,6 +651,10 @@ class AutoresearchPipeline(QCAlgorithm):
                 feats = np.hstack([feats, _mx.cal_feats(bar_ts_np)])
             elif CONFIG.get("features") == "ddstate":
                 feats = np.hstack([feats, _mx.dd_feats(lc, lr)])
+            elif CONFIG.get("features") == "iv":
+                _ivc = _mx.iv_carrier(self.object_store, bar_ts_np)
+                if _ivc is not None:
+                    feats = np.hstack([feats, _mx.vix_feats(_ivc, lr, N=len(lc))])
             fv = ~np.isnan(feats).any(axis=1)
             _hz = CONFIG.get("horizons")     # intraday-holding override (in BARS); None => labeler defaults
             if _hz:

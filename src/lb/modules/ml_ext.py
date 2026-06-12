@@ -85,6 +85,37 @@ def vix_feats(vix, lr, N=None):
     return _np.column_stack(out).astype(_np.float32)
 
 
+IV_KEYS = ("autoresearch/SPY/iv_2010-01-04_2015-01-02",
+           "autoresearch/SPY/iv_2015-01-02_2020-01-02",
+           "autoresearch/SPY/iv_2020-01-02_2026-06-10")
+
+
+def iv_carrier(store, bar_ts_np):
+    """Options-IV exogenous carrier (the index closure's named reopener, 2026-06-12).
+
+    Reads the precomputed daily SPY ATM implied vol (scripts/research/
+    precompute_iv.py -> ObjectStore chunks) and aligns it to bar timestamps as a
+    log-level series using STRICTLY YESTERDAY's value (snap is 15:30 of day d;
+    shifting one full day makes every bar causal regardless of intraday time).
+    Returns np.nan before data start (fv mask drops those rows). None if the
+    store lacks the chunks. Guard-don't-catch: contains_key, no try/except."""
+    import json as _json
+    m = {}
+    for k in IV_KEYS:
+        if store.contains_key(k):
+            m.update(_json.loads(store.read(k)))
+    if len(m) < 500:
+        return None
+    days = np.array(sorted(m.keys()), dtype="datetime64[D]")
+    vals = np.array([m[str(d)] for d in days], dtype=float)
+    bar_days = bar_ts_np.astype("datetime64[D]")
+    idx = np.searchsorted(days, bar_days)          # first day >= bar day
+    out = np.full(len(bar_days), np.nan)
+    has = idx > 0                                  # latest day STRICTLY BEFORE the bar day
+    out[has] = np.log(vals[idx[has] - 1])
+    return out
+
+
 def cal_feats(ts_np):
     """Calendar/seasonality block (backlog #8): 8 causal columns from bar timestamps
     ONLY — zero price content (immune to panel dilution). sin/cos day-of-week,
