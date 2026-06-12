@@ -47,12 +47,12 @@ Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`
 |---|---|---:|---|
 | **GLD** | logdollar / `trend_leg+regime_gmm` / dd_overlay / t.40 / n16 **vae lgbm_bag** | **4.70** | Crown 2026-06-12: 5-seed-bagged lgbm 4.704 > lgbm 4.357 > xgb-vae 3.954 > pca 3.843 (backlog #11 — variance hardening at fixed capacity, sequential seeds, no shopping); permute 4.70→0.76 (84% collapse); bit-exact. lgbm family is **GLD-specific** (loses on USO/IAU; catboost loses on GLD). Live deploy still needs xgb-JSON → xgb-vae 3.954 is the live-ready fallback until lgbm deserialization is wired. |
 | **USO** | logdollar / `revert` / cdf_plain / t.45 / correlation | **2.82** | Oil mean-reversion engine. Permute-confirmed, decay-strengthening, regime-split PASS. |
-| DIA | imbalance / `bgm+ker` / cdf_overlay / t.50 | 1.66 | Screen find, fully gated (permute, deflation +0.34, decay strengthening). Strongest candidate seat. |
-| FEZ | logdollar / `sadf_explosive` / cdf_overlay / t.50 | 1.34 | Cohort-best strict-DSR 0.93, EU decorrelation. Candidate seat. |
+| DIA | imbalance / `bgm+ker` / cdf_overlay / t.50 | 1.66 | Screen find, fully gated + HARDENED 2026-06-12 (regime-split 3.04/1.32 PASS, deflated-Calmar p=0.018 PASS). The candidate seat. |
+| FEZ | logdollar / `sadf_explosive` / cdf_overlay / t.50 | 1.34 | ⚠️ DEMOTED 2026-06-12: FAILS regime-split (low-vol Sharpe −0.72, one-regime fragility) AND deflated-Calmar (p=0.133). Watchlist, not a seat. |
 | HYG/TIP/DBC/IWM/UUP | `always_long` (×cdf) | 1.97/0.90/0.69/0.50/0.37 | Decorrelation seats; timing retired on all. |
 | PRFZ | sadf_explosive | 2.22 | ⚠️ RISKY — sibling replication FAILED (PRF/IJR); probation only. |
 
-**Proposal A (Calmar² weights, awaiting human decision):** GLD 55.1 / USO 19.8 / HYG 9.6 / DIA 6.8 / FEZ 4.5 / TIP 2.0 / DBC 1.2 / IWM 0.6 / UUP 0.3. Proposal B adds PRFZ (~11%) — not recommended. Overlap-checked: sadf trio + DIA trade at independent times (corr 0.05–0.32) — the decorrelation is genuine. Weights always from **common-grid** numbers, gross ≤ 1; dropping weak names lowers book Calmar.
+**Proposal A (Calmar² weights, awaiting human decision):** GLD 55.1 / USO 19.8 / HYG 9.6 / DIA 6.8 / FEZ 4.5 / TIP 2.0 / DBC 1.2 / IWM 0.6 / UUP 0.3. Proposal B adds PRFZ (~11%) — not recommended. Overlap CORRECTED 2026-06-12 (the first check accidentally used permute-leg curves): true champion-curve corr is 0.27–0.51 with co-activity modestly above independence — a moderate common component (sadf family + equity beta), so candidate seats add PARTIAL decorrelation, not full. Proposal A should seat DIA only; FEZ demoted (failed regime-split + deflated-Calmar). Weights always from **common-grid** numbers, gross ≤ 1; dropping weak names lowers book Calmar.
 
 **Two replication-confirmed engines, asset-intrinsic:** gold-trend (GLD→IAU) and oil-reversion (USO→UCO, val_auc 0.97). The `sadf_explosive` regime family is alive on 3 independent funds (PRFZ/FEZ/IAT). Wang's β200 lens routes assets (≈0.5→trend, ≫0.5→buy-hold, <0.45→reversion) but is clock-dependent and admission-only.
 
