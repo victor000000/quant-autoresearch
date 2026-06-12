@@ -316,13 +316,17 @@ def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
             errs.append(type(e).__name__ + ":" + str(e)[:70])
             m.fit(Xt, yt.astype(int), verbose=False)
     else:
+        # 'xgb' (default, patience 30) or 'xgb_es100' (patience 100 — the float-stability
+        # re-cut, 2026-06-12: 5-tree early-stopped members are decision-unstable at
+        # float32 edges; longer patience -> deeper ensembles -> smooth surface).
         import xgboost as _xgb
+        es = 100 if model == "xgb_es100" else 30
         m = _xgb.XGBClassifier(
             n_estimators=200, max_depth=md, learning_rate=0.03,
             reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
             scale_pos_weight=scale_w, objective="binary:logistic",
             eval_metric="auc", tree_method="hist", random_state=42, n_jobs=1,
-            early_stopping_rounds=30, base_score=0.5)
+            early_stopping_rounds=es, base_score=0.5)
         m.fit(Xt, yt, eval_set=[(Xv, yv)], verbose=False)
     return m, errs
 
