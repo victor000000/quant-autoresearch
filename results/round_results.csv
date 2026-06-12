@@ -4537,3 +4537,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T09:29:28,DBA,0.0,,B,DBA,mpnov,revert,0.45,cdf_plain,0.735,5.1465,164,True,True,-0.076,0.9256,0.7274,0.6186,1.0639,15.771,717,True,False,completed,completed
 2026-06-12T09:49:59,GLD,4.7038,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,A,GLD,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,4.7038,4.5449,1292,True,True,0.0,0.8191,0.7148,2.4993,0.158,5.9539,717,True,False,completed,completed
 2026-06-12T09:49:59,GLD,4.7038,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,always_long,0.15,cdf_overlay,1.2693,21.0323,723,True,True,0.059,0.5,0.5,1.5321,-0.6226,6.7488,717,False,False,completed,completed
+2026-06-12T11:25:57,SPY,0.0,,A,SPY,logdollar,tertile,0.4,binary,0.3136,1.4877,36,False,False,-0.1596,0.8685,0.6148,0.4579,6.5701,123.4093,717,False,False,completed,completed
+2026-06-12T11:25:57,SPY,0.0,,B,SPY,logdollar,tertile,0.4,tilt_up,0.9346,14.6723,35,False,False,0.127,0.8685,0.6148,1.2132,0.1972,17.3968,717,True,False,completed,completed

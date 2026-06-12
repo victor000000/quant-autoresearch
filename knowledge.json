@@ -16545,6 +16545,12 @@
         "type": "round",
         "phase": "GLD",
         "label": "R2212 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.7038 (prev best +4.7038). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2213",
+        "type": "round",
+        "phase": "SPY",
+        "label": "R2213 SPY DISCARD: Sample on log-dollar bars; forward-tertile labels; size tilt_up, entry 0.40. -> Calmar +0.9346 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28586,6 +28592,11 @@
       {
         "src": "r2211",
         "dst": "r2212",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2212",
+        "dst": "r2213",
         "label": "no improvement"
       }
     ],
