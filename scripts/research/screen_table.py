@@ -37,7 +37,7 @@ ADJUDICATED = {
     "IXG": "REFUTED (stale)", "EWY": "REFUTED (stale)", "ILF": "REFUTED (stale)",
     "EPP": "REFUTED (overlay artifact, permute 57%)",
     # Core names (pre-screen, adjudicated by ~2500 tournament rounds — the PENDING was a join artifact):
-    "SPY": "BH-OPTIMAL (closed every door incl options-IV)", "QQQ": "BH-OPTIMAL (action bracket)",
+    "SPY": "BH-OPTIMAL (closed every door incl options-IV)", "QQQ": "FRAGILE-first-edge (permclock/bgm+ker 1.51 > BH 1.24 — FIRST QQQ config ever above hold; permute edge-collapse pass but ratio 58%; regime-split FAIL 3.69/0.27; deflated p=0.26 at N=52; decay strengthening — watchlist, retest on window growth)",
     "IWM": "BH-OPTIMAL (seat)", "SLV": "BH-OPTIMAL", "HYG": "BH-OPTIMAL (seat 1.97)",
     "TLT": "NO-EDGE (closed)", "XLE": "ceiling 1.35 (closed)", "EEM": "BH-OPTIMAL (timing decayed)",
     "EFA": "BH-OPTIMAL", "SOXX": "REFUTED (leak-era edge gone)", "KRE": "NO-EDGE (Bonferroni-fail)",

@@ -16714,6 +16714,24 @@
         "type": "round",
         "phase": "VWO",
         "label": "R2240 VWO DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.5100 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2241",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2241 QQQ DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar -0.1080 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2242",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2242 QQQ DISCARD: Sample on permclock; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.5061 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2243",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2243 QQQ DISCARD: Sample on permclock; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.5061 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28895,6 +28913,21 @@
       {
         "src": "r2239",
         "dst": "r2240",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2240",
+        "dst": "r2241",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2241",
+        "dst": "r2242",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2242",
+        "dst": "r2243",
         "label": "no improvement"
       }
     ],

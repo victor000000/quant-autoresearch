@@ -4593,3 +4593,9 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T15:44:55,IGE,0.0,,B,IGE,logdollar,trend_leg,0.45,dd_overlay,0.3479,19.3269,445,True,True,1.3376,0.7512,0.6733,0.6093,-0.5086,12.1198,718,True,False,completed,completed
 2026-06-12T15:55:19,VWO,0.0,,A,VWO,logdollar,trend_leg,0.45,dd_overlay,0.51,3.1355,174,True,True,0.07,0.5171,0.6601,0.6035,16.0707,368.1144,718,True,False,completed,completed
 2026-06-12T15:55:19,VWO,0.0,,B,VWO,logdollar,trend_leg,0.45,dd_overlay,0.0,0.0,0,False,False,0.0,0.7946,0.5048,0.0,0.0,0.0,0,False,False,completed,completed
+2026-06-12T16:25:11,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,imbalance,bgm+ker,0.5,cdf_overlay,-0.2394,3.2631,4357,True,True,0.0,0.4962,0.5176,-0.5793,-0.7834,22.5262,718,False,False,completed,completed
+2026-06-12T16:25:11,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,imbalance,bgm+ker,0.5,cdf_overlay,-0.108,6.9171,854,True,True,0.0,0.7153,0.5366,-0.368,-1.4243,25.5096,718,True,False,completed,completed
+2026-06-12T16:27:23,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,mpnov,tertile,0.4,cdf_plain,0.3007,0.3313,38,False,False,0.2528,0.8069,0.7273,0.4096,4.1085,149.2248,718,False,False,completed,completed
+2026-06-12T16:27:23,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.5061,6.7635,566,True,True,0.0,0.717,0.6708,1.4693,0.5585,10.5122,718,True,False,completed,completed
+2026-06-12T16:30:11,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,permclock,bgm+ker,0.45,cdf_overlay,0.8705,8.3964,1111,True,True,0.0,0.5068,0.5415,0.985,-0.195,6.1523,718,False,False,completed,completed
+2026-06-12T16:30:11,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.5061,6.7635,566,True,True,0.0,0.717,0.6708,1.4693,0.5585,10.5122,718,True,False,completed,completed
