@@ -303,6 +303,13 @@ def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
             mk.fit(Xt, yt, eval_set=[(Xv, yv)], verbose=False)
             ms.append(mk)
         m = _SeedBag(ms)
+    elif model == "logit":
+        # QQQ float-stability final door (2026-06-12): a LINEAR model is coarse like
+        # the 5-tree winner but PERFECTLY SMOOTH — no split edges, float-stable by
+        # construction, trivially live-deployable (coef/intercept JSON).
+        from sklearn.linear_model import LogisticRegression
+        m = LogisticRegression(C=1.0, max_iter=2000, class_weight="balanced")
+        m.fit(Xt, yt.astype(int))
     elif model == "catboost":
         from catboost import CatBoostClassifier as _Cat
         m = _Cat(iterations=200, depth=md, learning_rate=0.03,
@@ -348,6 +355,10 @@ def serialize_model(m):
         return "xgb", m.get_booster().save_raw("json").decode("utf-8")
     if hasattr(m, "booster_"):
         return "lgbm", m.booster_.model_to_string()
+    if hasattr(m, "coef_"):                               # logistic
+        import json as _json
+        return "logit", _json.dumps({"coef": [float(v) for v in m.coef_[0]],
+                                     "intercept": float(m.intercept_[0])})
     if hasattr(m, "ms"):                                  # _SeedBag
         import json as _json
         if hasattr(m.ms[0], "get_booster"):

@@ -128,6 +128,9 @@ class LiveTrade(QCAlgorithm):
         elif fam == "lgbm":
             import lightgbm as _lgbm
             booster = _lgbm.Booster(model_str=b["booster"])
+        elif fam == "logit":
+            import json as _json
+            booster = _json.loads(b["booster"])
         elif fam in ("lgbm_bag", "xgb_bag"):
             import json as _json
             strs = _json.loads(b["booster"])
@@ -165,6 +168,9 @@ class LiveTrade(QCAlgorithm):
             return float(m["booster"].predict(dm)[0])
         if fam == "lgbm":
             return float(m["booster"].predict(x2d)[0])
+        if fam == "logit":
+            z = float(np.dot(x2d[0], np.array(m["booster"]["coef"])) + m["booster"]["intercept"])
+            return float(1.0 / (1.0 + math.exp(-z)))
         if fam == "lgbm_bag":
             return float(sum(bb.predict(x2d)[0] for bb in m["booster"]) / len(m["booster"]))
         tot = 0.0                                     # xgb_bag
