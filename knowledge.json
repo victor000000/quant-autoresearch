@@ -16563,6 +16563,12 @@
         "type": "round",
         "phase": "DXJ",
         "label": "R2215 DXJ DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.8514 (prev best +2.8965). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2216",
+        "type": "round",
+        "phase": "EWL",
+        "label": "R2216 EWL DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.6273 (prev best +1.9795). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28619,6 +28625,11 @@
       {
         "src": "r2214",
         "dst": "r2215",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2215",
+        "dst": "r2216",
         "label": "no improvement"
       }
     ],
