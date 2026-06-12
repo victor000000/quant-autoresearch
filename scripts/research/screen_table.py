@@ -42,6 +42,7 @@ ADJUDICATED = {
     "DJP": "REFUTED (permute 0.85 > real 0.75 — label-free)",
     "GSG": "REFUTED (stale 1.92->-0.01)",
     "FXZ": "REFUTED (stale 1.07->0.15, permute==real, auc 0.48)",
+    "VDE": "REFUTED (stale 1.47->0.24, permute 0.36 > real; auc 0.93->0.51)",
 }
 
 
