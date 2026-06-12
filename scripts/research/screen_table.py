@@ -25,7 +25,7 @@ _ORDER = {"VERIFIED": -1, "STRONG": 0, "FRAGILE": 1, "marginal": 1, "NO-FIT": 2,
 # GATE ADJUDICATIONS (2026-06-12 sweeps) — override the screen verdict with the
 # permute+re-race outcome. The screen is admission; this column is the trial record.
 ADJUDICATED = {
-    "GLD": "VERIFIED (crown 4.70)", "USO": "VERIFIED (2.82)",
+    "GLD": "VERIFIED (crown 4.70 lgbm_bag+vae)", "USO": "VERIFIED (2.82)",
     "DIA": "VERIFIED (1.66)", "DXJ": "VERIFIED (1.85)",
     "IAU": "VERIFIED-family (gold-trend replication)",
     "IJR": "AUDITS-PASS, ONLINE-FAIL (2.51 vs BH 0.43, +2.09 edge, permute/regime/deflated all PASS; preds_match=0 diff 0.136 — NOT deployable until online divergence root-caused; DIA same recipe passes 8e-09)",
@@ -36,6 +36,14 @@ ADJUDICATED = {
     "AAXJ": "REFUTED (stale)", "VT": "REFUTED (stale)", "EWG": "REFUTED (no label signal)",
     "IXG": "REFUTED (stale)", "EWY": "REFUTED (stale)", "ILF": "REFUTED (stale)",
     "EPP": "REFUTED (overlay artifact, permute 57%)",
+    # Core names (pre-screen, adjudicated by ~2500 tournament rounds — the PENDING was a join artifact):
+    "SPY": "BH-OPTIMAL (closed every door incl options-IV)", "QQQ": "BH-OPTIMAL (action bracket)",
+    "IWM": "BH-OPTIMAL (seat)", "SLV": "BH-OPTIMAL", "HYG": "BH-OPTIMAL (seat 1.97)",
+    "TLT": "NO-EDGE (closed)", "XLE": "ceiling 1.35 (closed)", "EEM": "BH-OPTIMAL (timing decayed)",
+    "EFA": "BH-OPTIMAL", "SOXX": "REFUTED (leak-era edge gone)", "KRE": "NO-EDGE (Bonferroni-fail)",
+    "XBI": "NO-EDGE (event-driven)", "XME": "predictable-not-profitable (+0.04)",
+    "TIP": "BH-OPTIMAL (seat)", "ITB": "NO-EDGE (Bonferroni-fail)", "DBC": "BH-OPTIMAL (seat)",
+    "FXY": "NO-EDGE", "MGK": "BH-OPTIMAL", "VOE": "BH-OPTIMAL",
     "QLD": "REFUTED (stale 4.06->-0.05, permute>real)",
     "GDX": "REFUTED (stale 2.48->-0.08, permute>real; gold-trend does NOT extend to miners)",
     "AGQ": "REFUTED (stale 2.49->0.07)",
