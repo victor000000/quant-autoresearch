@@ -434,6 +434,7 @@ class PECusumBarBuilder:
 
     W = 60
     ALPHA = 0.01          # EWMA baseline (~100-minute memory)
+    ONE_SIDED = False     # calmonset subclass emits ONLY on order-onset (PE decline)
     BREAKS = None
 
     def __init__(self, thresh):
@@ -495,11 +496,23 @@ class PECusumBarBuilder:
         self.base += self.ALPHA * d
         self.pos = max(0.0, self.pos + d)
         self.neg = max(0.0, self.neg - d)
-        if self.pos >= self.thresh or self.neg >= self.thresh:
+        hit = self.neg >= self.thresh if self.ONE_SIDED else (
+            self.pos >= self.thresh or self.neg >= self.thresh)
+        if hit:
             self.pos = 0.0
             self.neg = 0.0
             return {"ts_close": ts, "log_close": self.close_lc}
         return None
+
+
+class CalmOnsetBarBuilder(PECusumBarBuilder):
+    """ORDER-ONSET clock ('calmonset', 2026-06-12 — QQQ harvest-side custom build):
+    one-sided pecusum that emits ONLY on sustained PE DECLINE (complexity falling =
+    chop resolving into order). On a drift asset the harvest-relevant moments are
+    drift RESUMPTIONS — entering there keeps the drift instead of forfeiting it,
+    the failure mode of every turbulence-dense clock (mpnov/pecusum two-sided)."""
+
+    ONE_SIDED = True
 
 
 def make_pecusum(close, vol, ts_arr, target_bars, train_minute_mask):
@@ -534,14 +547,45 @@ def make_pecusum(close, vol, ts_arr, target_bars, train_minute_mask):
     return PECusumBarBuilder(math.sqrt(lo * hi))
 
 
+def make_calmonset(close, vol, ts_arr, target_bars, train_minute_mask):
+    """Same TRAIN-replay bisection as make_pecusum, on the one-sided builder."""
+    c = np.asarray(close, dtype=float)
+    tr = train_minute_mask(ts_arr)
+    n = len(c)
+    n_tr = int(np.sum(tr))
+    if n_tr < 5000:
+        return None
+    target_tr = max(50.0, float(target_bars) * n_tr / n)
+
+    def emitted(T):
+        b = CalmOnsetBarBuilder(T)
+        k = 0
+        for i in range(n):
+            if not tr[i]:
+                break
+            if b.update(ts_arr[i], c[i], 1.0) is not None:
+                k += 1
+        return k
+
+    lo, hi = 1e-4, 5.0
+    for _ in range(18):
+        mid = math.sqrt(lo * hi)
+        if emitted(mid) > target_tr:
+            lo = mid
+        else:
+            hi = mid
+    return CalmOnsetBarBuilder(math.sqrt(lo * hi))
+
+
 # Registry consumed by bar_builder's generic ext dispatch (one line per new axis,
 # ZERO marginal bytes in bar_builder.py).
 EXT_AXES = {"logdollar_rc": LogDollarRCBarBuilder, "sess2": Session2BarBuilder,
             "gapflow": GapFlowBarBuilder, "permclock": PermClockBarBuilder,
-            "mpnov": NoveltyClockBarBuilder, "pecusum": PECusumBarBuilder}
+            "mpnov": NoveltyClockBarBuilder, "pecusum": PECusumBarBuilder,
+            "calmonset": CalmOnsetBarBuilder}
 EXT_MAKERS = {"logdollar_rc": make_logdollar_rc, "sess2": make_session2,
               "gapflow": make_gapflow, "permclock": make_permclock, "mpnov": make_mpnov,
-              "pecusum": make_pecusum}
+              "pecusum": make_pecusum, "calmonset": make_calmonset}
 
 
 def make_ext(bar_type, close, vol, ts_arr, target_bars, train_minute_mask):
