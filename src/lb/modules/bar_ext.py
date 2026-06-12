@@ -219,12 +219,115 @@ def make_gapflow(close, vol, ts_arr, target_bars, train_minute_mask):
     return GapFlowBarBuilder(kappa, T)
 
 
+class PermClockBarBuilder:
+    """PERMUTATION-ENTROPY ordinal clock (backlog #10 'perment axis', 2026-06-12).
+
+    State variable: the normalized Bandt-Pompe permutation entropy (order m=3,
+    6 patterns) of the last W minute-closes, maintained INCREMENTALLY (ring of
+    pattern ids + 6 counts -> O(1)/minute). The accumulator advances by |dPE| —
+    bars sample ordinal-COMPLEXITY TRANSITIONS (chop<->order regime motion), a
+    state variable invariant to any monotone price transform, unlike every
+    variance/notional clock. Threshold T is TRAIN-fit (standard density recipe);
+    carry-remainder emission; close<=0 breaks the chain (semivar convention)."""
+
+    W = 60          # trailing pattern window (minutes)
+
+    def __init__(self, thresh):
+        self.thresh = max(1e-12, float(thresh))
+        self.cum = 0.0
+        self.p1 = None
+        self.p2 = None
+        self.ring = [-1] * self.W
+        self.head = 0
+        self.fill = 0
+        self.counts = [0] * 6
+        self.prev_pe = None
+        self.close_lc = None
+
+    @staticmethod
+    def _pat(a, b, c):
+        if a <= b:
+            return 0 if b <= c else (1 if a <= c else 2)
+        if b <= c:
+            return 3 if a <= c else 4
+        return 5
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.p1 = self.p2 = None
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.p2 is None:
+            self.p2 = lc
+            return None
+        if self.p1 is None:
+            self.p1, self.p2 = self.p2, lc
+            return None
+        pid = self._pat(self.p1, self.p2, lc)
+        self.p1, self.p2 = self.p2, lc
+        old = self.ring[self.head]
+        self.ring[self.head] = pid
+        self.head = (self.head + 1) % self.W
+        if old >= 0:
+            self.counts[old] -= 1
+        else:
+            self.fill += 1
+        self.counts[pid] += 1
+        if self.fill < self.W:
+            return None
+        n = float(self.W)
+        h = 0.0
+        for c in self.counts:
+            if c > 0:
+                p = c / n
+                h -= p * math.log(p)
+        pe = h / math.log(6.0)
+        if self.prev_pe is not None:
+            self.cum += abs(pe - self.prev_pe)
+        self.prev_pe = pe
+        if self.cum >= self.thresh:
+            self.cum -= self.thresh
+            return {"ts_close": ts, "log_close": self.close_lc}
+        return None
+
+
+def make_permclock(close, vol, ts_arr, target_bars, train_minute_mask):
+    """TRAIN-only fit of T: replay |dPE| increments on TRAIN minutes, then the
+    sanctioned density recipe (mean increment x TRAIN valid-density extrapolation
+    / target_bars). Append-OOS-invariant: T depends on TRAIN minutes only."""
+    c = np.asarray(close, dtype=float)
+    tr = train_minute_mask(ts_arr)
+    n = len(c)
+    sim = PermClockBarBuilder(1e18)          # threshold huge -> never emits, pure replay
+    total = 0.0
+    n_inc = 0
+    last_pe = None
+    for i in range(n):
+        if not tr[i]:
+            break
+        sim.update(ts_arr[i], c[i], 1.0)
+        if sim.prev_pe is not None:
+            if last_pe is not None:
+                total += abs(sim.prev_pe - last_pe)
+                n_inc += 1
+            last_pe = sim.prev_pe
+    if n_inc < 1000 or total <= 0:
+        return None
+    mean_u = total / n_inc
+    trc = max(1, int(np.sum(tr)))
+    keep = tr & (c > 0)
+    full_est = int(np.sum(keep)) * n / trc
+    T = max(1e-12, mean_u * full_est / max(1.0, float(target_bars)))
+    return PermClockBarBuilder(T)
+
+
 # Registry consumed by bar_builder's generic ext dispatch (one line per new axis,
 # ZERO marginal bytes in bar_builder.py).
 EXT_AXES = {"logdollar_rc": LogDollarRCBarBuilder, "sess2": Session2BarBuilder,
-            "gapflow": GapFlowBarBuilder}
+            "gapflow": GapFlowBarBuilder, "permclock": PermClockBarBuilder}
 EXT_MAKERS = {"logdollar_rc": make_logdollar_rc, "sess2": make_session2,
-              "gapflow": make_gapflow}
+              "gapflow": make_gapflow, "permclock": make_permclock}
 
 
 def make_ext(bar_type, close, vol, ts_arr, target_bars, train_minute_mask):
