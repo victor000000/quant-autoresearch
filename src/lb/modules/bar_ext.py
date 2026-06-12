@@ -419,13 +419,129 @@ def make_mpnov(close, vol, ts_arr, target_bars, train_minute_mask):
     return NoveltyClockBarBuilder(T)
 
 
+class PECusumBarBuilder:
+    """ORDINAL-REGIME-BOUNDARY clock ('pecusum', 2026-06-12 — custom-built for QQQ
+    per the user's axis directive, synthesizing the day's two findings: permclock
+    CONVERTS on QQQ (ordinal structure is the asset's language) while mpnov's
+    novelty bars cluster INSIDE turbulence and forfeit drift. This clock samples
+    at SUSTAINED complexity-regime boundaries instead: maintain the incremental
+    Bandt-Pompe PE (m=3, W=60min ring, O(1)/min), track its EWMA baseline, and
+    accumulate a two-sided CUSUM of (PE - baseline); emit when either side crosses
+    the TRAIN-fit threshold, then reset both sides. Bars land where the complexity
+    REGIME shifts persistently — exactly where bgm/sticky regime labels carry the
+    most information — and are sparse inside steady chop. Single scalar threshold
+    -> BUILDER_CLASSES-compatible; close<=0 resets the pattern chain."""
+
+    W = 60
+    ALPHA = 0.01          # EWMA baseline (~100-minute memory)
+    BREAKS = None
+
+    def __init__(self, thresh):
+        self.thresh = max(1e-12, float(thresh))
+        self.pos = 0.0
+        self.neg = 0.0
+        self.p1 = None
+        self.p2 = None
+        self.ring = [-1] * self.W
+        self.head = 0
+        self.fill = 0
+        self.counts = [0] * 6
+        self.base = None
+        self.close_lc = None
+
+    @staticmethod
+    def _pat(a, b, c):
+        if a <= b:
+            return 0 if b <= c else (1 if a <= c else 2)
+        if b <= c:
+            return 3 if a <= c else 4
+        return 5
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.p1 = self.p2 = None
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.p2 is None:
+            self.p2 = lc
+            return None
+        if self.p1 is None:
+            self.p1, self.p2 = self.p2, lc
+            return None
+        pid = self._pat(self.p1, self.p2, lc)
+        self.p1, self.p2 = self.p2, lc
+        old = self.ring[self.head]
+        self.ring[self.head] = pid
+        self.head = (self.head + 1) % self.W
+        if old >= 0:
+            self.counts[old] -= 1
+        else:
+            self.fill += 1
+        self.counts[pid] += 1
+        if self.fill < self.W:
+            return None
+        n = float(self.W)
+        h = 0.0
+        for c in self.counts:
+            if c > 0:
+                p = c / n
+                h -= p * math.log(p)
+        pe = h / math.log(6.0)
+        if self.base is None:
+            self.base = pe
+            return None
+        d = pe - self.base
+        self.base += self.ALPHA * d
+        self.pos = max(0.0, self.pos + d)
+        self.neg = max(0.0, self.neg - d)
+        if self.pos >= self.thresh or self.neg >= self.thresh:
+            self.pos = 0.0
+            self.neg = 0.0
+            return {"ts_close": ts, "log_close": self.close_lc}
+        return None
+
+
+def make_pecusum(close, vol, ts_arr, target_bars, train_minute_mask):
+    """TRAIN-only fit of the CUSUM threshold via emission-rate bisection on the
+    TRAIN replay (the density recipe's mean-increment shortcut is biased for
+    reset-on-emit CUSUMs, so calibrate by simulated rate directly)."""
+    c = np.asarray(close, dtype=float)
+    tr = train_minute_mask(ts_arr)
+    n = len(c)
+    n_tr = int(np.sum(tr))
+    if n_tr < 5000:
+        return None
+    target_tr = max(50.0, float(target_bars) * n_tr / n)
+
+    def emitted(T):
+        b = PECusumBarBuilder(T)
+        k = 0
+        for i in range(n):
+            if not tr[i]:
+                break
+            if b.update(ts_arr[i], c[i], 1.0) is not None:
+                k += 1
+        return k
+
+    lo, hi = 1e-4, 5.0
+    for _ in range(18):
+        mid = math.sqrt(lo * hi)
+        if emitted(mid) > target_tr:
+            lo = mid
+        else:
+            hi = mid
+    return PECusumBarBuilder(math.sqrt(lo * hi))
+
+
 # Registry consumed by bar_builder's generic ext dispatch (one line per new axis,
 # ZERO marginal bytes in bar_builder.py).
 EXT_AXES = {"logdollar_rc": LogDollarRCBarBuilder, "sess2": Session2BarBuilder,
             "gapflow": GapFlowBarBuilder, "permclock": PermClockBarBuilder,
-            "mpnov": NoveltyClockBarBuilder}
+            "mpnov": NoveltyClockBarBuilder, "pecusum": PECusumBarBuilder}
 EXT_MAKERS = {"logdollar_rc": make_logdollar_rc, "sess2": make_session2,
-              "gapflow": make_gapflow, "permclock": make_permclock, "mpnov": make_mpnov}
+              "gapflow": make_gapflow, "permclock": make_permclock, "mpnov": make_mpnov,
+              "pecusum": make_pecusum}
 
 
 def make_ext(bar_type, close, vol, ts_arr, target_bars, train_minute_mask):

@@ -2585,6 +2585,7 @@ BUILDER_CLASSES = {
 if _bx_mod is not None:
     BUILDER_CLASSES["permclock"] = _bx_mod.PermClockBarBuilder
     BUILDER_CLASSES["mpnov"] = _bx_mod.NoveltyClockBarBuilder
+    BUILDER_CLASSES["pecusum"] = _bx_mod.PECusumBarBuilder
 
 
 def builder_threshold(b):
