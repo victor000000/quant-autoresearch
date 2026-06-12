@@ -459,6 +459,8 @@ def _validate_cfg(cfg):
         raise ValueError(f"axis {cfg['axis']!r} not in {VALID_AXES}")
     if cfg.get("model", "xgb") not in ("xgb", "lgbm", "catboost"):
         raise ValueError(f"model {cfg.get('model')!r} must be xgb|lgbm|catboost")
+    if cfg.get("calibration", "isotonic") not in ("isotonic", "venn_abers", "beta"):
+        raise ValueError(f"calibration {cfg.get('calibration')!r} must be isotonic|venn_abers|beta")
     # labeler may be a single name OR a "+"-joined ENSEMBLE (⑦), e.g. "triple_barrier+bgm".
     for _lp in str(cfg["labeler"]).split("+"):
         if _lp not in VALID_LABELERS:

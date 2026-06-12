@@ -344,15 +344,8 @@ class AutoresearchPipeline(QCAlgorithm):
             try:
                 _cs = np.clip(pv_raw[vlab], 1e-6, 1 - 1e-6)
                 _cy = y[vx_lab]
-                if CONFIG.get("calibration") == "venn_abers":
-                    pv_cal = _venn_abers(_cs, _cy, np.clip(pv_raw, 1e-6, 1 - 1e-6))
-                    pe_cal = _venn_abers(_cs, _cy, np.clip(pe_raw, 1e-6, 1 - 1e-6))
-                else:
-                    from sklearn.isotonic import IsotonicRegression
-                    cal = IsotonicRegression(out_of_bounds='clip', y_min=0.0, y_max=1.0)
-                    cal.fit(_cs, _cy)
-                    pv_cal = cal.transform(np.clip(pv_raw, 1e-6, 1 - 1e-6))
-                    pe_cal = cal.transform(np.clip(pe_raw, 1e-6, 1 - 1e-6))
+                pv_cal, pe_cal, cal = _mx.calibrate(
+                    CONFIG.get("calibration"), _cs, _cy, pv_raw, pe_raw, _sx._venn_abers)
             except Exception:
                 pv_cal, pe_cal = pv_raw, pe_raw
 

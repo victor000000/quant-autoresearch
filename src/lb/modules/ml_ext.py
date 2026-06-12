@@ -107,6 +107,31 @@ def cal_feats(ts_np):
     return np.column_stack(cols).astype(np.float32)
 
 
+def calibrate(kind, cs, cy, pv_raw, pe_raw, venn_abers=None):
+    """Calibration switch (footer delegates here for 64k budget). Returns
+    (pv_cal, pe_cal, cal_or_None) — cal is the isotonic object (the hot bundle
+    serializes its thresholds; beta/venn bundles carry no calibrator = A/B-grade).
+    'beta' = Kull-Filho-Flach beta calibration: logistic fit on [ln p, -ln(1-p)] —
+    matches isotonic accuracy at ~1/20th the variance below ~1000 cal samples
+    (backlog #7). Default/unknown kind = isotonic, BIT-EXACT legacy path."""
+    pv = np.clip(pv_raw, 1e-6, 1 - 1e-6)
+    pe = np.clip(pe_raw, 1e-6, 1 - 1e-6)
+    if kind == "venn_abers" and venn_abers is not None:
+        return venn_abers(cs, cy, pv), venn_abers(cs, cy, pe), None
+    if kind == "beta":
+        from sklearn.linear_model import LogisticRegression
+        X = np.column_stack([np.log(cs), -np.log(1.0 - cs)])
+        lrm = LogisticRegression(C=1e6, solver="lbfgs", max_iter=1000)
+        lrm.fit(X, np.asarray(cy).astype(int))
+        def _f(p):
+            return lrm.predict_proba(np.column_stack([np.log(p), -np.log(1.0 - p)]))[:, 1]
+        return _f(pv), _f(pe), None
+    from sklearn.isotonic import IsotonicRegression
+    cal = IsotonicRegression(out_of_bounds="clip", y_min=0.0, y_max=1.0)
+    cal.fit(cs, cy)
+    return cal.transform(pv), cal.transform(pe), cal
+
+
 def xgb_plain(scale_w, md=3):
     """The footer's fixed depth-3 xgb spec WITHOUT early stopping (purged-CV folds +
     meta secondary use it). Centralized here for the 64k budget."""
