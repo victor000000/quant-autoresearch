@@ -45,6 +45,7 @@ ADJUDICATED = {
     "FXZ": "REFUTED (stale 1.07->0.15, permute==real, auc 0.48)",
     "VDE": "REFUTED (stale 1.47->0.24, permute 0.36 > real; auc 0.93->0.51)",
     "EWW": "REFUTED (stale 1.01->0.02)",
+    "FCG": "REFUTED (stale 1.06->0.37 < BH; auc 0.47)",
 }
 
 

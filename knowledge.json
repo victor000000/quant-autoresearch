@@ -16690,6 +16690,12 @@
         "type": "round",
         "phase": "EWW",
         "label": "R2236 EWW DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0182 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2237",
+        "type": "round",
+        "phase": "FCG",
+        "label": "R2237 FCG DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3723 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28851,6 +28857,11 @@
       {
         "src": "r2235",
         "dst": "r2236",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2236",
+        "dst": "r2237",
         "label": "no improvement"
       }
     ],
