@@ -16503,6 +16503,12 @@
         "type": "round",
         "phase": "UUP",
         "label": "R2205 UUP DISCARD: Sample on permclock; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.2109 (prev best +0.4469). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2206",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R2206 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.3570 (prev best +4.3570). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28509,6 +28515,11 @@
       {
         "src": "r2204",
         "dst": "r2205",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2205",
+        "dst": "r2206",
         "label": "no improvement"
       }
     ],

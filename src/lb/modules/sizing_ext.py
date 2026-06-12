@@ -49,6 +49,11 @@ def _size(p, thresh, sizing, rbuf):
                                        # model predicts a down-wiggle. Keeps the drift (the only money on
                                        # indices) and harvests the auc~0.95 reversion signal as a LEAN,
                                        # not an in/out gate (in/out loses the drift and pays costs).
+    if sizing == "kelly_dd":           # DRAWDOWN-CAPPED Kelly (backlog #13, Busseti-Boyd RCK simplified):
+        if p <= thresh:                # binary-payoff Kelly f*=2p-1, shrunk by lam = ln(beta)/ln(alpha)
+            return 0.0                 # for the constraint P(DD>20%) < 5% (lam ~= 1.857 — a CONSTANT,
+        return float(min(1.0, max(0.0, (2.0 * p - 1.0) / 1.857)))  # no fitted params => leak-trivial,
+                                       # VAL==OOS identical). The only theory-motivated sizing challenger.
     if sizing == "longshort":
         return 1.0 if p > thresh else (-1.0 if p < 1.0 - thresh else 0.0)
     if sizing in ("ls_cdf", "ls_overlay"):
