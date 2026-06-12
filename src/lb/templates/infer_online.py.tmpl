@@ -207,9 +207,11 @@ class OnlineInferXCheck(QCAlgorithm):
                             + "=" + str(round(float(xk[int(j)]), 2)) for j in order)
                         praw_dbg = self._raw_predict(m, np.asarray(
                             xk if m.get("reduce_tf") is None else xz, dtype=float).reshape(1, -1))
+                        nr_dbg = m["booster"].num_boosted_rounds() if m["family"] == "xgb" else -1
                         self.set_runtime_statistic(
                             "mm" + str(self._nmm) + "_m" + str(mi),
-                            "raw=" + str(round(praw_dbg, 4)) + " " + cols)
+                            "raw=" + str(round(praw_dbg, 4)) + " bi=" + str(m["best_iter"])
+                            + " rounds=" + str(nr_dbg) + " " + cols)
         else:
             self.n_unmatched += 1                    # sampled online OOS bar with NO saved pred -> bar-set divergence
 

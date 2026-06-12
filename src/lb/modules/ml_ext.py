@@ -108,15 +108,20 @@ def dbg_dump(algo, feats, ts_np):
     algo.set_runtime_statistic("fd_batch2", sums)
 
 
-def dbg_raw(algo, bar_ts, te_m, pe_raw, tag):
-    """TEMPORARY (permclock parity): emit the leg's RAW model score at DBG_TS.
-    pe_raw is indexed over TEST bars (te_m); map DBG_TS into that index space."""
+def dbg_raw(algo, bar_ts, te_m, pe_raw, tag, m=None):
+    """TEMPORARY (permclock parity): emit the leg's RAW model score at DBG_TS
+    plus the model's tree-count semantics (best_iteration vs boosted rounds)."""
     ts = np.array([np.datetime64(str(t)[:19].replace(" ", "T")) for t in bar_ts])
     te_idx = np.where(np.asarray(te_m))[0]
     hit = np.where(ts[te_idx] == np.datetime64(DBG_TS))[0]
+    extra = ""
+    if m is not None and hasattr(m, "get_booster"):
+        bi = m.best_iteration if hasattr(m, "best_iteration") else -1
+        nr = m.get_booster().num_boosted_rounds()
+        extra = " bi=" + str(bi) + " rounds=" + str(nr)
     if len(hit) and int(hit[0]) < len(pe_raw):
         algo.set_runtime_statistic("rawdbg_" + str(tag)[:20],
-                                   str(round(float(pe_raw[int(hit[0])]), 6)))
+                                   str(round(float(pe_raw[int(hit[0])]), 6)) + extra)
 
 
 def extra_feats(kind, feats, lc, lr, ts_np, store):

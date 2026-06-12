@@ -332,7 +332,7 @@ class AutoresearchPipeline(QCAlgorithm):
             pt_raw = m.predict_proba(Xt)[:, 1]
             pv_raw = m.predict_proba(Xv)[:, 1]        # ALL val bars
             pe_raw = m.predict_proba(Xe)[:, 1]        # ALL test bars
-            _mx.dbg_raw(self, bar_ts, te_m, pe_raw, label_cfg)   # TEMP parity debug
+            _mx.dbg_raw(self, bar_ts, te_m, pe_raw, label_cfg, m)   # TEMP parity debug
             try:
                 train_auc = float(roc_auc_score(y[tx], pt_raw))
                 val_auc = float(roc_auc_score(y[vx_lab], pv_raw[vlab]))  # labeled val only
