@@ -73,7 +73,7 @@ Retained-but-idle primitives live where they belong: sizers in `sizing_ext` (til
 
 ## The frontier
 
-- **Innovation backlog COMPLETE (2026-06-12, all 14 items raced):** two wins, both model-module and both GLD-only (lgbm, lgbm_bag = the crown); everything else closed. New axes retained for screens: permclock (ordinal), mpnov (novelty/discord — finds structure on EEM/DBA auc 0.68-0.73, no conversion). Last untested door: Chronos forecast features (structural barrier expected).
+- **Innovation backlog COMPLETE (2026-06-12, all 14 items raced):** two wins, both model-module and both GLD-only (lgbm, lgbm_bag = the crown); everything else closed. New axes retained for screens: permclock (ordinal), mpnov (novelty/discord — finds structure on EEM/DBA auc 0.68-0.73, no conversion). Chronos door CLOSED-BY-SANDBOX (2026-06-12 probe: QC backtests have NO internet — HF weights can't download; package present, weights absent). Only reopening path = ObjectStore weight side-load (user decision; low EV given the index structural barrier).
 - **Human decisions pending:** book proposal A vs B vs status-quo · PRFZ probation · PR #1 merge (needs the lb.paths script fix applied to that branch) · lgbm live-deserialization before deploying GLD-lgbm live · any new data modality (options IV / COT / flows) — the only true reopener for the indices.
 
 Autonomous — decide and run the next experiment, don't ask.
