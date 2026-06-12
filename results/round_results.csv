@@ -4651,3 +4651,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T20:22:32,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,mpnov,bgm+ker,0.3,binary,1.1048,22.3926,21,False,False,0.0,0.7574,0.8053,1.2568,-0.0214,10.878,718,False,False,completed,completed
 2026-06-12T20:27:42,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,mpnov,bgm+ker,0.45,tilt,1.0198,22.7809,85,True,True,0.0,0.7574,0.8053,1.1796,0.0065,11.1571,718,True,False,completed,completed
 2026-06-12T20:27:42,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,mpnov,bgm+ker,0.35,dd_overlay,0.7689,12.2282,480,True,True,0.0,0.7574,0.8053,0.9157,-0.3162,8.2599,718,False,False,completed,completed
+2026-06-12T20:32:58,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,entropy,bgm+ker,0.45,cdf_overlay,0.5149,9.1206,561,True,True,0.0,0.6918,0.5751,0.707,0.5422,12.6805,718,True,False,completed,completed
+2026-06-12T20:32:58,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,volofvol,jump_model,0.45,cdf_overlay,0.0,0.0,0,False,False,0.0,0.696,0.5489,0.0,0.0,0.0,0,False,False,completed,completed
