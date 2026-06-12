@@ -121,11 +121,32 @@ class LiveTrade(QCAlgorithm):
         self._warm_from_history()
 
     def _load_member(self, b):
-        booster = xgb.Booster()
-        booster.load_model(bytearray(b["booster"], "utf-8"))
+        fam = b.get("family", "xgb")
+        if fam == "xgb":
+            booster = xgb.Booster()
+            booster.load_model(bytearray(b["booster"], "utf-8"))
+        elif fam == "lgbm":
+            import lightgbm as _lgbm
+            booster = _lgbm.Booster(model_str=b["booster"])
+        elif fam in ("lgbm_bag", "xgb_bag"):
+            import json as _json
+            strs = _json.loads(b["booster"])
+            if fam == "lgbm_bag":
+                import lightgbm as _lgbm
+                booster = [_lgbm.Booster(model_str=s) for s in strs]
+            else:
+                booster = []
+                for s in strs:
+                    bb = xgb.Booster()
+                    bb.load_model(bytearray(s, "utf-8"))
+                    booster.append(bb)
+        else:
+            raise ValueError("unknown bundle family " + str(fam))
         m = {"mean": np.array(b["scaler_mean"], dtype=float),
              "scale": np.array(b["scaler_scale"], dtype=float),
              "kept": np.array(b["kept_idx"], dtype=int),
+             "reduce_tf": b.get("reduce_tf"),
+             "family": fam,
              "cal_x": np.array(b.get("cal_x", []), dtype=float),
              "cal_y": np.array(b.get("cal_y", []), dtype=float),
              "best_iter": int(b.get("best_iter", 0) or 0),
@@ -135,16 +156,39 @@ class LiveTrade(QCAlgorithm):
             m["meta_booster"] = mbst; m["meta_gate"] = float(b.get("meta_gate", 0.0))
         return m
 
+    def _raw_predict(self, m, x2d):
+        fam = m["family"]
+        if fam == "xgb":
+            dm = xgb.DMatrix(x2d)
+            if m["best_iter"] > 0:
+                return float(m["booster"].predict(dm, iteration_range=(0, m["best_iter"] + 1))[0])
+            return float(m["booster"].predict(dm)[0])
+        if fam == "lgbm":
+            return float(m["booster"].predict(x2d)[0])
+        if fam == "lgbm_bag":
+            return float(sum(bb.predict(x2d)[0] for bb in m["booster"]) / len(m["booster"]))
+        tot = 0.0                                     # xgb_bag
+        for bb in m["booster"]:
+            tot += float(bb.predict(xgb.DMatrix(x2d))[0])
+        return tot / len(m["booster"])
+
     def _predict_member(self, m, row):
-        x = ((row - m["mean"]) / m["scale"])[m["kept"]]
-        dm = xgb.DMatrix(x.reshape(1, -1))
-        if m["best_iter"] > 0:
-            praw = float(m["booster"].predict(dm, iteration_range=(0, m["best_iter"] + 1))[0])
+        x = (row - m["mean"]) / m["scale"]
+        tf = m["reduce_tf"]
+        if tf:
+            x32 = x.astype(np.float32)
+            if tf["kind"] == "pca":
+                x = (x32 - np.array(tf["mean"], dtype=np.float32)) @ np.array(tf["comp"], dtype=np.float32).T
+            else:                                     # vae mu-encode forward pass (numpy == torch)
+                h = np.tanh(x32 @ np.array(tf["w1"], dtype=np.float32).T + np.array(tf["b1"], dtype=np.float32))
+                x = h @ np.array(tf["wm"], dtype=np.float32).T + np.array(tf["bm"], dtype=np.float32)
         else:
-            praw = float(m["booster"].predict(dm)[0])
+            x = x[m["kept"]]
+        x2d = np.asarray(x, dtype=float).reshape(1, -1)
+        praw = self._raw_predict(m, x2d)
         p = float(np.interp(praw, m["cal_x"], m["cal_y"])) if len(m["cal_x"]) >= 2 else praw
         if m["is_meta"]:
-            pmeta = float(m["meta_booster"].predict(dm)[0])
+            pmeta = float(m["meta_booster"].predict(xgb.DMatrix(x2d))[0])
             if pmeta < 0.5:
                 p = m["meta_gate"]
         return p

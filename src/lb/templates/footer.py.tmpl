@@ -431,6 +431,9 @@ class AutoresearchPipeline(QCAlgorithm):
                            "scaler_mean": [float(x) for x in sc.mean_],
                            "scaler_scale": [float(x) for x in sc.scale_],
                            "kept_idx": [int(i) for i in kept_idx],
+                           # frozen projection transform for online reproduce (pca/vae cells;
+                           # None => selection reduce, online uses kept_idx as before)
+                           "reduce_tf": (_mx.LAST_TRANSFORM if CONFIG.get("reduce") in ("pca", "vae") else None),
                            # family-safe serialization lives in ml_ext (Lean can't catch
                            # cross-API AttributeErrors in try/except — run d61ec92).
                            "booster": _mx.serialize_model(m)[1],

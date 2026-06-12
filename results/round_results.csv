@@ -4535,3 +4535,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T09:27:14,EEM,1.293,EEM_logdollar_always_long_always_long_t0.50,B,EEM,mpnov,trend_scan,0.45,cdf_overlay,0.1322,0.8084,21,False,False,0.1868,0.7114,0.5016,0.2183,-1.168,25.5499,717,False,False,completed,completed
 2026-06-12T09:29:28,DBA,0.0,,A,DBA,mpnov,tertile,0.4,cdf_plain,0.5917,19.2818,40,False,False,3.6971,0.7772,0.6833,0.6823,-0.4036,15.5105,717,False,False,completed,completed
 2026-06-12T09:29:28,DBA,0.0,,B,DBA,mpnov,revert,0.45,cdf_plain,0.735,5.1465,164,True,True,-0.076,0.9256,0.7274,0.6186,1.0639,15.771,717,True,False,completed,completed
+2026-06-12T09:49:59,GLD,4.7038,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,A,GLD,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,4.7038,4.5449,1292,True,True,0.0,0.8191,0.7148,2.4993,0.158,5.9539,717,True,False,completed,completed
+2026-06-12T09:49:59,GLD,4.7038,GLD_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,B,GLD,logdollar,always_long,0.15,cdf_overlay,1.2693,21.0323,723,True,True,0.059,0.5,0.5,1.5321,-0.6226,6.7488,717,False,False,completed,completed

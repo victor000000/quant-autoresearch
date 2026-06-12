@@ -284,13 +284,26 @@ def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
 def serialize_model(m):
     """(family, payload) for the hot bundle. hasattr-guarded, NEVER raises across
     model APIs — Lean cannot catch cross-API AttributeErrors inside try/except
-    (run d61ec92). Only family='xgb' payloads are live-deployable (infer_online/
-    live_trade reconstruct xgb-JSON); others are A/B-replay-grade."""
+    (run d61ec92). Families xgb/lgbm/lgbm_bag/xgb_bag are live-deployable
+    (infer_online/live_trade dispatch on the family tag, 2026-06-12)."""
     if hasattr(m, "get_booster"):
         return "xgb", m.get_booster().save_raw("json").decode("utf-8")
     if hasattr(m, "booster_"):
         return "lgbm", m.booster_.model_to_string()
+    if hasattr(m, "ms"):                                  # _SeedBag
+        import json as _json
+        if hasattr(m.ms[0], "get_booster"):
+            return "xgb_bag", _json.dumps(
+                [mm.get_booster().save_raw("json").decode("utf-8") for mm in m.ms])
+        return "lgbm_bag", _json.dumps([mm.booster_.model_to_string() for mm in m.ms])
     return type(m).__name__, ""
+
+
+LAST_TRANSFORM = None   # frozen reduce transform of the LAST reduce_ml call (pca/vae
+                        # only) — the footer attaches it to the hot bundle so the online
+                        # path can reproduce projection-reduce cells (2026-06-12; before
+                        # this, kept_idx placeholders made every projection cell
+                        # silently non-deployable).
 
 
 def reduce_ml(method, X_train, X_val, X_test, n_components, y_train=None):
@@ -298,11 +311,15 @@ def reduce_ml(method, X_train, X_val, X_test, n_components, y_train=None):
     manual Adam backprop, TRAIN-fit). Returns the reduce_dims contract tuple:
     (Xtr, Xv, Xte, nk, tag, kept_idx_placeholder). Raises on failure — the caller
     degrades gracefully."""
+    global LAST_TRANSFORM
+    LAST_TRANSFORM = None
     K = int(max(2, min(n_components, X_train.shape[1] - 1)))
     if method == "pca":
         from sklearn.decomposition import PCA
         p = PCA(n_components=K, random_state=42)
         p.fit(X_train)
+        LAST_TRANSFORM = {"kind": "pca", "mean": [float(v) for v in p.mean_],
+                          "comp": [[float(v) for v in row] for row in p.components_]}
         return (p.transform(X_train).astype(np.float32), p.transform(X_val).astype(np.float32),
                 p.transform(X_test).astype(np.float32), K, f"pca{K}", list(range(K)))
     if method == "minor_pca":
@@ -389,6 +406,13 @@ def reduce_ml(method, X_train, X_val, X_test, n_components, y_train=None):
                 return mu_l(enc(torch.tensor(np.asarray(X, dtype=np.float32)))).numpy().astype(np.float32)
         Ztr, Zv, Zte = _enc(X_train), _enc(X_val), _enc(X_test)
         if method == "vae":
+            with torch.no_grad():
+                LAST_TRANSFORM = {
+                    "kind": "vae",
+                    "w1": [[float(v) for v in row] for row in enc[0].weight.numpy()],
+                    "b1": [float(v) for v in enc[0].bias.numpy()],
+                    "wm": [[float(v) for v in row] for row in mu_l.weight.numpy()],
+                    "bm": [float(v) for v in mu_l.bias.numpy()]}
             return (Ztr, Zv, Zte, K, "vae" + str(K), list(range(K)))
         # vae_rl: append an RL POLICY feature (user: "rl for features"). Tiny policy net
         # p=tanh(w·x) trained on TRAIN to maximize mean(p * reward) - lam*mean(|dp|)

@@ -16539,6 +16539,12 @@
         "type": "round",
         "phase": "DBA",
         "label": "R2211 DBA DISCARD: Sample on mpnov; revert; size long-only, entry 0.45. -> Calmar +0.7350 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2212",
+        "type": "round",
+        "phase": "GLD",
+        "label": "R2212 GLD DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +4.7038 (prev best +4.7038). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28575,6 +28581,11 @@
       {
         "src": "r2210",
         "dst": "r2211",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2211",
+        "dst": "r2212",
         "label": "no improvement"
       }
     ],
