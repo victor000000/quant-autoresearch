@@ -4643,3 +4643,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T19:18:28,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.5061,6.7635,566,True,True,0.0,0.717,0.6708,1.4693,0.5585,10.5122,718,True,False,completed,completed
 2026-06-12T19:25:53,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.1277,6.713,606,True,True,0.0,0.7612,0.6429,1.2529,0.3842,10.8144,718,False,False,completed,completed
 2026-06-12T19:25:53,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.5061,6.7635,566,True,True,0.0,0.717,0.6708,1.4693,0.5585,10.5122,718,True,False,completed,completed
+2026-06-12T20:08:06,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,permclock,bgm+ker,0.45,cdf_overlay,0.641,9.2016,1021,True,True,0.0,0.607,0.6007,0.8675,-0.0147,7.4587,718,False,False,completed,completed
+2026-06-12T20:08:06,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.2036,6.9829,455,True,True,0.0,0.5961,0.6233,1.4222,0.1423,8.5063,718,True,False,completed,completed
