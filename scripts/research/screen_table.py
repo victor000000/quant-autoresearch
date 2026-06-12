@@ -38,6 +38,7 @@ ADJUDICATED = {
     "QLD": "REFUTED (stale 4.06->-0.05, permute>real)",
     "GDX": "REFUTED (stale 2.48->-0.08, permute>real; gold-trend does NOT extend to miners)",
     "AGQ": "REFUTED (stale 2.49->0.07)",
+    "EPI": "REFUTED (stale 1.11->0.11; val_auc collapsed 0.85->0.36)",
 }
 
 

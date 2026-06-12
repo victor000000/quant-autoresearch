@@ -16648,6 +16648,12 @@
         "type": "round",
         "phase": "AGQ",
         "label": "R2229 AGQ DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.0656 (prev best +0.1907). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2230",
+        "type": "round",
+        "phase": "EPI",
+        "label": "R2230 EPI DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1095 (prev best +1.1074). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28774,6 +28780,11 @@
       {
         "src": "r2228",
         "dst": "r2229",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2229",
+        "dst": "r2230",
         "label": "no improvement"
       }
     ],
