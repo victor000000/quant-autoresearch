@@ -107,6 +107,51 @@ def cal_feats(ts_np):
     return np.column_stack(cols).astype(np.float32)
 
 
+def dd_feats(lc, lr):
+    """Drawdown-STATE + trend-age block (backlog #9): 8 causal trailing columns —
+    underwater depth (vs running max), underwater duration, spell-recovery slope,
+    vol-normalized depth, signed return run-length, trend age (bars since 50-bar
+    momentum sign flip), distance from rolling 100-bar max/min. Path-DEPENDENT
+    state (not monotone-of-momentum): reversion timing + trend exhaustion inputs."""
+    N = len(lc)
+    runmax = np.maximum.accumulate(lc)
+    depth = lc - runmax                                   # <= 0
+    dur = np.zeros(N, np.float32)
+    rec = np.zeros(N, np.float32)
+    trough = lc.copy()
+    for t in range(1, N):
+        if depth[t] < -1e-12:
+            dur[t] = dur[t - 1] + 1
+            trough[t] = min(trough[t - 1], lc[t])
+            rec[t] = (lc[t] - trough[t]) / dur[t]
+        else:
+            trough[t] = lc[t]
+    W = 100
+    vol = np.full(N, np.nan, np.float32)
+    hi = np.full(N, np.nan, np.float32)
+    lo = np.full(N, np.nan, np.float32)
+    for t in range(W, N):
+        w = lr[t - W:t]
+        w = w[np.isfinite(w)]
+        vol[t] = np.std(w) if len(w) >= 20 else np.nan
+        hi[t] = lc[t] - np.max(lc[t - W:t])
+        lo[t] = lc[t] - np.min(lc[t - W:t])
+    zdep = depth / (vol * np.sqrt(W) + 1e-9)
+    run = np.zeros(N, np.float32)
+    for t in range(1, N):
+        s = np.sign(lr[t]) if np.isfinite(lr[t]) else 0.0
+        run[t] = run[t - 1] + s if s != 0 and np.sign(run[t - 1]) in (0.0, s) else s
+    mom = np.full(N, np.nan)
+    mom[50:] = lc[50:] - lc[:-50]
+    age = np.zeros(N, np.float32)
+    for t in range(51, N):
+        same = np.isfinite(mom[t]) and np.isfinite(mom[t - 1]) and np.sign(mom[t]) == np.sign(mom[t - 1])
+        age[t] = age[t - 1] + 1 if same else 0
+    cols = [depth, np.log1p(dur), rec, zdep, np.clip(run, -30, 30) / 30.0,
+            np.log1p(age), hi, lo]
+    return np.column_stack(cols).astype(np.float32)
+
+
 def calibrate(kind, cs, cy, pv_raw, pe_raw, venn_abers=None):
     """Calibration switch (footer delegates here for 64k budget). Returns
     (pv_cal, pe_cal, cal_or_None) — cal is the isotonic object (the hot bundle
