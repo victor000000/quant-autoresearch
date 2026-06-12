@@ -11,7 +11,7 @@ TICKERS = __TICKERS__
 class BuyHoldBenchmark(QCAlgorithm):
     def initialize(self):
         self.set_start_date(2023, 8, 1)
-        self.set_end_date(2026, 6, 1)
+        self.set_end_date(2026, 7, 1)
         self.set_cash(100000)
         self.syms = [self.add_equity(t, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol for t in TICKERS]  # RAW (leak audit 2026-06-07)
         self._eq = []

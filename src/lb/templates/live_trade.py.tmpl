@@ -74,7 +74,7 @@ class LiveTrade(QCAlgorithm):
     def initialize(self):
         # Backtest window for verification; for LIVE, deploy with a brokerage and remove dates.
         self.set_start_date(2023, 8, 1)
-        self.set_end_date(2026, 6, 1)
+        self.set_end_date(2026, 7, 1)
         self.set_cash(100000)
         self.sym = self.add_equity(TICKER, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol  # RAW: must match footer/infer (leak audit 2026-06-07)
         self.blc = []            # online per-bar log-close

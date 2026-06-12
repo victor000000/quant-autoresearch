@@ -60,7 +60,7 @@ LEVERAGE = __LEVERAGE__         # gross exposure multiplier (1.0 = fully-investe
 class AutoresearchPortfolio(QCAlgorithm):
     def initialize(self):
         self.set_start_date(2023, 8, 1)     # OOS window (matches every solo infer)
-        self.set_end_date(2026, 6, 1)
+        self.set_end_date(2026, 7, 1)
         self.set_cash(100000)
         self.books = {}
         loaded = 0

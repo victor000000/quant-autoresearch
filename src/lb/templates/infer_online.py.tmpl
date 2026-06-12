@@ -15,7 +15,7 @@ class OnlineInferXCheck(QCAlgorithm):
 
     def initialize(self):
         self.set_start_date(2009, 8, 1)
-        self.set_end_date(2026, 6, 1)
+        self.set_end_date(2026, 7, 1)
         self.set_cash(100000)
         self.sym = self.add_equity(TICKER, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol  # RAW: must match footer/infer (leak audit 2026-06-07)
         self.cll = []

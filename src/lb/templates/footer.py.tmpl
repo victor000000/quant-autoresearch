@@ -59,7 +59,7 @@ _MERR = []  # model-fit error stash, surfaced as runtime stat (lgbm debug)
 class AutoresearchPipeline(QCAlgorithm):
     def initialize(self):
         self.set_start_date(2009, 8, 1)
-        self.set_end_date(2026, 6, 11)
+        self.set_end_date(2026, 7, 1)
         self.set_cash(100000)
         # RAW data normalization (leak audit 2026-06-07): QC's default Adjusted back-adjusts using the
         # ENTIRE split/dividend history (future corporate actions => level look-ahead) and differs live.

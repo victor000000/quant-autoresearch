@@ -110,7 +110,7 @@ CELL = "__CELL__"
 class AutoresearchInfer(QCAlgorithm):
     def initialize(self):
         self.set_start_date(2023, 8, 1)   # OOS window
-        self.set_end_date(2026, 6, 11)
+        self.set_end_date(2026, 7, 1)
         self.set_cash(100000)
         self.sym = self.add_equity(TICKER, Resolution.MINUTE, data_normalization_mode=DataNormalizationMode.RAW).symbol  # RAW: PIT + live-matching (leak audit 2026-06-07)
         self.preds = []
