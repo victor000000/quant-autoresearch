@@ -16894,6 +16894,12 @@
         "type": "round",
         "phase": "QQQ",
         "label": "R2270 QQQ DISCARD: Sample on entropy/surprise bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.5149 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2271",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2271 QQQ DISCARD: Sample on spectral; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.7211 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -29225,6 +29231,11 @@
       {
         "src": "r2269",
         "dst": "r2270",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2270",
+        "dst": "r2271",
         "label": "no improvement"
       }
     ],
