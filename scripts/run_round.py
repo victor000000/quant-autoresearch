@@ -479,8 +479,8 @@ def _validate_cfg(cfg):
     if not (0.0 < cfg["thresh"] < 1.0):
         raise ValueError(f"thresh {cfg['thresh']} must be in (0,1)")
     cfg["max_depth"] = int(cfg.get("max_depth", 3))   # optional model-capacity override; default 3
-    if not (2 <= cfg["max_depth"] <= 8):
-        raise ValueError(f"max_depth {cfg['max_depth']} must be in [2,8]")
+    if not (1 <= cfg["max_depth"] <= 8):
+        raise ValueError(f"max_depth {cfg['max_depth']} must be in [1,8]")
     cfg["permute_labels"] = bool(cfg.get("permute_labels", False))   # optional falsification control
     cfg["n_components"] = int(cfg.get("n_components", 20))            # optional reducer-width lever (default 20)
     if not (5 <= cfg["n_components"] <= 60):
