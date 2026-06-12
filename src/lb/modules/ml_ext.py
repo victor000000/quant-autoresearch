@@ -124,6 +124,27 @@ def dbg_raw(algo, bar_ts, te_m, pe_raw, tag, m=None):
                                    str(round(float(pe_raw[int(hit[0])]), 6)) + extra)
 
 
+def dbg_selftest(algo, bundle, Xe, bar_ts, te_m, tag):
+    """TEMPORARY (permclock parity): inside the SAME train run, deserialize the
+    just-built bundle's booster and predict the DBG_TS row of Xe — isolates
+    serialization fidelity from feature-path differences."""
+    if bundle is None or "booster" not in bundle:
+        return
+    ts = np.array([np.datetime64(str(t)[:19].replace(" ", "T")) for t in bar_ts])
+    te_idx = np.where(np.asarray(te_m))[0]
+    hit = np.where(ts[te_idx] == np.datetime64(DBG_TS))[0]
+    if len(hit) == 0 or int(hit[0]) >= len(Xe):
+        return
+    import xgboost as _xgb
+    bb = _xgb.Booster()
+    bb.load_model(bytearray(bundle["booster"], "utf-8"))
+    bi = int(bundle.get("best_iter", 0) or 0)
+    x2d = np.asarray(Xe[int(hit[0])], dtype=float).reshape(1, -1)
+    dm = _xgb.DMatrix(x2d)
+    p = float(bb.predict(dm, iteration_range=(0, bi + 1))[0]) if bi > 0 else float(bb.predict(dm)[0])
+    algo.set_runtime_statistic("st_" + str(tag)[:20], str(round(p, 6)))
+
+
 def extra_feats(kind, feats, lc, lr, ts_np, store):
     """ONE footer entry point for the opt-in appended feature blocks (64k budget:
     the footer pays a single line; dispatch lives here). Unknown/None kind or a
