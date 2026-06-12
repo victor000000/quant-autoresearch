@@ -48,6 +48,7 @@ ADJUDICATED = {
     "FCG": "REFUTED (stale 1.06->0.37 < BH; auc 0.47)",
     "IAI": "REFUTED (changept 0.32 < permute 0.43)",
     "IGE": "REFUTED (0.35, permute 0.24 = 70% of real — gate fail; stale 1.0x)",
+    "VWO": "REFUTED (real leg degenerate 0 trades, auc 0.50)",
 }
 
 

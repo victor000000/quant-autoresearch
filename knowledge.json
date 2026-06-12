@@ -16708,6 +16708,12 @@
         "type": "round",
         "phase": "IGE",
         "label": "R2239 IGE DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3479 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2240",
+        "type": "round",
+        "phase": "VWO",
+        "label": "R2240 VWO DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.5100 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28884,6 +28890,11 @@
       {
         "src": "r2238",
         "dst": "r2239",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2239",
+        "dst": "r2240",
         "label": "no improvement"
       }
     ],
