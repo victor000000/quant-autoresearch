@@ -4555,3 +4555,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T12:25:19,EWG,1.8882,EWG_logdollar_trend_leg_cdf_overlay_t0.45,B,EWG,logdollar,trend_leg,0.45,cdf_overlay,0.2919,3.2217,302,True,True,0.2094,0.844,0.619,0.4456,-3.9099,65.5169,718,True,False,completed,completed
 2026-06-12T12:34:48,EPP,1.7935,EPP_logdollar_ker_cdf_overlay_t0.45,A,EPP,logdollar,ker,0.45,cdf_overlay,0.5584,3.312,457,True,True,-0.3171,0.512,0.5659,0.5731,0.3473,31.104,718,False,False,completed,completed
 2026-06-12T12:34:48,EPP,1.7935,EPP_logdollar_ker_cdf_overlay_t0.45,B,EPP,logdollar,ker,0.45,cdf_overlay,0.9771,2.6426,251,True,True,0.1016,0.6874,0.5825,1.0882,0.2042,9.4916,718,True,False,completed,completed
+2026-06-12T12:45:48,IXG,2.2836,IXG_logdollar_trend_leg_dd_overlay_t0.45,A,IXG,logdollar,trend_leg,0.45,dd_overlay,0.9847,2.2094,194,True,True,-0.1551,0.5268,0.4795,1.1202,0.1448,7.2709,718,True,False,completed,completed
+2026-06-12T12:45:48,IXG,2.2836,IXG_logdollar_trend_leg_dd_overlay_t0.45,B,IXG,logdollar,trend_leg,0.45,dd_overlay,0.4059,9.2788,196,True,True,0.7762,0.7731,0.5257,0.5362,-0.3153,23.6571,718,False,False,completed,completed

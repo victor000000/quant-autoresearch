@@ -16600,6 +16600,12 @@
         "type": "round",
         "phase": "EPP",
         "label": "R2221 EPP DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.9771 (prev best +1.7935). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2222",
+        "type": "round",
+        "phase": "IXG",
+        "label": "R2222 IXG DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.9847 (prev best +2.2836). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28686,6 +28692,11 @@
       {
         "src": "r2220",
         "dst": "r2221",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2221",
+        "dst": "r2222",
         "label": "no improvement"
       }
     ],
