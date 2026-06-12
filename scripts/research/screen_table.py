@@ -19,7 +19,23 @@ UNIVERSE = str(RESULTS_DIR / "etf_qc_confirmed_pre2009.csv")
 SCREEN = str(RESULTS_DIR / "etf_screen.csv")
 OUT = str(ROOT / "docs" / "research" / "ETF_SCREEN_TABLE.md")
 
-_ORDER = {"STRONG": 0, "marginal": 1, "NO-FIT": 2, "ARTIFACT": 3, "NO-BASELINE": 4, "PENDING": 5}
+_ORDER = {"VERIFIED": -1, "STRONG": 0, "FRAGILE": 1, "marginal": 1, "NO-FIT": 2,
+          "REFUTED": 3, "ARTIFACT": 3, "NO-BASELINE": 4, "PENDING": 5}
+
+# GATE ADJUDICATIONS (2026-06-12 sweeps) — override the screen verdict with the
+# permute+re-race outcome. The screen is admission; this column is the trial record.
+ADJUDICATED = {
+    "GLD": "VERIFIED (crown 4.70)", "USO": "VERIFIED (2.82)",
+    "DIA": "VERIFIED (1.66)", "DXJ": "VERIFIED (1.85)",
+    "IAU": "VERIFIED-family (gold-trend replication)",
+    "EWZ": "FRAGILE (permute-pass, one-regime)", "UGL": "FRAGILE (permute-pass, one-regime)",
+    "FEZ": "FRAGILE (one-regime + deflated-fail)", "IAT": "FRAGILE (watchlist)",
+    "PRFZ": "FRAGILE (replication-failed)",
+    "EWT": "REFUTED (stale 5.13->0.04)", "EWL": "REFUTED (stale)", "IDV": "REFUTED (stale)",
+    "AAXJ": "REFUTED (stale)", "VT": "REFUTED (stale)", "EWG": "REFUTED (no label signal)",
+    "IXG": "REFUTED (stale)", "EWY": "REFUTED (stale)", "ILF": "REFUTED (stale)",
+    "EPP": "REFUTED (overlay artifact, permute 57%)",
+}
 
 
 def _group(verdict):
@@ -43,7 +59,7 @@ def main():
             rows.append({"tk": tk, "cls": s["asset_class"], "recipe": s["recipe"],
                          "mc": float(s["method_calmar"] or 0), "bh": float(s["buyhold_calmar"] or 0),
                          "edge": float(s["edge"] or 0), "auc": float(s["val_auc"] or 0),
-                         "tr": int(float(s["trades"] or 0)), "verdict": s["verdict"],
+                         "tr": int(float(s["trades"] or 0)), "verdict": ADJUDICATED.get(tk, s["verdict"]),
                          "name": (s.get("name") or u.get("Name", ""))[:40]})
         else:
             rows.append({"tk": tk, "cls": u.get("Asset_Class", ""), "recipe": "—", "mc": None,
