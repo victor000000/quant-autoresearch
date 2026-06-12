@@ -16654,6 +16654,12 @@
         "type": "round",
         "phase": "EPI",
         "label": "R2230 EPI DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.1095 (prev best +1.1074). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2231",
+        "type": "round",
+        "phase": "DJP",
+        "label": "R2231 DJP DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.8547 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28785,6 +28791,11 @@
       {
         "src": "r2229",
         "dst": "r2230",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2230",
+        "dst": "r2231",
         "label": "no improvement"
       }
     ],

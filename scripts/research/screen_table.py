@@ -39,6 +39,7 @@ ADJUDICATED = {
     "GDX": "REFUTED (stale 2.48->-0.08, permute>real; gold-trend does NOT extend to miners)",
     "AGQ": "REFUTED (stale 2.49->0.07)",
     "EPI": "REFUTED (stale 1.11->0.11; val_auc collapsed 0.85->0.36)",
+    "DJP": "REFUTED (permute 0.85 > real 0.75 — label-free)",
 }
 
 

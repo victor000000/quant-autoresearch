@@ -4573,3 +4573,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T14:05:11,AGQ,0.1907,AGQ_logdollar_changepoint_cdf_overlay_t0.50,B,AGQ,logdollar,changepoint,0.5,cdf_overlay,0.0656,29.6242,322,True,True,-0.2807,0.6775,0.6311,0.195,-7.7089,160.3481,718,True,False,completed,completed
 2026-06-12T14:14:55,EPI,1.1074,EPI_logdollar_trend_leg_dd_overlay_t0.45,A,EPI,logdollar,trend_leg,0.45,dd_overlay,-0.0167,6.0665,407,True,True,-0.4427,0.5095,0.5472,-0.0306,-1.8444,59.9871,718,False,False,completed,completed
 2026-06-12T14:14:55,EPI,1.1074,EPI_logdollar_trend_leg_dd_overlay_t0.45,B,EPI,logdollar,trend_leg,0.45,dd_overlay,0.1095,4.7539,164,True,True,0.5377,0.8298,0.3622,0.2152,-0.1709,6.8672,718,True,False,completed,completed
+2026-06-12T14:25:04,DJP,0.0,,A,DJP,logdollar,ker,0.45,cdf_overlay,0.8547,9.0858,230,True,True,0.3379,0.4922,0.5088,0.6808,-0.866,9.3473,718,True,False,completed,completed
+2026-06-12T14:25:04,DJP,0.0,,B,DJP,logdollar,ker,0.45,cdf_overlay,0.7525,14.0023,148,True,True,1.2806,0.7891,0.6052,0.7136,-0.8009,10.356,718,False,False,completed,completed
