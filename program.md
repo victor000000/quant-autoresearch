@@ -48,6 +48,7 @@ Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe ·
 | **USO** | logdollar / `revert` / cdf_plain / t.45 / correlation | **2.82** | Oil mean-reversion engine. Permute-confirmed, decay-strengthening, regime-split PASS, deflated-Calmar p=0.043, online-proven (3e-08). |
 | DIA | imbalance / `bgm+ker` / cdf_overlay / t.50 | 1.66 | Screen find, fully gated + hardened (regime-split PASS, deflated p=0.018, online-proven 8e-09). **The candidate seat.** |
 | HYG/TIP/DBC/IWM/UUP | `always_long` (×cdf) | 1.97/0.90/0.69/0.50/0.37 | Decorrelation seats; timing retired on all. |
+| DXJ | logdollar / `ker` / cdf_overlay / t.45 | 1.85 | NEW 2026-06-12: sole survivor of Tier-3 gating (EWT/EWL refuted as stale). Permute 90% collapse, regime-split 2.95/2.94 (most uniform edge), deflated p=0.037, decay strengthening 2.11→3.62. Japan decorrelation candidate — needs online proof + human seat decision. |
 | FEZ | sadf_explosive | 1.34 | DEMOTED: fails regime-split (low-vol Sharpe −0.72) + deflated-Calmar (p=0.133). Watchlist. |
 | PRFZ | sadf_explosive | 2.22 | RISKY: sibling replication failed (PRF/IJR). Probation only. |
 
