@@ -16702,6 +16702,12 @@
         "type": "round",
         "phase": "IAI",
         "label": "R2238 IAI DISCARD: Sample on log-dollar bars; changepoint; size long-only, vol-targeted, entry 0.50. -> Calmar +0.4256 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2239",
+        "type": "round",
+        "phase": "IGE",
+        "label": "R2239 IGE DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3479 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28873,6 +28879,11 @@
       {
         "src": "r2237",
         "dst": "r2238",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2238",
+        "dst": "r2239",
         "label": "no improvement"
       }
     ],
