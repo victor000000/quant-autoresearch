@@ -16588,6 +16588,12 @@
         "type": "round",
         "phase": "VT",
         "label": "R2219 VT DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.4014 (prev best +2.0169). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2220",
+        "type": "round",
+        "phase": "EWG",
+        "label": "R2220 EWG DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.2919 (prev best +1.8882). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28664,6 +28670,11 @@
       {
         "src": "r2218",
         "dst": "r2219",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2219",
+        "dst": "r2220",
         "label": "no improvement"
       }
     ],
