@@ -192,3 +192,24 @@ SDS     48   0.023   0.064     0.846  0.543  0.092 1247.65y     n False False  F
 ```
 
 **Survive Holm-Bonferroni (FWER<=.05): NONE.** DSR>=.95 = edge clears the best-of-N-trials noise at the real session search size.
+
+## Anytime-valid e-value monitor (peeking-robust; supersedes p-value/DSR re-checks)
+
+H0: mean return <= 0 (edge dead). E-value >= 20 = significant at 0.05, VALID under continuous
+monitoring (re-check anytime; merge re-validations by MULTIPLICATION). Testing-by-betting (WSR 2023).
+
+```
+champ    e-value  AV p=1/e        verdict  decay?
+GLD         4.15    0.2411    weak (e>=1)  holding
+USO        11.18    0.0894    weak (e>=1)  holding
+DIA         2.44    0.4103    weak (e>=1)  holding
+DXJ         5.46    0.1830    weak (e>=1)  holding
+QQQ         3.05    0.3282    weak (e>=1)  holding
+EPI         2.63    0.3800    weak (e>=1)  holding
+UUP         1.31    0.7627    weak (e>=1)  holding
+TIP         1.58    0.6324    weak (e>=1)  holding
+DBC         1.26    0.7947    weak (e>=1)  holding
+HYG         2.51    0.3982    weak (e>=1)  holding
+```
+
+Anytime-valid: unlike DSR/p-values, these e-values stay honest no matter how many times we re-check as the OOS window grows. Next re-validation just MULTIPLIES the new e-value in.
