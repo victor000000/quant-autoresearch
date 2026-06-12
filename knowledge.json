@@ -16786,6 +16786,12 @@
         "type": "round",
         "phase": "FEZ",
         "label": "R2252 FEZ DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.2518 (prev best +1.3421). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2253",
+        "type": "round",
+        "phase": "PRFZ",
+        "label": "R2253 PRFZ DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar +0.2424 (prev best +2.2160). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -29027,6 +29033,11 @@
       {
         "src": "r2251",
         "dst": "r2252",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2252",
+        "dst": "r2253",
         "label": "no improvement"
       }
     ],
