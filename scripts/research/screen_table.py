@@ -30,14 +30,14 @@ ADJUDICATED = {
     "IAU": "VERIFIED-family (gold-trend replication)",
     "IJR": "FRAGILE-DEMOTED (beta-cal re-cut collapses 2.51->0.58 ~ BH+0.15: the edge is inseparable from the isotonic plateau knife-edge; replay-real, not robustly harvestable; weakens the DIA cross-fund replication claim)",
     "EWZ": "FRAGILE (permute-pass, one-regime)", "UGL": "FRAGILE (permute-pass, one-regime)",
-    "FEZ": "FRAGILE (one-regime + deflated-fail)", "IAT": "FRAGILE (watchlist)",  # IAI changept recipe separately refuted 2026-06-12
+    "FEZ": "REFUTED-BY-WINDOW (re-race 0.25 vs stored 1.34; beta leg degenerate)", "IAT": "FRAGILE (watchlist)",  # IAI changept recipe separately refuted 2026-06-12
     "PRFZ": "FRAGILE (replication-failed)",
     "EWT": "REFUTED (stale 5.13->0.04)", "EWL": "REFUTED (stale)", "IDV": "REFUTED (stale)",
     "AAXJ": "REFUTED (stale)", "VT": "REFUTED (stale)", "EWG": "REFUTED (no label signal)",
     "IXG": "REFUTED (stale)", "EWY": "REFUTED (stale)", "ILF": "REFUTED (stale)",
     "EPP": "REFUTED (overlay artifact, permute 57%)",
     # Core names (pre-screen, adjudicated by ~2500 tournament rounds — the PENDING was a join artifact):
-    "SPY": "BH-OPTIMAL (closed every door incl options-IV)", "QQQ": "FRAGILE-first-edge (permclock/bgm+ker 1.51 > BH 1.24 — FIRST QQQ config ever above hold; permute edge-collapse pass but ratio 58%; regime-split FAIL 3.69/0.27; deflated p=0.26 at N=52; decay strengthening — watchlist, retest on window growth)",
+    "SPY": "BH-OPTIMAL (closed every door incl options-IV)", "QQQ": "FRAGILE-first-edge (permclock/bgm+ker 1.51 > BH 1.17, bit-exact x3, beta-survives 1.28, neighborhood-robust, ONEQ-directional; BUT regime-fail + deflated p=0.26 + ONLINE-FAIL (live>>saved, bgm member saturates — suspected ext-axis online feature bug, NOT the IJR plateau class; investigation open) — top watchlist, e-monitored, NOT deployable)",
     "IWM": "BH-OPTIMAL (seat)", "SLV": "BH-OPTIMAL", "HYG": "BH-OPTIMAL (seat 1.97)",
     "TLT": "NO-EDGE (closed)", "XLE": "ceiling 1.35 (closed)", "EEM": "BH-OPTIMAL (timing decayed)",
     "EFA": "BH-OPTIMAL", "SOXX": "REFUTED (leak-era edge gone)", "KRE": "NO-EDGE (Bonferroni-fail)",
