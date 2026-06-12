@@ -85,68 +85,6 @@ def vix_feats(vix, lr, N=None):
     return _np.column_stack(out).astype(_np.float32)
 
 
-DBG_TS = "2023-08-02T12:46:00"          # TEMPORARY permclock-parity debug target (QQQ)
-DBG_COLS = (2, 4, 40, 54, 26, 5)
-
-
-def dbg_dump(algo, feats, ts_np):
-    """TEMPORARY paired-dump instrument (2026-06-12 permclock online-parity debug):
-    emit raw feature values at DBG_COLS for the bar at DBG_TS. Batch side of the
-    pair; the online side lives in infer_online's mismatch forensics. Remove after
-    the parity bug is closed."""
-    ix = np.where(ts_np == np.datetime64(DBG_TS))[0]
-    if len(ix) == 0:
-        return
-    i = int(ix[0])
-    if i >= len(feats):
-        return
-    vals = ",".join("f" + str(j) + "=" + str(round(float(feats[i, j]), 6)) for j in DBG_COLS)
-    algo.set_runtime_statistic("fd_batch", vals)
-    row = feats[i]
-    sums = ",".join("b" + str(k) + "=" + str(round(float(np.nansum(row[k * 10:(k + 1) * 10])), 5))
-                    for k in range(8))
-    algo.set_runtime_statistic("fd_batch2", sums)
-
-
-def dbg_raw(algo, bar_ts, te_m, pe_raw, tag, m=None):
-    """TEMPORARY (permclock parity): emit the leg's RAW model score at DBG_TS
-    plus the model's tree-count semantics (best_iteration vs boosted rounds)."""
-    ts = np.array([np.datetime64(str(t)[:19].replace(" ", "T")) for t in bar_ts])
-    te_idx = np.where(np.asarray(te_m))[0]
-    hit = np.where(ts[te_idx] == np.datetime64(DBG_TS))[0]
-    extra = ""
-    if m is not None and hasattr(m, "get_booster"):
-        bi = m.best_iteration if hasattr(m, "best_iteration") else -1
-        nr = m.get_booster().num_boosted_rounds()
-        extra = " bi=" + str(bi) + " rounds=" + str(nr)
-    if len(hit) and int(hit[0]) < len(pe_raw):
-        algo.set_runtime_statistic("rawdbg_" + str(tag)[:20],
-                                   str(round(float(pe_raw[int(hit[0])]), 6)) + extra)
-
-
-def dbg_selftest(algo, bundle, Xe, bar_ts, te_m, tag):
-    """TEMPORARY (permclock parity): inside the SAME train run, deserialize the
-    just-built bundle's booster and predict the DBG_TS row of Xe — isolates
-    serialization fidelity from feature-path differences."""
-    if bundle is None or "booster" not in bundle:
-        return
-    ts = np.array([np.datetime64(str(t)[:19].replace(" ", "T")) for t in bar_ts])
-    te_idx = np.where(np.asarray(te_m))[0]
-    hit = np.where(ts[te_idx] == np.datetime64(DBG_TS))[0]
-    if len(hit) == 0 or int(hit[0]) >= len(Xe):
-        return
-    import xgboost as _xgb
-    bb = _xgb.Booster()
-    bb.load_model(bytearray(bundle["booster"], "utf-8"))
-    bi = int(bundle.get("best_iter", 0) or 0)
-    x2d = np.asarray(Xe[int(hit[0])], dtype=float).reshape(1, -1)
-    dm = _xgb.DMatrix(x2d)
-    p = float(bb.predict(dm, iteration_range=(0, bi + 1))[0]) if bi > 0 else float(bb.predict(dm)[0])
-    algo.set_runtime_statistic("st_" + str(tag)[:20], str(round(p, 6)))
-    algo.set_runtime_statistic("xe_" + str(tag)[:16],
-                               ";".join(str(round(float(v), 9)) for v in Xe[int(hit[0])]))
-
-
 def extra_feats(kind, feats, lc, lr, ts_np, store):
     """ONE footer entry point for the opt-in appended feature blocks (64k budget:
     the footer pays a single line; dispatch lives here). Unknown/None kind or a

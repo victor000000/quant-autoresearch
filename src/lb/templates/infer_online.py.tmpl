@@ -191,12 +191,6 @@ class OnlineInferXCheck(QCAlgorithm):
                         "mm" + str(self._nmm),
                         norm + " saved=" + str(round(psaved, 4)) + " live=" + str(round(plive, 4))
                         + " mem=" + ",".join(str(round(p, 4)) for p in pmem))
-                    if self._nmm == 1:
-                        self.set_runtime_statistic("fd_live", ",".join(
-                            "f" + str(j) + "=" + str(round(float(row[j]), 6)) for j in (2, 4, 40, 54, 26, 5)))
-                        self.set_runtime_statistic("fd_live2", ",".join(
-                            "b" + str(k) + "=" + str(round(float(np.nansum(row[k * 10:(k + 1) * 10])), 5))
-                            for k in range(8)))
                     # feature forensics: per-member top-|z| standardized columns + raw score
                     for mi, m in enumerate(self.members):
                         xz = (row - m["mean"]) / m["scale"]
@@ -207,9 +201,6 @@ class OnlineInferXCheck(QCAlgorithm):
                             + "=" + str(round(float(xk[int(j)]), 2)) for j in order)
                         praw_dbg = self._raw_predict(m, np.asarray(
                             xk if m.get("reduce_tf") is None else xz, dtype=float).reshape(1, -1))
-                        if self._nmm == 1:
-                            self.set_runtime_statistic("xe_live_m" + str(mi),
-                                ";".join(str(round(float(v), 9)) for v in xk))
                         nr_dbg = m["booster"].num_boosted_rounds() if m["family"] == "xgb" else -1
                         self.set_runtime_statistic(
                             "mm" + str(self._nmm) + "_m" + str(mi),

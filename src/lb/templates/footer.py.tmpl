@@ -332,7 +332,6 @@ class AutoresearchPipeline(QCAlgorithm):
             pt_raw = m.predict_proba(Xt)[:, 1]
             pv_raw = m.predict_proba(Xv)[:, 1]        # ALL val bars
             pe_raw = m.predict_proba(Xe)[:, 1]        # ALL test bars
-            _mx.dbg_raw(self, bar_ts, ex, pe_raw, label_cfg, m)   # TEMP parity debug (ex-space)
             try:
                 train_auc = float(roc_auc_score(y[tx], pt_raw))
                 val_auc = float(roc_auc_score(y[vx_lab], pv_raw[vlab]))  # labeled val only
@@ -444,7 +443,6 @@ class AutoresearchPipeline(QCAlgorithm):
                            "cal_x": (_cx.tolist() if _cx is not None else []),
                            "cal_y": (_cy.tolist() if _cy is not None else []),
                            "train_end": str(TRAIN_END), "val_end": str(VAL_END), "test_end": str(TEST_END)}
-                _mx.dbg_selftest(self, _bundle, Xe, bar_ts, ex, label_cfg)   # TEMP parity debug (ex-space)
                 if meta and _meta_booster_json is not None:
                     # META champion: carry the SECONDARY model + gate so infer_online can
                     # reproduce the gated signal live (same scaler/kept_idx feed both models).
@@ -650,7 +648,6 @@ class AutoresearchPipeline(QCAlgorithm):
             except TypeError:
                 feats = build_feats(lc, lr, rich=_rich)
             feats = _mx.extra_feats(CONFIG.get("features"), feats, lc, lr, bar_ts_np, self.object_store)
-            _mx.dbg_dump(self, feats, bar_ts_np)   # TEMP permclock-parity debug (remove)
             fv = ~np.isnan(feats).any(axis=1)
             _hz = CONFIG.get("horizons")     # intraday-holding override (in BARS); None => labeler defaults
             if _hz:
