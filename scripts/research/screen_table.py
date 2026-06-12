@@ -40,6 +40,7 @@ ADJUDICATED = {
     "AGQ": "REFUTED (stale 2.49->0.07)",
     "EPI": "REFUTED (stale 1.11->0.11; val_auc collapsed 0.85->0.36)",
     "DJP": "REFUTED (permute 0.85 > real 0.75 — label-free)",
+    "GSG": "REFUTED (stale 1.92->-0.01)",
 }
 
 

@@ -16660,6 +16660,12 @@
         "type": "round",
         "phase": "DJP",
         "label": "R2231 DJP DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.8547 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2232",
+        "type": "round",
+        "phase": "GSG",
+        "label": "R2232 GSG DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size long-only, vol-targeted, entry 0.50. -> Calmar -0.0122 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28796,6 +28802,11 @@
       {
         "src": "r2230",
         "dst": "r2231",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2231",
+        "dst": "r2232",
         "label": "no improvement"
       }
     ],
