@@ -66,7 +66,7 @@ Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe ·
 
 ## Closed — don't re-grind
 
-Depth-3 capacity · meta-labeling · uniqueness weights · sticky-HMM · cross-asset/exogenous features in every form (auc up, Calmar down = the overfit signature) · VIXY carry · universe siblings (SLV/GDX/XME) · oil-reversion beyond oil · the FULL innovation backlog (14/14 raced 2026-06-12; only wins: lgbm + lgbm_bag, GLD-only) · Wang-transcript levers · 311 screen COMPLETE (`docs/research/ETF_SCREEN_TABLE.md`) · Chronos (sandbox has no internet). Retained-idle primitives: sizers in `sizing_ext`, reduces in `ml_ext`, feature blocks in `build_feats`/`ml_ext`, axes permclock/mpnov in `bar_ext`.
+Depth-3 capacity · meta-labeling · uniqueness weights · sticky-HMM · cross-asset/exogenous features in every form (auc up, Calmar down = the overfit signature) · VIXY carry · universe siblings (SLV/GDX/XME) · oil-reversion beyond oil · the FULL innovation backlog (14/14 raced 2026-06-12; only wins: lgbm + lgbm_bag, GLD-only) · Wang-transcript levers · 311 screen COMPLETE + **Tier-3 fully swept 2026-06-12** (all 13 ungated high-edge names permute+re-raced: 10 refuted as stale-window mirages — EWT/EWL/IDV/AAXJ/VT/EWG/IXG/EWY/ILF + EPP overlay-artifact; EWZ/UGL permute-pass but regime-fragile watchlist; **DXJ the sole verified discovery**) · options-IV channel (SPY auc 0.615, no conversion — harvester `precompute_iv.py` + `features='iv'` retained) · Chronos (sandbox has no internet). Retained-idle primitives: sizers in `sizing_ext`, reduces in `ml_ext`, feature blocks in `build_feats`/`ml_ext`, axes permclock/mpnov in `bar_ext`.
 
 ## The frontier
 
