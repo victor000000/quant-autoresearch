@@ -16846,6 +16846,18 @@
         "type": "round",
         "phase": "QQQ",
         "label": "R2262 QQQ DISCARD: Sample on permclock; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.5061 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2263",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2263 QQQ DISCARD: Sample on permclock; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.5061 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2264",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2264 QQQ DISCARD: Sample on permclock; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.5061 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -29137,6 +29149,16 @@
       {
         "src": "r2261",
         "dst": "r2262",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2262",
+        "dst": "r2263",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2263",
+        "dst": "r2264",
         "label": "no improvement"
       }
     ],
