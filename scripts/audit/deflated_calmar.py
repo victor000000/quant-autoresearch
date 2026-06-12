@@ -35,6 +35,24 @@ def calmar(rets):
     return cagr / np.maximum(mdd, 1e-4)
 
 
+def iaaft(rets, rng, iters=50):
+    """IAAFT surrogate (backlog #12): exact amplitude distribution + amplitude
+    spectrum (linear ACF) of the input, randomized phase. The orthogonal null to
+    the stationary bootstrap — if a demeaned curve's max-of-N Calmar under IAAFT
+    reaches the real value, the 'edge' is explainable by spectrum alone."""
+    x = np.asarray(rets, float)
+    sorted_x = np.sort(x)
+    amp = np.abs(np.fft.rfft(x))
+    y = rng.permutation(x)
+    for _ in range(iters):
+        sp = np.fft.rfft(y)
+        mag = np.abs(sp)
+        mag[mag < 1e-20] = 1e-20
+        y = np.fft.irfft(sp * amp / mag, n=len(x))
+        y = sorted_x[np.argsort(np.argsort(y))]   # rank-remap to exact amplitudes
+    return y
+
+
 def stationary_bootstrap(rets, size, rng, mean_block=10):
     n = len(rets)
     p = 1.0 / mean_block
@@ -47,7 +65,7 @@ def stationary_bootstrap(rets, size, rng, mean_block=10):
     return rets[idx]
 
 
-def audit(tk, bid, n_trials, rng):
+def audit(tk, bid, n_trials, rng, null="bootstrap"):
     eq = cs.equity_series(bid) or []
     closes = np.array([c for _, c in eq], float)
     rets = closes[1:] / closes[:-1] - 1.0
@@ -57,24 +75,30 @@ def audit(tk, bid, n_trials, rng):
     real = float(calmar(rets))
     null_rets = rets - rets.mean()
     n = len(rets)
+    gen = (lambda: iaaft(null_rets, rng)) if null == "iaaft" \
+        else (lambda: stationary_bootstrap(null_rets, n, rng))
     maxes = np.empty(M_SETS)
     for s in range(M_SETS):
-        paths = np.vstack([stationary_bootstrap(null_rets, n, rng) for _ in range(n_trials)])
+        paths = np.vstack([gen() for _ in range(n_trials)])
         maxes[s] = calmar(paths).max()
     p95 = float(np.quantile(maxes, 0.95))
     p50 = float(np.quantile(maxes, 0.50))
     pval = float(np.mean(maxes >= real))
     ok = real > p95
-    print(f"{tk}: real Calmar {real:.2f} | max-of-{n_trials} null: median {p50:.2f}, "
+    print(f"{tk} [{null}]: real Calmar {real:.2f} | max-of-{n_trials} null: median {p50:.2f}, "
           f"95th {p95:.2f} | p(max>=real) {pval:.3f} -> "
           f"{'PASS (deflation-clearing)' if ok else 'FAIL (could be selection luck)'}")
 
 
 def main(argv):
+    null = "bootstrap"
+    if argv and argv[0] == "--null":
+        null = argv[1]
+        argv = argv[2:]
     rng = np.random.default_rng(42)
     args = list(zip(argv[::3], argv[1::3], argv[2::3]))
     for tk, bid, nt in args:
-        audit(tk, bid, int(nt), rng)
+        audit(tk, bid, int(nt), rng, null=null)
 
 
 if __name__ == "__main__":
