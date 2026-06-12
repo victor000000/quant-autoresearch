@@ -194,6 +194,9 @@ class OnlineInferXCheck(QCAlgorithm):
                     if self._nmm == 1:
                         self.set_runtime_statistic("fd_live", ",".join(
                             "f" + str(j) + "=" + str(round(float(row[j]), 6)) for j in (2, 4, 40, 54, 26, 5)))
+                        self.set_runtime_statistic("fd_live2", ",".join(
+                            "b" + str(k) + "=" + str(round(float(np.nansum(row[k * 10:(k + 1) * 10])), 5))
+                            for k in range(8)))
                     # feature forensics: per-member top-|z| standardized columns + raw score
                     for mi, m in enumerate(self.members):
                         xz = (row - m["mean"]) / m["scale"]

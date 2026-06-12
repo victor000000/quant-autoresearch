@@ -102,6 +102,10 @@ def dbg_dump(algo, feats, ts_np):
         return
     vals = ",".join("f" + str(j) + "=" + str(round(float(feats[i, j]), 6)) for j in DBG_COLS)
     algo.set_runtime_statistic("fd_batch", vals)
+    row = feats[i]
+    sums = ",".join("b" + str(k) + "=" + str(round(float(np.nansum(row[k * 10:(k + 1) * 10])), 5))
+                    for k in range(8))
+    algo.set_runtime_statistic("fd_batch2", sums)
 
 
 def extra_feats(kind, feats, lc, lr, ts_np, store):
