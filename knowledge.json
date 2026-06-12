@@ -16576,6 +16576,12 @@
         "type": "round",
         "phase": "IDV",
         "label": "R2217 IDV DISCARD: Sample on log-dollar bars; Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +0.9254 (prev best +2.5767). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2218",
+        "type": "round",
+        "phase": "AAXJ",
+        "label": "R2218 AAXJ DISCARD: Sample on log-dollar bars; explosive-regime (SADF) labels; size drawdown-scaled sizing, entry 0.50. -> Calmar +0.9533 (prev best +2.4406). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28642,6 +28648,11 @@
       {
         "src": "r2216",
         "dst": "r2217",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2217",
+        "dst": "r2218",
         "label": "no improvement"
       }
     ],
