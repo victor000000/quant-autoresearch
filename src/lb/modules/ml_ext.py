@@ -189,6 +189,19 @@ def xgb_plain(scale_w, md=3):
         base_score=0.5)
 
 
+class _SeedBag:
+    """K-seed probability-averaging wrapper (duck-types predict_proba only)."""
+
+    def __init__(self, ms):
+        self.ms = ms
+
+    def predict_proba(self, X):
+        out = self.ms[0].predict_proba(X)
+        for m in self.ms[1:]:
+            out = out + m.predict_proba(X)
+        return out / len(self.ms)
+
+
 def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
     """Capacity-matched supervised model swap (CONFIG['model']). Lives here, NOT in
     footer, for 64k budget reasons. Same depth/lr/n/reg/subsample across families —
@@ -209,6 +222,41 @@ def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
         except Exception as e:
             errs.append(type(e).__name__ + ":" + str(e)[:70])
             m.fit(Xt, yt.astype(int))
+    elif model == "lgbm_bag":
+        # backlog #11 seed-bagging: K=5 capacity-IDENTICAL lgbm fits (seeds 42..46),
+        # probability-averaged. Adds no capacity and no signal — pure variance/decay
+        # hardening of the lgbm crown. Bundle family is non-deployable (A/B grade).
+        import lightgbm as _lgb
+        ms = []
+        for k in range(5):
+            mk = _lgb.LGBMClassifier(
+                n_estimators=200, max_depth=md, learning_rate=0.03,
+                reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+                scale_pos_weight=scale_w, objective="binary",
+                random_state=42 + k, n_jobs=1, verbose=-1)
+            try:
+                mk.fit(Xt, yt.astype(int), eval_set=[(Xv, yv.astype(int))],
+                       eval_metric="auc", callbacks=[_lgb.early_stopping(30, verbose=False)])
+            except Exception as e:
+                errs.append(type(e).__name__ + ":" + str(e)[:70])
+                mk.fit(Xt, yt.astype(int))
+            ms.append(mk)
+        m = _SeedBag(ms)
+    elif model == "xgb_bag":
+        # seed-bagging for the xgb family (USO-side test of the lgbm_bag win):
+        # K=5 capacity-identical fits, seeds 42..46, probability-averaged.
+        import xgboost as _xgb2
+        ms = []
+        for k in range(5):
+            mk = _xgb2.XGBClassifier(
+                n_estimators=200, max_depth=md, learning_rate=0.03,
+                reg_alpha=1.0, reg_lambda=2.0, subsample=0.85, colsample_bytree=0.85,
+                scale_pos_weight=scale_w, objective="binary:logistic",
+                eval_metric="auc", tree_method="hist", random_state=42 + k, n_jobs=1,
+                early_stopping_rounds=30, base_score=0.5)
+            mk.fit(Xt, yt, eval_set=[(Xv, yv)], verbose=False)
+            ms.append(mk)
+        m = _SeedBag(ms)
     elif model == "catboost":
         from catboost import CatBoostClassifier as _Cat
         m = _Cat(iterations=200, depth=md, learning_rate=0.03,
