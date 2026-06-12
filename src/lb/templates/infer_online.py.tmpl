@@ -191,6 +191,19 @@ class OnlineInferXCheck(QCAlgorithm):
                         "mm" + str(self._nmm),
                         norm + " saved=" + str(round(psaved, 4)) + " live=" + str(round(plive, 4))
                         + " mem=" + ",".join(str(round(p, 4)) for p in pmem))
+                    # feature forensics: per-member top-|z| standardized columns + raw score
+                    for mi, m in enumerate(self.members):
+                        xz = (row - m["mean"]) / m["scale"]
+                        xk = xz[m["kept"]] if m.get("reduce_tf") is None else xz
+                        order = np.argsort(-np.abs(xk))[:3]
+                        cols = ",".join(
+                            "f" + str(int(m["kept"][int(j)]) if m.get("reduce_tf") is None else int(j))
+                            + "=" + str(round(float(xk[int(j)]), 2)) for j in order)
+                        praw_dbg = self._raw_predict(m, np.asarray(
+                            xk if m.get("reduce_tf") is None else xz, dtype=float).reshape(1, -1))
+                        self.set_runtime_statistic(
+                            "mm" + str(self._nmm) + "_m" + str(mi),
+                            "raw=" + str(round(praw_dbg, 4)) + " " + cols)
         else:
             self.n_unmatched += 1                    # sampled online OOS bar with NO saved pred -> bar-set divergence
 
