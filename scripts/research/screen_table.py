@@ -85,7 +85,7 @@ def main():
                          "name": (s.get("name") or u.get("Name", ""))[:40]})
         else:
             rows.append({"tk": tk, "cls": u.get("Asset_Class", ""), "recipe": "—", "mc": None,
-                         "bh": None, "edge": None, "auc": None, "tr": None, "verdict": "PENDING",
+                         "bh": None, "edge": None, "auc": None, "tr": None, "verdict": ADJUDICATED.get(tk, "PENDING"),
                          "name": u.get("Name", "")[:40]})
 
     rows.sort(key=lambda r: (_ORDER.get(_group(r["verdict"]), 9),
