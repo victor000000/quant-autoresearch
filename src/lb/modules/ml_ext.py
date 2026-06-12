@@ -320,6 +320,14 @@ def fit_model(model, Xt, yt, Xv, yv, scale_w, md):
         # re-cut, 2026-06-12: 5-tree early-stopped members are decision-unstable at
         # float32 edges; longer patience -> deeper ensembles -> smooth surface).
         import xgboost as _xgb
+        if model == "xgb_fixed":
+            # float-stability re-cut (2026-06-12): NO early stopping — all 200 trees.
+            # Tiny early-stopped ensembles (bi=4!) are decision-unstable at float32
+            # edges; 200-tree surfaces are smooth. (es100 was a no-op: predict still
+            # uses best_iteration, which stays at the val-auc peak.)
+            m = xgb_plain(scale_w, md)
+            m.fit(Xt, yt, eval_set=[(Xv, yv)], verbose=False)
+            return m, errs
         es = 100 if model == "xgb_es100" else 30
         m = _xgb.XGBClassifier(
             n_estimators=200, max_depth=md, learning_rate=0.03,
