@@ -35,6 +35,7 @@ ADJUDICATED = {
     "AAXJ": "REFUTED (stale)", "VT": "REFUTED (stale)", "EWG": "REFUTED (no label signal)",
     "IXG": "REFUTED (stale)", "EWY": "REFUTED (stale)", "ILF": "REFUTED (stale)",
     "EPP": "REFUTED (overlay artifact, permute 57%)",
+    "QLD": "REFUTED (stale 4.06->-0.05, permute>real)",
 }
 
 

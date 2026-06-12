@@ -16630,6 +16630,12 @@
         "type": "round",
         "phase": "UGL",
         "label": "R2226 UGL DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +1.3481 (prev best +1.3795). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2227",
+        "type": "round",
+        "phase": "QLD",
+        "label": "R2227 QLD DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.2311 (prev best +0.2187). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28741,6 +28747,11 @@
       {
         "src": "r2225",
         "dst": "r2226",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2226",
+        "dst": "r2227",
         "label": "no improvement"
       }
     ],
