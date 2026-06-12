@@ -85,6 +85,21 @@ def vix_feats(vix, lr, N=None):
     return _np.column_stack(out).astype(_np.float32)
 
 
+def extra_feats(kind, feats, lc, lr, ts_np, store):
+    """ONE footer entry point for the opt-in appended feature blocks (64k budget:
+    the footer pays a single line; dispatch lives here). Unknown/None kind or a
+    missing carrier returns feats unchanged."""
+    if kind == "calendar":
+        return np.hstack([feats, cal_feats(ts_np)])
+    if kind == "ddstate":
+        return np.hstack([feats, dd_feats(lc, lr)])
+    if kind == "iv":
+        c = iv_carrier(store, ts_np)
+        if c is not None:
+            return np.hstack([feats, vix_feats(c, lr, N=len(lc))])
+    return feats
+
+
 IV_KEYS = ("autoresearch/SPY/iv_2010-01-04_2015-01-02",
            "autoresearch/SPY/iv_2015-01-02_2020-01-02",
            "autoresearch/SPY/iv_2020-01-02_2026-06-10")
