@@ -28,7 +28,7 @@ ADJUDICATED = {
     "GLD": "VERIFIED (crown 4.70 lgbm_bag+vae)", "USO": "VERIFIED (2.82)",
     "DIA": "VERIFIED (1.66)", "DXJ": "VERIFIED (1.85)",
     "IAU": "VERIFIED-family (gold-trend replication)",
-    "IJR": "AUDITS-PASS, CALIBRATION-EDGE FRAGILE (root-caused 2026-06-12: isotonic plateaus 0.40/0.53 straddle thresh 0.50; tiny numeric drift flips plateaus -> trades; +2.09 edge real but knife-edge-deployed; NOT seat-grade as-is)",
+    "IJR": "FRAGILE-DEMOTED (beta-cal re-cut collapses 2.51->0.58 ~ BH+0.15: the edge is inseparable from the isotonic plateau knife-edge; replay-real, not robustly harvestable; weakens the DIA cross-fund replication claim)",
     "EWZ": "FRAGILE (permute-pass, one-regime)", "UGL": "FRAGILE (permute-pass, one-regime)",
     "FEZ": "FRAGILE (one-regime + deflated-fail)", "IAT": "FRAGILE (watchlist)",  # IAI changept recipe separately refuted 2026-06-12
     "PRFZ": "FRAGILE (replication-failed)",
