@@ -16678,6 +16678,12 @@
         "type": "round",
         "phase": "VDE",
         "label": "R2234 VDE DISCARD: Sample on log-dollar bars; trend-segmentation (trend-leg) labels; size drawdown-scaled sizing, entry 0.45. -> Calmar +0.3596 (prev best +0.0000). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2235",
+        "type": "round",
+        "phase": "IJR",
+        "label": "R2235 IJR DISCARD: Sample on signed-dollar imbalance (directional) bars; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.50. -> Calmar +2.5129 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28829,6 +28835,11 @@
       {
         "src": "r2233",
         "dst": "r2234",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2234",
+        "dst": "r2235",
         "label": "no improvement"
       }
     ],
