@@ -88,9 +88,9 @@ def main():
     if not os.path.exists(CACHE):
         print("no series cache"); return
     cache = json.load(open(CACHE))
-    # Current deployable book (2026-06-08): GLD core + USO + decorrelating satellites XBI/IXG/EPI.
-    champs = [("GLD", "robust core (DSR 0.956)"), ("USO", "oil-reversion core"),
-              ("XBI", "satellite: biotech trend"), ("IXG", "satellite: financials trend"),
+    # Verified set 2026-06-12: the four gated edges + always_long seats.
+    champs = [("GLD", "crown lgbm_bag+vae"), ("USO", "oil-reversion core"),
+              ("DIA", "candidate seat (bgm+ker)"), ("DXJ", "candidate seat (Japan ker)"),
               ("EPI", "satellite: India trend"),
               ("UUP", "legacy"), ("TIP", "legacy"), ("DBC", "legacy"), ("HYG", "legacy")]
     lines = ["", "## Anytime-valid e-value monitor (peeking-robust; supersedes p-value/DSR re-checks)",
