@@ -16870,6 +16870,24 @@
         "type": "round",
         "phase": "QQQ",
         "label": "R2266 QQQ DISCARD: Sample on permclock; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.2036 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2267",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2267 QQQ DISCARD: Sample on mpnov; forward-tertile labels; size long-only, vol-targeted, entry 0.35. -> Calmar +0.5259 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2268",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2268 QQQ DISCARD: Sample on mpnov; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.35. -> Calmar +0.5767 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2269",
+        "type": "round",
+        "phase": "QQQ",
+        "label": "R2269 QQQ DISCARD: Sample on mpnov; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size tilt, entry 0.45. -> Calmar +1.0198 (prev best +1.2355). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -29181,6 +29199,21 @@
       {
         "src": "r2265",
         "dst": "r2266",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2266",
+        "dst": "r2267",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2267",
+        "dst": "r2268",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2268",
+        "dst": "r2269",
         "label": "no improvement"
       }
     ],
