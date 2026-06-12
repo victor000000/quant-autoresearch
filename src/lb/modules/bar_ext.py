@@ -322,12 +322,110 @@ def make_permclock(close, vol, ts_arr, target_bars, train_minute_mask):
     return PermClockBarBuilder(T)
 
 
+class NoveltyClockBarBuilder:
+    """MATRIX-PROFILE-style NOVELTY clock (backlog #14, 2026-06-12 — 'mpnov').
+
+    True left-matrix-profile is O(n*w) per minute — infeasible in QC's Python
+    budget — so this is the honest O(1) approximation in the same spirit: the
+    last 16 minute-returns are compressed to a 4-symbol SAX word (4 segments,
+    z-normalized, 4 quantile levels); a strictly-PAST hash of word counts gives
+    novelty = 1/sqrt(1+count[word]) — a never-seen shape (discord) scores 1, a
+    common motif ~0. Bars sample cumulative NOVELTY: dense where the price path
+    does something it has never done before, sparse in familiar regimes. The
+    count hash evolves causally (past-only by construction, like logdollar_rc's
+    trailing rescale); threshold T is TRAIN-fit (standard density recipe)."""
+
+    SEG = 4          # segments
+    SLEN = 4         # minutes per segment
+    BREAKS = (-0.6745, 0.0, 0.6745)   # N(0,1) quartile breakpoints
+
+    def __init__(self, thresh):
+        self.thresh = max(1e-12, float(thresh))
+        self.cum = 0.0
+        self.buf = [0.0] * (self.SEG * self.SLEN)
+        self.bhead = 0
+        self.bfill = 0
+        self.last_lc = None
+        self.counts = {}
+        self.close_lc = None
+
+    def update(self, ts, close, vol):
+        if close <= 0:
+            self.last_lc = None
+            return None
+        lc = math.log(close)
+        self.close_lc = lc
+        if self.last_lc is None:
+            self.last_lc = lc
+            return None
+        r = lc - self.last_lc
+        self.last_lc = lc
+        self.buf[self.bhead] = r
+        self.bhead = (self.bhead + 1) % len(self.buf)
+        if self.bfill < len(self.buf):
+            self.bfill += 1
+            return None
+        # 4 segment means in time order (oldest -> newest)
+        segs = []
+        for s in range(self.SEG):
+            tot = 0.0
+            for j in range(self.SLEN):
+                tot += self.buf[(self.bhead + s * self.SLEN + j) % len(self.buf)]
+            segs.append(tot / self.SLEN)
+        mu = sum(segs) / self.SEG
+        sd = math.sqrt(sum((x - mu) ** 2 for x in segs) / self.SEG)
+        if sd < 1e-12:
+            word = 0                      # flat shape -> the all-mid word
+        else:
+            word = 0
+            for x in segs:
+                z = (x - mu) / sd
+                sym = 0
+                for b in self.BREAKS:
+                    if z > b:
+                        sym += 1
+                word = word * 4 + sym
+        cnt = self.counts.get(word, 0)
+        self.counts[word] = cnt + 1       # strictly-past: counted AFTER scoring
+        self.cum += 1.0 / math.sqrt(1.0 + cnt)
+        if self.cum >= self.thresh:
+            self.cum -= self.thresh
+            return {"ts_close": ts, "log_close": self.close_lc}
+        return None
+
+
+def make_mpnov(close, vol, ts_arr, target_bars, train_minute_mask):
+    """TRAIN-only fit of T via the sanctioned density recipe (replay novelty
+    increments on TRAIN minutes; mean increment x valid-density extrapolation)."""
+    c = np.asarray(close, dtype=float)
+    tr = train_minute_mask(ts_arr)
+    n = len(c)
+    sim = NoveltyClockBarBuilder(1e18)
+    n_inc = 0
+    for i in range(n):
+        if not tr[i]:
+            break
+        before = sim.cum
+        sim.update(ts_arr[i], c[i], 1.0)
+        if sim.cum > before:
+            n_inc += 1
+    if n_inc < 1000 or sim.cum <= 0:
+        return None
+    mean_u = sim.cum / n_inc
+    trc = max(1, int(np.sum(tr)))
+    keep = tr & (c > 0)
+    full_est = int(np.sum(keep)) * n / trc
+    T = max(1e-12, mean_u * full_est / max(1.0, float(target_bars)))
+    return NoveltyClockBarBuilder(T)
+
+
 # Registry consumed by bar_builder's generic ext dispatch (one line per new axis,
 # ZERO marginal bytes in bar_builder.py).
 EXT_AXES = {"logdollar_rc": LogDollarRCBarBuilder, "sess2": Session2BarBuilder,
-            "gapflow": GapFlowBarBuilder, "permclock": PermClockBarBuilder}
+            "gapflow": GapFlowBarBuilder, "permclock": PermClockBarBuilder,
+            "mpnov": NoveltyClockBarBuilder}
 EXT_MAKERS = {"logdollar_rc": make_logdollar_rc, "sess2": make_session2,
-              "gapflow": make_gapflow, "permclock": make_permclock}
+              "gapflow": make_gapflow, "permclock": make_permclock, "mpnov": make_mpnov}
 
 
 def make_ext(bar_type, close, vol, ts_arr, target_bars, train_minute_mask):

@@ -144,7 +144,7 @@ VALID_AXES = ["dollar", "tick", "vol", "range", "logdollar", "entropy", "imbalan
               "vratio",   # new-methods 2026-06-09 A3: variance-ratio / price-efficiency clock
               "logdollar_rc",  # 2026-06-10 Wang de-scaled rolling-causal threshold (bar_ext.py)
               "sess2",  # 2026-06-10 session-anchored 2-bars/day clock (bar_ext.py, Wang frontier #4)
-              "gapflow", "permclock"]  # 2026-06-10 overnight-gap-weighted variance clock (bar_ext.py, invention round)
+              "gapflow", "permclock", "mpnov"]  # 2026-06-10 overnight-gap-weighted variance clock (bar_ext.py, invention round)
 VALID_LABELERS = ["kmeans2stage", "tertile", "bgm", "agglomerative",  # carry disabled: QC runtime error, needs traceback to fix
                   "triple_barrier", "triple_barrier_tight", "triple_barrier_meta",
                   "triple_barrier_tight_meta", "triple_barrier_ae", "multi_horizon",

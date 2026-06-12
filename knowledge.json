@@ -16527,6 +16527,18 @@
         "type": "round",
         "phase": "USO",
         "label": "R2209 USO DISCARD: Sample on log-dollar bars; revert; size long-only, entry 0.45. -> Calmar +2.8226 (prev best +3.8498). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2210",
+        "type": "round",
+        "phase": "EEM",
+        "label": "R2210 EEM DISCARD: Sample on mpnov; forward-tertile labels; size long-only, entry 0.40. -> Calmar +0.4900 (prev best +1.2930). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2211",
+        "type": "round",
+        "phase": "DBA",
+        "label": "R2211 DBA DISCARD: Sample on mpnov; revert; size long-only, entry 0.45. -> Calmar +0.7350 (prev best +0.0000). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28553,6 +28565,16 @@
       {
         "src": "r2208",
         "dst": "r2209",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2209",
+        "dst": "r2210",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2210",
+        "dst": "r2211",
         "label": "no improvement"
       }
     ],
