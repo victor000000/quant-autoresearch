@@ -23,28 +23,15 @@ pe = K.get("per_etf_best", {})
 # t{int(thresh*100)}{_PSUF}.json — the _PSUF mirror is REQUIRED (2026-06-10 fix:
 # without it GLD `_n15_b3_ig` / IWM `_ig` champions reconstruct to nonexistent
 # base keys and the real champion blobs would be DELETED as stale).
+from lb.harness.psuf import cell_suffix as _psuf_canonical
+
+
 def _psuf(c):
-    """Mirror templates/header.py.tmpl _PSUF exactly."""
-    s = ""
-    if c.get("permute_labels"):
-        s += "_perm"
-    if int(c.get("n_components", 20)) != 20:
-        s += "_n" + str(int(c["n_components"]))
-    if float(c.get("rebal_band", 0.01)) != 0.01:
-        s += "_b" + str(int(round(float(c["rebal_band"]) * 100)))
-    if c.get("horizons"):
-        s += "_hz" + "x".join(str(int(h)) for h in c["horizons"])
-    r = c.get("reduce", "correlation")
-    if r != "correlation":
-        s += "_ig" if r == "infogain" else "_rd" + str(r)
-    f = c.get("features", "base")
-    if f != "base":
-        s += {"rich": "_fr", "termstruct": "_ts", "realyield": "_ry"}.get(f, "_fx")
-    if c.get("calibration", "isotonic") != "isotonic":
-        s += "_va"
-    if c.get("train_purge"):
-        s += "_tp"
-    return s
+    """SINGLE SOURCE: lb.harness.psuf.cell_suffix (the inline mirror here went stale
+    2026-06-12 — it lacked the _m/_cb/_fx{name} tokens and would have deleted the
+    GLD lgbm_bag crown's blobs). Never re-inline."""
+    return _psuf_canonical(c)
+
 
 keep = set()
 for tk, v in pe.items():
@@ -62,7 +49,7 @@ for k in sorted(keep):
 # the deployed config, e.g. UUP's book cell is bgm+sadf_explosive+ker 1.85 while
 # per_etf_best stores the stale bgm+ker 0.45; an exact-match-only keep would delete
 # the deployed member's blob). Cruft lives overwhelmingly in the ~300 screen tickers.
-BOOK_TICKERS = ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO"]
+BOOK_TICKERS = ["GLD", "UUP", "IWM", "TIP", "DBC", "HYG", "USO", "DIA", "FEZ", "PRFZ"]
 
 KEEP_JSON = json.dumps(sorted(keep))
 BOOK_JSON = json.dumps(BOOK_TICKERS)
