@@ -4609,3 +4609,5 @@ timestamp,weakest_etf,prev_best_calmar,prev_best_cell,name,ticker,axis,labeler,t
 2026-06-12T16:47:04,IJR,0.0,,B,IJR,imbalance,bgm+ker,0.5,cdf_overlay,2.5129,1.8411,232,True,True,0.0,0.9013,0.5722,1.5569,3.8352,38.2787,718,True,False,completed,completed
 2026-06-12T16:53:39,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,A,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.2752,7.0038,662,True,True,0.0,0.717,0.6708,1.3226,0.4461,10.2042,718,False,False,completed,completed
 2026-06-12T16:53:39,QQQ,1.2355,QQQ_logdollar_always_long_cdf_overlay_t0.15,B,QQQ,permclock,bgm+ker,0.45,cdf_overlay,1.5061,6.7635,566,True,True,0.0,0.717,0.6708,1.4693,0.5585,10.5122,718,True,False,completed,completed
+2026-06-12T16:57:10,UGL,1.3795,UGL_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,A,UGL,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,1.5133,18.449,3411,True,True,0.0,0.8743,0.8275,1.1462,-0.3256,10.1134,718,True,False,completed,completed
+2026-06-12T16:57:10,UGL,1.3795,UGL_logdollar_trend_leg+regime_gmm_dd_overlay_t0.40,B,UGL,logdollar,trend_leg+regime_gmm,0.4,dd_overlay,1.4115,18.9016,3306,True,True,0.0,0.8743,0.8275,1.0578,-0.3404,11.503,718,False,False,completed,completed

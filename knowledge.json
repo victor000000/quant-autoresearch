@@ -16762,6 +16762,12 @@
         "type": "round",
         "phase": "QQQ",
         "label": "R2248 QQQ DISCARD: Sample on permclock; ensemble of Bayesian-GMM regime labels + Kaufman efficiency-ratio labels; size long-only, vol-targeted, entry 0.45. -> Calmar +1.5061 (prev best +1.2355). Auto-logged from round_results.csv."
+      },
+      {
+        "id": "r2249",
+        "type": "round",
+        "phase": "UGL",
+        "label": "R2249 UGL DISCARD: Sample on log-dollar bars; ensemble of trend-segmentation (trend-leg) labels + causal-feature GMM regime labels; size drawdown-scaled sizing, entry 0.40. -> Calmar +1.5133 (prev best +1.3795). Auto-logged from round_results.csv."
       }
     ],
     "edges": [
@@ -28983,6 +28989,11 @@
       {
         "src": "r2247",
         "dst": "r2248",
+        "label": "no improvement"
+      },
+      {
+        "src": "r2248",
+        "dst": "r2249",
         "label": "no improvement"
       }
     ],
