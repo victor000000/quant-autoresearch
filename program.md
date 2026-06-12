@@ -39,7 +39,7 @@ event bars → StandardScaler → reduce → model(depth 3, lr .03, n 200) → c
 
 ## The honesty stack
 
-Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`audit/deflated_audit.py`) · session DSR Holm-Bonferroni (`audit/honest_audit.py`) · permute control · decay monitor (`research/champion_series.py`) · e-values · PBO/CSCV · cost stress (book holds at 5bp) · drawdown-shape (Ulcer/Pain/Martin via `lb.metrics`) · regime-split (`audit/regime_split.py`: edge must survive BOTH past-only trailing-vol halves — GLD 4.64/3.32 PASS, USO 3.83/1.87 PASS). Standing facts: only GLD survives the full ~2500-trial Holm-Bonferroni burden; every other edge is provisional until the calendar grows (MinBTL). **Weight conviction by DSR and recovery-pain, not raw Calmar** (Calmar flatters slow-bleeders: DBC underwater 62% of days, Martin-last; USO recovers fastest, Martin-top).
+Never crown on LLM judgment — only on real QC Calmar, then: deflated Sharpe (`audit/deflated_audit.py`) · session DSR Holm-Bonferroni (`audit/honest_audit.py`) · permute control · decay monitor (`research/champion_series.py`) · e-values · PBO/CSCV · cost stress (book holds at 5bp) · drawdown-shape (Ulcer/Pain/Martin via `lb.metrics`) · regime-split (`audit/regime_split.py`: edge must survive BOTH past-only trailing-vol halves — GLD 4.64/3.32 PASS, USO 3.83/1.87 PASS) · deflated Calmar (`audit/deflated_calmar.py`, MC max-of-N stationary-bootstrap null on the OOS curve: GLD p=0.003 PASS, USO p=0.043 PASS-narrow). Standing facts: only GLD survives the full ~2500-trial Holm-Bonferroni burden; every other edge is provisional until the calendar grows (MinBTL). **Weight conviction by DSR and recovery-pain, not raw Calmar** (Calmar flatters slow-bleeders: DBC underwater 62% of days, Martin-last; USO recovers fastest, Martin-top).
 
 ## The book (common-grid 2026-06-12, all legs same window)
 
@@ -73,7 +73,7 @@ Retained-but-idle primitives live where they belong: sizers in `sizing_ext` (til
 
 ## The frontier
 
-- **Heavy backlog tier (unraced):** #5 deflated Calmar (we crown on Calmar but deflate only Sharpe — the cleanest honesty hole) · #10 perment axis · #12 IAAFT surrogate null + e-BH · #14 matrix-profile clock/analog labeler (highest ceiling, highest build care) · Chronos forecast features (last untested door on the indices; same structural barrier expected).
+- **Heavy backlog tier (unraced):** #10 perment axis · #12 IAAFT surrogate null + e-BH · #14 matrix-profile clock/analog labeler (highest ceiling, highest build care) · Chronos forecast features (last untested door on the indices; same structural barrier expected).
 - **Human decisions pending:** book proposal A vs B vs status-quo · PRFZ probation · PR #1 merge (needs the lb.paths script fix applied to that branch) · lgbm live-deserialization before deploying GLD-lgbm live · any new data modality (options IV / COT / flows) — the only true reopener for the indices.
 
 Autonomous — decide and run the next experiment, don't ask.
