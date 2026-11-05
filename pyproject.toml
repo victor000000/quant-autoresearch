@@ -7,7 +7,7 @@ name = "lb"
 version = "0.1.0"
 description = "Autoresearch quant pipeline"
 requires-python = ">=3.10"
-dependencies = ["numpy", "xgboost", "scikit-learn", "scipy", "requests"]
+dependencies = ["pandas>=2.2,<4", "numpy", "xgboost", "scikit-learn", "scipy", "requests"]
 
 [project.scripts]
 lb-round = "lb.cli:round_main"
