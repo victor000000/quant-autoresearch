@@ -1,3 +1,5 @@
+> Source/documentation correction (2026-11-07): this is the retained research contract and dated campaign record, not an instruction to launch work on read. Scorer/selection gates remain unchanged. Current installation, package layout, actual time boundaries, account effects and unverified deployment limits are in [source guide](docs/GUIDE.md). Historical performance assertions below were not revalidated by the documentation audit.
+
 # autoresearch
 
 An autonomous loop that hunts single-ticker trading edges on ETFs. Each round: read this file + `knowledge.json`, design ONE recipe, race it A/B against the champion on real out-of-sample Calmar in QuantConnect (project 31338454), keep iff every honesty gate passes. Single ticker, no cross-ticker ensembling, simple over complex.

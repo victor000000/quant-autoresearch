@@ -1,0 +1,8 @@
+{
+  "canonical": [
+    "README.md",
+    "CI.md",
+    "docs/GUIDE.md",
+    "docs/DOCUMENTATION_AUDIT.md"
+  ]
+}

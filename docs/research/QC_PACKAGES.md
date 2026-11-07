@@ -1,3 +1,5 @@
+> Current source navigation (2026-11-07): package layout and account effects are documented in the [source guide](../GUIDE.md). This research specification retains its original scope and does not certify current provider/model/cloud readiness.
+
 # QC Cloud Python environment (authoritative, 2026-06-11)
 
 Source: Lean `DockerfileLeanFoundation` (master) + QC docs + empirical probe. Python

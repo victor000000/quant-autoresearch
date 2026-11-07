@@ -1,62 +1,42 @@
-# Quant Autoresearch Workspace
+# Quant autoresearch workspace
 
-An autonomous ML quant-research loop (inspired by [karpathy/autoresearch](https://github.com/karpathy/autoresearch))
-applied to ETF trading on QuantConnect. An agent edits the pipeline, backtests on QC, scores on **REAL
-out-of-sample Calmar + Drawdown Area**, keeps-if-better, and writes a tech report each round.
+A Python research/rendering pipeline for ETF experiments executed through QuantConnect. Package metadata is **0.1.1**. The independent qc_work executor/storage platform is a different project; its credential, queue and recovery contracts do not automatically apply here.
 
-**Start here:** [`program.md`](program.md) — the one-page contract (goal, what's
-editable, the loop, the rules).
+[Research contract](program.md) preserves scoring/selection gates and dated findings. [Source and operations guide](docs/GUIDE.md) explains current paths, rendering, configuration and account effects. [CI](CI.md) gives safe offline checks; [documentation inventory](docs/DOCUMENTATION_AUDIT.md) classifies every owned guide, analysis and archived plan.
 
-## Layout
+## Install for offline development
 
-The repo uses an editable install (`pip install -e .` via `pyproject.toml`): all importable code lives under `src/lb/` (the `lb` package); mutable state (`knowledge.json`, `results/`, etc.) stays at the repo root, and `lb.paths.ROOT` is derived from the source tree so paths resolve correctly from the checkout. Note: the QuantConnect ObjectStore keys are still namespaced `autoresearch/{TICKER}/...` (a QC data path, deliberately unchanged).
+Python 3.12 is the tested CI runtime (package minimum is 3.10). From the checkout root:
+
+```bash
+python -m venv .venv
+.venv/bin/python -m pip install -e . pytest
+PYTHONPATH=src .venv/bin/python -m pytest -q
+.venv/bin/python -m compileall -q src scripts
+```
+
+Pyproject declares pandas, NumPy, XGBoost, scikit-learn, SciPy and requests. For the CPU-only CI dependency ranges, follow `.github/workflows/ci.yml`, which installs xgboost-cpu before `pip install --no-deps -e .`. This repo has no complete dependency lock; historical numerical replay needs its original pinned environment and data separately. A source/editable checkout is required for the root-level scripts/templates/state layout.
+
+The current 19 unit tests use synthetic data and renderer fixtures without an account, market downloads or production training. They cover drawdown/ratio edge cases, rendering budget/smoke, real-yield features, tokens/parity and activity-threshold leakage. They do not certify real OOS performance, prospective alpha, numerical model parity in QC, or live readiness.
+
+## Code and state ownership
 
 | Path | Purpose |
 |---|---|
-| `program.md` | The contract / instructions (read first). |
-| `src/lb/harness/` | **LOCKED scorer** — `qc_client.py`, `orchestrator.py`, `psuf.py` (cell-key helpers), `constants.py`. |
-| `src/lb/templates/` | `header/footer/infer` `*.py.tmpl` rendered into the QC `main.py` (footer downstream + infer sizing are editable). |
-| `src/lb/modules/` | **Editable pipeline** — `bar_builder.py` + `bar_ext.py` ① axis, `labeler.py` ② labels, `features.py` + `ml_ext.py` ③, `trainer.py` + `sizing_ext.py` ④–⑧. |
-| `src/lb/cli.py` · `src/lb/describe.py` | Entry-point shims (`lb-round` tournament driver; describe utilities). |
-| `reports/` | **Per-round tech reports as HTML** (`round_N.html`, MathJax math) + `index.html` + `TEMPLATE.html`. |
-| `knowledge.json` · `techniques.json` | Shared memory (`per_etf_best`, findings, dead-ends, idea queue). |
-| `results.tsv` · `results/*.csv` | Result logs (`results/round_results.csv` + the axis-label CSVs). |
-| `scripts/` | QC drivers at top level: `run_round.py` (v2 tournament, 2-node A/B), `run_axis_label_parallel.py` (full sweep, 2-node), `run_axis_label_study.py` (serial); grouped sub-dirs: `research/` (sweep/screen/decay scripts), `audit/` (honesty/DSR/leak scripts), `diag/` (render + report tools). |
-| `hypotheses.json` | Per-ticker queued configs the driver reads each round. |
-| `qc/` | QC Cloud API client + `.creds.json` (gitignored). |
-| `docs/analysis/` | Analysis writeups — `HONEST_AUDIT.md`, `BACKTEST_AUDIT.md`, `DEPLOYMENT.md`, `CHAMPION_DECAY.md`, `RESEARCH_REVIEW*.md`. |
-| `docs/research/` · `docs/superpowers/` · `docs/legacy/` | Mined technique catalog + strategy spec · experiment design + specs · older session summaries. |
-| `refs/` | Reference material — `pdfs/` (AFML/MLAM/causal PDFs) and third-party course transcripts (`uni/`, `uni_yt/`, `qa_doc/`) are gitignored / excluded from the public repo. |
-| `scratch/` (gitignored) | `_archive/` (prior experiments, predecessor pipelines) + `data_cache/`. |
+| src/lb/harness/ | Scoring constants, rendering/orchestration, QC API client and cell suffix conventions |
+| src/lb/modules/ | Axis, labels, features, training and sizing implementations |
+| src/lb/templates/ | QC scripts rendered from .py.tmpl files |
+| src/lb/metrics.py | Drawdown shape and Martin ratio helpers |
+| src/lb/paths.py | Checkout-root resolution and LB_ROOT override |
+| scripts/ | Round/sweep drivers, research/audit/diagnostic utilities |
+| program.md | Historical research contract and immutable scoring boundaries |
+| knowledge.json, hypotheses.json | Research state/configuration, not proof of validated current results |
+| docs/analysis, docs/research, docs/legacy | Dated analyses, specifications and archived sessions |
 
-**Root holds only:** the two entry docs (`README.md`, `program.md`), the operational state (`knowledge.json`, `techniques.json`, `hypotheses.json`, `results.tsv`), and the output dirs (`reports/`, `results/`, `docs/`). All importable code is under `src/lb/`; everything else is grouped under `docs/`, `refs/`, `scratch/`.
+Private data, complete historical outputs/reports and third-party reference material can be absent. Source-visible score tables and archived “champion” claims are research records, not independently revalidated deployment recommendations. The scorer remains locked by the research contract; this documentation revision changes no scoring/selection rules.
 
-## Running
+## Account effects and limitations
 
-```bash
-cd /home/ubuntu/lb
-# v2 tournament round: pick the weakest ETF, race two hypotheses on the 2 QC nodes, keep the winner.
-# explicit (two CONFIG JSONs, both targeting the same ETF):
-python3 scripts/run_round.py \
-  '{"ticker":"TLT","axis":"vol","labeler":"carry","thresh":0.55,"sizing":"binary"}' \
-  '{"ticker":"TLT","axis":"dollar","labeler":"kmeans2stage","thresh":0.45,"sizing":"binary"}'
-# auto (pick weakest ETF from knowledge.json, read its two configs from hypotheses.json):
-python3 scripts/run_round.py
-```
+`lb-round` directly invokes the round driver; it is not a harmless help-only CLI. Do not use `lb-round --help`, import arbitrary drivers, or run round scripts as smoke tests. Drivers can upload source, start/delete cloud backtests, overwrite research state and interact with ObjectStore. Read the source/operations guide before a separately scoped account run. No new job or provider acquisition is implied by installation/testing.
 
-A CONFIG is `{ticker, axis, labeler, thresh, sizing}` (`sizing ∈ ramp|binary|cdf_plain|cdf_overlay`); the driver
-renders one TRAIN → one INFER per hypothesis with the SAME thresh+sizing on VAL and OOS, then keeps the winner
-iff it is deployable (G2 trades>80, DA reported) and beats that ETF's current best. It logs both legs to
-`results/round_results.csv` and updates `knowledge.json.per_etf_best`; the HTML report + git commit
-are done per round by the human/opus. (The full-sweep driver `run_axis_label_parallel.py` is still available.)
-
-QC project 31338454; each backtest is hard-capped at 5 min (auto-deleted on overrun). Splits: train ≤ 2021-08,
-val ≤ 2023-08, test ≤ 2026-06 (OOS). Universe = 7 core ETFs (QQQ IWM EEM XLE HYG TLT GLD).
-
-## Status (rounds so far)
-
-Six rounds done. Per-ETF best **active** (>80-trade) real OOS Calmar (the v2 leaderboard, lowest = next target):
-EEM 1.33 · HYG 1.26 · QQQ 1.10 · GLD 0.78 · XLE 0.72 · IWM 0.65 · **TLT −0.15** (weakest link → round-1 v2 target).
-Rounds 5–6 showed single-asset long-only ML ties buy-hold because the label is washed out (overlay) or reverts
-to always-long (overlay off); v2 attacks one ETF at a time with label-driven `binary` sizing so the model can go
-FLAT. No single ETF clears G1 > 3.0 yet. See `reports/index.html` and `knowledge.json`.
+Version 0.1.1 fixes flat/insolvent Martin reporting and finite-input/annualization validation. The source's legacy `lb.__version__` string still says 0.1.0; package metadata is the distribution authority, and that discrepancy is recorded rather than disguised. Legacy scripts may embed workstation paths or project-specific assumptions. There is no CD pipeline or certified live-trading deployment.

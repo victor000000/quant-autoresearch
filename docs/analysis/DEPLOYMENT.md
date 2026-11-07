@@ -1,3 +1,5 @@
+> Historical model/deployment analysis: retained with its original research context. This does not authorize or certify a current live deployment. See the [current source and operations guide](../GUIDE.md) for implemented behavior, data omissions and unresolved parity/acceptance.
+
 # Deployment — the autoresearch book (LEAK-CORRECTED, 2026-06-03)
 
 The deliverable: a diversified, **leak-free** ETF book. Real OOS (2023-08 → 2026-06), QC project 31338454.

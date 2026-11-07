@@ -1,0 +1,371 @@
+{
+  "scope": "Tracked/nonignored owned prose; network URLs not fetched; fenced code not interpreted as links.",
+  "counts": {
+    "documents": 45,
+    "canonical": 4,
+    "mixed": 0,
+    "retained": 41
+  },
+  "documents": [
+    {
+      "path": "CI.md",
+      "role": "canonical-current",
+      "title": "Offline validation and CI",
+      "local_links": 1,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "README.md",
+      "role": "canonical-current",
+      "title": "Quant autoresearch workspace",
+      "local_links": 4,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "REVIEW_20261107.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Offline self-review and next release — 2026-11-07",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/DOCUMENTATION_AUDIT.md",
+      "role": "canonical-current",
+      "title": "Documentation audit and design — 2026-11-07",
+      "local_links": 1,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/GUIDE.md",
+      "role": "canonical-current",
+      "title": "Current source design and operations",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/analysis/BACKTEST_AUDIT.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "OOS Real-Backtest Correctness Audit (2026-06-02)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/analysis/CHAMPION_DECAY.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Champion alpha-decay / survival (formal, on REAL OOS return series)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/analysis/DEPLOYMENT.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Deployment — the autoresearch book (LEAK-CORRECTED, 2026-06-03)",
+      "local_links": 1,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/analysis/HONEST_AUDIT.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Session-scale honest audit (Deflated Sharpe at true trial counts)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/analysis/LEAK_REVIEW_2026-06-10.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Look-Ahead Leak Review — 2026-06-10",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/analysis/RESEARCH_REVIEW_v3.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Autoresearch efficiency — systematic review v3 (2026-06-03)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/OPTIMIZATION_SUMMARY.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "ETF Optimization Summary — 97 Experiments",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/SESSION_FINAL_SUMMARY.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Wang GMM-Label Pipeline — Final Session Summary",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/DIRECTION_REALYIELD_GLD_2026-06-09.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Final Direction: Real-Yield Feature on GLD — the Last Credible Untested Channel",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/EXPLORATION_PLAN_311.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "311-ETF exploration plan (ML-for-quant research, Wang backbone)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/NEW_AXES_LABELERS_2026-06-09.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "New custom-axis + unsupervised-labeler research (2026-06-09)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/NEW_METHODS_2026-06-08.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "New methods to try — Wang transcripts + internet (2026-06-08)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/RESEARCH_REVIEW.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Systematic Review — Improving autoresearch Efficiency (2026-06-02)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/RESEARCH_REVIEW_v2.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Research Review v2 — Simplest High-Leverage Upgrades to the autoresearch Loop (2026-06-02)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/WANG_INTERNET_DEEP_V2_2026-06-08.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Deep Wang+internet re-investigation v2 (2026-06-08)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/WANG_INTERNET_DEEP_V3_2026-06-09.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Deep Wang+internet v3 (2026-06-09)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/WORKFLOW_PRIOR_ART.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Prior Art: Who Else Runs This Workflow?",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/new_method_backlog.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "New-method backlog (mined 2026-06-03 from AFML + Wang course + ML4AM + internet)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/superpowers/plans/2026-05-31-autoresearch-quant-pipeline.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Autoresearch Quant Pipeline — Implementation Plan",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/superpowers/plans/2026-06-11-package-restructure.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Package Restructure Implementation Plan",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/superpowers/specs/2026-05-31-autoresearch-quant-pipeline-design.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Autoresearch for ML Quant Trading Pipeline — Design Spec",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/superpowers/specs/2026-06-01-autoresearch-v2-tournament.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Autoresearch v2 — Per-ETF-Worst, 2-Hypothesis-Parallel Tournament",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/superpowers/specs/2026-06-01-axis-labeling-experiment-design.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Axis × Labeling Factorial Experiment — Design Spec",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/archive/superpowers/specs/2026-06-11-package-restructure-design.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Design — convert `lb` to an installable `src/lb/` package",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/sessions/LEAK_AUDIT_2026-06-07.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Deep Look-Ahead / Online-Contract Leak Audit — 2026-06-07",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/sessions/LOOP_SESSION_2026-06-09.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Autonomous loop session — 2026-06-09 (rounds R1854+ / loop rounds 1–15)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/legacy/sessions/SESSION_SUMMARY_2026-06-08.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Session summary 2026-06-08 — deliverables for human/Opus review",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/COMPONENT_SELECTION_GUIDE.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Component → ETF-type / Strategy-type selection guide",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/ETF_SCREEN_TABLE.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "311-ETF screen — results table",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/INNOVATION_BACKLOG_2026-06-11.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Innovation backlog — every module of Wang's pipeline (2026-06-11)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/NEW_METHODS_BACKLOG.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "New axes + labelers backlog (deep-specs)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/QC_PACKAGES.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "QC Cloud Python environment (authoritative, 2026-06-11)",
+      "local_links": 1,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/WANG_PIPELINE_SPEC.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Wang's pipeline — canonical spec from the full corpus (2026-06-11)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/WANG_TRANSCRIPTS_2026-06-11.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Wang Yiming transcripts (2026-06-11) — deep read + performance levers",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/WANG_WORKFLOW_SYNTHESIS_2026-06-10.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Wang Workflow — Deep Synthesis (2026-06-10)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/strategy_type_analysis.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Module ⓪ — Strategy-Type Router: Spec for `modules/analyzer.py`",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "docs/research/technique_catalog.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Technique Catalog — Ranked, De-duplicated, Module-Mapped",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "program.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "autoresearch",
+      "local_links": 1,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "refs/qa_doc/V4_V6_FINAL_RESULTS.md",
+      "role": "retained-history-reference-or-evidence",
+      "title": "Final Pipeline Results (val-honest)",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    },
+    {
+      "path": "review-evidence-20261107/tests.txt",
+      "role": "retained-history-reference-or-evidence",
+      "title": "tests.txt",
+      "local_links": 0,
+      "workstation_local_references": 0,
+      "unavailable_links": []
+    }
+  ]
+}
