@@ -19,8 +19,19 @@ length-normalised so they rank a book of unequal-horizon strategies fairly.
 """
 
 
+import math
+
+
+def _validate_equity(equity, *, positive_start=True):
+    if any(not math.isfinite(value) for value in equity):
+        raise ValueError("equity must contain only finite values")
+    if positive_start and len(equity) and equity[0] <= 0:
+        raise ValueError("equity must start with positive capital")
+
+
 def underwater(equity):
     """Per-point drawdown d_t = equity_t / running_peak_t - 1 (<= 0)."""
+    _validate_equity(equity)
     out, peak = [], None
     for v in equity:
         peak = v if peak is None or v > peak else peak
@@ -51,6 +62,7 @@ def ulcer_index(equity):
 def max_dd_duration(equity):
     """Longest stretch (in points) the curve spends STRICTLY below a prior peak —
     the 'time under water' that Calmar/MaxDD cannot see."""
+    _validate_equity(equity)
     peak = None
     run = longest = 0
     for v in equity:
@@ -65,12 +77,16 @@ def max_dd_duration(equity):
 def martin_ratio(equity, ppy=252):
     """Annualised CAGR / Ulcer Index — the Calmar analogue that rewards spending
     LESS time and depth under water, not just a shallow single trough. ppy = points
-    per year. Returns inf for a never-underwater curve, 0.0 if undefined."""
-    if len(equity) < 2 or equity[0] <= 0:
+    per year. Returns inf for a growing never-underwater curve; flat or undefined
+    ratios return 0.0. Nonfinite inputs and invalid ppy raise ValueError."""
+    _validate_equity(equity, positive_start=False)
+    if not math.isfinite(ppy) or ppy <= 0:
+        raise ValueError("ppy must be finite and positive")
+    if len(equity) < 2 or equity[0] <= 0 or equity[-1] < 0:
         return 0.0
     ui = ulcer_index(equity)
     if ui <= 0:
-        return float("inf")
+        return float("inf") if equity[-1] > equity[0] else 0.0
     yrs = (len(equity) - 1) / ppy
     if yrs <= 0:
         return 0.0

@@ -56,3 +56,24 @@ def test_degenerate_inputs():
     assert max_drawdown([100]) == 0.0
     assert martin_ratio([100]) == 0.0           # <2 points -> undefined
     assert martin_ratio([0, 100]) == 0.0        # non-positive start -> undefined
+
+
+def test_flat_and_insolvent_martin_ratios():
+    assert martin_ratio([100, 100, 100]) == 0.0
+    assert martin_ratio([100, -10]) == 0.0
+    assert math.isclose(martin_ratio([100, 0]), -math.sqrt(2))
+    assert math.isclose(max_drawdown([100, -10]), 1.1)
+
+
+def test_nonfinite_curves_and_invalid_annualization():
+    import pytest
+    for function in (underwater, max_drawdown, pain_index, ulcer_index, max_dd_duration, martin_ratio):
+        for bad in (float("nan"), float("inf"), -float("inf")):
+            with pytest.raises(ValueError):
+                function([100, bad])
+    for ppy in (0, -1, float("nan"), float("inf")):
+        with pytest.raises(ValueError):
+            martin_ratio([100, 101], ppy)
+    for function in (underwater, max_dd_duration):
+        with pytest.raises(ValueError):
+            function([0, 100])
